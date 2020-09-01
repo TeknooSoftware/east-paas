@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--infrastructures/Doctrine/config/GitRepository.mongodb.xml-->
+<doctrine-mongo-mapping xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
+
+    <embedded-document name="Teknoo\East\Paas\Object\DockerRepository">
+        <id type="string" strategy="UUID"/>
+        <field field-name="name" type="string" nullable="false"/>
+        <field field-name="apiUrl" name="api_url" type="string" nullable="false"/>
+        <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
+        <field field-name="updatedAt" name="updated_at" type="date" />
+        <embed-one field="identity" target-document="Teknoo\East\Paas\Object\XRegistryAuth" nullable="false" />
+    </embedded-document>
+</doctrine-mongo-mapping>

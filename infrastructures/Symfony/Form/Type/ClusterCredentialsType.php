@@ -1,0 +1,84 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * @copyright   Copyright (c) 2009-2020 Richard Déloge (richarddeloge@gmail.com)
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
+
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\Type;
+
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Teknoo\East\Paas\Object\ClusterCredentials;
+
+class ClusterCredentialsType extends AbstractType
+{
+    /**
+     * @param FormBuilderInterface<ClusterCredentials> $builder
+     * @param array<string, mixed> $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): self
+    {
+        parent::buildForm($builder, $options);
+
+        $builder->add('name', TextType::class, ['required' => true, 'label' => 'Identity name']);
+        $builder->add('serverCertificate', TextareaType::class, ['required' => true]);
+        $builder->add('privateKey', TextareaType::class, ['required' => true]);
+        $builder->add('publicKey', TextareaType::class, ['required' => true]);
+
+        $builder->setDataMapper(new class implements DataMapperInterface {
+            /**
+             * @param \Traversable<string, FormInterface> $forms
+             * @param ?ClusterCredentials $data
+             */
+            public function mapDataToForms($data, $forms): void
+            {
+                if (!$data instanceof ClusterCredentials) {
+                    return;
+                }
+
+                $forms = \iterator_to_array($forms);
+                $forms['name']->setData($data->getName());
+                $forms['serverCertificate']->setData($data->getServerCertificate());
+                $forms['privateKey']->setData($data->getPrivateKey());
+                $forms['publicKey']->setData($data->getPublicKey());
+            }
+
+            /**
+             * @param \Traversable<string, FormInterface> $forms
+             * @param ?ClusterCredentials $data
+             */
+            public function mapFormsToData($forms, &$data): void
+            {
+                $forms = \iterator_to_array($forms);
+                $data = new ClusterCredentials(
+                    (string) $forms['name']->getData(),
+                    (string) $forms['serverCertificate']->getData(),
+                    (string) $forms['privateKey']->getData(),
+                    (string) $forms['publicKey']->getData()
+                );
+            }
+        });
+
+        return $this;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): self
+    {
+        parent::configureOptions($resolver);
+
+        $resolver->setDefaults([
+            'data_class' => ClusterCredentials::class,
+            'empty_data' => null,
+        ]);
+
+        return $this;
+    }
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--infrastructures/Doctrine/config/Job.mongodb.xml-->
+<doctrine-mongo-mapping xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
+
+    <document name="Teknoo\East\Paas\Object\Job" collection="job" inheritance-type="COLLECTION_PER_CLASS">
+        <id type="string" strategy="UUID"/>
+        <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
+        <field field-name="updatedAt" name="updated_at" type="date" />
+        <embed-one field="history" target-document="Teknoo\East\Paas\Object\History" nullable="true" />
+        <embed-one field="environment" target-document="Teknoo\East\Paas\Object\Environment" nullable="false"/>
+        <embed-one field="sourceRepository" target-document="Teknoo\East\Paas\Object\GitRepository" nullable="false"/>
+        <embed-one field="imagesRepository" target-document="Teknoo\East\Paas\Object\DockerRepository" nullable="false"/>
+        <embed-many field="clusters" target-document="Teknoo\East\Paas\Object\Cluster" nullable="false"/>
+        <reference-one field="project" target-document="Teknoo\East\Paas\Object\Project" inversed-by="jobs">
+            <cascade />
+        </reference-one>
+    </document>
+</doctrine-mongo-mapping>

@@ -1,0 +1,4 @@
+Teknoo\East\Paas\Object\DockerRepository:
+  attributes:
+    apiUrl:
+      serialized_name: api_url

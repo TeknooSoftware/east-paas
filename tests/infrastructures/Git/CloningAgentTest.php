@@ -1,0 +1,255 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * @copyright   Copyright (c) 2009-2020 Richard Déloge (richarddeloge@gmail.com)
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
+
+namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
+
+use GitWrapper\GitWrapper;
+use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+use Teknoo\East\Paas\Object\GitRepository;
+use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
+use Teknoo\East\Paas\Object\SshIdentity;
+use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
+use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
+use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+
+/**
+ * @covers \Teknoo\East\Paas\Infrastructures\Git\CloningAgent
+ * @covers \Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator
+ * @covers \Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running
+ */
+class CloningAgentTest extends TestCase
+{
+    /**
+     * @var GitWrapper
+     */
+    private $gitWrapper;
+
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject|GitWrapper
+     */
+    public function getGitWrapperMock()
+    {
+        if (!$this->gitWrapper instanceof \PHPUnit\Framework\MockObject\MockObject) {
+            $this->gitWrapper = $this->getMockBuilder('GitWrapper')
+                ->setMethods(['setPrivateKey', 'cloneRepository'])
+                ->getMock();
+        }
+
+        return $this->gitWrapper;
+    }
+
+    /**
+     * @return CloningAgent
+     */
+    public function buildAgent(): CloningAgent
+    {
+        return new CloningAgent($this->getGitWrapperMock());
+    }
+
+    public function testConfigureBadRepository()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildAgent()
+            ->configure(
+                new \stdClass(),
+                $this->createMock(JobWorkspaceInterface::class)
+            );
+    }
+
+    public function testConfigureNotGitRepository()
+    {
+        $this->expectException(\LogicException::class);
+        $this->buildAgent()
+            ->configure(
+                $this->createMock(SourceRepositoryInterface::class),
+                $this->createMock(JobWorkspaceInterface::class)
+            );
+    }
+
+    public function testConfigureGitRepositoryWithNoIdentity()
+    {
+        $this->expectException(\LogicException::class);
+        $this->buildAgent()
+            ->configure(
+                $this->createMock(GitRepository::class),
+                $this->createMock(JobWorkspaceInterface::class)
+            );
+    }
+
+    public function testConfigureWithBadWorkspace()
+    {
+        $this->expectException(\TypeError::class);
+
+        $repository = $this->createMock(GitRepository::class);
+        $repository->expects(self::any())->method('getIdentity')->willReturn(
+            $this->createMock(SshIdentity::class)
+        );
+
+        $this->buildAgent()
+            ->configure(
+                $repository,
+                new \stdClass()
+            );
+    }
+
+    public function testConfigure(): void
+    {
+        $repository = $this->createMock(GitRepository::class);
+        $repository->expects(self::any())->method('getIdentity')->willReturn(
+            $this->createMock(SshIdentity::class)
+        );
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $this->buildAgent()
+                ->configure(
+                    $repository,
+                    $this->createMock(JobWorkspaceInterface::class)
+                )
+        );
+    }
+
+    public function testRun()
+    {
+        $identity = $this->createMock(SshIdentity::class);
+        $identity->expects(self::any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
+
+        $repository = $this->createMock(GitRepository::class);
+        $repository->expects(self::any())->method('getIdentity')->willReturn(
+            $identity
+        );
+
+        $agent = $this->buildAgent();
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace->expects(self::once())
+            ->method('prepareRepository');
+
+        $workspace->expects(self::once())
+            ->method('writeFile')
+            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace, $pk) {
+                self::assertEquals('private.key', $file->getName());
+                self::assertEquals('fooBar', $file->getContent());
+                self::assertEquals(FileInterface::VISIBILITY_PRIVATE, $file->getVisibility());
+                
+                $return('/foo/bar/private.key');
+
+                return $workspace;
+            });
+
+        $this->getGitWrapperMock()
+            ->expects(self::once())
+            ->method('setPrivateKey')
+            ->with('/foo/bar/private.key');
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent = $agent->configure(
+                $repository,
+                $workspace
+            )
+        );
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent->run()
+        );
+    }
+
+    public function testRunWringIdentityObject()
+    {
+        $this->expectException(\LogicException::class);
+
+        $identity = $this->createMock(IdentityInterface::class);;
+
+        $repository = $this->createMock(GitRepository::class);
+        $repository->expects(self::any())->method('getIdentity')->willReturn(
+            $identity
+        );
+
+        $agent = $this->buildAgent();
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace->expects(self::never())
+            ->method('prepareRepository');
+
+        $workspace->expects(self::never())
+            ->method('writeFile');
+
+        $this->getGitWrapperMock()
+            ->expects(self::never())
+            ->method('setPrivateKey');
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent = $agent->configure(
+                $repository,
+                $workspace
+            )
+        );
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent->run()
+        );
+    }
+
+    public function testCloningIntoPathBadPath()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildAgent()->cloningIntoPath(new \DateTime());
+    }
+
+    public function testCloningIntoPath()
+    {
+        $identity = $this->createMock(SshIdentity::class);
+        $identity->expects(self::any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
+
+        $repository = $this->createMock(GitRepository::class);
+        $repository->expects(self::any())->method('getIdentity')->willReturn(
+            $identity
+        );
+        $repository->expects(self::any())->method('getPullUrl')->willReturn(
+            $url = 'https://foo.bar'
+        );
+
+
+        $agent = $this->buildAgent();
+
+        $this->getGitWrapperMock()
+            ->expects(self::once())
+            ->method('cloneRepository')
+            ->with($url, $path = 'foo/bar');
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent = $agent->configure(
+                $repository,
+                $this->createMock(JobWorkspaceInterface::class)
+            )
+        );
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent->cloningIntoPath($path)
+        );
+    }
+
+    public function testClone()
+    {
+        $agent = $this->buildAgent();
+        $agent2 = clone $agent;
+
+        $rp = new \ReflectionProperty(CloningAgent::class, 'gitWrapper');
+        $rp->setAccessible(true);
+        self::assertNotSame($this->getGitWrapperMock(), $rp->getValue($agent2));
+        self::assertSame($this->getGitWrapperMock(), $rp->getValue($agent));
+    }
+}

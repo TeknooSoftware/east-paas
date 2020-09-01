@@ -1,0 +1,23 @@
+#!/bin/env sh
+
+set -e
+
+cd {% volumePath %}
+
+echo "FROM debian " > Dockerfile
+echo "VOLUME {% volumeTarget %}" >> Dockerfile
+
+for vPATH in {% volumeAdds %}
+do
+echo "ADD $vPATH {% volumeTarget %}/$vPATH" >> Dockerfile
+done
+
+echo "CMD cp -rf {% volumeTarget %}/. {% volumeMount %} && while true; do sleep 10; done" >> Dockerfile
+
+{% binary %} build --force-rm --rm=true -t {% volumeName %} .
+
+echo $PAAS_DOCKER_PWD | {% binary %} login --username=$PAAS_DOCKER_USER --password-stdin $PAAS_DOCKER_HOST
+
+{% binary %} push {% volumeName %}
+
+rm Dockerfile

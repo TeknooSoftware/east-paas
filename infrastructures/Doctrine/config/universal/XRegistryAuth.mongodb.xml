@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--infrastructures/Doctrine/config/SshIdentity.mongodb.xml-->
+<doctrine-mongo-mapping xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
+
+    <embedded-document name="Teknoo\East\Paas\Object\XRegistryAuth">
+        <id type="string" strategy="UUID"/>
+        <field field-name="username" name="username" type="string" nullable="true"/>
+        <field field-name="password" name="password" type="string" nullable="true"/>
+        <field field-name="email" name="email" type="string" nullable="true"/>
+        <field field-name="auth" name="auth" type="string" nullable="true"/>
+        <field field-name="serverAddress" name="server_address" type="string" nullable="true"/>
+        <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
+        <field field-name="updatedAt" name="updated_at" type="date" />
+    </embedded-document>
+</doctrine-mongo-mapping>
+

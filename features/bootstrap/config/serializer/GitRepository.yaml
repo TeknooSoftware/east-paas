@@ -1,0 +1,6 @@
+Teknoo\East\Paas\Object\GitRepository:
+  attributes:
+    pullUrl:
+      serialized_name: pull_url
+    defaultBranch:
+      serialized_name: default_branch

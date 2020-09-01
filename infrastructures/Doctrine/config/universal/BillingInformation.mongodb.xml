@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--infrastructures/Doctrine/config/BillingInformation.mongodb.xml-->
+<doctrine-mongo-mapping xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
+
+    <embedded-document name="Teknoo\East\Paas\Object\BillingInformation">
+        <id type="string" strategy="UUID"/>
+        <field field-name="name" type="string" nullable="false"/>
+        <field field-name="service" type="string" nullable="true"/>
+        <field field-name="address" type="string" nullable="false"/>
+        <field field-name="zip" type="string" nullable="false"/>
+        <field field-name="city" type="string" nullable="false"/>
+        <field field-name="country" type="string" nullable="false"/>
+        <field field-name="vat" type="string" nullable="true"/>
+        <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
+        <field field-name="updatedAt" name="updated_at" type="date" />
+    </embedded-document>
+</doctrine-mongo-mapping>

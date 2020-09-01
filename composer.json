@@ -1,0 +1,90 @@
+{
+    "name": "teknoo/east-paas",
+    "description": "Universal package, following the #East programming philosophy, build on Teknoo/East-Foundation (and Teknoo/Recipe) to implement a custom PaaS manager like platform.sh, compatible with Docker and Kubernetes",
+    "license": "MIT",
+    "type": "library",
+    "keywords": ["east","paas","docker","kubernetes","platform","service","ci/cd","continuous delivery"],
+    "homepage": "http://teknoo.software/website",
+    "authors": [
+        {
+            "name": "Richard Déloge",
+            "email": "richarddeloge@gmail.com",
+            "role":"Software architect, Lead developer"
+        }
+    ],
+    "require": {
+        "php": "~7.4",
+        "ext-json": "*",
+        "php-di/php-di": "~6.2",
+        "psr/http-client": "~1.0",
+        "teknoo/east-foundation": "^3.0.3",
+        "teknoo/east-website": "^3.0.10",
+        "teknoo/immutable": "^2.0.3",
+        "teknoo/recipe": "^2.0.8",
+        "teknoo/states": "^4.0.15"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "phpunit/phpunit": "~9.3",
+        "squizlabs/php_codesniffer": "~3.5",
+        "pdepend/pdepend": "~2.8",
+        "sebastian/phpcpd": "~6.0",
+        "phploc/phploc": "~7.0",
+        "phpstan/phpstan": "^0.12.39",
+        "behat/behat": "~3.7",
+        "cpliakas/git-wrapper": "~3.0",
+        "doctrine/common": "~2.12",
+        "doctrine/mongodb-odm": "~2.1",
+        "doctrine/mongodb-odm-bundle": "~4.2",
+        "guzzlehttp/guzzle": "~6.5||~7.0",
+        "league/flysystem": "~1.1",
+        "maclof/kubernetes-client": "^0.18.0",
+        "laminas/laminas-diactoros": "~2.3",
+        "symfony/process": "*",
+        "symfony/yaml": "*",
+        "symfony/property-access": "*",
+        "symfony/form": "*",
+        "symfony/options-resolver": "*",
+        "symfony/messenger": "*",
+        "symfony/serializer": "*",
+        "symfony/http-kernel": "~4.4||~5.1",
+        "symfony/psr-http-message-bridge": "~2.0",
+        "symfony/security-core": "~4.4||~5.1",
+        "teknoo/bridge-phpdi-symfony": "~3.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Teknoo\\East\\Paas\\": "src/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Composer\\": "infrastructures/Composer/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Docker\\": "infrastructures/Docker/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Doctrine\\": "infrastructures/Doctrine/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Flysystem\\": "infrastructures/Flysystem/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Git\\": "infrastructures/Git/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Guzzle\\": "infrastructures/Guzzle/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Kubernetes\\": "infrastructures/Kubernetes/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Symfony\\": "infrastructures/Symfony/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Teknoo\\Tests\\East\\Paas\\": "tests/src/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Composer\\": "tests/infrastructures/Composer/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Docker\\": "tests/infrastructures/Docker/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Doctrine\\\\": "tests/infrastructures/Doctrine/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Flysystem\\": "tests/infrastructures/Flysystem/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Git\\": "tests/infrastructures/Git/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Guzzle\\": "tests/infrastructures/Guzzle/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Kubernetes\\": "tests/infrastructures/Kubernetes/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Symfony\\": "tests/infrastructures/Symfony/"
+        }
+    },
+    "archive": {
+        "exclude": ["features", "tests", "vendor", ".idea"]
+    },
+    "extra": {
+        "thanks": {
+            "name": "teknoo/east-foundation",
+            "url": "https://github.com/TeknooSoftware/east-foundation"
+        }
+    }
+}

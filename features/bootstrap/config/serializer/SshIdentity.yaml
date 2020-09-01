@@ -1,0 +1,4 @@
+Teknoo\East\Paas\Object\SshIdentity:
+  attributes:
+    privateKey:
+      serialized_name: private_key

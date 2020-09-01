@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--infrastructures/Doctrine/config/Account.mongodb.xml-->
+<doctrine-mongo-mapping xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
+
+    <document name="Teknoo\East\Paas\Object\Account" collection="accounts" inheritance-type="COLLECTION_PER_CLASS">
+        <id type="string" strategy="UUID"/>
+        <field field-name="name" type="string" nullable="false"/>
+        <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
+        <field field-name="updatedAt" name="updated_at" type="date" />
+        <field field-name="deletedAt" name="deleted_at" type="date" nullable="true" index="true" />
+        <embed-one field="billing_information"
+                   field-name="billingInformation"
+                   nullable="false"
+                   target-document="Teknoo\East\Paas\Object\BillingInformation"/>
+        <embed-one field="payment_information"
+                   field-name="paymentInformation"
+                   nullable="true"
+                   target-document="Teknoo\East\Paas\Object\PaymentInformation"/>
+        <reference-one field="owner" target-document="Teknoo\East\Website\Object\User">
+            <cascade>
+                <all/>
+            </cascade>
+        </reference-one>
+        <reference-many field="projects" target-document="Teknoo\East\Paas\Object\Project" mapped-by="account">
+            <cascade>
+                <all/>
+            </cascade>
+        </reference-many>
+    </document>
+</doctrine-mongo-mapping>
