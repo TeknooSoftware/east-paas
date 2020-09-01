@@ -4,14 +4,14 @@ website:
 teknoo_paas_job_new:
   path: '/project/{projectId}/environment/{envName}/job/create'
   methods:  ['GET', 'POST', 'PUT']
-  defaults: { _controller: 'teknoo.paas.end_point.new_job' }
+  defaults: { _controller: 'teknoo.east.paas.symfony.end_point.new_job' }
 
 teknoo_paas_job_add_history:
   path: '/project/{projectId}/environment/{envName}/job/{jobId}/log'
   methods:  ['PUT']
-  defaults: { _controller: 'teknoo.paas.end_point.job_add_history' }
+  defaults: { _controller: 'teknoo.east.paas.symfony.end_point.job_add_history' }
 
 teknoo_paas_worker_job_run:
   path: '/project/{projectId}/environment/{envName}/job/{jobId}/run'
   methods:  ['PUT']
-  defaults: { _controller: 'teknoo.paas.end_point.job_run' }
+  defaults: { _controller: 'teknoo.east.paas.symfony.end_point.job_run' }
