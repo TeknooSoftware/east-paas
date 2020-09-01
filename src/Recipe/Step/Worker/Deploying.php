@@ -80,7 +80,7 @@ class Deploying
                     static::buildFailurePromise(
                         $eastClient,
                         $manager,
-                        'teknoo.paas.error.recipe.cluster.deployment_error',
+                        'teknoo.east.paas.error.recipe.cluster.deployment_error',
                         500,
                         $this->responseFactory,
                         $this->streamFactory

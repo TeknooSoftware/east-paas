@@ -66,7 +66,7 @@ class GetProject
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.project.not_found',
+                    'teknoo.east.paas.error.recipe.project.not_found',
                     404,
                     $this->responseFactory,
                     $this->streamFactory

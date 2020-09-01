@@ -472,7 +472,7 @@ class JobTest extends TestCase
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::never())->method('success');
         $promise->expects(self::once())->method('fail')
-            ->with(new \RuntimeException('teknoo.paas.error.job.not_validated', 400));
+            ->with(new \RuntimeException('teknoo.east.paas.error.job.not_validated', 400));
 
         self::assertInstanceOf(Job::class, $job->isRunnable($promise));
     }

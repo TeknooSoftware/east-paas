@@ -67,7 +67,7 @@ class SerializeHistory
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.history.serialization_error',
+                    'teknoo.east.paas.error.recipe.history.serialization_error',
                     400,
                     $this->responseFactory,
                     $this->streamFactory

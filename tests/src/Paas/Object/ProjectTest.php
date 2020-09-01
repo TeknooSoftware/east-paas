@@ -326,7 +326,7 @@ class ProjectTest extends TestCase
 
         $account->expects(self::never())->method('__call')->with('canIPrepareNewJob');
         $job->expects(self::once())->method('addToHistory')
-            ->with('teknoo.paas.error.project.not_executable', $date = new \DateTime('2018-05-01'), true);
+            ->with('teknoo.east.paas.error.project.not_executable', $date = new \DateTime('2018-05-01'), true);
 
         self::assertInstanceOf(
             Project::class,

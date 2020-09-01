@@ -139,24 +139,24 @@ return [
         ->constructor(get(ManagerInterface::class), get(DatesService::class)),
 
     //Deleting
-    'teknoo.paas.deleting.account' => create(DeletingService::class)
+    'teknoo.east.paas.deleting.account' => create(DeletingService::class)
         ->constructor(get(AccountWriter::class), get(DatesService::class)),
-    'teknoo.paas.deleting.billing_information' => create(DeletingService::class)
+    'teknoo.east.paas.deleting.billing_information' => create(DeletingService::class)
         ->constructor(get(BillingInformationWriter::class), get(DatesService::class)),
-    'teknoo.paas.deleting.payment_information' => create(DeletingService::class)
+    'teknoo.east.paas.deleting.payment_information' => create(DeletingService::class)
         ->constructor(get(PaymentInformationWriter::class), get(DatesService::class)),
-    'teknoo.paas.deleting.project' => create(DeletingService::class)
+    'teknoo.east.paas.deleting.project' => create(DeletingService::class)
         ->constructor(get(ProjectWriter::class), get(DatesService::class)),
-    'teknoo.paas.deleting.job' => create(DeletingService::class)
+    'teknoo.east.paas.deleting.job' => create(DeletingService::class)
         ->constructor(get(JobWriter::class), get(DatesService::class)),
-    'teknoo.paas.deleting.cluster' => create(DeletingService::class)
+    'teknoo.east.paas.deleting.cluster' => create(DeletingService::class)
         ->constructor(get(ClusterWriter::class), get(DatesService::class)),
 
     //Conductor
     ConductorInterface::class => get(Conductor::class),
     Conductor::class => static function (ContainerInterface $container): Conductor {
-        $imagesLibrary = $container->get('teknoo.paas.conductor.images_library');
-        $rootPath = \dirname(__DIR__, 2);
+        $imagesLibrary = $container->get('teknoo.east.paas.conductor.images_library');
+        $rootPath = $container->get('teknoo.east.paas.root_dir');
         foreach ($imagesLibrary as &$image) {
             if (empty($image['path']) || \is_dir($image['path'])) {
                 throw new \RuntimeException('Missing path');
@@ -193,7 +193,7 @@ return [
     SendHistory::class => create()
         ->constructor(
             get(DatesService::class),
-            get('teknoo.paas.worker.add_history_pattern'),
+            get('teknoo.east.paas.worker.add_history_pattern'),
             get(UriFactoryInterface::class),
             get(RequestFactoryInterface::class),
             get(StreamFactoryInterface::class),
@@ -214,7 +214,7 @@ return [
             get(DeserializerInterface::class),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class),
-            get('teknoo.paas.worker.global_variables')
+            get('teknoo.east.paas.worker.global_variables')
         ),
     DisplayJob::class => create()
         ->constructor(
@@ -255,7 +255,7 @@ return [
     PushResult::class => create()
         ->constructor(
             get(DatesService::class),
-            get('teknoo.paas.worker.add_history_pattern'),
+            get('teknoo.east.paas.worker.add_history_pattern'),
             get(NormalizerInterface::class),
             get(UriFactoryInterface::class),
             get(RequestFactoryInterface::class),

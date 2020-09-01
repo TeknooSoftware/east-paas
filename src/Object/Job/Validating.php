@@ -40,7 +40,7 @@ class Validating implements StateInterface
     public function validate(): \Closure
     {
         return function (\DateTimeInterface $date): Job {
-            $this->addToHistory('teknoo.paas.jobs.configured', $date, false);
+            $this->addToHistory('teknoo.east.paas.jobs.configured', $date, false);
 
             return $this;
         };

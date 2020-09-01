@@ -107,7 +107,7 @@ class Pending implements StateInterface
     public function isRunnable(): \Closure
     {
         return function (PromiseInterface $promise): Job {
-            $promise->fail(new \RuntimeException('teknoo.paas.error.job.not_runnable', 500));
+            $promise->fail(new \RuntimeException('teknoo.east.paas.error.job.not_runnable', 500));
 
             return $this;
         };
@@ -116,7 +116,7 @@ class Pending implements StateInterface
     public function validate(): \Closure
     {
         return function (\DateTimeInterface $date): Job {
-            $this->addToHistory('teknoo.paas.error.job.not_validated', $date, true, ['code' => 400]);
+            $this->addToHistory('teknoo.east.paas.error.job.not_validated', $date, true, ['code' => 400]);
 
             return $this;
         };

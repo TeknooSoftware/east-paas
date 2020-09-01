@@ -46,8 +46,8 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Flysystem/di.php');
         $containerDefinition->addDefinitions([
-            'teknoo.paas.worker.add_history_pattern' => 'foo',
-            'teknoo.paas.http_client.verify_ssl' => true,
+            'teknoo.east.paas.worker.add_history_pattern' => 'foo',
+            'teknoo.east.paas.http_client.verify_ssl' => true,
         ]);
 
         return $containerDefinition->build();

@@ -68,7 +68,7 @@ class EnvironmentTest extends TestCase
         $promiseInvalid = $this->createMock(PromiseInterface::class);
         $promiseInvalid->expects(self::never())->method('success');
         $promiseInvalid->expects(self::once())->method('fail')
-            ->with(new \LogicException('teknoo.paas.error.environment.not_equal'));
+            ->with(new \LogicException('teknoo.east.paas.error.environment.not_equal'));
 
         self::assertInstanceOf(
             Environment::class,
@@ -82,7 +82,7 @@ class EnvironmentTest extends TestCase
         $promiseInvalid = $this->createMock(PromiseInterface::class);
         $promiseInvalid->expects(self::never())->method('success');
         $promiseInvalid->expects(self::once())->method('fail')
-            ->with(new \LogicException('teknoo.paas.error.environment.not_equal'));
+            ->with(new \LogicException('teknoo.east.paas.error.environment.not_equal'));
 
         self::assertInstanceOf(
             Environment::class,

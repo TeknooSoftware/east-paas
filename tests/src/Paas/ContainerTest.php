@@ -117,9 +117,9 @@ class ContainerTest extends TestCase
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../src/di.php');
         $containerDefinition->addDefinitions([
-            'teknoo.paas.worker.add_history_pattern' => 'foo',
-            'teknoo.paas.http_client.verify_ssl' => true,
-            'teknoo.paas.http_client.timeout' => 3,
+            'teknoo.east.paas.worker.add_history_pattern' => 'foo',
+            'teknoo.east.paas.http_client.verify_ssl' => true,
+            'teknoo.east.paas.http_client.timeout' => 3,
         ]);
 
         return $containerDefinition->build();
@@ -247,32 +247,32 @@ class ContainerTest extends TestCase
 
     public function testAccountDelete()
     {
-        $this->generateTestForDelete('teknoo.paas.deleting.account');
+        $this->generateTestForDelete('teknoo.east.paas.deleting.account');
     }
 
     public function testBillingInformationDelete()
     {
-        $this->generateTestForDelete('teknoo.paas.deleting.billing_information');
+        $this->generateTestForDelete('teknoo.east.paas.deleting.billing_information');
     }
 
     public function testPaymentInformationDelete()
     {
-        $this->generateTestForDelete('teknoo.paas.deleting.payment_information');
+        $this->generateTestForDelete('teknoo.east.paas.deleting.payment_information');
     }
 
     public function testProjectDelete()
     {
-        $this->generateTestForDelete('teknoo.paas.deleting.project');
+        $this->generateTestForDelete('teknoo.east.paas.deleting.project');
     }
 
     public function testJobDelete()
     {
-        $this->generateTestForDelete('teknoo.paas.deleting.job');
+        $this->generateTestForDelete('teknoo.east.paas.deleting.job');
     }
 
     public function testClusterDelete()
     {
-        $this->generateTestForDelete('teknoo.paas.deleting.cluster');
+        $this->generateTestForDelete('teknoo.east.paas.deleting.cluster');
     }
 
     public function testAddHistory()
@@ -393,7 +393,7 @@ class ContainerTest extends TestCase
         $container = $this->buildImage();
 
         $container->set(DeserializerInterface::class, $this->createMock(DeserializerInterface::class));
-        $container->set('teknoo.paas.worker.global_variables', ['foo' => 'bar']);
+        $container->set('teknoo.east.paas.worker.global_variables', ['foo' => 'bar']);
         $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
@@ -752,7 +752,7 @@ class ContainerTest extends TestCase
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
         $container->set(BuilderInterface::class, $this->createMock(BuilderInterface::class));
         $container->set(ClusterClientInterface::class, $this->createMock(ClusterClientInterface::class));
-        $container->set('teknoo.paas.worker.global_variables', ['foo' => 'bar']);
+        $container->set('teknoo.east.paas.worker.global_variables', ['foo' => 'bar']);
         $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
@@ -777,9 +777,10 @@ class ContainerTest extends TestCase
         $container->set(PropertyAccessorInterface::class, $this->createMock(PropertyAccessorInterface::class));
         $container->set(YamlParserInterface::class, $this->createMock(YamlParserInterface::class));
         $container->set(HooksCollectionInterface::class, $this->createMock(HooksCollectionInterface::class));
+        $container->set('teknoo.east.paas.root_dir', '/foo');
 
         $container->set(
-            'teknoo.paas.conductor.images_library',
+            'teknoo.east.paas.conductor.images_library',
             [
                 'php-react-74' => [
                     'build-name' => 'php-react',
@@ -812,9 +813,10 @@ class ContainerTest extends TestCase
         $container->set(PropertyAccessorInterface::class, $this->createMock(PropertyAccessorInterface::class));
         $container->set(YamlParserInterface::class, $this->createMock(YamlParserInterface::class));
         $container->set(HooksCollectionInterface::class, $this->createMock(HooksCollectionInterface::class));
+        $container->set('teknoo.east.paas.root_dir', '/foo');
 
         $container->set(
-            'teknoo.paas.conductor.images_library',
+            'teknoo.east.paas.conductor.images_library',
             [
                 'php-react-74' => [
                     'build-name' => 'php-react',

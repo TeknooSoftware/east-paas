@@ -284,7 +284,7 @@ class AccountTest extends TestCase
         $project = $this->createMock(Project::class);
         $project->expects(self::never())->method('__call')->with('configure');
         $project->expects(self::once())->method('refuseExecution')
-            ->with($job, 'teknoo.paas.error.account.inactive', $date = new \DateTime('2018-05-01'));
+            ->with($job, 'teknoo.east.paas.error.account.inactive', $date = new \DateTime('2018-05-01'));
 
         self::assertInstanceOf(
             Account::class,

@@ -274,13 +274,14 @@ class FeatureContext implements Context
 
                 $builder->addDefinitions([
                     'teknoo_website_hostname' => 'localhost',
-                    'teknoo.paas.worker.add_history_pattern' => function (): string {
+                    'teknoo.east.paas.worker.add_history_pattern' => function (): string {
                         return 'https://localhost/project/{projectId}/environment/{envName}/job/{jobId}/log';
                     },
-                    'teknoo.paas.worker.global_variables' => [
+                    'teknoo.east.paas.worker.global_variables' => [
                         'ROOT' => \dirname(__DIR__)
                     ],
-                    'teknoo.paas.conductor.images_library' => [
+                    'teknoo.east.paas.root_dir' => __DIR__ . '../../',
+                    'teknoo.east.paas.conductor.images_library' => [
                         'php-run-74' => [
                             'build-name' => 'php-run',
                             'tag' => '7.4',
@@ -636,7 +637,7 @@ class FeatureContext implements Context
     }
   ],
   "history": {
-    "message": "teknoo.paas.jobs.configured",
+    "message": "teknoo.east.paas.jobs.configured",
     "date": "2020-08-26 09:13:55 UTC",
     "is_final": false,
     "extra": [],
@@ -713,7 +714,7 @@ EOF;
                 ],
             ],
             'history' => [
-                'message' => 'teknoo.paas.jobs.configured',
+                'message' => 'teknoo.east.paas.jobs.configured',
                 'date' => '2018-10-01 02:03:04 UTC',
                 'is_final' => false,
                 'extra' => [],
@@ -765,7 +766,7 @@ EOF;
             ->setSourceRepository($this->sourceRepository)
             ->setClusters([$this->cluster])
             ->setEnvironment($this->environment)
-            ->addToHistory('teknoo.paas.jobs.configured', new \DateTime($this->jobDate));
+            ->addToHistory('teknoo.east.paas.jobs.configured', new \DateTime($this->jobDate));
 
         $this->repositories[Job::class]->register(
             $id,
@@ -783,7 +784,7 @@ EOF;
             'date' => $this->historyDate = $date,
             'is_final' => false,
             'extra' => [],
-            'previous' => new History(null, 'teknoo.paas.jobs.configured', new \DateTime($this->jobDate)),
+            'previous' => new History(null, 'teknoo.east.paas.jobs.configured', new \DateTime($this->jobDate)),
         ];
         Assert::assertEquals(\json_encode($history), $this->response->getContent());
     }

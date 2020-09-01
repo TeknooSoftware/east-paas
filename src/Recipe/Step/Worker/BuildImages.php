@@ -77,7 +77,7 @@ class BuildImages
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.images.building_error',
+                    'teknoo.east.paas.error.recipe.images.building_error',
                     500,
                     $this->responseFactory,
                     $this->streamFactory

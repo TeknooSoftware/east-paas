@@ -34,7 +34,7 @@ services:
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.delete.abstract'
     calls:
-      - ['setDeletingService', ['@teknoo.paas.deleting.account']]
+      - ['setDeletingService', ['@teknoo.east.paas.deleting.account']]
       - ['setLoader', ['@Teknoo\East\Paas\Loader\AccountLoader']]
       - ['setRouter', ['@router']]
     public: true
@@ -83,7 +83,7 @@ services:
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.delete.abstract'
     calls:
-      - ['setDeletingService', ['@teknoo.paas.deleting.project']]
+      - ['setDeletingService', ['@teknoo.east.paas.deleting.project']]
       - ['setLoader', ['@Teknoo\East\Paas\Loader\ProjectLoader']]
       - ['setRouter', ['@router']]
     public: true
@@ -136,7 +136,7 @@ services:
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.delete.abstract'
     calls:
-      - ['setDeletingService', ['@teknoo.paas.deleting.job']]
+      - ['setDeletingService', ['@teknoo.east.paas.deleting.job']]
       - ['setLoader', ['@Teknoo\East\Paas\Loader\JobLoader']]
       - ['setRouter', ['@router']]
     public: true

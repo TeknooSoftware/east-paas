@@ -80,7 +80,7 @@ class Exposing
                     static::buildFailurePromise(
                         $eastClient,
                         $manager,
-                        'teknoo.paas.error.recipe.cluster.exposing_error',
+                        'teknoo.east.paas.error.recipe.cluster.exposing_error',
                         500,
                         $this->responseFactory,
                         $this->streamFactory

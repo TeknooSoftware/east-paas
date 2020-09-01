@@ -74,7 +74,7 @@ class ConfigureClusterClient
                 static::buildFailurePromise(
                     $eastClient,
                     $manager,
-                    'teknoo.paas.error.recipe.cluster.configuration_error',
+                    'teknoo.east.paas.error.recipe.cluster.configuration_error',
                     500,
                     $this->responseFactory,
                     $this->streamFactory

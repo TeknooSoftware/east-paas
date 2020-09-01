@@ -70,7 +70,7 @@ class SerializeJob
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.job.serialization_error',
+                    'teknoo.east.paas.error.recipe.job.serialization_error',
                     400,
                     $this->responseFactory,
                     $this->streamFactory

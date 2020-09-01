@@ -82,7 +82,7 @@ class BuildVolumes
                         static::buildFailurePromise(
                             $client,
                             $manager,
-                            'teknoo.paas.error.recipe.volumes.building_error',
+                            'teknoo.east.paas.error.recipe.volumes.building_error',
                             500,
                             $this->responseFactory,
                             $this->streamFactory

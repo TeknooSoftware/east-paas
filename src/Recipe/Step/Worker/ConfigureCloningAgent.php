@@ -72,7 +72,7 @@ class ConfigureCloningAgent
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.agent.configuration_error',
+                    'teknoo.east.paas.error.recipe.agent.configuration_error',
                     500,
                     $this->responseFactory,
                     $this->streamFactory

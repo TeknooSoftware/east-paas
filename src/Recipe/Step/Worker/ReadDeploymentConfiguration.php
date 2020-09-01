@@ -62,7 +62,7 @@ class ReadDeploymentConfiguration
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.configuration.read_error',
+                    'teknoo.east.paas.error.recipe.configuration.read_error',
                     500,
                     $this->responseFactory,
                     $this->streamFactory

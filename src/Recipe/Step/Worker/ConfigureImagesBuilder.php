@@ -69,7 +69,7 @@ class ConfigureImagesBuilder
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.images.configuration_error',
+                    'teknoo.east.paas.error.recipe.images.configuration_error',
                     500,
                     $this->responseFactory,
                     $this->streamFactory

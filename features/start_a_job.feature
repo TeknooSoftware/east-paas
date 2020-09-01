@@ -12,7 +12,7 @@ Feature: Run a new deployment on a worker
     And a malformed body
     When I call the PaaS with this PUT request "/project/projectid/environment/dev/job/foo-bar/run"
     Then I must obtain an HTTP answer with this status code equals to "400".
-    And with this body answer, in json, '{"error":true, "message":"teknoo.paas.error.recipe.job.mal_formed", "extra":"Syntax error"}'
+    And with this body answer, in json, '{"error":true, "message":"teknoo.east.paas.error.recipe.job.mal_formed", "extra":"Syntax error"}'
 
   Scenario: Return a valid JSON answer when the job exists and paas file is valid
     Given I have a configured platform

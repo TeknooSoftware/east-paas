@@ -66,7 +66,7 @@ class GetJob
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.job.not_found',
+                    'teknoo.east.paas.error.recipe.job.not_found',
                     404,
                     $this->responseFactory,
                     $this->streamFactory

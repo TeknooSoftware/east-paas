@@ -43,7 +43,7 @@ class Draft implements StateInterface
         return function (Job $job, \DateTimeInterface $date): Project {
             $job->setProject($this);
 
-            $this->refuseExecution($job, 'teknoo.paas.error.project.not_executable', $date);
+            $this->refuseExecution($job, 'teknoo.east.paas.error.project.not_executable', $date);
 
             return $this;
         };

@@ -45,8 +45,8 @@ class ContainerTest extends TestCase
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Git/di.php');
         $containerDefinition->addDefinitions([
-            'teknoo.paas.worker.add_history_pattern' => 'foo',
-            'teknoo.paas.vendor.guzzle.verify_ssl' => true,
+            'teknoo.east.paas.worker.add_history_pattern' => 'foo',
+            'teknoo.east.paas.vendor.guzzle.verify_ssl' => true,
         ]);
 
         return $containerDefinition->build();

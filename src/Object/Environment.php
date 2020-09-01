@@ -72,7 +72,7 @@ class Environment implements
         if ($object instanceof Environment && $object->getName() === $this->name) {
             $promise->success($object);
         } else {
-            $promise->fail(new \LogicException('teknoo.paas.error.environment.not_equal'));
+            $promise->fail(new \LogicException('teknoo.east.paas.error.environment.not_equal'));
         }
 
         return $this;

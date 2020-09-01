@@ -42,7 +42,7 @@ class Inactive implements StateInterface
     public function canIPrepareNewJob(): \Closure
     {
         return function (Project $project, Job $job, \DateTimeInterface $date): Account {
-            $project->refuseExecution($job, 'teknoo.paas.error.account.inactive', $date);
+            $project->refuseExecution($job, 'teknoo.east.paas.error.account.inactive', $date);
 
             return $this;
         };

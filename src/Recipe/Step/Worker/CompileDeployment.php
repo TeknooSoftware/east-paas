@@ -64,7 +64,7 @@ class CompileDeployment
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.configuration.compilation_error',
+                    'teknoo.east.paas.error.recipe.configuration.compilation_error',
                     500,
                     $this->responseFactory,
                     $this->streamFactory

@@ -68,7 +68,7 @@ class DeserializeHistory
                 static::buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.paas.error.recipe.history.mal_formed',
+                    'teknoo.east.paas.error.recipe.history.mal_formed',
                     400,
                     $this->responseFactory,
                     $this->streamFactory
