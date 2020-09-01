@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
 use Teknoo\Immutable\ImmutableTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait MessageTrait
 {
     use ImmutableTrait;

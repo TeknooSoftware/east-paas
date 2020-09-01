@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\Doctrine\Repository\ODM;
 use Teknoo\East\Website\Doctrine\DBSource\ODM\RepositoryTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\PaymentInformationRepositoryInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class PaymentInformationRepository implements PaymentInformationRepositoryInterface
 {
     use RepositoryTrait;

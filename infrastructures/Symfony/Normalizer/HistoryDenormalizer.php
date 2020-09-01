@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Teknoo\East\Paas\Object\History;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class HistoryDenormalizer implements DenormalizerInterface
 {
     /**

@@ -28,6 +28,10 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface BuilderInterface
 {
     public function configure(string $url, ?IdentityInterface $auth): BuilderInterface;

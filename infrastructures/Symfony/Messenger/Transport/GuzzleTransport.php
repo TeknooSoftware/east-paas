@@ -31,6 +31,10 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class GuzzleTransport implements TransportInterface
 {
     private Client $guzzle;

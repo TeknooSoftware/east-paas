@@ -35,6 +35,8 @@ use Teknoo\States\State\StateTrait;
 
 /**
  * @mixin BuilderWrapper
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class Running implements StateInterface
 {

@@ -32,6 +32,10 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class XRegistryAuthType extends AbstractType
 {
     /**

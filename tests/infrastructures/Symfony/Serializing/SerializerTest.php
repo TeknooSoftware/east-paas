@@ -30,6 +30,11 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @package Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingSerializing
+ */
 class SerializerTest extends TestCase
 {
     private ?SymfonySerializerInterface $serializer = null;

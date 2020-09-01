@@ -28,6 +28,8 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job
  */
 class JobTest extends TestCase

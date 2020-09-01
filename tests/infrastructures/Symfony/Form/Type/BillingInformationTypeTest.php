@@ -31,6 +31,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\BillingInformationType;
 use Teknoo\East\Paas\Object\BillingInformation;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\BillingInformationType
  */

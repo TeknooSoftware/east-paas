@@ -35,6 +35,8 @@ use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Flysystem\Workspace
  * @covers \Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Generator
  * @covers \Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Running

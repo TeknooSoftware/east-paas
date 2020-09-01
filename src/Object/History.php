@@ -29,6 +29,10 @@ use Teknoo\East\Website\Object\ObjectTrait;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class History implements ObjectInterface, ImmutableInterface, \JsonSerializable
 {
     use ObjectTrait;

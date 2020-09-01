@@ -35,6 +35,10 @@ use Teknoo\East\WebsiteBundle\AdminEndPoint\AdminFormTrait;
 use Teknoo\East\Paas\Loader\AccountLoader;
 use Teknoo\East\Paas\Object\Account;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class NewProjectEndPoint implements EndPointInterface
 {
     use EastEndPointTrait;

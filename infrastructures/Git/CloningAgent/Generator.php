@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
-use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Object\SshIdentity;
@@ -34,6 +33,8 @@ use Teknoo\States\State\StateTrait;
 
 /**
  * @mixin CloningAgent
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class Generator implements StateInterface
 {

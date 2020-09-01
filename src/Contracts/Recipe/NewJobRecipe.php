@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Contracts\Recipe;
 
 use Teknoo\Recipe\RecipeInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface NewJobRecipe extends RecipeInterface
 {
 }

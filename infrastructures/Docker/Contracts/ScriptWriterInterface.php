@@ -24,6 +24,10 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Docker\Contracts;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface ScriptWriterInterface
 {
     public function __invoke(string $content): string;

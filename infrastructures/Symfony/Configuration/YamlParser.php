@@ -28,6 +28,10 @@ use Symfony\Component\Yaml\Parser;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class YamlParser implements YamlParserInterface
 {
     private Parser $parser;

@@ -38,6 +38,8 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper
  * @covers \Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper\Generator
  * @covers \Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper\Running

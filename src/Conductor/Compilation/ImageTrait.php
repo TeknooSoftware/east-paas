@@ -28,6 +28,10 @@ use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait ImageTrait
 {
     /**

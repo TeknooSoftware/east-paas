@@ -33,6 +33,7 @@ use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\SshIdentity;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType
  */

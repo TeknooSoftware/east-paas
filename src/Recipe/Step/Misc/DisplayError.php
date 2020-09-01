@@ -33,6 +33,10 @@ use Teknoo\East\Paas\Recipe\Traits\ResponseTrait;
 use Teknoo\Recipe\ChefInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class DisplayError
 {
     use ResponseTrait;

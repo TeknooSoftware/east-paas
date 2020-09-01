@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ExceptionNormalizer implements NormalizerInterface
 {
     /**

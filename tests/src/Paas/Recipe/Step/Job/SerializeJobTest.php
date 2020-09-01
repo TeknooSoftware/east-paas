@@ -38,6 +38,8 @@ use Teknoo\Recipe\ChefInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Job\SerializeJob
  * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
  * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait

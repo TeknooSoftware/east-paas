@@ -28,6 +28,8 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account
  */
 class AccountTest extends TestCase

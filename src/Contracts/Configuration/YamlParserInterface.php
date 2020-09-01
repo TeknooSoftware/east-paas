@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Contracts\Configuration;
 
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface YamlParserInterface
 {
     public function parse(string $value, PromiseInterface $promise, int $flags = 0): YamlParserInterface;

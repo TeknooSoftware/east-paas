@@ -29,6 +29,10 @@ use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ConfigureConductor
 {
     private ConductorInterface $conductor;

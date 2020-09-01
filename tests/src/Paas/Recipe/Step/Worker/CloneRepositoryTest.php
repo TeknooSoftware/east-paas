@@ -29,6 +29,8 @@ use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository
  */
 class CloneRepositoryTest extends TestCase

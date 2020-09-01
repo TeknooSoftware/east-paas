@@ -30,6 +30,11 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface as SymfonyNormalizerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @package Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingSerializing
+ */
 class NormalizerTest extends TestCase
 {
     private ?SymfonyNormalizerInterface $normalizer = null;

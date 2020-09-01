@@ -28,6 +28,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class GetVariables
 {
     private string $jsonContentType;

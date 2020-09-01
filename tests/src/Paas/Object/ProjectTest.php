@@ -39,6 +39,7 @@ use Teknoo\States\Exception\MethodNotImplemented;
 use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Object\Project
  * @covers \Teknoo\East\Paas\Object\Project\Draft

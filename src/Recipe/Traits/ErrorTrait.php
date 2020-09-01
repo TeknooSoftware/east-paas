@@ -29,6 +29,10 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait ErrorTrait
 {
     use ResponseTrait;

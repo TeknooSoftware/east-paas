@@ -27,7 +27,6 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 use GitWrapper\GitWrapper;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
@@ -37,6 +36,8 @@ use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Git\CloningAgent
  * @covers \Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator
  * @covers \Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running

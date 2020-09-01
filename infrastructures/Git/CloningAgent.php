@@ -28,7 +28,6 @@ use GitWrapper\GitWrapper;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running;
 use Teknoo\Immutable\ImmutableTrait;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\SshIdentity;
@@ -43,6 +42,10 @@ use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class CloningAgent implements CloningAgentInterface, ProxyInterface, AutomatedInterface
 {
     use ImmutableTrait;

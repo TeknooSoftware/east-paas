@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Contracts\Object;
 
 use Teknoo\East\Paas\Contracts\Form\FormInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface FormMappingInterface
 {
     /**

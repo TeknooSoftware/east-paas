@@ -28,7 +28,6 @@ use Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper\Generator;
 use Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper\Running;
 use Teknoo\East\Paas\Infrastructures\Docker\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Docker\Contracts\ScriptWriterInterface;
-use Symfony\Component\Process\Process;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Image;
@@ -43,6 +42,10 @@ use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInterface
 {
     use ProxyTrait;

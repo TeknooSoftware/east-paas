@@ -30,6 +30,10 @@ use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Container\Pod;
 use Teknoo\East\Paas\Container\Volume;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait ReplicationControllerTrait
 {
     /**

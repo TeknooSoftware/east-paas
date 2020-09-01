@@ -35,6 +35,10 @@ use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Cluster implements
     ObjectInterface,
     TimestampableInterface,

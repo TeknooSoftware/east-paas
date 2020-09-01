@@ -36,6 +36,7 @@ use Teknoo\East\Website\Object\User as BaseUser;
 use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Object\Account
  * @covers \Teknoo\East\Paas\Object\Account\Active

@@ -30,6 +30,10 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Container\Pod;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class CompiledDeployment
 {
     /**

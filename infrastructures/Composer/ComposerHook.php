@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\Composer;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ComposerHook implements HookInterface
 {
     private string $binary;

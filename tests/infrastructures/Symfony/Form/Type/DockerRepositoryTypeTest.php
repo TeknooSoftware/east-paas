@@ -32,6 +32,7 @@ use Teknoo\East\Paas\Object\DockerRepository;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\DockerRepositoryType
  */

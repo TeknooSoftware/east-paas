@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Contracts\DbSource\Repository;
 
 use Teknoo\East\Website\DBSource\RepositoryInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface ProjectRepositoryInterface extends RepositoryInterface
 {
 }

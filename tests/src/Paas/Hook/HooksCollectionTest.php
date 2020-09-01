@@ -29,6 +29,8 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Hook\HooksCollection;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Hook\HooksCollection
  */
 class HooksCollectionTest extends TestCase

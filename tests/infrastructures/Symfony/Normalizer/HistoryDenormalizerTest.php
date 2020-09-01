@@ -29,6 +29,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer;
 use Teknoo\East\Paas\Object\History;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer
  */
 class HistoryDenormalizerTest extends TestCase

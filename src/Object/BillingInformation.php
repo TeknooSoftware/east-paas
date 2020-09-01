@@ -29,6 +29,10 @@ use Teknoo\East\Website\Object\ObjectTrait;
 use Teknoo\East\Website\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class BillingInformation implements ObjectInterface, TimestampableInterface, FormMappingInterface
 {
     use ObjectTrait;

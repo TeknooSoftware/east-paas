@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class CloneRepository
 {
     public function __invoke(CloningAgentInterface $agent): self

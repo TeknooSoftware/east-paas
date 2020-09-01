@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Configuration;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class PropertyAccessor implements PropertyAccessorInterface
 {
     private SymfonyPropertyAccessor $propertyAccessor;

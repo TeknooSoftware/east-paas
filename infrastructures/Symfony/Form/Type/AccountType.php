@@ -35,6 +35,10 @@ use Teknoo\East\Website\Object\User;
 use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 use Teknoo\East\Paas\Object\Account;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class AccountType extends AbstractType
 {
     /**

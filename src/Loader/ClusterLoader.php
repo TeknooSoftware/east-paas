@@ -28,6 +28,10 @@ use Teknoo\East\Website\Loader\LoaderInterface;
 use Teknoo\East\Website\Loader\LoaderTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ClusterLoader implements LoaderInterface
 {
     use LoaderTrait;

@@ -28,6 +28,10 @@ use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Collection implements \IteratorAggregate, ImmutableInterface
 {
     use ImmutableTrait;

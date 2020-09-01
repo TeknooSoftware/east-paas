@@ -36,6 +36,10 @@ use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class BuildImages
 {
     use ErrorTrait;

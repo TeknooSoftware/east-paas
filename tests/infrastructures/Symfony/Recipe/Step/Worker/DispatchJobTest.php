@@ -35,6 +35,8 @@ use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob
  */
 class DispatchJobTest extends TestCase

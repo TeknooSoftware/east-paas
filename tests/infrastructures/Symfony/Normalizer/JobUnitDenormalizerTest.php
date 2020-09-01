@@ -39,6 +39,8 @@ use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Cluster;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer
  */
 class JobUnitDenormalizerTest extends TestCase

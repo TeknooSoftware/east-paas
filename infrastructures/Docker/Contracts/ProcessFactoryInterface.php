@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Infrastructures\Docker\Contracts;
 
 use Symfony\Component\Process\Process;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface ProcessFactoryInterface
 {
     /**

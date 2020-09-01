@@ -30,6 +30,8 @@ use Teknoo\States\State\StateTrait;
 
 /**
  * @mixin Job
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class Validating implements StateInterface
 {

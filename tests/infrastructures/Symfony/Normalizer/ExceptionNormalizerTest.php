@@ -30,6 +30,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer;
 use Teknoo\East\Paas\Object\History;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer
  */
 class ExceptionNormalizerTest extends TestCase
@@ -59,7 +61,7 @@ class ExceptionNormalizerTest extends TestCase
                 'message' => 'foo',
                 'code' => 123,
                 'file' => __FILE__,
-                'line' => 49,
+                'line' => 66,
             ),
             $this->buildNormalizer()->normalize(new \Exception('foo', 123))
         );

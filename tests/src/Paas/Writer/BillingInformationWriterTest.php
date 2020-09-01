@@ -31,6 +31,8 @@ use Teknoo\East\Paas\Writer\BillingInformationWriter;
 use Teknoo\Tests\East\Website\Writer\PersistTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Writer\BillingInformationWriter
  */
 class BillingInformationWriterTest extends TestCase

@@ -31,6 +31,8 @@ use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Object\Job;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer
  */
 class EastNormalizerTest extends TestCase

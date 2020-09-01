@@ -32,6 +32,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Guzzle\AsyncResponse
  */
 class AsyncResponseTest extends TestCase

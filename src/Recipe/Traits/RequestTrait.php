@@ -29,6 +29,10 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait RequestTrait
 {
     private UriFactoryInterface $uriFactory;

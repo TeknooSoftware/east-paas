@@ -33,6 +33,10 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class DispatchJob implements DispatchJobInterface
 {
     private MessageBusInterface $bus;

@@ -34,6 +34,7 @@ use Teknoo\East\Paas\Object\BillingInformation;
 use Teknoo\East\Paas\Object\PaymentInformation;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountType
  */

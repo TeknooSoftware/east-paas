@@ -29,6 +29,11 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\TransportFactor
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @package Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Transport
+ */
 class TransportFactoryTest extends TestCase
 {
     /**

@@ -31,6 +31,10 @@ use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface JobUnitInterface extends NormalizableInterface
 {
     public function getId(): string;

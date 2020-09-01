@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Recipe\Step\Project;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\Recipe\ChefInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class GetEnvironment
 {
     public function __invoke(string $envName, ChefInterface $chef): self

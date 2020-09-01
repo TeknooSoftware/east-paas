@@ -50,6 +50,8 @@ use Teknoo\States\Proxy\ProxyTrait;
 
 /**
  * @method Job configureCloningAgent(CloningAgentInterface $agent, JobWorkspaceInterface $workspace)
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class Job implements
     ObjectInterface,

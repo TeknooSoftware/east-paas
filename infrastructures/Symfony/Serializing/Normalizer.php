@@ -28,6 +28,10 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface as SymfonyNormal
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Normalizer implements NormalizerInterface
 {
     private SymfonyNormalizerInterface $normalizer;

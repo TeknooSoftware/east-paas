@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ClassFinderDenormalizer implements DenormalizerAwareInterface, DenormalizerInterface
 {
     private ?DenormalizerInterface $denormalizer = null;

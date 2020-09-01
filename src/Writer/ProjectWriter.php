@@ -29,6 +29,10 @@ use Teknoo\East\Website\Object\ObjectInterface;
 use Teknoo\East\Website\Writer\PersistTrait;
 use Teknoo\East\Website\Writer\WriterInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ProjectWriter implements WriterInterface
 {
     use PersistTrait;

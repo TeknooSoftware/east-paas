@@ -34,6 +34,7 @@ use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\Tests\East\Website\Loader\LoaderTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers      \Teknoo\East\Paas\Loader\ClusterLoader
  */

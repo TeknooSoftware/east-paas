@@ -30,6 +30,10 @@ use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\Recipe\ChefInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class SaveJob
 {
     private JobWriter $jobWriter;

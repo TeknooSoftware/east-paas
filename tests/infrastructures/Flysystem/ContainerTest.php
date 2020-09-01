@@ -32,7 +32,8 @@ use League\Flysystem\Filesystem;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * Class DefinitionProviderTest.
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class ContainerTest extends \PHPUnit\Framework\TestCase
 {

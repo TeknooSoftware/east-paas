@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Recipe\Traits;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait PsrFactoryTrait
 {
     private ResponseFactoryInterface $responseFactory;

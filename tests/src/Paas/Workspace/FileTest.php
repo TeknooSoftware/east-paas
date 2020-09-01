@@ -29,6 +29,8 @@ use Teknoo\East\Paas\Workspace\File;
 use Teknoo\Tests\East\Website\Object\Traits\PopulateObjectTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Workspace\File
  */

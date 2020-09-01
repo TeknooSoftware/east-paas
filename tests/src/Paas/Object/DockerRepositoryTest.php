@@ -31,6 +31,7 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Object\DockerRepository
  */

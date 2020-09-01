@@ -32,6 +32,8 @@ use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace
  */
 class PrepareWorkspaceTest extends TestCase

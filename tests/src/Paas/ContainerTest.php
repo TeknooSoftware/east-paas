@@ -103,7 +103,8 @@ use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Recipe;
 
 /**
- * Class DefinitionProviderTest.
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class ContainerTest extends TestCase
 {

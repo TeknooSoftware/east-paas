@@ -26,12 +26,13 @@ namespace Teknoo\Tests\East\Paas\Writer;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Website\Writer\WriterInterface;
-use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\PaymentInformation;
 use Teknoo\East\Paas\Writer\PaymentInformationWriter;
 use Teknoo\Tests\East\Website\Writer\PersistTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Writer\PaymentInformationWriter
  */
 class PaymentInformationWriterTest extends TestCase

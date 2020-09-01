@@ -28,6 +28,10 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface ConductorInterface
 {
     public function configure(

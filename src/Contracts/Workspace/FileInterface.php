@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Contracts\Workspace;
 
 use Teknoo\Immutable\ImmutableInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface FileInterface extends ImmutableInterface
 {
     /**

@@ -29,6 +29,8 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\Immutable\Exception\ImmutableException;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter
  */
 class ParameterTest extends TestCase

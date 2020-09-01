@@ -42,6 +42,8 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Client
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Generator
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Running

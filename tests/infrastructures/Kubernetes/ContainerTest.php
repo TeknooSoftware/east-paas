@@ -31,6 +31,10 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ContainerTest extends TestCase
 {
     /**

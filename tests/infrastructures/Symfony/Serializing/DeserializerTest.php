@@ -31,6 +31,8 @@ use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterfa
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer
  */
 class DeserializerTest extends TestCase

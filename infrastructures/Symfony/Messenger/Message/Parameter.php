@@ -28,6 +28,10 @@ use Symfony\Component\Messenger\Stamp\StampInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Parameter implements ImmutableInterface, StampInterface
 {
     use ImmutableTrait;

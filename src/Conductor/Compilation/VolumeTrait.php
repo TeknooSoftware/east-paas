@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Conductor\Compilation;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Volume;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait VolumeTrait
 {
     private function compileVolumes(

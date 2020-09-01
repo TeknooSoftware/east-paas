@@ -35,6 +35,11 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @package Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Transport
+ */
 class GuzzleTransportTest extends TestCase
 {
     /**

@@ -28,6 +28,10 @@ use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterfa
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Serializer implements SerializerInterface
 {
     private SymfonySerializerInterface $serializer;

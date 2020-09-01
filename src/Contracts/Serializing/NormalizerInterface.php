@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Contracts\Serializing;
 
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface NormalizerInterface
 {
     /**

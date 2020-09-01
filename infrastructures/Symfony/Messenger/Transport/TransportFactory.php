@@ -28,6 +28,10 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class TransportFactory implements TransportFactoryInterface
 {
     private GuzzleTransport $guzzleTransport;

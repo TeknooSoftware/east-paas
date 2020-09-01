@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Container;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Image implements ImmutableInterface
 {
     use ImmutableTrait;

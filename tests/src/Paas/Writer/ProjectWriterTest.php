@@ -32,6 +32,8 @@ use Teknoo\East\Paas\Writer\ProjectWriter;
 use Teknoo\Tests\East\Website\Writer\PersistTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Writer\ProjectWriter
  */
 class ProjectWriterTest extends TestCase

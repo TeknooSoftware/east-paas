@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 use Teknoo\East\FoundationBundle\Normalizer\EastNormalizer as BaseEastNormalizer;
 use Teknoo\East\Paas\Object\Job;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class EastNormalizer extends BaseEastNormalizer
 {
     /**

@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Recipe\Step\Job;
 use Psr\Http\Message\ServerRequestInterface;
 use Teknoo\Recipe\ChefInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ReceiveJob
 {
     public function __invoke(ServerRequestInterface $request, ChefInterface $chef): self

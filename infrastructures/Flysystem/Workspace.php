@@ -42,6 +42,10 @@ use Teknoo\States\Proxy\Exception\MethodNotImplemented;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInterface
 {
     use ImmutableTrait;

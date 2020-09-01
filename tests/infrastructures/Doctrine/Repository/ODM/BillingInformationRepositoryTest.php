@@ -30,6 +30,7 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Repository\ODM\BillingInformationR
 use Teknoo\Tests\East\Website\Doctrine\DBSource\ODM\RepositoryTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Doctrine\Repository\ODM\BillingInformationRepository
  */

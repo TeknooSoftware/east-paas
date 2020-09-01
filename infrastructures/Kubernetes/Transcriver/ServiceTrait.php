@@ -28,6 +28,10 @@ use Maclof\Kubernetes\Models\Service as KubeService;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Service;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait ServiceTrait
 {
     private static function convertToService(Service $service): KubeService

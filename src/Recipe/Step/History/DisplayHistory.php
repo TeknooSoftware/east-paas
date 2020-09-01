@@ -32,6 +32,10 @@ use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 use Teknoo\East\Paas\Recipe\Traits\ResponseTrait;
 use Teknoo\Recipe\ChefInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class DisplayHistory
 {
     use ResponseTrait;

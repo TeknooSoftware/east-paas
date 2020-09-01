@@ -35,6 +35,10 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ConfigureCloningAgent
 {
     use ErrorTrait;

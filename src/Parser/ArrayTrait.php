@@ -26,6 +26,10 @@ namespace Teknoo\East\Paas\Parser;
 
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait ArrayTrait
 {
     private PropertyAccessorInterface $propertyAccessor;

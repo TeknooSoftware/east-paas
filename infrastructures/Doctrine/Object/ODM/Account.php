@@ -28,6 +28,10 @@ use Teknoo\East\Paas\Object\Account as BaseAccount;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Doctrine\Document\StandardTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Account extends BaseAccount
 {
     use AutomatedTrait;

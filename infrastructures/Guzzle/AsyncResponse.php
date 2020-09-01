@@ -28,6 +28,10 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class AsyncResponse implements ResponseInterface
 {
     private PromiseInterface $promise;

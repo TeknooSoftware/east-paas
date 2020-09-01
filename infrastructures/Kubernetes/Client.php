@@ -44,6 +44,10 @@ use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class Client implements ClientInterface, ProxyInterface, AutomatedInterface
 {
     use ReplicationControllerTrait;

@@ -33,6 +33,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 use Teknoo\East\Paas\Object\BillingInformation;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class BillingInformationType extends AbstractType
 {
     /**

@@ -31,6 +31,8 @@ use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\History\AddHistory
  */
 class AddHistoryTest extends TestCase

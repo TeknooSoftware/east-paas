@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Workspace;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class File implements FileInterface
 {
     use ImmutableTrait;

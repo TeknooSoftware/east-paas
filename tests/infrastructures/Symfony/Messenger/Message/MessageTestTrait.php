@@ -27,6 +27,10 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Message;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageTrait;
 use Teknoo\Immutable\Exception\ImmutableException;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait MessageTestTrait
 {
     /**

@@ -39,6 +39,8 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Conductor\Conductor
  * @covers \Teknoo\East\Paas\Conductor\Conductor\Generator
  * @covers \Teknoo\East\Paas\Conductor\Conductor\Running

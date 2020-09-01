@@ -24,6 +24,10 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Form;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface FormInterface
 {
     /**

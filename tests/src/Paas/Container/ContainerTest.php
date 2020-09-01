@@ -28,6 +28,8 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Container\Container;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Container\Container
  */
 class ContainerTest extends TestCase

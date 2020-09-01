@@ -27,6 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts;
 use Maclof\Kubernetes\Client;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface ClientFactoryInterface
 {
     public function __invoke(string $master, ?ClusterCredentials $credentials): Client;

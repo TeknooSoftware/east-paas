@@ -28,6 +28,10 @@ use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface ClientInterface
 {
     public function configure(string $url, ?IdentityInterface $identity): ClientInterface;

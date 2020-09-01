@@ -47,6 +47,8 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\Tests\East\WebsiteBundle\AdminEndPoint\AdminNewEndPointTest;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\EndPoint\NewProjectEndPoint
  */
 class NewProjectEndPointTest extends AdminNewEndPointTest

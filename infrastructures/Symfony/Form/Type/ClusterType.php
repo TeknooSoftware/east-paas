@@ -33,6 +33,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class ClusterType extends AbstractType
 {
     /**

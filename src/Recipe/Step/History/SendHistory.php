@@ -34,6 +34,10 @@ use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Recipe\Traits\RequestTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class SendHistory
 {
     use RequestTrait;

@@ -33,6 +33,8 @@ use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureConductor;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Worker\ConfigureConductor
  */
 class ConfigureConductorTest extends TestCase

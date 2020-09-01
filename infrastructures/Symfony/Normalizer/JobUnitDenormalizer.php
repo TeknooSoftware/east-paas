@@ -33,6 +33,10 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Cluster;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class JobUnitDenormalizer implements DenormalizerInterface
 {
     private DenormalizerInterface $denormalizer;

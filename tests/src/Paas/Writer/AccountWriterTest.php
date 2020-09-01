@@ -31,6 +31,8 @@ use Teknoo\East\Paas\Writer\AccountWriter;
 use Teknoo\Tests\East\Website\Writer\PersistTestTrait;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Writer\AccountWriter
  */
 class AccountWriterTest extends TestCase

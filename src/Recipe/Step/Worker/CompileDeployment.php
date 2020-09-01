@@ -34,6 +34,10 @@ use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class CompileDeployment
 {
     use ErrorTrait;

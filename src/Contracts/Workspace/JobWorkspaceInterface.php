@@ -30,6 +30,10 @@ use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface JobWorkspaceInterface extends ImmutableInterface
 {
     public const CONFIGURATION_FILE = '.paas.yml';

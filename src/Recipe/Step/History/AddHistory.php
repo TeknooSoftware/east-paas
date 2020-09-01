@@ -28,6 +28,10 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Job;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class AddHistory
 {
     public function __invoke(Job $job, History $history, ManagerInterface $manager): self

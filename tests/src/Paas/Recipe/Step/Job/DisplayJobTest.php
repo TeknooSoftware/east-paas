@@ -35,6 +35,8 @@ use Teknoo\East\Paas\Recipe\Step\Job\DisplayJob;
 use Teknoo\Recipe\ChefInterface;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Job\DisplayJob
  * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  * @covers \Teknoo\East\Paas\Recipe\Traits\ResponseTrait

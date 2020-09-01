@@ -25,10 +25,13 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Repository;
 
 use Teknoo\Immutable\ImmutableInterface;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 interface CloningAgentInterface extends ImmutableInterface
 {
     public function configure(

@@ -30,6 +30,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer;
 use Teknoo\East\Paas\Object\Environment;
 
 /**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer
  */
 class ClassFinderDenormalizerTest extends TestCase

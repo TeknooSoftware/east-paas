@@ -32,6 +32,10 @@ use Teknoo\East\Website\Object\TimestampableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 class XRegistryAuth implements
     ObjectInterface,
     NormalizableInterface,
