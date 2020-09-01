@@ -2,7 +2,6 @@
 
 # Applications
 COMPOSER ?= /usr/bin/env composer
-PHP ?= /usr/bin/env php
 DEPENDENCIES ?= lastest
 
 ### Helpers
@@ -13,9 +12,9 @@ all: clean depend
 ### Dependencies
 depend:
 ifeq ($(DEPENDENCIES), lowest)
-	${PHP} -dmemory_limit=1G ${COMPOSER} update --prefer-lowest --prefer-dist --no-interaction --ignore-platform-reqs;
+	COMPOSER_MEMORY_LIMIT=-1 ${COMPOSER} update --prefer-lowest --prefer-dist --no-interaction --ignore-platform-reqs;
 else
-	${PHP} -dmemory_limit=1G ${COMPOSER} update --prefer-dist --no-interaction --ignore-platform-reqs;
+	COMPOSER_MEMORY_LIMIT=-1 ${COMPOSER} update --prefer-dist --no-interaction --ignore-platform-reqs;
 endif
 
 .PHONY: depend
