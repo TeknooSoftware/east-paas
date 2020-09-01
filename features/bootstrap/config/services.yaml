@@ -6,6 +6,17 @@ parameters:
   router.request_context.scheme: 'https'
   teknoo.east.website.form_type.doctrine.class: 'MockDoctrineType'
 
+  #Admin view path
+  teknoo.east.paas.view.account.new.file: '@@TeknooEastWebsite/AdminAccount/new.html.twig'
+  teknoo.east.paas.view.account.edit.file: '@@TeknooEastWebsite/AdminAccount/edit.html.twig'
+  teknoo.east.paas.view.account.list.file: '@@TeknooEastWebsite/AdminAccount/list.html.twig'
+
+  teknoo.east.paas.view.project.new.file: '@@TeknooEastWebsite/AdminProject/new.html.twig'
+  teknoo.east.paas.view.project.edit.file: '@@TeknooEastWebsite/AdminProject/edit.html.twig'
+  teknoo.east.paas.view.project.list.file: '@@TeknooEastWebsite/AdminProject/list.html.twig'
+
+  teknoo.east.paas.view.job.list.file: '@@TeknooEastWebsite/AdminJob/list.html.twig'
+
 services:
   Doctrine\Persistence\ObjectRepository:
     synthetic: true
