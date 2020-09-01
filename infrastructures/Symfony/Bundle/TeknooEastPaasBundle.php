@@ -22,7 +22,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\TeknooEastPaasBundle;
+namespace Teknoo\East\Paas\Infrastructures\EastPaasBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 

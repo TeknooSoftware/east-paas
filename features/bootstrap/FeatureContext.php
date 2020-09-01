@@ -246,7 +246,7 @@ class FeatureContext implements Context
                 yield new \Symfony\Bundle\FrameworkBundle\FrameworkBundle();
                 yield new \Teknoo\East\FoundationBundle\EastFoundationBundle();
                 yield new \Teknoo\East\WebsiteBundle\TeknooEastWebsiteBundle();
-                yield new \Teknoo\East\Paas\Infrastructures\TeknooEastPaasBundle\TeknooEastPaasBundle();
+                yield new \Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle();
             }
 
             protected function buildPHPDIContainer(DIContainerBuilder $builder)

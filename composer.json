@@ -63,7 +63,7 @@
             "Teknoo\\East\\Paas\\Infrastructures\\Guzzle\\": "infrastructures/Guzzle/",
             "Teknoo\\East\\Paas\\Infrastructures\\Kubernetes\\": "infrastructures/Kubernetes/",
             "Teknoo\\East\\Paas\\Infrastructures\\Symfony\\": "infrastructures/Symfony/Components/",
-            "Teknoo\\East\\Paas\\Infrastructures\\TeknooEastPaasBundle\\": "infrastructures/Symfony/Bundle/"
+            "Teknoo\\East\\Paas\\Infrastructures\\EastPaasBundle\\": "infrastructures/Symfony/Bundle/"
         }
     },
     "autoload-dev": {
@@ -77,7 +77,7 @@
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Guzzle\\": "tests/infrastructures/Guzzle/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Kubernetes\\": "tests/infrastructures/Kubernetes/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Symfony\\": "tests/infrastructures/Symfony/Components/",
-            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\TeknooEastPaasBundle\\": "tests/infrastructures/Symfony/Bundle/"
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\EastPaasBundle\\": "tests/infrastructures/Symfony/Bundle/"
         }
     },
     "archive": {
