@@ -1,0 +1,56 @@
+parameters:
+  teknoo.east.symfony.normalizer.east_normalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer'
+
+  teknoo.east.paas.symfony.normalizer.exception.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer'
+  teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer'
+  teknoo.east.paas.symfony.normalizer.history_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer'
+  teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer'
+  teknoo.east.paas.symfony.messenger.transport.factory.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\TransportFactory'
+  teknoo.east.paas.symfony.messenger.transport.guzzle.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\GuzzleTransport'
+
+services:
+  teknoo.east.paas.symfony.property_accessor:
+    public: true
+    class: 'Symfony\Component\PropertyAccess\PropertyAccessor'
+    arguments:
+      - false
+      - false
+      - '@?cache.property_access'
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer:
+    class: '%teknoo.east.paas.symfony.normalizer.exception.class%'
+    tags:
+      - {name: 'serializer.normalizer', priority: 100}
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer:
+    class: '%teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class%'
+    calls:
+      - ['setDenormalizer', ['@serializer']]
+    tags:
+      - {name: 'serializer.normalizer', priority: 10}
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer:
+    class: '%teknoo.east.paas.symfony.normalizer.history_denormalizer.class%'
+    tags:
+      - {name: 'serializer.normalizer', priority: 100}
+
+  Infrastructures\Symfony\Normalizer\JobUnitDenormalizer:
+    class: '%teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class%'
+    calls:
+      - ['setDenormalizer', ['@serializer']]
+    tags:
+      - {name: 'serializer.normalizer', priority: 100}
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\TransportFactory:
+    class: '%teknoo.east.paas.symfony.messenger.transport.factory.class%'
+    arguments:
+      - '@Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\GuzzleTransport'
+      - 'tkpaas://'
+    tags:
+      - 'messenger.transport_factory'
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\GuzzleTransport:
+    class: '%teknoo.east.paas.symfony.messenger.transport.guzzle.class%'
+    arguments:
+      - '@GuzzleHttp\Client'
+      - '@logger'

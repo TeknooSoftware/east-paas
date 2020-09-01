@@ -51,7 +51,7 @@ return [
         );
     },
 
-    SymfonyPropertyAccessor::class => get('property_accessor'),
+    SymfonyPropertyAccessor::class => get('teknoo.east.paas.symfony.property_accessor'),
     PropertyAccessorInterface::class => get(PropertyAccessor::class),
     PropertyAccessor::class => create()
         ->constructor(get(SymfonyPropertyAccessor::class)),

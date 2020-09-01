@@ -246,6 +246,7 @@ class FeatureContext implements Context
                 yield new \Symfony\Bundle\FrameworkBundle\FrameworkBundle();
                 yield new \Teknoo\East\FoundationBundle\EastFoundationBundle();
                 yield new \Teknoo\East\WebsiteBundle\TeknooEastWebsiteBundle();
+                yield new \Teknoo\East\Paas\Infrastructures\TeknooEastPaasBundle\TeknooEastPaasBundle();
             }
 
             protected function buildPHPDIContainer(DIContainerBuilder $builder)
@@ -269,7 +270,7 @@ class FeatureContext implements Context
                 $builder->addDefinitions($rootPath . '/infrastructures/Kubernetes/di.php');
                 $builder->addDefinitions($rootPath . '/infrastructures/Docker/di.php');
                 $builder->addDefinitions($rootPath . '/infrastructures/Composer/di.php');
-                $builder->addDefinitions($rootPath . '/infrastructures/Symfony/di.php');
+                $builder->addDefinitions($rootPath . '/infrastructures/Symfony/Components/di.php');
 
                 $builder->addDefinitions([
                     'teknoo_website_hostname' => 'localhost',
