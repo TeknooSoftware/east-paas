@@ -29,7 +29,7 @@ use Symfony\Component\Process\Process;
 return [
     ComposerHook::class => static function (): ComposerHook {
         return new ComposerHook(
-            __DIR__ . '/../../bin/composer.phar',
+            __DIR__ . '/bin/composer.phar',
             static function (array $command, string $cwd): Process {
                 return new Process($command, $cwd);
             }
