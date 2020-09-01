@@ -1,35 +1,35 @@
 parameters:
   #Admin
   #Admin form types
-  teknoo.east.paas.form_type.account.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountType'
-  teknoo.east.paas.form_type.billing_information.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\BillingInformationType'
-  teknoo.east.paas.form_type.environment.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\EnvironmentType'
-  teknoo.east.paas.form_type.git_repository.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\GitRepositoryType'
-  teknoo.east.paas.form_type.payment_information.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\PaymentInformationType'
-  teknoo.east.paas.form_type.project.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
-  teknoo.east.paas.form_type.cluster.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType'
-  teknoo.east.paas.form_type.ssh_identity.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\SshIdentityType'
+  teknoo.east.paas.symfony.form_type.account.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountType'
+  teknoo.east.paas.symfony.form_type.billing_information.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\BillingInformationType'
+  teknoo.east.paas.symfony.form_type.environment.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\EnvironmentType'
+  teknoo.east.paas.symfony.form_type.git_repository.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\GitRepositoryType'
+  teknoo.east.paas.symfony.form_type.payment_information.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\PaymentInformationType'
+  teknoo.east.paas.symfony.form_type.project.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
+  teknoo.east.paas.symfony.form_type.cluster.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType'
+  teknoo.east.paas.symfony.form_type.ssh_identity.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\SshIdentityType'
 
   #Class
-  teknoo.east.paas.account.class: 'Teknoo\East\Paas\Object\Account'
-  teknoo.east.paas.billing_information.class: 'Teknoo\East\Paas\Object\BillingInformation'
-  teknoo.east.paas.environment.class: 'Teknoo\East\Paas\Object\Environment'
-  teknoo.east.paas.git_repository.class: 'Teknoo\East\Paas\Object\GitRepository'
-  teknoo.east.paas.payment_information.class: 'Teknoo\East\Paas\Object\PaymentInformation'
-  teknoo.east.paas.project.class: 'Teknoo\East\Paas\Object\Project'
-  teknoo.east.paas.cluster.class: 'Teknoo\East\Paas\Object\Cluster'
-  teknoo.east.paas.ssh_identity.class: 'Teknoo\East\Paas\Object\SshIdentity'
+  teknoo.east.paas.symfony.account.class: 'Teknoo\East\Paas\Object\Account'
+  teknoo.east.paas.symfony.billing_information.class: 'Teknoo\East\Paas\Object\BillingInformation'
+  teknoo.east.paas.symfony.environment.class: 'Teknoo\East\Paas\Object\Environment'
+  teknoo.east.paas.symfony.git_repository.class: 'Teknoo\East\Paas\Object\GitRepository'
+  teknoo.east.paas.symfony.payment_information.class: 'Teknoo\East\Paas\Object\PaymentInformation'
+  teknoo.east.paas.symfony.project.class: 'Teknoo\East\Paas\Object\Project'
+  teknoo.east.paas.symfony.cluster.class: 'Teknoo\East\Paas\Object\Cluster'
+  teknoo.east.paas.symfony.ssh_identity.class: 'Teknoo\East\Paas\Object\SshIdentity'
 
-  teknoo.east.paas.endpoint.admin.new.project.class: 'Teknoo\East\Paas\EndPoint\NewProjectEndPoint'
+  teknoo.east.paas.symfony.endpoint.admin.new.project.class: 'Teknoo\East\Paas\EndPoint\NewProjectEndPoint'
 
 services:
   #Forms
-  teknoo.east.paas.form_type.cluster:
-    class: '%teknoo.east.paas.form_type.cluster.class%'
+  teknoo.east.paas.symfony.form_type.cluster:
+    class: '%teknoo.east.paas.symfony.form_type.cluster.class%'
     tags: ['form.type']
 
   #Accounts
-  teknoo.east.paas.endpoint.admin.delete.account:
+  teknoo.east.paas.symfony.endpoint.admin.delete.account:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.delete.abstract'
@@ -39,46 +39,46 @@ services:
       - ['setRouter', ['@router']]
     public: true
 
-  teknoo.east.paas.endpoint.admin.edit.account:
+  teknoo.east.paas.symfony.endpoint.admin.edit.account:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.edit.abstract'
     calls:
       - ['setLoader', ['@Teknoo\East\Paas\Loader\AccountLoader']]
       - ['setWriter', ['@Teknoo\East\Paas\Writer\AccountWriter']]
-      - ['setFormClass', ['%teknoo.east.paas.form_type.account.class%']]
-      - ['setViewPath', ['%teknoo.east.paas.view.account.edit.file%']]
+      - ['setFormClass', ['%teknoo.east.paas.symfony.form_type.account.class%']]
+      - ['setViewPath', ['%teknoo.east.paas.symfony.view.account.edit.file%']]
     tags:
       - { name: "east.endpoint.template" }
     public: true
 
-  teknoo.east.paas.endpoint.admin.list.account:
+  teknoo.east.paas.symfony.endpoint.admin.list.account:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.list.abstract'
     calls:
       - ['setLoader', ['@Teknoo\East\Paas\Loader\AccountLoader']]
-      - ['setViewPath', ['%teknoo.east.paas.view.account.list.file%']]
+      - ['setViewPath', ['%teknoo.east.paas.symfony.view.account.list.file%']]
     tags:
       - { name: "east.endpoint.template" }
     public: true
 
-  teknoo.east.paas.endpoint.admin.new.account:
+  teknoo.east.paas.symfony.endpoint.admin.new.account:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.new.abstract'
     calls:
       - ['setWriter', ['@Teknoo\East\Paas\Writer\AccountWriter']]
-      - ['setFormClass', ['%teknoo.east.paas.form_type.account.class%']]
-      - ['setViewPath', ['%teknoo.east.paas.view.account.new.file%']]
-      - ['setObjectClass', ['%teknoo.east.paas.account.class%']]
+      - ['setFormClass', ['%teknoo.east.paas.symfony.form_type.account.class%']]
+      - ['setViewPath', ['%teknoo.east.paas.symfony.view.account.new.file%']]
+      - ['setObjectClass', ['%teknoo.east.paas.symfony.account.class%']]
       - ['setRouter', ['@router']]
     tags:
       - { name: "east.endpoint.template" }
     public: true
 
   #Project
-  teknoo.east.paas.endpoint.admin.delete.project:
+  teknoo.east.paas.symfony.endpoint.admin.delete.project:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.delete.abstract'
@@ -88,40 +88,40 @@ services:
       - ['setRouter', ['@router']]
     public: true
 
-  teknoo.east.paas.endpoint.admin.edit.project:
+  teknoo.east.paas.symfony.endpoint.admin.edit.project:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.edit.abstract'
     calls:
       - ['setLoader', ['@Teknoo\East\Paas\Loader\ProjectLoader']]
       - ['setWriter', ['@Teknoo\East\Paas\Writer\ProjectWriter']]
-      - ['setFormClass', ['%teknoo.east.paas.form_type.project.class%']]
-      - ['setViewPath', ['%teknoo.east.paas.view.project.edit.file%']]
+      - ['setFormClass', ['%teknoo.east.paas.symfony.form_type.project.class%']]
+      - ['setViewPath', ['%teknoo.east.paas.symfony.view.project.edit.file%']]
     tags:
       - { name: "east.endpoint.template" }
     public: true
 
-  teknoo.east.paas.endpoint.admin.list.project:
+  teknoo.east.paas.symfony.endpoint.admin.list.project:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.list.abstract'
     calls:
       - ['setLoader', ['@Teknoo\East\Paas\Loader\ProjectLoader']]
-      - ['setViewPath', ['%teknoo.east.paas.view.project.list.file%']]
+      - ['setViewPath', ['%teknoo.east.paas.symfony.view.project.list.file%']]
     tags:
       - { name: "east.endpoint.template" }
     public: true
 
-  teknoo.east.paas.endpoint.admin.new.project:
+  teknoo.east.paas.symfony.endpoint.admin.new.project:
     autowire: false
     autoconfigure: false
-    class: '%teknoo.east.paas.endpoint.admin.new.project.class%'
+    class: '%teknoo.east.paas.symfony.endpoint.admin.new.project.class%'
     calls:
       - ['setFormFactory', ['@form.factory']]
       - ['setWriter', ['@Teknoo\East\Paas\Writer\ProjectWriter']]
-      - ['setFormClass', ['%teknoo.east.paas.form_type.project.class%']]
-      - ['setViewPath', ['%teknoo.east.paas.view.project.new.file%']]
-      - ['setObjectClass', ['%teknoo.east.paas.project.class%']]
+      - ['setFormClass', ['%teknoo.east.paas.symfony.form_type.project.class%']]
+      - ['setViewPath', ['%teknoo.east.paas.symfony.view.project.new.file%']]
+      - ['setObjectClass', ['%teknoo.east.paas.symfony.project.class%']]
       - ['setRouter', ['@router']]
       - ['setAccountLoader', ['@Teknoo\East\Paas\Loader\AccountLoader']]
       - ['setResponseFactory', ['@Psr\Http\Message\ResponseFactoryInterface']]
@@ -131,7 +131,7 @@ services:
     public: true
 
   #Job
-  teknoo.east.paas.endpoint.admin.delete.job:
+  teknoo.east.paas.symfony.endpoint.admin.delete.job:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.delete.abstract'
@@ -141,13 +141,13 @@ services:
       - ['setRouter', ['@router']]
     public: true
 
-  teknoo.east.paas.endpoint.admin.list.job:
+  teknoo.east.paas.symfony.endpoint.admin.list.job:
     autowire: false
     autoconfigure: false
     parent: 'teknoo.east.website.endpoint.admin.list.abstract'
     calls:
       - ['setLoader', ['@Teknoo\East\Paas\Loader\JobLoader']]
-      - ['setViewPath', ['%teknoo.east.paas.view.job.list.file%']]
+      - ['setViewPath', ['%teknoo.east.paas.symfony.view.job.list.file%']]
       - ['setOrder', ['updatedAt', 'DESC']]
     tags:
       - { name: "east.endpoint.template" }
