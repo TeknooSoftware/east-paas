@@ -4,7 +4,7 @@ parameters:
     ignoreErrors:
         -
             message: '#Method [a-zA-Z0-9\\_]+::denormalize|normalize\(\) return type has no value type specified in iterable type array.#'
-            path: infrastructures/Symfony/Normalizer
+            path: infrastructures/Symfony/Components/Normalizer
         -
             message: '#Parameter \#1 \$imagesLibrary of method [a-zA-Z0-9\\_]+::compileImages\(\) expects#'
             path: src/Conductor/Conductor/Running.php
