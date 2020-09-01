@@ -24,6 +24,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Hook;
 
+use Teknoo\East\Foundation\Promise\PromiseInterface;
+
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -37,5 +39,5 @@ interface HookInterface
      */
     public function setOptions(array $options): HookInterface;
 
-    public function run(): HookInterface;
+    public function run(PromiseInterface $promise): HookInterface;
 }

@@ -982,8 +982,9 @@ EOF;
                 return $this;
             }
 
-            public function run(): HookInterface
+            public function run(PromiseInterface $promise): HookInterface
             {
+                $promise->success('foo');
                 return $this;
             }
         };

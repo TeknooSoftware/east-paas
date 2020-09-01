@@ -25,6 +25,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Composer;
 
 use Symfony\Component\Process\Process;
+use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 
 /**
@@ -67,14 +68,22 @@ class ComposerHook implements HookInterface
         return $this;
     }
 
-    public function run(): HookInterface
+    public function run(PromiseInterface $promise): HookInterface
     {
         $command = ($this->factory)([$this->binary, ...$this->options], $this->path);
         if (!$command instanceof Process) {
-            throw new \RuntimeException('bad process');
+            $promise->fail(new \RuntimeException('bad process'));
+
+            return $this;
         }
 
         $command->run();
+
+        if ($command->isSuccessful()) {
+            $promise->success($command->getOutput());
+        } else {
+            $promise->fail(new \RuntimeException((string) $command->getErrorOutput()));
+        }
 
         return $this;
     }

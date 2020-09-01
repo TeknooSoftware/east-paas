@@ -326,7 +326,12 @@ return [
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
-    HookBuildContainer::class => create(),
+    HookBuildContainer::class => create()
+        ->constructor(
+            get(SendHistory::class),
+            get(ResponseFactoryInterface::class),
+            get(StreamFactoryInterface::class)
+        ),
     PrepareWorkspace::class => create()
         ->constructor(get(JobWorkspaceInterface::class)),
     ReadDeploymentConfiguration::class => create()

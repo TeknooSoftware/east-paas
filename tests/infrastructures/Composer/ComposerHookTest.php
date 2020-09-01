@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Composer;
 
+use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\Composer\ComposerHook;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
@@ -35,12 +36,15 @@ use Symfony\Component\Process\Process;
  */
 class ComposerHookTest extends TestCase
 {
-    public function buildHook(): ComposerHook
+    public function buildHook(bool $success = true): ComposerHook
     {
         return new ComposerHook(
             __DIR__ . '/../../../composer.phar',
-            function () {
-                return $this->createMock(Process::class);
+            function () use ($success) {
+                $process = $this->createMock(Process::class);
+                $process->expects(self::any())->method('isSuccessful')->willReturn($success);
+
+                return $process;
             }
         );
     }
@@ -82,15 +86,37 @@ class ComposerHookTest extends TestCase
             }
         );
 
-        $this->expectException(\RuntimeException::class);
-        $hook->run();
-    }
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
 
-    public function testRun()
-    {
         self::assertInstanceOf(
             ComposerHook::class,
-            $this->buildHook()->run()
+            $hook->run($promise)
+        );
+    }
+
+    public function testRunProcessSuccess()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook(true)->run($promise)
+        );
+    }
+
+    public function testRunProcessFail()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook(false)->run($promise)
         );
     }
 }

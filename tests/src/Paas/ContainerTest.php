@@ -540,8 +540,11 @@ class ContainerTest extends TestCase
     public function testHookBuildContainer()
     {
         $container = $this->buildImage();
+        $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
         $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
 
         self::assertInstanceOf(
             HookBuildContainer::class,
