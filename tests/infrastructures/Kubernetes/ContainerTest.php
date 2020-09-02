@@ -52,6 +52,7 @@ class ContainerTest extends TestCase
     public function testClientFactoryInterface()
     {
         $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
 
         self::assertInstanceOf(
             ClientFactoryInterface::class,
@@ -62,7 +63,7 @@ class ContainerTest extends TestCase
     public function testClusterClientInterface()
     {
         $container = $this->buildContainer();
-        $container->set('app.job.root', '/tmp');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
 
         self::assertInstanceOf(
             ClusterClientInterface::class,
@@ -73,7 +74,7 @@ class ContainerTest extends TestCase
     public function testClient()
     {
         $container = $this->buildContainer();
-        $container->set('app.job.root', '/tmp');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
 
         self::assertInstanceOf(
             Client::class,

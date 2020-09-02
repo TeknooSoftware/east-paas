@@ -118,8 +118,6 @@ class ContainerTest extends TestCase
         $containerDefinition->addDefinitions(__DIR__.'/../../../src/di.php');
         $containerDefinition->addDefinitions([
             'teknoo.east.paas.worker.add_history_pattern' => 'foo',
-            'teknoo.east.paas.http_client.verify_ssl' => true,
-            'teknoo.east.paas.http_client.timeout' => 3,
         ]);
 
         return $containerDefinition->build();

@@ -47,39 +47,48 @@ return [
         }
     },
 
-    ScriptWriterInterface::class => new class implements ScriptWriterInterface {
-        private ?string $scriptFileName = null;
+    ScriptWriterInterface::class => function (ContainerInterface $container): ScriptWriterInterface {
+        return new class ($container->get('teknoo.east.paas.worker.tmp_dir')) implements ScriptWriterInterface {
+            private ?string $scriptFileName = null;
 
-        public function __invoke(string $content): string
-        {
-            $this->scriptFileName = \tempnam(\sys_get_temp_dir(), 'east-paas-docker-') . '.sh';
-            \file_put_contents($this->scriptFileName, $content);
-            \chmod($this->scriptFileName, 0755);
+            private string $tmpDir;
 
-            return $this->scriptFileName;
-        }
-
-        public function delete(): void
-        {
-            if (null === $this->scriptFileName || !\file_exists($this->scriptFileName)) {
-                return;
+            public function __construct(string $tmpDir)
+            {
+                $this->tmpDir = $tmpDir;
             }
 
-            \unlink($this->scriptFileName);
-            $this->scriptFileName = null;
-        }
+            public function __invoke(string $content): string
+            {
+                $this->scriptFileName = \tempnam($this->tmpDir, 'east-paas-docker-') . '.sh';
+                \file_put_contents($this->scriptFileName, $content);
+                \chmod($this->scriptFileName, 0755);
 
-        public function __destruct()
-        {
-            $this->delete();
-        }
+                return $this->scriptFileName;
+            }
+
+            public function delete(): void
+            {
+                if (null === $this->scriptFileName || !\file_exists($this->scriptFileName)) {
+                    return;
+                }
+
+                \unlink($this->scriptFileName);
+                $this->scriptFileName = null;
+            }
+
+            public function __destruct()
+            {
+                $this->delete();
+            }
+        };
     },
 
     BuilderInterface::class => get(BuilderWrapper::class),
     BuilderWrapper::class => static function (ContainerInterface $container): BuilderWrapper {
         $timeout = 5 * 60; //5 minutes;
-        if ($container->has('app.docker.build.timeout')) {
-            $timeout = (int) $container->has('app.docker.build.timeout');
+        if ($container->has('teknoo.east.paas.docker.build.timeout')) {
+            $timeout = (int) $container->has('teknoo.east.paas.docker.build.timeout');
         }
 
         return new BuilderWrapper(

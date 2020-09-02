@@ -34,10 +34,10 @@ use function DI\string;
 
 return [
     Local::class => create()
-        ->constructor(string('{app.job.root}')),
+        ->constructor(string('{teknoo.east.paas.worker.tmp_dir}')),
     Filesystem::class => create()
         ->constructor(get(Local::class)),
     JobWorkspaceInterface::class => get(Workspace::class),
     Workspace::class => create()
-        ->constructor(get(Filesystem::class), string('{app.job.root}')),
+        ->constructor(get(Filesystem::class), string('{teknoo.east.paas.worker.tmp_dir}')),
 ];

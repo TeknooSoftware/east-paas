@@ -55,7 +55,7 @@ class ContainerTest extends TestCase
     public function testCloningAgentInterface()
     {
         $container = $this->buildContainer();
-        $container->set('app.job.root', '/tmp');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             CloningAgentInterface::class,
@@ -66,7 +66,7 @@ class ContainerTest extends TestCase
     public function testGitCloningAgent()
     {
         $container = $this->buildContainer();
-        $container->set('app.job.root', '/tmp');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             CloningAgent::class,

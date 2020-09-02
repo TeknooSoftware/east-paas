@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
+use Psr\Container\ContainerInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Maclof\Kubernetes\Client as KubClient;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
@@ -33,12 +34,19 @@ use function DI\create;
 use function DI\get;
 
 return [
-    ClientFactoryInterface::class => function (): ClientFactoryInterface {
-        return new class implements ClientFactoryInterface {
+    ClientFactoryInterface::class => function (ContainerInterface $container): ClientFactoryInterface {
+        return new class ($container->get('teknoo.east.paas.worker.tmp_dir')) implements ClientFactoryInterface {
             /**
              * @var string[]
              */
             private array $files = [];
+
+            private string $tmpDir;
+
+            public function __construct(string $tmpDir)
+            {
+                $this->tmpDir = $tmpDir;
+            }
 
             public function __invoke(string $master, ?ClusterCredentials $credentials): KubClient
             {
@@ -65,7 +73,7 @@ return [
 
             private function write(string $value): string
             {
-                $fileName = \tempnam(\sys_get_temp_dir(), 'east-paas-') . '.paas';
+                $fileName = \tempnam($this->tmpDir, 'east-paas-kube-') . '.paas';
 
                 if (empty($fileName)) {
                     throw new \RuntimeException('Bad file temp name');

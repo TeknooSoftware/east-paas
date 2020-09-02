@@ -64,6 +64,7 @@ class ContainerTest extends TestCase
     public function testScriptWriterInterface()
     {
         $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
 
         self::assertInstanceOf(
             ScriptWriterInterface::class,
@@ -74,6 +75,7 @@ class ContainerTest extends TestCase
     public function testBuilderInterface()
     {
         $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
 
         self::assertInstanceOf(
             BuilderInterface::class,
@@ -84,6 +86,7 @@ class ContainerTest extends TestCase
     public function testBuilderWrapper()
     {
         $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
 
         self::assertInstanceOf(
             BuilderWrapper::class,

@@ -45,10 +45,6 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Flysystem/di.php');
-        $containerDefinition->addDefinitions([
-            'teknoo.east.paas.worker.add_history_pattern' => 'foo',
-            'teknoo.east.paas.http_client.verify_ssl' => true,
-        ]);
 
         return $containerDefinition->build();
     }
@@ -56,7 +52,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testLocal()
     {
         $container = $this->buildContainer();
-        $container->set('app.job.root', '/tmp');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             Local::class,
@@ -67,7 +63,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testFilesystem()
     {
         $container = $this->buildContainer();
-        $container->set('app.job.root', '/tmp');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             Filesystem::class,
@@ -78,7 +74,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testJobWorkspaceInterface()
     {
         $container = $this->buildContainer();
-        $container->set('app.job.root', '/tmp');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             JobWorkspaceInterface::class,
@@ -89,7 +85,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testJobWorkspaceFlysystem()
     {
         $container = $this->buildContainer();
-        $container->set('app.job.root', '/tmp');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             Workspace::class,
