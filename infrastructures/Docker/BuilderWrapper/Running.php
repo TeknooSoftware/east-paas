@@ -101,6 +101,7 @@ class Running implements StateInterface
                     '{% volumeMount %}',
                     '{% binary %}',
                     '{% volumeName %}',
+                    '{% Dockerfile %}'
                 ],
                 [
                     $volumePath,
@@ -109,6 +110,7 @@ class Running implements StateInterface
                     $volume->getMountPath(),
                     $this->binary,
                     $volume->getUrl(),
+                    'Dockerfile' . $volume->getName(),
                 ],
                 $this->templates['volume']
             );
