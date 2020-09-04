@@ -48,9 +48,9 @@ class ClusterCredentialsType extends AbstractType
         parent::buildForm($builder, $options);
 
         $builder->add('name', TextType::class, ['required' => true, 'label' => 'Identity name']);
-        $builder->add('serverCertificate', TextareaType::class, ['required' => true]);
-        $builder->add('privateKey', TextareaType::class, ['required' => true]);
-        $builder->add('publicKey', TextareaType::class, ['required' => true]);
+        $builder->add('serverCertificate', TextareaType::class, ['required' => false]);
+        $builder->add('privateKey', TextareaType::class, ['required' => false]);
+        $builder->add('publicKey', TextareaType::class, ['required' => false]);
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
