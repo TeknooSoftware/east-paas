@@ -1,5 +1,9 @@
 #Teknoo Software - Website - Change Log
 
+##[0.0.4] - 2020-09-04
+###Dev release
+- Cluster credentials are not mandatory
+
 ##[0.0.3] - 2020-09-03
 ###Dev release
 - Fix Volume building in Docker when there are several volume to make.
