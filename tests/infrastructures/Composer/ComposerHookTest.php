@@ -66,14 +66,48 @@ class ComposerHookTest extends TestCase
     public function testSetOptionsBadOptions()
     {
         $this->expectException(\TypeError::class);
-        $this->buildHook()->setOptions(new \stdClass());
+        $this->buildHook()->setOptions(new \stdClass(), $this->createMock(PromiseInterface::class));
+    }
+
+    public function testSetOptionsBadPromise()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildHook()->setOptions([], new \stdClass());
+    }
+
+    public function testSetOptionsWithPipe()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook()->setOptions(['install', '||', 'rm', '-r', '/'], $promise)
+        );
+    }
+
+    public function testSetOptionsWithForbiddenCommand()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook()->setOptions(['global', 'install'], $promise)
+        );
     }
 
     public function testSetOptions()
     {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::any())->method('success');
+        $promise->expects(self::never())->method('fail');
+
         self::assertInstanceOf(
             ComposerHook::class,
-            $this->buildHook()->setOptions(['foo' => 'bar'])
+            $this->buildHook()->setOptions(['install'], $promise)
         );
     }
 

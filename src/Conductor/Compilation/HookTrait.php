@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor\Compilation;
 
+use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 
@@ -54,7 +55,15 @@ trait HookTrait
                     }
 
                     $hook = clone $hooksLibrary[$hookName];
-                    $hook->setOptions((array) $configuration);
+                    $hook->setOptions(
+                        (array) $configuration,
+                        new Promise(
+                            null,
+                            static function (\Throwable $error) {
+                                throw $error;
+                            }
+                        )
+                    );
 
                     $compiledDeployment->defineHook($name . ':' . $hookName, $hook);
                 }

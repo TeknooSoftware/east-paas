@@ -37,7 +37,7 @@ interface HookInterface
     /**
      * @param array<string, mixed> $options
      */
-    public function setOptions(array $options): HookInterface;
+    public function setOptions(array $options, PromiseInterface $promise): HookInterface;
 
     public function run(PromiseInterface $promise): HookInterface;
 }

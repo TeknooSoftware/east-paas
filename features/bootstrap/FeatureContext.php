@@ -977,8 +977,9 @@ EOF;
             /**
              * @inheritDoc
              */
-            public function setOptions(array $options): HookInterface
+            public function setOptions(array $options, PromiseInterface $promise): HookInterface
             {
+                $promise->success();
                 return $this;
             }
 

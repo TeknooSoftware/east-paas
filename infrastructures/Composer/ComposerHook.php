@@ -61,9 +61,49 @@ class ComposerHook implements HookInterface
         return $this;
     }
 
-    public function setOptions(array $options): HookInterface
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function validateOptions(array $options): void
     {
-        $this->options = $options;
+        $grantedCommands = \array_flip([
+            'dump-autoload',
+            'dumpautoload',
+            'exec',
+            'install',
+            'require',
+            'run',
+            'run-script',
+            'update',
+            'upgrade',
+            'self-update',
+            'selfupdate',
+        ]);
+
+        foreach ($options as &$option) {
+            if (\preg_match('#[\&\||<|>;]#iS', $option)) {
+                throw new \RuntimeException('Pipe and redirection are forbidden');
+            }
+        }
+
+        if (!isset($grantedCommands[$cmd = \reset($options)])) {
+            throw new \RuntimeException("$cmd is forbidden");
+        }
+    }
+
+    public function setOptions(array $options, PromiseInterface $promise): HookInterface
+    {
+        try {
+            $this->validateOptions($options);
+
+            $this->options = $options;
+        } catch (\Throwable $error) {
+            $promise->fail($error);
+
+            return $this;
+        }
+
+        $promise->success();
 
         return $this;
     }
@@ -72,7 +112,7 @@ class ComposerHook implements HookInterface
     {
         $command = ($this->factory)([$this->binary, ...$this->options], $this->path);
         if (!$command instanceof Process) {
-            $promise->fail(new \RuntimeException('bad process'));
+            $promise->fail(new \RuntimeException('Bad process manager'));
 
             return $this;
         }
