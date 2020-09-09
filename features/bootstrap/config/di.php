@@ -16,7 +16,6 @@ use function DI\create;
 use function DI\get;
 
 return [
-    'teknoo_website_hostname' => 'localhost',
     'teknoo.east.paas.worker.add_history_pattern' => function (): string {
         return 'https://localhost/project/{projectId}/environment/{envName}/job/{jobId}/log';
     },

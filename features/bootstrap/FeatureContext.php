@@ -66,11 +66,6 @@ class FeatureContext implements Context
     private $sfContainer;
 
     /**
-     * @var Container
-     */
-    private $phpDiContainer;
-
-    /**
      * @var ObjectManager
      */
     private $objectManager;
@@ -250,7 +245,6 @@ class FeatureContext implements Context
                 $loader->load(__DIR__.'/config/services.yaml');
                 $container->setParameter('container.autowiring.strict_mode', true);
                 $container->setParameter('container.dumper.inline_class_loader', true);
-                $container->setParameter('kernel.project_dir', __DIR__);
 
                 $container->set(ObjectManager::class, $this->context->buildObjectManager());
             }
@@ -263,10 +257,6 @@ class FeatureContext implements Context
 
         $this->kernel->boot();
         $this->sfContainer = $this->kernel->getContainer();
-        $rfo = new \ReflectionObject($this->kernel);
-        $rfm = $rfo->getMethod('getPHPDIContainer');
-        $rfm->setAccessible(true);
-        $this->phpDiContainer = ($rfm->getClosure($this->kernel))();
     }
 
     /**
@@ -469,7 +459,7 @@ class FeatureContext implements Context
     {
         $this->calledUrl = $url;
 
-        $request = Request::create('https://'.$this->sfContainer->get('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $this->requestBody);
+        $request = Request::create('https://'.$this->sfContainer->getParameter('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $this->requestBody);
         $this->response = $this->kernel->handle($request);
     }
 
@@ -481,7 +471,7 @@ class FeatureContext implements Context
         $this->calledUrl = $url;
         $this->requestBody = $body;
 
-        $request = Request::create('https://'.$this->sfContainer->get('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], ['CONTENT_TYPE' => $contentType], $this->requestBody);
+        $request = Request::create('https://'.$this->sfContainer->getParameter('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], ['CONTENT_TYPE' => $contentType], $this->requestBody);
         $this->response = $this->kernel->handle($request);
     }
 
@@ -493,7 +483,7 @@ class FeatureContext implements Context
         $this->calledUrl = $url;
 
         $body = \json_encode(new History(null, $this->historyMessage = $text, new \DateTime($this->historyDate = $date)));
-        $request = Request::create('https://'.$this->sfContainer->get('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $body);
+        $request = Request::create('https://'.$this->sfContainer->getParameter('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $body);
         $this->response = $this->kernel->handle($request);
     }
 
@@ -576,7 +566,7 @@ class FeatureContext implements Context
 }
 EOF;
 
-        $request = Request::create('https://'.$this->sfContainer->get('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $body);
+        $request = Request::create('https://'.$this->sfContainer->getParameter('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $body);
         $this->response = $this->kernel->handle($request);
     }
 
@@ -844,7 +834,7 @@ EOF;
 
         };
 
-        $this->phpDiContainer->set(
+        $this->sfContainer->set(
             JobWorkspaceInterface::class,
             $workspace
         );
@@ -884,7 +874,7 @@ EOF;
             }
         };
 
-        $this->phpDiContainer->set(
+        $this->sfContainer->set(
             CloningAgentInterface::class,
             $cloningAgent
         );
@@ -932,7 +922,7 @@ EOF;
             }
         };
 
-        $this->phpDiContainer->set(
+        $this->sfContainer->set(
             HooksCollectionInterface::class,
             $collection
         );
@@ -969,7 +959,7 @@ EOF;
             }
         };
 
-        $this->phpDiContainer->set(
+        $this->sfContainer->set(
             BuilderInterface::class,
             $builder
         );
@@ -1000,7 +990,7 @@ EOF;
             }
         };
 
-        $this->phpDiContainer->set(
+        $this->sfContainer->set(
             ClientInterface::class,
             $client
         );

@@ -17,6 +17,8 @@ parameters:
 
   teknoo.east.paas.symfony.view.job.list.file: '@@TeknooEastWebsite/AdminJob/list.html.twig'
 
+  teknoo_website_hostname: 'localhost'
+
 services:
   Doctrine\Persistence\ObjectRepository:
     synthetic: true
@@ -35,3 +37,6 @@ services:
 
   teknoo.east.website.endpoint.media.stream.factory:
     class: 'Laminas\Diactoros\StreamFactory'
+
+  GuzzleHttp\Client:
+    class: 'GuzzleHttp\Client'
