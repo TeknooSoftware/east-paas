@@ -1,0 +1,17 @@
+di_bridge:
+  definitions:
+    - '%kernel.project_dir%/vendor/teknoo/east-foundation/src/di.php'
+    - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/Resources/config/di.php'
+    - '%kernel.project_dir%/vendor/teknoo/east-website/src/di.php'
+    - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/doctrine/di.php'
+    - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/symfony/Resources/config/di.php'
+    - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/di.php'
+    - '%kernel.project_dir%/src/di.php'
+    - '%kernel.project_dir%/infrastructures/Doctrine/di.php'
+    - '%kernel.project_dir%/infrastructures/Flysystem/di.php'
+    - '%kernel.project_dir%/infrastructures/Git/di.php'
+    - '%kernel.project_dir%/infrastructures/Kubernetes/di.php'
+    - '%kernel.project_dir%/infrastructures/Docker/di.php'
+    - '%kernel.project_dir%/infrastructures/Composer/di.php'
+    - '%kernel.project_dir%/infrastructures/Symfony/Components/di.php'
+    - '%kernel.project_dir%/features/bootstrap/config/di.php'

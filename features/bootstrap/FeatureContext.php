@@ -3,27 +3,15 @@
 declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
-use DI\Bridge\Symfony\Kernel as BaseKernel;
-use DI\ContainerBuilder as DIContainerBuilder;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
-use Laminas\Diactoros\RequestFactory;
-use Laminas\Diactoros\ResponseFactory;
-use Laminas\Diactoros\StreamFactory;
-use Laminas\Diactoros\UriFactory;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
-use Psr\Http\Client\ClientInterface as PsrClient;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder as SfContainerBuilder;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -61,8 +49,6 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Recipe\Step\Misc\PushResult;
 use Symfony\Component\DependencyInjection\Container;
-use function DI\create;
-use function DI\get;
 
 /**
  * Defines application features from the specific context.
@@ -231,6 +217,11 @@ class FeatureContext implements Context
                 parent::__construct($environment, false);
             }
 
+            public function getProjectDir(): string
+            {
+                return \dirname(__DIR__, 2);
+            }
+
             public function getCacheDir()
             {
                 return \dirname(__DIR__, 2).'/tests/var/cache';
@@ -247,73 +238,7 @@ class FeatureContext implements Context
                 yield new \Teknoo\East\FoundationBundle\EastFoundationBundle();
                 yield new \Teknoo\East\WebsiteBundle\TeknooEastWebsiteBundle();
                 yield new \Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle();
-            }
-
-            protected function buildPHPDIContainer(DIContainerBuilder $builder)
-            {
-                $rootPath = \dirname(__DIR__, 2);
-                $vendorPath = $rootPath . '/vendor';
-                $builder->addDefinitions($vendorPath . '/teknoo/east-foundation/src/di.php');
-                $builder->addDefinitions(
-                    $vendorPath . '/teknoo/east-foundation/infrastructures/symfony/Resources/config/di.php'
-                );
-                $builder->addDefinitions($vendorPath . '/teknoo/east-website/src/di.php');
-                $builder->addDefinitions($vendorPath . '/teknoo/east-website/infrastructures/doctrine/di.php');
-                $builder->addDefinitions(
-                    $vendorPath . '/teknoo/east-website/infrastructures/symfony/Resources/config/di.php'
-                );
-                $builder->addDefinitions($vendorPath . '/teknoo/east-website/infrastructures/di.php');
-                $builder->addDefinitions($rootPath . '/src/di.php');
-                $builder->addDefinitions($rootPath . '/infrastructures/Doctrine/di.php');
-                $builder->addDefinitions($rootPath . '/infrastructures/Flysystem/di.php');
-                $builder->addDefinitions($rootPath . '/infrastructures/Git/di.php');
-                $builder->addDefinitions($rootPath . '/infrastructures/Kubernetes/di.php');
-                $builder->addDefinitions($rootPath . '/infrastructures/Docker/di.php');
-                $builder->addDefinitions($rootPath . '/infrastructures/Composer/di.php');
-                $builder->addDefinitions($rootPath . '/infrastructures/Symfony/Components/di.php');
-
-                $builder->addDefinitions([
-                    'teknoo_website_hostname' => 'localhost',
-                    'teknoo.east.paas.worker.add_history_pattern' => function (): string {
-                        return 'https://localhost/project/{projectId}/environment/{envName}/job/{jobId}/log';
-                    },
-                    'teknoo.east.paas.worker.global_variables' => [
-                        'ROOT' => \dirname(__DIR__)
-                    ],
-                    'teknoo.east.paas.root_dir' => __DIR__ . '../../',
-                    'teknoo.east.paas.conductor.images_library' => [
-                        'php-run-74' => [
-                            'build-name' => 'php-run',
-                            'tag' => '7.4',
-                            'path' => '/library/php-run/7.4/',
-                        ],
-                    ],
-                    UriFactoryInterface::class => get(UriFactory::class),
-                    UriFactory::class => create(),
-
-                    ResponseFactoryInterface::class => get(ResponseFactory::class),
-                    ResponseFactory::class => create(),
-
-                    RequestFactoryInterface::class => get(RequestFactory::class),
-                    RequestFactory::class => create(),
-
-                    StreamFactoryInterface::class => get(StreamFactory::class),
-                    StreamFactory::class => create(),
-
-                    //Misc
-                    PsrClient::class => static function (): PsrClient {
-                        return new class () implements PsrClient {
-                            public function sendRequest(RequestInterface $request): ResponseInterface
-                            {
-                                return new \Laminas\Diactoros\Response();
-                            }
-                        };
-                    },
-                ]);
-
-                $this->context->container = $builder->build();
-                $this->context->container->set(ObjectManager::class, $this->context->buildObjectManager());
-                return $this->context->container;
+                yield new \Teknoo\DI\SymfonyBridge\DIBridgeBundle();
             }
 
             protected function configureContainer(SfContainerBuilder $container, LoaderInterface $loader)
@@ -326,6 +251,8 @@ class FeatureContext implements Context
                 $container->setParameter('container.autowiring.strict_mode', true);
                 $container->setParameter('container.dumper.inline_class_loader', true);
                 $container->setParameter('kernel.project_dir', __DIR__);
+
+                $container->set(ObjectManager::class, $this->context->buildObjectManager());
             }
 
             protected function configureRoutes(RoutingConfigurator $routes)

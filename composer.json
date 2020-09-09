@@ -4,7 +4,7 @@
     "license": "MIT",
     "type": "library",
     "keywords": ["east","paas","docker","kubernetes","platform","service","ci", "cd","continuous delivery","platform.sh","heroku"],
-    "homepage": "http://teknoo.software/website",
+    "homepage": "http://teknoo.software/paas",
     "authors": [
         {
             "name": "Richard Déloge",
@@ -50,7 +50,7 @@
         "symfony/http-kernel": "~4.4||~5.1",
         "symfony/psr-http-message-bridge": "~2.0",
         "symfony/security-core": "~4.4||~5.1",
-        "teknoo/bridge-phpdi-symfony": "~3.1"
+        "teknoo/bridge-phpdi-symfony": "^4.0.0-beta1"
     },
     "autoload": {
         "psr-4": {

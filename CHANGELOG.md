@@ -1,4 +1,4 @@
-#Teknoo Software - Website - Change Log
+#Teknoo Software - PaaS - Change Log
 
 ##[0.0.4] - 2020-09-04
 ###Dev release
