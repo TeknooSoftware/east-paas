@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.5] - 2020-09-10
+###Dev release
+- Use new version of teknoo/bridge-phpdi-symfony
+
 ##[0.0.4] - 2020-09-04
 ###Dev release
 - Cluster credentials are not mandatory
