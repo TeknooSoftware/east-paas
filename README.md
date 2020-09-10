@@ -14,53 +14,33 @@ to implement a custom PaaS manager like platform.sh, compatible with Docker and 
 Example with Symfony
 --------------------
 
-    //Kernel
-    <?php
-    
-    declare(strict_types=1);
-    
-    use DI\Bridge\Symfony\Kernel as BaseKernel;
-    use Symfony\Component\Config\Loader\LoaderInterface;
-    use DI\ContainerBuilder as DIContainerBuilder;
-    
-    class Kernel extends BaseKernel
-    {
-        protected function buildPHPDIContainer(DIContainerBuilder $builder)
-        {
-            // Configure your container here
-            $rootPath = /**/;
-    
-            $builder->addDefinitions($vendorPath . '/teknoo/east-foundation/src/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-foundation/infrastructures/symfony/Resources/config/di.php');
-    
-            $builder->addDefinitions($vendorPath . '/teknoo/east-website/src/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-website/infrastructures/doctrine/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-website/infrastructures/symfony/Resources/config/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-website/infrastructures/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-paas/src/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-paas/infrastructures/Doctrine/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-paas/infrastructures/Flysystem/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-paas/infrastructures/Git/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-paas/infrastructures/Kubernetes/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-paas/infrastructures/Docker/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-paas/infrastructures/Composer/di.php');
-            $builder->addDefinitions($vendorPath . '/teknoo/east-paas/infrastructures/Symfony/Components/di.php');
-    
-            $builder->addDefinitions($rootPath.'/config/di.php');
-    
-            /**/
-            $builder->addDefinitions([
-                \Doctrine\Common\Persistence\ObjectManager::class => \DI\get('doctrine_mongodb.odm.default_document_manager'),
-            ]);
-    
-            return $builder->build();
-        }
-    }
+    //config/packages/di_bridge.yaml:
+    di_bridge:
+      definitions:
+        - '%kernel.project_dir%/vendor/teknoo/east-foundation/src/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/Resources/config/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-website/src/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/doctrine/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/symfony/Resources/config/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/src/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Doctrine/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Flysystem/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Git/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Kubernetes/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Docker/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Composer/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Symfony/Components/di.php'
+        - '%kernel.project_dir%/config/di.php'
+      import:
+        Doctrine\Persistence\ObjectManager: 'doctrine_mongodb.odm.default_document_manager'
+
     
     //bundles.php
     ...
     Teknoo\East\FoundationBundle\EastFoundationBundle::class => ['all' => true],
     Teknoo\East\WebsiteBundle\TeknooEastWebsiteBundle::class => ['all' => true],
+    Teknoo\DI\SymfonyBridge\DIBridgeBundle::class => ['all' => true],
     Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle::class => ['all' => true],
 
     //In doctrine config
