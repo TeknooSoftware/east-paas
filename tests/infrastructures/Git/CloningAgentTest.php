@@ -55,7 +55,7 @@ class CloningAgentTest extends TestCase
     public function getGitWrapperMock()
     {
         if (!$this->gitWrapper instanceof \PHPUnit\Framework\MockObject\MockObject) {
-            $this->gitWrapper = $this->getMockBuilder('GitWrapper')
+            $this->gitWrapper = $this->getMockBuilder(\stdClass::class)
                 ->addMethods(['setPrivateKey', 'cloneRepository'])
                 ->getMock();
         }

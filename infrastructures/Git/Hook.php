@@ -69,7 +69,10 @@ class Hook implements HookInterface, HookAwareInterface, ProxyInterface, Automat
 
     private ?JobWorkspaceInterface $workspace = null;
 
-    public function __construct(GitWrapper $gitWrapper)
+    /**
+     * @param GitWrapper $gitWrapper
+     */
+    public function __construct($gitWrapper)
     {
         $this->uniqueConstructorCheck();
 

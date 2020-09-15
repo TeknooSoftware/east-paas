@@ -53,10 +53,10 @@ class Running implements StateInterface
         return function (PromiseInterface $promise): Hook {
             $options = $this->options;
 
-            $this->getWorkspace()->runInRoot(function () use ($options, $promise) {
+            $this->getWorkspace()->runInRoot(function ($path) use ($options, $promise) {
                 $this->gitWrapper->cloneRepository(
                     $options['url'],
-                    $options['path'],
+                    $path . $options['path'],
                     [
                       'recurse-submodules' => true,
                       'branch' => $options['branch'] ?? 'master'

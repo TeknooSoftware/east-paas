@@ -54,7 +54,7 @@ class HookTest extends TestCase
     public function getGitWrapperMock()
     {
         if (!$this->gitWrapper instanceof \PHPUnit\Framework\MockObject\MockObject) {
-            $this->gitWrapper = $this->getMockBuilder('GitWrapper')
+            $this->gitWrapper = $this->getMockBuilder(\stdClass::class)
                 ->addMethods(['setPrivateKey', 'cloneRepository'])
                 ->getMock();
         }
@@ -148,12 +148,20 @@ class HookTest extends TestCase
 
         $workspace->expects(self::once())
             ->method('writeFile')
-            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace, $pk) {
+            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace) {
                 self::assertEquals('private.key', $file->getName());
                 self::assertEquals('fooBar', $file->getContent());
                 self::assertEquals(FileInterface::VISIBILITY_PRIVATE, $file->getVisibility());
                 
                 $return('/foo/bar/private.key');
+
+                return $workspace;
+            });
+
+        $workspace->expects(self::once())
+            ->method('runInRoot')
+            ->willReturnCallback(function (callable $callback) use ($workspace) {
+                $callback('foo');
 
                 return $workspace;
             });
@@ -195,7 +203,7 @@ class HookTest extends TestCase
 
         self::assertInstanceOf(
             Hook::class,
-            $hook->run()
+            $hook->run($this->createMock(PromiseInterface::class))
         );
     }
 
