@@ -30,6 +30,7 @@ use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -66,7 +67,7 @@ class HookBuildContainer
         ManagerInterface $manager
     ): self {
         $workspace->runInRoot(
-            function ($path) use ($compiledDeployment, $jobUnit, $client, $manager) {
+            function ($path) use ($compiledDeployment, $jobUnit, $workspace, $client, $manager) {
                 $inError = false;
                 $promise = new Promise(
                     function (string $buildSuccess) use ($jobUnit) {
@@ -91,9 +92,13 @@ class HookBuildContainer
                 );
 
                 $compiledDeployment->foreachHook(
-                    static function (HookInterface $hook) use (&$inError, $path, $promise) {
+                    static function (HookInterface $hook) use (&$inError, $path, $promise, $jobUnit, $workspace) {
                         if ($inError) {
                             return;
+                        }
+
+                        if ($hook instanceof HookAwareInterface) {
+                          $hook->setContext($jobUnit, $workspace);
                         }
 
                         $hook->setPath($path);
