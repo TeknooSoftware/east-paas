@@ -133,7 +133,8 @@ Example with Symfony
     
         HooksCollectionInterface::class => static function (ContainerInterface $container): HooksCollectionInterface {
             return [
-                'composer' => $container->get(ComposerHook::class);
+                'composer' => $container->get(ComposerHook::class),
+                'git' => $container->get(Git\Hook::class),
             ]
         },
     

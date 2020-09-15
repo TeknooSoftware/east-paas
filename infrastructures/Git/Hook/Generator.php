@@ -35,16 +35,16 @@ use Teknoo\States\State\StateTrait;
  */
 class Generator implements StateInterface
 {
-  use StateTrait;
+    use StateTrait;
 
-  private function update(): \Closure
-  {
-    return function ($key, $value): Hook {
-      $this->{$key} = $value;
+    private function update(): \Closure
+    {
+        return function ($key, $value): Hook {
+            $this->{$key} = $value;
 
-      $this->updateStates();
+            $this->updateStates();
 
-      return $this;
-    };
-  }
+            return $this;
+        };
+    }
 }

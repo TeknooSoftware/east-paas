@@ -98,7 +98,7 @@ class HookBuildContainer
                         }
 
                         if ($hook instanceof HookAwareInterface) {
-                          $hook->setContext($jobUnit, $workspace);
+                            $hook->setContext($jobUnit, $workspace);
                         }
 
                         $hook->setPath($path);

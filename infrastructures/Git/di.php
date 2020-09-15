@@ -34,4 +34,7 @@ return [
     CloningAgentInterface::class => get(CloningAgent::class),
     CloningAgent::class => create()
         ->constructor(get(GitWrapper::class)),
+
+    Hook::class => create()
+        ->constructor(get(GitWrapper::class)),
 ];

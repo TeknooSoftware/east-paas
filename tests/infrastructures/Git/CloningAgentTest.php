@@ -56,7 +56,7 @@ class CloningAgentTest extends TestCase
     {
         if (!$this->gitWrapper instanceof \PHPUnit\Framework\MockObject\MockObject) {
             $this->gitWrapper = $this->getMockBuilder('GitWrapper')
-                ->setMethods(['setPrivateKey', 'cloneRepository'])
+                ->addMethods(['setPrivateKey', 'cloneRepository'])
                 ->getMock();
         }
 
@@ -180,7 +180,7 @@ class CloningAgentTest extends TestCase
         );
     }
 
-    public function testRunWringIdentityObject()
+    public function testRunWrongIdentityObject()
     {
         $this->expectException(\LogicException::class);
 

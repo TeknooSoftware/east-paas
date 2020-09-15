@@ -21,7 +21,7 @@
         "teknoo/east-website": "^3.0.10",
         "teknoo/immutable": "^2.0.3",
         "teknoo/recipe": "^2.0.8",
-        "teknoo/states": "^4.0.15"
+        "teknoo/states": "^4.1.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",

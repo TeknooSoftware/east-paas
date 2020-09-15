@@ -34,7 +34,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 interface HookAwareInterface
 {
     public function setContext(
-      JobUnitInterface $jobUnit,
-      JobWorkspaceInterface $workspace
+        JobUnitInterface $jobUnit,
+        JobWorkspaceInterface $workspace
     ): HookAwareInterface;
 }

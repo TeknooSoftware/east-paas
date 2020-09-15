@@ -27,8 +27,9 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 use DI\Container;
 use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
+use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
+use Teknoo\East\Paas\Infrastructures\Git\Hook;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -71,6 +72,17 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             CloningAgent::class,
             $container->get(CloningAgent::class)
+        );
+    }
+
+    public function testHook()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
+
+        self::assertInstanceOf(
+            Hook::class,
+            $container->get(Hook::class)
         );
     }
 }

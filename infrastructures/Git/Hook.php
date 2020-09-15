@@ -36,6 +36,7 @@ use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
+use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
@@ -44,112 +45,125 @@ use Teknoo\States\Proxy\ProxyTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Hook implements HookInterface, HookAwareInterface, ProxyInterface, ImmutableInterface
+class Hook implements HookInterface, HookAwareInterface, ProxyInterface, AutomatedInterface, ImmutableInterface
 {
-  use ImmutableTrait;
-  use ProxyTrait;
-  use AutomatedTrait {
-    AutomatedTrait::updateStates insteadof ProxyTrait;
-  }
-
-  /**
-   * @var GitWrapper
-   */
-  private $gitWrapper;
-
-  private ?string $path = null;
-
-  /**
-   * @var array<string, mixed>
-   */
-  private array $options = [];
-
-  private ?JobUnitInterface $jobUnit = null;
-
-  private ?JobWorkspaceInterface $workspace = null;
-
-  public function __construct(GitWrapper $gitWrapper)
-  {
-    $this->uniqueConstructorCheck();
-
-    $this->gitWrapper = $gitWrapper;
-
-    $this->initializeStateProxy();
-    $this->updateStates();
-  }
-
-  /**
-   * @return array<string>
-   */
-  public static function statesListDeclaration(): array
-  {
-    return [
-      Generator::class,
-      Running::class,
-    ];
-  }
-
-  /**
-   * @return array<AssertionInterface>
-   */
-  protected function listAssertions(): array
-  {
-    return [
-      (new Property(Running::class))
-        ->with('options', new Property\IsNotEmpty())
-        ->with('path', new Property\IsNotEmpty())
-        ->with('jobUnit', new Property\IsNotEmpty())
-        ->with('workspace', new Property\IsNotEmpty()),
-
-      (new Property(Generator::class))
-        ->with('sourceRepository', new Property\IsEmpty()),
-      (new Property(Generator::class))
-        ->with('workspace', new Property\IsEmpty()),
-      (new Property(Generator::class))
-        ->with('jobUnit', new Property\IsEmpty()),
-      (new Property(Generator::class))
-        ->with('workspace', new Property\IsEmpty()),
-    ];
-  }
-
-  public function __clone()
-  {
-    $this->options = [];
-    $this->path = null;
-    $this->jobUnit = null;
-    $this->workspace = null;
-
-    if (!empty($this->gitWrapper)) {
-      $this->gitWrapper = clone $this->gitWrapper;
+    use ImmutableTrait;
+    use ProxyTrait;
+    use AutomatedTrait {
+        AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
-    $this->updateStates();
-  }
+    /**
+     * @var GitWrapper
+     */
+    private $gitWrapper;
 
-  public function setContext(JobUnitInterface $jobUnit, JobWorkspaceInterface $workspace): HookAwareInterface
-  {
-    $this->update('jobUnit', $jobUnit);
-    $this->update('workspace', $workspace);
+    private ?string $path = null;
 
-    return $this;
-  }
+    /**
+     * @var array<string, mixed>
+     */
+    private array $options = [];
 
-  public function setPath(string $path): HookInterface
-  {
-    $this->update('path', $path);
+    private ?JobUnitInterface $jobUnit = null;
 
-    return $this;
-  }
+    private ?JobWorkspaceInterface $workspace = null;
 
-  public function setOptions(array $options, PromiseInterface $promise): HookInterface
-  {
-    $this->update('options', $options);
+    public function __construct(GitWrapper $gitWrapper)
+    {
+        $this->uniqueConstructorCheck();
 
-    return $this;
-  }
+        $this->gitWrapper = $gitWrapper;
 
-  public function run(PromiseInterface $promise): HookInterface
-  {
-    return $this;
-  }
+        $this->initializeStateProxy();
+        $this->updateStates();
+    }
+
+    /**
+     * @return array<string>
+     */
+    public static function statesListDeclaration(): array
+    {
+        return [
+          Generator::class,
+          Running::class,
+        ];
+    }
+
+    /**
+     * @return array<AssertionInterface>
+     */
+    protected function listAssertions(): array
+    {
+        return [
+            (new Property(Running::class))
+                ->with('options', new Property\IsNotEmpty())
+                ->with('options', new Property\HasNotEmptyValueForKey('url'))
+                ->with('options', new Property\HasNotEmptyValueForKey('path'))
+                ->with('options', new Property\HasNotEmptyValueForKey('key'))
+                ->with('path', new Property\IsNotEmpty())
+                ->with('jobUnit', new Property\IsNotEmpty())
+                ->with('workspace', new Property\IsNotEmpty()),
+
+            (new Property(Generator::class))
+                ->with('options', new Property\IsEmpty()),
+            (new Property(Generator::class))
+                ->with('options', new Property\HasEmptyValueForKey('url')),
+            (new Property(Generator::class))
+                ->with('options', new Property\HasEmptyValueForKey('path')),
+            (new Property(Generator::class))
+                ->with('options', new Property\HasEmptyValueForKey('key')),
+            (new Property(Generator::class))
+                ->with('path', new Property\IsEmpty()),
+            (new Property(Generator::class))
+                ->with('jobUnit', new Property\IsEmpty()),
+            (new Property(Generator::class))
+              ->with('workspace', new Property\IsEmpty()),
+        ];
+    }
+
+    public function __clone()
+    {
+        $this->options = [];
+        $this->path = null;
+        $this->jobUnit = null;
+        $this->workspace = null;
+
+        if (!empty($this->gitWrapper)) {
+            $this->gitWrapper = clone $this->gitWrapper;
+        }
+
+        $this->updateStates();
+    }
+
+    public function setContext(JobUnitInterface $jobUnit, JobWorkspaceInterface $workspace): HookAwareInterface
+    {
+        $this->update('jobUnit', $jobUnit);
+        $this->update('workspace', $workspace);
+
+        return $this;
+    }
+
+    public function setPath(string $path): HookInterface
+    {
+        $this->update('path', $path);
+
+        return $this;
+    }
+
+    public function setOptions(array $options, PromiseInterface $promise): HookInterface
+    {
+        $this->update('options', $options);
+
+        $promise->success();
+
+        return $this;
+    }
+
+    public function run(PromiseInterface $promise): HookInterface
+    {
+        $this->prepareThenClone($promise);
+
+        return $this;
+    }
 }

@@ -24,6 +24,9 @@ parameters:
             message: '#Anonymous function should return [a-zA-Z0-9\\_]+ but returns [a-zA-Z0-9\\_]+\|null#'
             path: infrastructures/Git/CloningAgent/Running.php
         -
+            message: '#Anonymous function should return [a-zA-Z0-9\\_]+ but returns [a-zA-Z0-9\\_]+\|null#'
+            path: infrastructures/Git/Hook/Running.php
+        -
             message: '#Method [a-zA-Z0-9\\_]+::prepareJob\(\) invoked with 3 parameters, 2 required#'
             path: src/Recipe/Step/Job/PrepareJob.php
 services:

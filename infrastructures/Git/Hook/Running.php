@@ -24,7 +24,11 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git\Hook;
 
+use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
+use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Infrastructures\Git\Hook;
+use Teknoo\East\Paas\Workspace\File;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
@@ -35,14 +39,52 @@ use Teknoo\States\State\StateTrait;
  */
 class Running implements StateInterface
 {
-  use StateTrait;
+    use StateTrait;
 
-  private function clone(): \Closure
-  {
-    return function (): Hook {
+    private function getWorkspace(): \Closure
+    {
+        return function (): JobWorkspaceInterface {
+            return $this->workspace;
+        };
+    }
 
+    private function clone(): \Closure
+    {
+        return function (PromiseInterface $promise): Hook {
+            $options = $this->options;
 
-      return $this;
-    };
-  }
+            $this->getWorkspace()->runInRoot(function () use ($options, $promise) {
+                $this->gitWrapper->cloneRepository(
+                    $options['url'],
+                    $options['path'],
+                    [
+                      'recurse-submodules' => true,
+                      'branch' => $options['branch'] ?? 'master'
+                    ]
+                );
+
+                $promise->success();
+            });
+
+            return $this;
+        };
+    }
+
+    private function prepareThenClone(): \Closure
+    {
+        return function (PromiseInterface $promise): Hook {
+            $workspace = $this->getWorkspace();
+
+            $workspace->writeFile(
+                new File('private.key', FileInterface::VISIBILITY_PRIVATE, $this->options['key']),
+                function ($path) use ($promise) {
+                    $this->gitWrapper->setPrivateKey($path);
+
+                    $this->clone($promise);
+                }
+            );
+
+            return $this;
+        };
+    }
 }
