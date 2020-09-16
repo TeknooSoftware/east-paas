@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.6] - 2020-09-16
+###Dev release
+- Require teknoo/states 4.1+
+- Add new Hook to clone a git repository without use git submodule
+
 ##[0.0.5] - 2020-09-10
 ###Dev release
 - Use new version of teknoo/bridge-phpdi-symfony
