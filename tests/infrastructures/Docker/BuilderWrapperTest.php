@@ -50,6 +50,12 @@ class BuilderWrapperTest extends TestCase
 
     private ?ScriptWriterInterface $scriptWriter = null;
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        \set_time_limit(0);
+    }
+
     /**
      * @return ProcessFactoryInterface|MockObject
      */
