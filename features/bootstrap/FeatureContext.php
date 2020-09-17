@@ -249,9 +249,13 @@ class FeatureContext implements Context
                 $container->set(ObjectManager::class, $this->context->buildObjectManager());
             }
 
-            protected function configureRoutes(RoutingConfigurator $routes)
+            protected function configureRoutes($routes)
             {
-                $routes->import( __DIR__.'/config/routes/*.yaml','glob');
+                if ($routes instanceof RoutingConfigurator) {
+                    $routes->import(__DIR__ . '/config/routes/*.yaml', 'glob');
+                } else {
+                    $routes->import(__DIR__ . '/config/routes/*.yaml', '', 'glob');
+                }
             }
 
             protected function getContainerClass(): string

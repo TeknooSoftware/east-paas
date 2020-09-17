@@ -36,7 +36,7 @@ class ExceptionNormalizer implements NormalizerInterface
      * @param array<string, mixed> $context
      * @return array<string, mixed>
      */
-    public function normalize($object, string $format = null, array $context = array()): array
+    public function normalize($object, $format = null, array $context = array()): array
     {
         if (!$object instanceof \Throwable) {
             throw new \LogicException('teknoo.east.paas.normalizer.exception.non_manager');
@@ -51,7 +51,7 @@ class ExceptionNormalizer implements NormalizerInterface
         ];
     }
 
-    public function supportsNormalization($data, string $format = null): bool
+    public function supportsNormalization($data, $format = null): bool
     {
         return $data instanceof \Throwable;
     }

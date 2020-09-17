@@ -29,6 +29,9 @@ services:
   Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface:
     synthetic: true
 
+  security.encoder_factory:
+    alias: 'Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface'
+
   Psr\Http\Message\ServerRequestFactoryInterface:
     class: 'Laminas\Diactoros\ServerRequestFactory'
 

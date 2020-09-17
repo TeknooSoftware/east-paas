@@ -44,10 +44,12 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
 
     /**
      * @param mixed $data
+     * @param string $class
+     * @param ?string $format
      * @param array<string, mixed> $context
      * @return array|object
      */
-    public function denormalize($data, string $class, string $format = null, array $context = array())
+    public function denormalize($data, $class, $format = null, array $context = array())
     {
         if (
             !$this->denormalizer instanceof DenormalizerInterface
@@ -64,7 +66,7 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
         return $this->denormalizer->denormalize($data, $class, $format, $context);
     }
 
-    public function supportsDenormalization($data, $type, string $format = null): bool
+    public function supportsDenormalization($data, $type, $format = null): bool
     {
         return $this->denormalizer instanceof DenormalizerInterface
             && \is_array($data)

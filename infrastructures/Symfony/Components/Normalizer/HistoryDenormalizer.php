@@ -37,7 +37,7 @@ class HistoryDenormalizer implements DenormalizerInterface
      * @param array<string, mixed> $context
      * @return History
      */
-    public function denormalize($data, string $class, string $format = null, array $context = array())
+    public function denormalize($data, $class, $format = null, array $context = array())
     {
         if (!\is_array($data) || History::class !== $class) {
             throw new \RuntimeException('Error, this object is not managed by this denormalizer');
@@ -72,7 +72,7 @@ class HistoryDenormalizer implements DenormalizerInterface
         return new History($previous, $message, $date, $isFinal, $extra);
     }
 
-    public function supportsDenormalization($data, string $type, string $format = null): bool
+    public function supportsDenormalization($data, $type, $format = null): bool
     {
         return \is_array($data) && History::class === $type;
     }
