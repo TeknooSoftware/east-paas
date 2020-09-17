@@ -8,6 +8,7 @@ defined('RUN_CLI_MODE')
 defined('PHPUNIT')
     || define('PHPUNIT', true);
 
+set_time_limit(0);
 date_default_timezone_set('UTC');
 
 error_reporting(E_ALL | E_STRICT);
