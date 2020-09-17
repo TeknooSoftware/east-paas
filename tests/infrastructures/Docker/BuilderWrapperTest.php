@@ -74,7 +74,7 @@ class BuilderWrapperTest extends TestCase
         return $this->scriptWriter;
     }
 
-    public function buildWrapper($timeout = 30): BuilderWrapper
+    public function buildWrapper($timeout = 300): BuilderWrapper
     {
         return new BuilderWrapper(
             'docker',
