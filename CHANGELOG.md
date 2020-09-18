@@ -1,5 +1,12 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.7] - 2020-09-18
+###Stable Release
+- Update QA and CI tools
+- Fix tests issues on poor performance worker
+- Fix for minimum requirements 
+- Fix issues with SF4.4
+
 ##[0.0.6] - 2020-09-16
 ###Dev release
 - Require teknoo/states 4.1+
