@@ -343,10 +343,6 @@ return [
     //Recipes
     NewJobRecipe::class => static function (ContainerInterface $container) {
         $recipe = new class extends Recipe implements NewJobRecipe {
-            public static function statesListDeclaration(): array
-            {
-                return [];
-            }
         };
 
         $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
@@ -373,10 +369,6 @@ return [
 
     AddHistoryRecipe::class => static function (ContainerInterface $container) {
         $recipe = new class extends Recipe implements AddHistoryRecipe {
-            public static function statesListDeclaration(): array
-            {
-                return [];
-            }
         };
 
         $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
@@ -397,10 +389,6 @@ return [
 
     RunJobRecipe::class => static function (ContainerInterface $container) {
         $recipe = new class extends Recipe implements RunJobRecipe {
-            public static function statesListDeclaration(): array
-            {
-                return [];
-            }
         };
 
         $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
