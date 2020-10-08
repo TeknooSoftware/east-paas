@@ -14,7 +14,7 @@ done
 
 echo "CMD cp -rf {% volumeTarget %}/. {% volumeMount %} && while true; do sleep 10; done" >> {% Dockerfile %}
 
-{% binary %} build --force-rm --rm=true -t {% volumeName %} -f {% Dockerfile %} .
+{% binary %} build --platform --force-rm --rm=true -t {% volumeName %} -f {% Dockerfile %} .
 
 echo $PAAS_DOCKER_PWD | {% binary %} login --username=$PAAS_DOCKER_USER --password-stdin $PAAS_DOCKER_HOST
 

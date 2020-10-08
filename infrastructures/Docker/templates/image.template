@@ -4,7 +4,7 @@ set -e
 
 cd {% imagePath %}
 
-{% binary %} build --force-rm --rm=true{% buildsArgs %} -t {% imageName %} .
+{% binary %} build --platform --force-rm --rm=true{% buildsArgs %} -t {% imageName %} .
 
 echo $PAAS_DOCKER_PWD | {% binary %} login --username=$PAAS_DOCKER_USER --password-stdin $PAAS_DOCKER_HOST
 
