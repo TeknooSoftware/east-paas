@@ -22,15 +22,15 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Recipe;
+namespace Teknoo\East\Paas\Contracts\Recipe\Cookbook;
 
-use Teknoo\Recipe\RecipeInterface;
+use Teknoo\Recipe\CookbookInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface RunJobRecipe extends RecipeInterface
+interface RunJobInterface extends CookbookInterface
 {
     //Startup Run
     public const STEP_RECEIVE_JOB = 10;
