@@ -32,6 +32,9 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Website\DBSource\ManagerInterface;
 use Teknoo\East\Website\Service\DeletingService;
 use Teknoo\East\Paas\Conductor\Conductor;
@@ -100,6 +103,7 @@ use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\East\Paas\Writer\PaymentInformationWriter;
 use Teknoo\East\Paas\Writer\ProjectWriter;
 use Teknoo\Recipe\ChefInterface;
+use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\Recipe;
 
 /**
@@ -682,7 +686,7 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testNewJobRecipe()
+    public function testNewJob()
     {
         $container = $this->buildImage();
 
@@ -701,12 +705,12 @@ class ContainerTest extends TestCase
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
-            Recipe::class,
-            $container->get(NewJobRecipe::class)
+            CookbookInterface::class,
+            $container->get(NewJobInterface::class)
         );
     }
 
-    public function testAddHistoryRecipe()
+    public function testAddHistoryCookbook()
     {
         $container = $this->buildImage();
 
@@ -724,20 +728,12 @@ class ContainerTest extends TestCase
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
-            Recipe::class,
-            $container->get(AddHistoryRecipe::class)
+            CookbookInterface::class,
+            $container->get(AddHistoryInterface::class)
         );
-
-        $recipe = $container->get(AddHistoryRecipe::class);
-
-        $chef = $this->createMock(ChefInterface::class);
-        $recipe = $recipe->train($chef);
-
-        $workplan = ['date' => '2018-05-01 00:00:00 +0000'];
-        $recipe->prepare($workplan, $chef);
     }
 
-    public function testRunJobRecipe()
+    public function testRunJob()
     {
         $container = $this->buildImage();
 
@@ -761,14 +757,9 @@ class ContainerTest extends TestCase
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
 
         self::assertInstanceOf(
-            Recipe::class,
-            $container->get(RunJobRecipe::class)
+            CookbookInterface::class,
+            $container->get(RunJobInterface::class)
         );
-
-        $recipe = $container->get(RunJobRecipe::class);
-
-        $chef = $this->createMock(ChefInterface::class);
-        $recipe->train($chef);
     }
 
     public function testConductor()

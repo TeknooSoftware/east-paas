@@ -28,12 +28,18 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Conductor\Conductor;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
+use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
+use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
+use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
+use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Website\DBSource\ManagerInterface;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Website\Service\DeletingService;
@@ -58,10 +64,6 @@ use Teknoo\East\Paas\Loader\ClusterLoader;
 use Teknoo\East\Paas\Loader\JobLoader;
 use Teknoo\East\Paas\Loader\PaymentInformationLoader;
 use Teknoo\East\Paas\Loader\ProjectLoader;
-use Teknoo\East\Paas\Contracts\Recipe\AddHistoryRecipe;
-use Teknoo\East\Paas\Contracts\Recipe\NewJobRecipe;
-use Teknoo\East\Paas\Contracts\Recipe\RunJobRecipe;
-use Teknoo\East\Paas\Recipe\Step\History\AddHistory;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -101,10 +103,8 @@ use Teknoo\East\Paas\Writer\ClusterWriter;
 use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\East\Paas\Writer\PaymentInformationWriter;
 use Teknoo\East\Paas\Writer\ProjectWriter;
-use Teknoo\Recipe\Bowl\Bowl;
-use Teknoo\Recipe\Bowl\BowlInterface;
-use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\Recipe;
+use Teknoo\Recipe\RecipeInterface;
 
 use function DI\get;
 use function DI\create;
@@ -177,7 +177,7 @@ return [
 
     //Recipes steps
     //History
-    AddHistory::class => create(),
+    StepAddHistory::class => create(),
     DisplayHistory::class => create()
         ->constructor(
             get(ResponseFactoryInterface::class),
@@ -340,268 +340,64 @@ return [
             get(StreamFactoryInterface::class)
         ),
 
-    //Recipes
-    NewJobRecipe::class => static function (ContainerInterface $container) {
-        $recipe = new class extends Recipe implements NewJobRecipe {
-        };
+    //Base recipe
+    RecipeInterface::class => get(Recipe::class),
+    Recipe::class => create(),
 
-        $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
+    //Cookbooks
+    NewJobInterface::class => get(NewJob::class),
+    NewJob::class => create()
+        ->constructor(
+            get(RecipeInterface::class),
+            get(GetProject::class),
+            get(GetEnvironment::class),
+            get(GetVariables::class),
+            get(CreateNewJob::class),
+            get(PrepareJob::class),
+            get(SaveJob::class),
+            get(SerializeJob::class),
+            get(DispatchJobInterface::class),
+            get(DisplayJob::class),
+            get(DisplayError::class),
+        ),
 
-        $recipe = $recipe->cook($container->get(GetProject::class), GetProject::class, [], 0);
-        $recipe = $recipe->cook($container->get(GetEnvironment::class), GetEnvironment::class, [], 1);
-        $recipe = $recipe->cook($container->get(GetVariables::class), GetVariables::class, [], 1);
-        $recipe = $recipe->cook($container->get(CreateNewJob::class), CreateNewJob::class, [], 2);
-        $recipe = $recipe->cook($container->get(PrepareJob::class), PrepareJob::class, [], 3);
-        $recipe = $recipe->cook($container->get(SaveJob::class), SaveJob::class, [], 4);
-        $recipe = $recipe->cook($container->get(SerializeJob::class), SerializeJob::class, [], 5);
-        $recipe = $recipe->cook(
-            $container->get(DispatchJobInterface::class),
-            DispatchJobInterface::class,
-            [],
-            6
-        );
-        $recipe = $recipe->cook($container->get(DisplayJob::class), DisplayJob::class, [], 7);
+    AddHistoryInterface::class => get(AddHistory::class),
+    AddHistory::class => create()
+        ->constructor(
+            get(RecipeInterface::class),
+            get(ReceiveHistory::class),
+            get(DeserializeHistory::class),
+            get(GetProject::class),
+            get(GetJob::class),
+            get(StepAddHistory::class),
+            get(SaveJob::class),
+            get(SerializeHistory::class),
+            get(DisplayHistory::class),
+            get(DisplayError::class),
+        ),
 
-        $recipe = $recipe->onError(new Bowl($container->get(DisplayError::class), []));
-
-        return $recipe;
-    },
-
-    AddHistoryRecipe::class => static function (ContainerInterface $container) {
-        $recipe = new class extends Recipe implements AddHistoryRecipe {
-        };
-
-        $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
-
-        $recipe = $recipe->cook($container->get(ReceiveHistory::class), ReceiveHistory::class, [], 0);
-        $recipe = $recipe->cook($container->get(DeserializeHistory::class), DeserializeHistory::class, [], 1);
-        $recipe = $recipe->cook($container->get(GetProject::class), GetProject::class, [], 2);
-        $recipe = $recipe->cook($container->get(GetJob::class), GetJob::class, [], 3);
-        $recipe = $recipe->cook($container->get(AddHistory::class), AddHistory::class, [], 4);
-        $recipe = $recipe->cook($container->get(SaveJob::class), SaveJob::class, [], 5);
-        $recipe = $recipe->cook($container->get(SerializeHistory::class), SerializeHistory::class, [], 6);
-        $recipe = $recipe->cook($container->get(DisplayHistory::class), DisplayHistory::class, [], 7);
-
-        $recipe = $recipe->onError(new Bowl($container->get(DisplayError::class), []));
-
-        return $recipe;
-    },
-
-    RunJobRecipe::class => static function (ContainerInterface $container) {
-        $recipe = new class extends Recipe implements RunJobRecipe {
-        };
-
-        $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
-
-        $notification = $container->get(SendHistory::class);
-        $notificationMapping = ['step' => BowlInterface::METHOD_NAME];
-
-        //Startup Run
-        $recipe = $recipe->cook(
-            $container->get(ReceiveJob::class),
-            ReceiveJob::class,
-            [],
-            RunJobRecipe::STEP_RECEIVE_JOB
-        );
-
-        $recipe = $recipe->cook(
-            $container->get(DeserializeJob::class),
-            DeserializeJob::class,
-            [],
-            RunJobRecipe::STEP_DESERIALIZE_JOB
-        );
-
-        //Prepare workspace
-        $recipe = $recipe->cook(
-            $notification,
-            PrepareWorkspace::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_PREPARE_WORKSPACE
-        );
-        $recipe = $recipe->cook(
-            $container->get(PrepareWorkspace::class),
-            PrepareWorkspace::class,
-            [],
-            RunJobRecipe::STEP_PREPARE_WORKSPACE
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            ConfigureCloningAgent::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_CONFIGURE_CLONING_AGENT
-        );
-        $recipe = $recipe->cook(
-            $container->get(ConfigureCloningAgent::class),
-            ConfigureCloningAgent::class,
-            [],
-            RunJobRecipe::STEP_CONFIGURE_CLONING_AGENT
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            CloneRepository::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_CLONE_REPOSITORY
-        );
-        $recipe = $recipe->cook(
-            $container->get(CloneRepository::class),
-            CloneRepository::class,
-            [],
-            RunJobRecipe::STEP_CLONE_REPOSITORY
-        );
-
-        //Configure Deployment
-        $recipe = $recipe->cook(
-            $notification,
-            ConfigureConductor::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_CONFIGURE_CONDUCTOR
-        );
-        $recipe = $recipe->cook(
-            $container->get(ConfigureConductor::class),
-            ConfigureConductor::class,
-            [],
-            RunJobRecipe::STEP_CONFIGURE_CONDUCTOR
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            ReadDeploymentConfiguration::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_READ_DEPLOYMENT_CONFIGURATION
-        );
-        $recipe = $recipe->cook(
-            $container->get(ReadDeploymentConfiguration::class),
-            ReadDeploymentConfiguration::class,
-            [],
-            RunJobRecipe::STEP_READ_DEPLOYMENT_CONFIGURATION
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            CompileDeployment::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_COMPILE_DEPLOYMENT
-        );
-        $recipe = $recipe->cook(
-            $container->get(CompileDeployment::class),
-            CompileDeployment::class,
-            [],
-            RunJobRecipe::STEP_COMPILE_DEPLOYMENT
-        );
-
-        //Configure Build Image
-        $recipe = $recipe->cook(
-            $notification,
-            HookBuildContainer::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_HOOK_PRE_BUILD_CONTAINER
-        );
-        $recipe = $recipe->cook(
-            $container->get(HookBuildContainer::class),
-            HookBuildContainer::class,
-            [],
-            RunJobRecipe::STEP_HOOK_PRE_BUILD_CONTAINER
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            ConfigureImagesBuilder::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_CONNECT_CONTAINER_REPOSITORY
-        );
-        $recipe = $recipe->cook(
-            $container->get(ConfigureImagesBuilder::class),
-            ConfigureImagesBuilder::class,
-            [],
-            RunJobRecipe::STEP_CONNECT_CONTAINER_REPOSITORY
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            BuildImages::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_BUILD_IMAGE
-        );
-        $recipe = $recipe->cook(
-            $container->get(BuildImages::class),
-            BuildImages::class,
-            [],
-            RunJobRecipe::STEP_BUILD_IMAGE
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            BuildVolumes::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_BUILD_VOLUME
-        );
-        $recipe = $recipe->cook(
-            $container->get(BuildVolumes::class),
-            BuildVolumes::class,
-            [],
-            RunJobRecipe::STEP_BUILD_VOLUME
-        );
-
-        //Do Deployment
-        $recipe = $recipe->cook(
-            $notification,
-            ConfigureClusterClient::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_CONNECT_MASTER
-        );
-        $recipe = $recipe->cook(
-            $container->get(ConfigureClusterClient::class),
-            ConfigureClusterClient::class,
-            [],
-            RunJobRecipe::STEP_CONNECT_MASTER
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            Deploying::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_DEPLOYING
-        );
-        $recipe = $recipe->cook(
-            $container->get(Deploying::class),
-            Deploying::class,
-            [],
-            RunJobRecipe::STEP_DEPLOYING
-        );
-
-        $recipe = $recipe->cook(
-            $notification,
-            Exposing::class,
-            $notificationMapping,
-            RunJobRecipe::STEP_EXPOSING
-        );
-        $recipe = $recipe->cook(
-            $container->get(Exposing::class),
-            Exposing::class,
-            [],
-            RunJobRecipe::STEP_EXPOSING
-        );
-
-        //Final
-        $recipe = $recipe->cook(
-            $container->get(PushResult::class),
-            PushResult::class,
-            [],
-            RunJobRecipe::STEP_FINAL
-        );
-
-        $recipe = $recipe->cook(
-            $container->get(DisplayHistory::class),
-            DisplayHistory::class,
-            [],
-            RunJobRecipe::STEP_FINAL
-        );
-
-        $recipe = $recipe->onError(new Bowl($container->get(PushResult::class), ['result' => 'exception']));
-        $recipe = $recipe->onError(new Bowl($container->get(DisplayError::class), []));
-
-        return $recipe;
-    },
+    RunJobInterface::class => get(RunJob::class),
+    RunJob::class => create()
+        ->constructor(
+            get(RecipeInterface::class),
+            get(SendHistory::class),
+            get(ReceiveJob::class),
+            get(DeserializeJob::class),
+            get(PrepareWorkspace::class),
+            get(ConfigureCloningAgent::class),
+            get(CloneRepository::class),
+            get(ConfigureConductor::class),
+            get(ReadDeploymentConfiguration::class),
+            get(CompileDeployment::class),
+            get(HookBuildContainer::class),
+            get(ConfigureImagesBuilder::class),
+            get(BuildImages::class),
+            get(BuildVolumes::class),
+            get(ConfigureClusterClient::class),
+            get(Deploying::class),
+            get(Exposing::class),
+            get(PushResult::class),
+            get(DisplayHistory::class),
+            get(DisplayError::class),
+        ),
 ];

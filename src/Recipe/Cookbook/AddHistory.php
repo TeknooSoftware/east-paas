@@ -26,6 +26,7 @@ namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
+use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
 use Teknoo\East\Paas\Recipe\Step\History\DisplayHistory;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
@@ -34,10 +35,7 @@ use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
-use Teknoo\Recipe\BaseRecipeInterface;
 use Teknoo\Recipe\Bowl\Bowl;
-use Teknoo\Recipe\ChefInterface;
-use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
@@ -47,78 +45,66 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class AddHistory implements AddHistoryInterface
 {
-    private RecipeInterface $recipe;
+    use CookbookTrait;
 
-    private bool $recipePopulated = false;
+    private ReceiveHistory $stepReceiveHistory;
+
+    private DeserializeHistory $stepDeserializeHistory;
+
+    private GetProject $stepGetProject;
+
+    private GetJob $stepGetJob;
+
+    private StepAddHistory $stepAddHistory;
+
+    private SaveJob $stepSaveJob;
+
+    private SerializeHistory $stepSerializeHistory;
+
+    private DisplayHistory $stepDisplayHistory;
+
+    private DisplayError $stepDisplayError;
+
+    public function __construct(
+        RecipeInterface $recipe,
+        ReceiveHistory $stepReceiveHistory,
+        DeserializeHistory $stepDeserializeHistory,
+        GetProject $stepGetProject,
+        GetJob $stepGetJob,
+        StepAddHistory $stepAddHistory,
+        SaveJob $stepSaveJob,
+        SerializeHistory $stepSerializeHistory,
+        DisplayHistory $stepDisplayHistory,
+        DisplayError $stepDisplayError
+    ) {
+        $this->stepReceiveHistory = $stepReceiveHistory;
+        $this->stepDeserializeHistory = $stepDeserializeHistory;
+        $this->stepGetProject = $stepGetProject;
+        $this->stepGetJob = $stepGetJob;
+        $this->stepAddHistory = $stepAddHistory;
+        $this->stepSaveJob = $stepSaveJob;
+        $this->stepSerializeHistory = $stepSerializeHistory;
+        $this->stepDisplayHistory = $stepDisplayHistory;
+        $this->stepDisplayError = $stepDisplayError;
+
+        $this->fill($recipe);
+    }
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
         $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
 
-        $recipe = $recipe->cook($container->get(ReceiveHistory::class), ReceiveHistory::class, [], 0);
-        $recipe = $recipe->cook($container->get(DeserializeHistory::class), DeserializeHistory::class, [], 1);
-        $recipe = $recipe->cook($container->get(GetProject::class), GetProject::class, [], 2);
-        $recipe = $recipe->cook($container->get(GetJob::class), GetJob::class, [], 3);
-        $recipe = $recipe->cook($container->get(\Teknoo\East\Paas\Recipe\Step\History\AddHistory::class), AddHistory::class, [], 4);
-        $recipe = $recipe->cook($container->get(SaveJob::class), SaveJob::class, [], 5);
-        $recipe = $recipe->cook($container->get(SerializeHistory::class), SerializeHistory::class, [], 6);
-        $recipe = $recipe->cook($container->get(DisplayHistory::class), DisplayHistory::class, [], 7);
+        $recipe = $recipe->cook($this->stepReceiveHistory, ReceiveHistory::class, [], 0);
+        $recipe = $recipe->cook($this->stepDeserializeHistory, DeserializeHistory::class, [], 1);
+        $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 2);
+        $recipe = $recipe->cook($this->stepGetJob, GetJob::class, [], 3);
+        $recipe = $recipe->cook($this->stepAddHistory, StepAddHistory::class, [], 4);
+        $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 5);
+        $recipe = $recipe->cook($this->stepSerializeHistory, SerializeHistory::class, [], 6);
+        $recipe = $recipe->cook($this->stepDisplayHistory, DisplayHistory::class, [], 7);
 
-        $recipe = $recipe->onError(new Bowl($container->get(DisplayError::class), []));
+        $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 
         return $recipe;
-    }
-
-    private function getRecipe(): RecipeInterface
-    {
-        if ($this->recipePopulated) {
-            return $this->recipe;
-        }
-
-        $this->recipe = $this->populateRecipe($this->recipe);
-        $this->recipePopulated = true;
-
-        return $this->recipe;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function train(ChefInterface $chef): BaseRecipeInterface
-    {
-        $chef->read($this->getRecipe());
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function prepare(array &$workPlan, ChefInterface $chef): BaseRecipeInterface
-    {
-        $this->getRecipe()->prepare($workPlan, $chef);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function validate($value): BaseRecipeInterface
-    {
-        $this->getRecipe()->validate($value);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function fill(RecipeInterface $recipe): CookbookInterface
-    {
-        $this->recipe = $recipe;
-        $this->recipePopulated = false;
-
-        return $this;
     }
 }

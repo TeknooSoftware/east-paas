@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Recipe\Step\History\DisplayHistory;
 use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
@@ -46,11 +45,8 @@ use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
 use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
-use Teknoo\Recipe\BaseRecipeInterface;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Bowl\BowlInterface;
-use Teknoo\Recipe\ChefInterface;
-use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
@@ -60,27 +56,109 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class RunJob implements RunJobInterface
 {
-    private RecipeInterface $recipe;
+    use CookbookTrait;
 
-    private bool $recipePopulated = false;
+    private SendHistory $stepSendHistory;
+
+    private ReceiveJob $stepReceiveJob;
+
+    private DeserializeJob $stepDeserializeJob;
+
+    private PrepareWorkspace $stepPrepareWorkspace;
+
+    private ConfigureCloningAgent $stepConfigureCloningAgent;
+
+    private CloneRepository $stepCloneRepository;
+
+    private ConfigureConductor $stepConfigureConductor;
+
+    private ReadDeploymentConfiguration $stepReadDeploymentConfiguration;
+
+    private CompileDeployment $stepCompileDeployment;
+
+    private HookBuildContainer $stepHookBuildContainer;
+
+    private ConfigureImagesBuilder $stepConfigureImagesBuilder;
+
+    private BuildImages $stepBuildImages;
+
+    private BuildVolumes $stepBuildVolumes;
+
+    private ConfigureClusterClient $stepConfigureClusterClient;
+
+    private Deploying $stepDeploying;
+
+    private Exposing $stepExposing;
+
+    private PushResult $stepPushResult;
+
+    private DisplayHistory $stepDisplayHistory;
+
+    private DisplayError $stepDisplayError;
+
+    public function __construct(
+        RecipeInterface $recipe,
+        SendHistory $stepSendHistory,
+        ReceiveJob $stepReceiveJob,
+        DeserializeJob $stepDeserializeJob,
+        PrepareWorkspace $stepPrepareWorkspace,
+        ConfigureCloningAgent $stepConfigureCloningAgent,
+        CloneRepository $stepCloneRepository,
+        ConfigureConductor $stepConfigureConductor,
+        ReadDeploymentConfiguration $stepReadDeploymentConfiguration,
+        CompileDeployment $stepCompileDeployment,
+        HookBuildContainer $stepHookBuildContainer,
+        ConfigureImagesBuilder $stepConfigureImagesBuilder,
+        BuildImages $stepBuildImages,
+        BuildVolumes $stepBuildVolumes,
+        ConfigureClusterClient $stepConfigureClusterClient,
+        Deploying $stepDeploying,
+        Exposing $stepExposing,
+        PushResult $stepPushResult,
+        DisplayHistory $stepDisplayHistory,
+        DisplayError $stepDisplayError
+    ) {
+        $this->stepSendHistory = $stepSendHistory;
+        $this->stepReceiveJob = $stepReceiveJob;
+        $this->stepDeserializeJob = $stepDeserializeJob;
+        $this->stepPrepareWorkspace = $stepPrepareWorkspace;
+        $this->stepConfigureCloningAgent = $stepConfigureCloningAgent;
+        $this->stepCloneRepository = $stepCloneRepository;
+        $this->stepConfigureConductor = $stepConfigureConductor;
+        $this->stepReadDeploymentConfiguration = $stepReadDeploymentConfiguration;
+        $this->stepCompileDeployment = $stepCompileDeployment;
+        $this->stepHookBuildContainer = $stepHookBuildContainer;
+        $this->stepConfigureImagesBuilder = $stepConfigureImagesBuilder;
+        $this->stepBuildImages = $stepBuildImages;
+        $this->stepBuildVolumes = $stepBuildVolumes;
+        $this->stepConfigureClusterClient = $stepConfigureClusterClient;
+        $this->stepDeploying = $stepDeploying;
+        $this->stepExposing = $stepExposing;
+        $this->stepPushResult = $stepPushResult;
+        $this->stepDisplayHistory = $stepDisplayHistory;
+        $this->stepDisplayError = $stepDisplayError;
+
+        $this->fill($recipe);
+    }
+
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
         $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
 
-        $notification = $container->get(SendHistory::class);
+        $notification = $this->stepSendHistory;
         $notificationMapping = ['step' => BowlInterface::METHOD_NAME];
 
         //Startup Run
         $recipe = $recipe->cook(
-            $container->get(ReceiveJob::class),
+            $this->stepReceiveJob,
             ReceiveJob::class,
             [],
             RunJobInterface::STEP_RECEIVE_JOB
         );
 
         $recipe = $recipe->cook(
-            $container->get(DeserializeJob::class),
+            $this->stepDeserializeJob,
             DeserializeJob::class,
             [],
             RunJobInterface::STEP_DESERIALIZE_JOB
@@ -94,7 +172,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_PREPARE_WORKSPACE
         );
         $recipe = $recipe->cook(
-            $container->get(PrepareWorkspace::class),
+            $this->stepPrepareWorkspace,
             PrepareWorkspace::class,
             [],
             RunJobInterface::STEP_PREPARE_WORKSPACE
@@ -107,7 +185,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_CONFIGURE_CLONING_AGENT
         );
         $recipe = $recipe->cook(
-            $container->get(ConfigureCloningAgent::class),
+            $this->stepConfigureCloningAgent,
             ConfigureCloningAgent::class,
             [],
             RunJobInterface::STEP_CONFIGURE_CLONING_AGENT
@@ -120,7 +198,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_CLONE_REPOSITORY
         );
         $recipe = $recipe->cook(
-            $container->get(CloneRepository::class),
+            $this->stepCloneRepository,
             CloneRepository::class,
             [],
             RunJobInterface::STEP_CLONE_REPOSITORY
@@ -134,7 +212,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_CONFIGURE_CONDUCTOR
         );
         $recipe = $recipe->cook(
-            $container->get(ConfigureConductor::class),
+            $this->stepConfigureConductor,
             ConfigureConductor::class,
             [],
             RunJobInterface::STEP_CONFIGURE_CONDUCTOR
@@ -147,7 +225,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_READ_DEPLOYMENT_CONFIGURATION
         );
         $recipe = $recipe->cook(
-            $container->get(ReadDeploymentConfiguration::class),
+            $this->stepReadDeploymentConfiguration,
             ReadDeploymentConfiguration::class,
             [],
             RunJobInterface::STEP_READ_DEPLOYMENT_CONFIGURATION
@@ -160,7 +238,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_COMPILE_DEPLOYMENT
         );
         $recipe = $recipe->cook(
-            $container->get(CompileDeployment::class),
+            $this->stepCompileDeployment,
             CompileDeployment::class,
             [],
             RunJobInterface::STEP_COMPILE_DEPLOYMENT
@@ -174,7 +252,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_HOOK_PRE_BUILD_CONTAINER
         );
         $recipe = $recipe->cook(
-            $container->get(HookBuildContainer::class),
+            $this->stepHookBuildContainer,
             HookBuildContainer::class,
             [],
             RunJobInterface::STEP_HOOK_PRE_BUILD_CONTAINER
@@ -187,7 +265,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_CONNECT_CONTAINER_REPOSITORY
         );
         $recipe = $recipe->cook(
-            $container->get(ConfigureImagesBuilder::class),
+            $this->stepConfigureImagesBuilder,
             ConfigureImagesBuilder::class,
             [],
             RunJobInterface::STEP_CONNECT_CONTAINER_REPOSITORY
@@ -200,7 +278,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_BUILD_IMAGE
         );
         $recipe = $recipe->cook(
-            $container->get(BuildImages::class),
+            $this->stepBuildImages,
             BuildImages::class,
             [],
             RunJobInterface::STEP_BUILD_IMAGE
@@ -213,7 +291,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_BUILD_VOLUME
         );
         $recipe = $recipe->cook(
-            $container->get(BuildVolumes::class),
+            $this->stepBuildVolumes,
             BuildVolumes::class,
             [],
             RunJobInterface::STEP_BUILD_VOLUME
@@ -227,7 +305,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_CONNECT_MASTER
         );
         $recipe = $recipe->cook(
-            $container->get(ConfigureClusterClient::class),
+            $this->stepConfigureClusterClient,
             ConfigureClusterClient::class,
             [],
             RunJobInterface::STEP_CONNECT_MASTER
@@ -240,7 +318,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_DEPLOYING
         );
         $recipe = $recipe->cook(
-            $container->get(Deploying::class),
+            $this->stepDeploying,
             Deploying::class,
             [],
             RunJobInterface::STEP_DEPLOYING
@@ -253,7 +331,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_EXPOSING
         );
         $recipe = $recipe->cook(
-            $container->get(Exposing::class),
+            $this->stepExposing,
             Exposing::class,
             [],
             RunJobInterface::STEP_EXPOSING
@@ -261,75 +339,22 @@ class RunJob implements RunJobInterface
 
         //Final
         $recipe = $recipe->cook(
-            $container->get(PushResult::class),
+            $this->stepPushResult,
             PushResult::class,
             [],
             RunJobInterface::STEP_FINAL
         );
 
         $recipe = $recipe->cook(
-            $container->get(DisplayHistory::class),
+            $this->stepDisplayHistory,
             DisplayHistory::class,
             [],
             RunJobInterface::STEP_FINAL
         );
 
-        $recipe = $recipe->onError(new Bowl($container->get(PushResult::class), ['result' => 'exception']));
-        $recipe = $recipe->onError(new Bowl($container->get(DisplayError::class), []));
+        $recipe = $recipe->onError(new Bowl($this->stepPushResult, ['result' => 'exception']));
+        $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 
         return $recipe;
-    }
-
-    private function getRecipe(): RecipeInterface
-    {
-        if ($this->recipePopulated) {
-            return $this->recipe;
-        }
-
-        $this->recipe = $this->populateRecipe($this->recipe);
-        $this->recipePopulated = true;
-
-        return $this->recipe;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function train(ChefInterface $chef): BaseRecipeInterface
-    {
-        $chef->read($this->getRecipe());
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function prepare(array &$workPlan, ChefInterface $chef): BaseRecipeInterface
-    {
-        $this->getRecipe()->prepare($workPlan, $chef);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function validate($value): BaseRecipeInterface
-    {
-        $this->getRecipe()->validate($value);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function fill(RecipeInterface $recipe): CookbookInterface
-    {
-        $this->recipe = $recipe;
-        $this->recipePopulated = false;
-
-        return $this;
     }
 }

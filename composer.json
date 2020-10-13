@@ -17,11 +17,11 @@
         "ext-json": "*",
         "php-di/php-di": "~6.2",
         "psr/http-client": "~1.0",
-        "teknoo/east-foundation": "^3.2.0",
-        "teknoo/east-website": "^3.2.0",
-        "teknoo/immutable": "^2.0.3",
-        "teknoo/recipe": "^2.1.0",
-        "teknoo/states": "^4.1.0"
+        "teknoo/east-foundation": "^3.2.1",
+        "teknoo/east-website": "^3.2.1",
+        "teknoo/immutable": "^2.0.5",
+        "teknoo/recipe": "^2.1.1",
+        "teknoo/states": "^4.1.2"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
