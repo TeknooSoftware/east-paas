@@ -1,5 +1,11 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.8] - 2020-10-13
+###Stable Release
+- Migrate to Recipe 2.1
+- Migrate to Recipe Cookbook instead of dynamic recipe in DI
+- Migrate to East Foundation 3.2
+
 ##[0.0.7] - 2020-09-18
 ###Stable Release
 - Update QA and CI tools
