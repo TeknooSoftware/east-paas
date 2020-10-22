@@ -1,5 +1,12 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.9] - 2020-10-22
+###Stable Release
+- Migrate to East Foundation ^3.2.2
+- Migrating to Docker buildx
+- Add Cluster credentials user/password
+- Remove name in ClusterCredentials
+ 
 ##[0.0.8] - 2020-10-13
 ###Stable Release
 - Migrate to Recipe 2.1
