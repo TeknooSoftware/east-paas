@@ -44,7 +44,7 @@ trait PodTrait
             foreach ($podsConfiguration as $nameSet => &$podsList) {
                 $containers = [];
                 foreach ($podsList['containers'] as $name => &$config) {
-                    $version = (string)($config['version'] ?? 'lastest');
+                    $version = (string)($config['version'] ?? 'latest');
                     $containers[] = new Container(
                         $name,
                         $config['image'],

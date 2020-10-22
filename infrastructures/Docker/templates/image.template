@@ -8,7 +8,7 @@ echo $PAAS_DOCKER_PWD | {% binary %} login --username=$PAAS_DOCKER_USER --passwo
 
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
-{% binary %} buildx rm {% imageShortName %}
+{% binary %} buildx rm {% imageShortName %} || true
 
 {% binary %} buildx create --name {% imageShortName %} --use --platform linux/amd64,linux/arm64
 

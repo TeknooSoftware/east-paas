@@ -66,7 +66,7 @@ trait ImageTrait
             foreach ($imagesConfigs as $name => &$config) {
                 $buildName = $config['build-name'] ?? $name;
                 $isLibrary = !isset($innerImagesConfigs[$name]);
-                $tag = (string) ($config['tag'] ?? 'lastest');
+                $tag = (string) ($config['tag'] ?? 'latest');
                 $variables = ($config['variables'] ?? []);
 
                 $addImage = static function ($path) use (

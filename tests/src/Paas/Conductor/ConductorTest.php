@@ -184,7 +184,7 @@ class ConductorTest extends TestCase
             'images' => [
                 'foo' => [
                     'build-name' => 'foo',
-                    'tag' => 'lastest',
+                    'tag' => 'latest',
                     'path' => '/images/${FOO}',
                 ],
             ],

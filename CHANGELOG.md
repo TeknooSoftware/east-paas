@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.11] - 2020-10-22
+###Dev Release
+- Fix lastest typo to latest
+- Ignore error on rm of previous buildx builder in template
+
 ##[0.0.10] - 2020-10-22
 ###Dev Release
 - Fix Docker plugin DI

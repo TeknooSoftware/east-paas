@@ -4,7 +4,7 @@ set -e
 
 cd {% volumePath %}
 
-echo "FROM alpine:lastest " > {% Dockerfile %}
+echo "FROM alpine:latest " > {% Dockerfile %}
 echo "VOLUME {% volumeTarget %}" >> {% Dockerfile %}
 
 for vPATH in {% volumeAdds %}
@@ -18,7 +18,7 @@ echo $PAAS_DOCKER_PWD | {% binary %} login --username=$PAAS_DOCKER_USER --passwo
 
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
-{% binary %} buildx rm {% volumeShortName %}
+{% binary %} buildx rm {% volumeShortName %} || true
 
 {% binary %} buildx create --name {% volumeShortName %} --use --platform linux/amd64,linux/arm64
 

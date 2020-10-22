@@ -783,7 +783,7 @@ paas: #Dedicated to compiler
 images:
   foo:
     build-name: foo
-    tag: lastest
+    tag: latest
     path: '/images/${FOO}'
 
 #Hook to build the project before container, Called in this order
