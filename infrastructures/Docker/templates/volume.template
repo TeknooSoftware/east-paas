@@ -4,7 +4,7 @@ set -e
 
 cd {% volumePath %}
 
-echo "FROM debian " > {% Dockerfile %}
+echo "FROM alpine:lastest " > {% Dockerfile %}
 echo "VOLUME {% volumeTarget %}" >> {% Dockerfile %}
 
 for vPATH in {% volumeAdds %}

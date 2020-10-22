@@ -171,6 +171,7 @@ class Running implements StateInterface
             $process->start();
         };
     }
+
     private function waitProcess(): \Closure
     {
         /**

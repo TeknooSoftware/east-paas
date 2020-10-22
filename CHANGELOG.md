@@ -1,20 +1,25 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.10] - 2020-10-22
+###Dev Release
+- Fix Docker plugin DI
+- Use Alpine as base image instead debian
+
 ##[0.0.9] - 2020-10-22
-###Stable Release
+###Dev Release
 - Migrate to East Foundation ^3.2.2
 - Migrating to Docker buildx
 - Add Cluster credentials user/password
 - Remove name in ClusterCredentials
  
 ##[0.0.8] - 2020-10-13
-###Stable Release
+###Dev Release
 - Migrate to Recipe 2.1
 - Migrate to Recipe Cookbook instead of dynamic recipe in DI
 - Migrate to East Foundation 3.2
 
 ##[0.0.7] - 2020-09-18
-###Stable Release
+###Dev Release
 - Update QA and CI tools
 - Fix tests issues on poor performance worker
 - Fix for minimum requirements 
