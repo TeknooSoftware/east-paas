@@ -113,6 +113,8 @@ class ClusterCredentialsTest extends TestCase
                 'server_certificate' => 'certBar',
                 'private_key' => 'fooBar',
                 'public_key' => 'barFoo',
+                'username' => 'fooBar',
+                'password' => 'barFoo'
             ]);
 
         self::assertInstanceOf(

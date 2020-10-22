@@ -53,6 +53,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
 
         self::assertInstanceOf(
             ClientFactoryInterface::class,
@@ -64,6 +65,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
 
         self::assertInstanceOf(
             ClusterClientInterface::class,
@@ -75,6 +77,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
 
         self::assertInstanceOf(
             Client::class,

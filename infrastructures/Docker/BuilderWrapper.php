@@ -70,6 +70,8 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
 
     private ?int $timeout;
 
+    private ?string $projectId;
+
     private ?string $url = null;
 
     private ?XRegistryAuth $auth = null;
@@ -122,6 +124,7 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
     {
         return [
             (new Property(Running::class))
+                ->with('projectId', new Property\IsNotEmpty())
                 ->with('url', new Property\IsNotEmpty()),
 
             (new Property(Generator::class))
@@ -129,13 +132,14 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
         ];
     }
 
-    public function configure(string $url, ?IdentityInterface $auth): BuilderInterface
+    public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface
     {
         if (null !== $auth && !$auth instanceof XRegistryAuth) {
             throw new \RuntimeException('Not Supported');
         }
 
         $that = clone $this;
+        $that->projectId = $projectId;
         $that->url = $url;
         $that->auth = $auth;
 

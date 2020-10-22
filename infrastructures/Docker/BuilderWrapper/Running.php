@@ -56,6 +56,11 @@ class Running implements StateInterface
         };
     }
 
+    private function hash(): \Closure
+    {
+        return fn(string $name) => \substr(\sha1($this->projectId . $name), 0, 10);
+    }
+
     private function generateShellScriptForImage(): \Closure
     {
         return function (Image $image): string {
@@ -76,12 +81,14 @@ class Running implements StateInterface
                     '{% binary %}',
                     '{% buildsArgs %}',
                     '{% imageName %}',
+                    '{% imageShortName %}',
                 ],
                 [
                     $image->getPath(),
                     $this->binary,
                     $buildsArgs,
                     $image->getUrl() . ':' . $image->getTag(),
+                    $image->getName() . $this->hash($image->getName()),
                 ],
                 $this->templates['image']
             );
@@ -101,6 +108,7 @@ class Running implements StateInterface
                     '{% volumeMount %}',
                     '{% binary %}',
                     '{% volumeName %}',
+                    '{% volumeShortName %}',
                     '{% Dockerfile %}'
                 ],
                 [
@@ -110,6 +118,7 @@ class Running implements StateInterface
                     $volume->getMountPath(),
                     $this->binary,
                     $volume->getUrl(),
+                    $volume->getName() . $this->hash($volume->getName()),
                     'Dockerfile' . $volume->getName(),
                 ],
                 $this->templates['volume']
@@ -125,7 +134,7 @@ class Running implements StateInterface
             if (empty($this->timeout)) {
                 \set_time_limit(0);
             } else {
-                \set_time_limit($this->timeout + self::GRACEFULTIME);
+                \set_time_limit(($this->timeout + self::GRACEFULTIME));
             }
         };
     }
@@ -147,7 +156,7 @@ class Running implements StateInterface
                 $authEnvs = [
                     'PAAS_DOCKER_USER' => $auth->getUsername(),
                     'PAAS_DOCKER_PWD' => $auth->getPassword(),
-                    'PAAS_DOCKER_HOST' => $auth->getServerAddress(),
+                    'PAAS_DOCKER_HOST' => $this->getUrl(),
                 ];
             }
 

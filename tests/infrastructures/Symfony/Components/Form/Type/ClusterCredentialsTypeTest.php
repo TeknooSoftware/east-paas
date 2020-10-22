@@ -56,6 +56,8 @@ class ClusterCredentialsTypeTest extends TestCase
             'serverCertificate' => 'babar',
             'privateKey' => 'barFoo',
             'publicKey' => 'bar',
+            'username' => 'foo',
+            'password' => 'fooBar',
         ];
     }
 

@@ -175,7 +175,7 @@ class JobUnitTest extends TestCase
 
         $builder->expects(self::once())
             ->method('configure')
-            ->with('foo', self::callback(
+            ->with('bar', 'foo', self::callback(
                 fn ($o) => $o instanceof IdentityInterface
             ));
 
@@ -196,7 +196,7 @@ class JobUnitTest extends TestCase
 
         $builder->expects(self::once())
             ->method('configure')
-            ->with('foo', self::callback(
+            ->with('bar', 'foo', self::callback(
                 fn ($o) => $o instanceof IdentityInterface
             ))
             ->willThrowException(new \Exception());

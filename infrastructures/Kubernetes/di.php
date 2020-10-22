@@ -35,7 +35,10 @@ use function DI\get;
 
 return [
     ClientFactoryInterface::class => function (ContainerInterface $container): ClientFactoryInterface {
-        return new class ($container->get('teknoo.east.paas.worker.tmp_dir')) implements ClientFactoryInterface {
+        $tempDir = $container->get('teknoo.east.paas.worker.tmp_dir');
+        $verify = $container->get('teknoo.east.paas.kubernetes.ssl.verify');
+
+        return new class ($tempDir, $verify) implements ClientFactoryInterface {
             /**
              * @var string[]
              */
@@ -43,15 +46,19 @@ return [
 
             private string $tmpDir;
 
-            public function __construct(string $tmpDir)
+            private bool $verify;
+
+            public function __construct(string $tmpDir, bool $verify)
             {
                 $this->tmpDir = $tmpDir;
+                $this->verify = $verify;
             }
 
             public function __invoke(string $master, ?ClusterCredentials $credentials): KubClient
             {
                 $options = [
                     'master' => $master,
+                    'verify' => $this->verify,
                 ];
 
                 if (null !== $credentials) {
@@ -65,6 +72,14 @@ return [
 
                     if (!empty($content = $credentials->getPrivateKey())) {
                         $options['client_key'] = $this->write($content);
+                    }
+
+                    if (!empty($content = $credentials->getUsername())) {
+                        $options['username'] = $content;
+                    }
+
+                    if (!empty($content = $credentials->getPassword())) {
+                        $options['password'] = $content;
                     }
                 }
 

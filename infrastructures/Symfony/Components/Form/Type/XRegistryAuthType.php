@@ -48,9 +48,6 @@ class XRegistryAuthType extends AbstractType
 
         $builder->add('username', TextType::class, ['required' => false]);
         $builder->add('password', TextType::class, ['required' => false]);
-        $builder->add('email', TextType::class, ['required' => false]);
-        $builder->add('auth', TextType::class, ['required' => false]);
-        $builder->add('serverAddress', TextType::class, ['required' => false]);
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
@@ -66,9 +63,6 @@ class XRegistryAuthType extends AbstractType
                 $forms = \iterator_to_array($forms);
                 $forms['username']->setData($data->getUsername());
                 $forms['password']->setData($data->getPassword());
-                $forms['email']->setData($data->getEmail());
-                $forms['auth']->setData($data->getAuth());
-                $forms['serverAddress']->setData($data->getServerAddress());
             }
 
             /**
@@ -81,9 +75,9 @@ class XRegistryAuthType extends AbstractType
                 $data = new XRegistryAuth(
                     (string) $forms['username']->getData(),
                     (string) $forms['password']->getData(),
-                    (string) $forms['email']->getData(),
-                    (string) $forms['auth']->getData(),
-                    (string) $forms['serverAddress']->getData()
+                    '',
+                    '',
+                    ''
                 );
             }
         });

@@ -86,7 +86,7 @@ return [
 
     BuilderInterface::class => get(BuilderWrapper::class),
     BuilderWrapper::class => static function (ContainerInterface $container): BuilderWrapper {
-        $timeout = 5 * 60; //5 minutes;
+        $timeout = 30 * 60; //30 minutes;
         if ($container->has('teknoo.east.paas.docker.build.timeout')) {
             $timeout = (int) $container->has('teknoo.east.paas.docker.build.timeout');
         }

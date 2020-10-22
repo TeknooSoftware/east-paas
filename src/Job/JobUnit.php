@@ -127,6 +127,7 @@ class JobUnit implements JobUnitInterface
     ): JobUnitInterface {
         try {
             $builder = $builder->configure(
+                $this->projectResume['id'],
                 $this->imagesRepository->getApiUrl(),
                 $this->imagesRepository->getIdentity()
             );
@@ -221,7 +222,7 @@ class JobUnit implements JobUnitInterface
 
                         return $this->variables[$key];
                     },
-                    $value
+                    (string) $value
                 );
             }
         };

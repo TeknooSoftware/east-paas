@@ -125,11 +125,22 @@ class BuilderWrapperTest extends TestCase
         );
     }
 
+    public function testConfigureWrongProjectId()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildWrapper()->configure(
+            'bar',
+            new \stdClass(),
+            $this->createMock(IdentityInterface::class)
+        );
+    }
+
     public function testConfigureWrongUrl()
     {
         $this->expectException(\TypeError::class);
         $this->buildWrapper()->configure(
             new \stdClass(),
+            'bar',
             $this->createMock(IdentityInterface::class)
         );
     }
@@ -139,6 +150,7 @@ class BuilderWrapperTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildWrapper()->configure(
             'foo',
+            'bar',
             new \stdClass()
         );
     }
@@ -148,6 +160,7 @@ class BuilderWrapperTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->buildWrapper()->configure(
             'foo',
+            'bar',
             $this->createMock(IdentityInterface::class)
         );
     }
@@ -158,6 +171,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $this->buildWrapper()->configure(
                 'foo',
+                'bar',
                 $this->createMock(XRegistryAuth::class)
             )
         );
@@ -234,6 +248,7 @@ class BuilderWrapperTest extends TestCase
         self::assertInstanceOf(
             BuilderWrapper::class,
             $builder = $builder->configure(
+                'bar',
                 'docker.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
@@ -297,6 +312,7 @@ class BuilderWrapperTest extends TestCase
         self::assertInstanceOf(
             BuilderWrapper::class,
             $builder = $builder->configure(
+                'bar',
                 'docker.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
@@ -360,6 +376,7 @@ class BuilderWrapperTest extends TestCase
         self::assertInstanceOf(
             BuilderWrapper::class,
             $builder = $builder->configure(
+                'bar',
                 'docker.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
@@ -461,6 +478,7 @@ class BuilderWrapperTest extends TestCase
         self::assertInstanceOf(
             BuilderWrapper::class,
             $builder = $builder->configure(
+                'bar',
                 'docker.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
@@ -529,6 +547,7 @@ class BuilderWrapperTest extends TestCase
         self::assertInstanceOf(
             BuilderWrapper::class,
             $builder = $builder->configure(
+                'bar',
                 'docker.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )

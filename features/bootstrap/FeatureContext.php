@@ -503,7 +503,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @When I run a job :jobId from project :projectId to :arg2
+     * @When I run a job :jobId from project :projectId to :url
      */
     public function iRunANewJobFromProjectAtTo($jobId, $projectId, $url)
     {
@@ -949,7 +949,7 @@ EOF;
     public function anImageBuilder()
     {
         $builder = new class implements BuilderInterface {
-            public function configure(string $url, ?IdentityInterface $auth): BuilderInterface
+            public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface
             {
                 return clone $this;
             }

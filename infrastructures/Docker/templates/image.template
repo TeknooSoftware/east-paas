@@ -4,8 +4,14 @@ set -e
 
 cd {% imagePath %}
 
-{% binary %} build --platform --force-rm --rm=true{% buildsArgs %} -t {% imageName %} .
-
 echo $PAAS_DOCKER_PWD | {% binary %} login --username=$PAAS_DOCKER_USER --password-stdin $PAAS_DOCKER_HOST
 
-{% binary %} push {% imageName %}
+export DOCKER_CLI_EXPERIMENTAL=enabled
+
+{% binary %} buildx rm {% imageShortName %}
+
+{% binary %} buildx create --name {% imageShortName %} --use --platform linux/amd64,linux/arm64
+
+{% binary %} buildx build --platform linux/amd64,linux/arm64 --force-rm --rm=true{% buildsArgs %} -t {% imageName %} --push .
+
+{% binary %} buildx rm {% imageShortName %}

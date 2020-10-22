@@ -34,7 +34,7 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
  */
 interface BuilderInterface
 {
-    public function configure(string $url, ?IdentityInterface $auth): BuilderInterface;
+    public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface;
 
     public function buildImages(
         CompiledDeployment $compiledDeployment,

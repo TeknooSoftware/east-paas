@@ -51,6 +51,8 @@ class ClusterCredentialsType extends AbstractType
         $builder->add('serverCertificate', TextareaType::class, ['required' => false]);
         $builder->add('privateKey', TextareaType::class, ['required' => false]);
         $builder->add('publicKey', TextareaType::class, ['required' => false]);
+        $builder->add('username', TextType::class, ['required' => false]);
+        $builder->add('password', TextType::class, ['required' => false]);
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
@@ -68,6 +70,8 @@ class ClusterCredentialsType extends AbstractType
                 $forms['serverCertificate']->setData($data->getServerCertificate());
                 $forms['privateKey']->setData($data->getPrivateKey());
                 $forms['publicKey']->setData($data->getPublicKey());
+                $forms['username']->setData($data->getPrivateKey());
+                $forms['password']->setData($data->getPublicKey());
             }
 
             /**
