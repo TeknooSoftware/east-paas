@@ -43,22 +43,22 @@ class ClusterCredentialsTest extends TestCase
      */
     public function buildObject(): ClusterCredentials
     {
-        return new ClusterCredentials('fooName', 'certBar', 'fooBar', 'barFoo');
+        return new ClusterCredentials('certBar', 'barFoo', 'fooBar', 'barFoo', 'barBar');
     }
 
     public function testGetName()
     {
         self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated(['name' => 'fooBar'])->getName()
+            'barFoo',
+            $this->generateObjectPopulated()->getName()
         );
     }
 
     public function testToString()
     {
         self::assertEquals(
-            'fooBar',
-            (string) $this->generateObjectPopulated(['name' => 'fooBar'])
+            'barFoo',
+            (string) $this->generateObjectPopulated()
         );
     }
 
@@ -73,7 +73,7 @@ class ClusterCredentialsTest extends TestCase
     public function testGetPrivateKey()
     {
         self::assertEquals(
-            'fooBar',
+            'barFoo',
             $this->generateObjectPopulated()->getPrivateKey()
         );
     }
@@ -81,8 +81,24 @@ class ClusterCredentialsTest extends TestCase
     public function testGetPublicKey()
     {
         self::assertEquals(
-            'barFoo',
+            'fooBar',
             $this->generateObjectPopulated()->getPublicKey()
+        );
+    }
+
+    public function testGetUsername()
+    {
+        self::assertEquals(
+            'barFoo',
+            $this->generateObjectPopulated()->getUsername()
+        );
+    }
+
+    public function testGetPassword()
+    {
+        self::assertEquals(
+            'barBar',
+            $this->generateObjectPopulated()->getPassword()
         );
     }
 
@@ -109,12 +125,11 @@ class ClusterCredentialsTest extends TestCase
             ->with([
                 '@class' => ClusterCredentials::class,
                 'id' => '123',
-                'name' => '123',
                 'server_certificate' => 'certBar',
-                'private_key' => 'fooBar',
-                'public_key' => 'barFoo',
-                'username' => 'fooBar',
-                'password' => 'barFoo'
+                'private_key' => 'barFoo',
+                'public_key' => 'fooBar',
+                'username' => 'barFoo',
+                'password' => 'fooBar',
             ]);
 
         self::assertInstanceOf(

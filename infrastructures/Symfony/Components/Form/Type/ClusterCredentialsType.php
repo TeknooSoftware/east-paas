@@ -47,7 +47,6 @@ class ClusterCredentialsType extends AbstractType
     {
         parent::buildForm($builder, $options);
 
-        $builder->add('name', TextType::class, ['required' => true, 'label' => 'Identity name']);
         $builder->add('serverCertificate', TextareaType::class, ['required' => false]);
         $builder->add('privateKey', TextareaType::class, ['required' => false]);
         $builder->add('publicKey', TextareaType::class, ['required' => false]);
@@ -66,7 +65,6 @@ class ClusterCredentialsType extends AbstractType
                 }
 
                 $forms = \iterator_to_array($forms);
-                $forms['name']->setData($data->getName());
                 $forms['serverCertificate']->setData($data->getServerCertificate());
                 $forms['privateKey']->setData($data->getPrivateKey());
                 $forms['publicKey']->setData($data->getPublicKey());
@@ -82,10 +80,11 @@ class ClusterCredentialsType extends AbstractType
             {
                 $forms = \iterator_to_array($forms);
                 $data = new ClusterCredentials(
-                    (string) $forms['name']->getData(),
                     (string) $forms['serverCertificate']->getData(),
                     (string) $forms['privateKey']->getData(),
-                    (string) $forms['publicKey']->getData()
+                    (string) $forms['publicKey']->getData(),
+                    (string) $forms['username']->getData(),
+                    (string) $forms['password']->getData()
                 );
             }
         });
