@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.12] - 2020-10-23
+###Dev Release
+- QA
+
 ##[0.0.11] - 2020-10-22
 ###Dev Release
 - Fix lastest typo to latest
