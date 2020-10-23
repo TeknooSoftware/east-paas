@@ -40,7 +40,7 @@ class CompiledDeployment
      * @var array<string, array<string, Image>>
      */
     private array $images = [];
-    
+
     /**
      * @var array<string, Volume>
      */

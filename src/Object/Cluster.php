@@ -60,7 +60,7 @@ class Cluster implements
     public function setProject(Project $project): Cluster
     {
         $this->project = $project;
-        
+
         return $this;
     }
 
