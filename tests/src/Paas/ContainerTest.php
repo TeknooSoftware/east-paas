@@ -49,20 +49,13 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
-use Teknoo\East\Paas\Contracts\DbSource\Repository\BillingInformationRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
-use Teknoo\East\Paas\Contracts\DbSource\Repository\PaymentInformationRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ProjectRepositoryInterface;
 use Teknoo\East\Paas\Loader\AccountLoader;
-use Teknoo\East\Paas\Loader\BillingInformationLoader;
 use Teknoo\East\Paas\Loader\ClusterLoader;
 use Teknoo\East\Paas\Loader\JobLoader;
-use Teknoo\East\Paas\Loader\PaymentInformationLoader;
 use Teknoo\East\Paas\Loader\ProjectLoader;
-use Teknoo\East\Paas\Contracts\Recipe\AddHistoryRecipe;
-use Teknoo\East\Paas\Contracts\Recipe\NewJobRecipe;
-use Teknoo\East\Paas\Contracts\Recipe\RunJobRecipe;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
@@ -97,14 +90,10 @@ use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Writer\AccountWriter;
-use Teknoo\East\Paas\Writer\BillingInformationWriter;
 use Teknoo\East\Paas\Writer\ClusterWriter;
 use Teknoo\East\Paas\Writer\JobWriter;
-use Teknoo\East\Paas\Writer\PaymentInformationWriter;
 use Teknoo\East\Paas\Writer\ProjectWriter;
-use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\CookbookInterface;
-use Teknoo\Recipe\Recipe;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -154,19 +143,9 @@ class ContainerTest extends TestCase
         $this->generateTestForLoader(AccountLoader::class, AccountRepositoryInterface::class);
     }
 
-    public function testBillingInformationLoader()
-    {
-        $this->generateTestForLoader(BillingInformationLoader::class, BillingInformationRepositoryInterface::class);
-    }
-
     public function testJobLoader()
     {
         $this->generateTestForLoader(JobLoader::class, JobRepositoryInterface::class);
-    }
-
-    public function testPaymentInformationLoader()
-    {
-        $this->generateTestForLoader(PaymentInformationLoader::class, PaymentInformationRepositoryInterface::class);
     }
 
     public function testProjectLoader()
@@ -203,19 +182,9 @@ class ContainerTest extends TestCase
         $this->generateTestForWriter(AccountWriter::class);
     }
 
-    public function testBillingInformationWriter()
-    {
-        $this->generateTestForWriter(BillingInformationWriter::class);
-    }
-
     public function testJobWriter()
     {
         $this->generateTestForWriter(JobWriter::class);
-    }
-
-    public function testPaymentInformationWriter()
-    {
-        $this->generateTestForWriter(PaymentInformationWriter::class);
     }
 
     public function testProjectWriter()
@@ -250,16 +219,6 @@ class ContainerTest extends TestCase
     public function testAccountDelete()
     {
         $this->generateTestForDelete('teknoo.east.paas.deleting.account');
-    }
-
-    public function testBillingInformationDelete()
-    {
-        $this->generateTestForDelete('teknoo.east.paas.deleting.billing_information');
-    }
-
-    public function testPaymentInformationDelete()
-    {
-        $this->generateTestForDelete('teknoo.east.paas.deleting.payment_information');
     }
 
     public function testProjectDelete()

@@ -118,7 +118,7 @@ class Running implements StateInterface
                     $volume->getMountPath(),
                     $this->binary,
                     $volume->getUrl(),
-                    $volume->getName() . $this->hash($volume->getName()),
+                    $volume->getName() . $this->hash(\uniqid() . $volume->getName()),
                     'Dockerfile' . $volume->getName(),
                 ],
                 $this->templates['volume']

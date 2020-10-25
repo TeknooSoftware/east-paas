@@ -27,10 +27,8 @@ namespace Teknoo\Tests\East\Paas\Object;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Paas\Object\Account;
-use Teknoo\East\Paas\Object\BillingInformation;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
-use Teknoo\East\Paas\Object\PaymentInformation;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Object\User as BaseUser;
 use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
@@ -104,103 +102,6 @@ class AccountTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->setName(new \stdClass());
-    }
-
-    public function testGetBillingInformation()
-    {
-        $info = new BillingInformation();
-
-        $object = $this->generateObjectPopulated(['billingInformation' => $info]);
-
-        $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
-            ->method('setData')
-            ->with($info);
-
-        self::assertInstanceOf(
-            Account::class,
-            $object->injectDataInto(['billingInformation' => $form])
-        );
-    }
-
-    /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
-     */
-    public function testSetBillingInformation()
-    {
-        $argument = new BillingInformation();
-
-        $object = $this->buildObject();
-        self::assertInstanceOf(
-            \get_class($object),
-            $object->setBillingInformation($argument)
-        );
-
-        $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
-            ->method('setData')
-            ->with($argument);
-
-        self::assertInstanceOf(
-            Account::class,
-            $object->injectDataInto(['billingInformation' => $form])
-        );
-    }
-
-    public function testSetBillingInformationExceptionOnBadArgument()
-    {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setBillingInformation(new \stdClass());
-    }
-
-    /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
-     */
-    public function testGetPaymentInformation()
-    {
-        $argument = new PaymentInformation('fooBar');
-
-        $object = $this->generateObjectPopulated(['paymentInformation' => $argument]);
-
-        $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
-            ->method('setData')
-            ->with($argument);
-
-        self::assertInstanceOf(
-            Account::class,
-            $object->injectDataInto(['paymentInformation' => $form])
-        );
-    }
-
-    /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
-     */
-    public function testSetPaymentInformation()
-    {
-        $argument = new PaymentInformation('fooBar');
-
-        $object = $this->buildObject();
-        self::assertInstanceOf(
-            \get_class($object),
-            $object->setPaymentInformation($argument)
-        );
-
-        $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
-            ->method('setData')
-            ->with($argument);
-
-        self::assertInstanceOf(
-            Account::class,
-            $object->injectDataInto(['paymentInformation' => $form])
-        );
-    }
-
-    public function testSetPaymentInformationExceptionOnBadArgument()
-    {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setPaymentInformation(new \stdClass());
     }
 
     /**
@@ -332,8 +233,7 @@ class AccountTest extends TestCase
         self::assertInstanceOf(
             Account::class,
             $this->buildObject()
-                ->setBillingInformation($this->createMock(BillingInformation::class))
-                ->setPaymentInformation($this->createMock(PaymentInformation::class))
+                ->setName('foo')
                 ->canIPrepareNewJob($project, $job, $date, $env)
         );
     }
@@ -345,8 +245,7 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $this->buildObject()
-            ->setBillingInformation($this->createMock(BillingInformation::class))
-            ->setPaymentInformation($this->createMock(PaymentInformation::class))
+            ->setName('foo')
             ->canIPrepareNewJob(new \stdClass(), $job, new \DateTime('2018-05-01'), $env);
     }
 
@@ -357,8 +256,7 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $this->buildObject()
-            ->setBillingInformation($this->createMock(BillingInformation::class))
-            ->setPaymentInformation($this->createMock(PaymentInformation::class))
+            ->setName('foo')
             ->canIPrepareNewJob($project, new \stdClass(), new \DateTime('2018-05-01'), $env);
     }
 
@@ -370,8 +268,7 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $this->buildObject()
-            ->setBillingInformation($this->createMock(BillingInformation::class))
-            ->setPaymentInformation($this->createMock(PaymentInformation::class))
+            ->setName('foo')
             ->canIPrepareNewJob($project, $job, new \stdClass(), $env);
     }
 
@@ -382,8 +279,7 @@ class AccountTest extends TestCase
         $job = $this->createMock(Job::class);
 
         $this->buildObject()
-            ->setBillingInformation($this->createMock(BillingInformation::class))
-            ->setPaymentInformation($this->createMock(PaymentInformation::class))
+            ->setName('foo')
             ->canIPrepareNewJob($project, $job, new \DateTime('2018-05-01'), new \stdClass());
     }
 }

@@ -52,17 +52,13 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
-use Teknoo\East\Paas\Contracts\DbSource\Repository\BillingInformationRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
-use Teknoo\East\Paas\Contracts\DbSource\Repository\PaymentInformationRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ProjectRepositoryInterface;
 use Teknoo\East\Paas\EndPoint\NewProjectEndPoint;
 use Teknoo\East\Paas\Loader\AccountLoader;
-use Teknoo\East\Paas\Loader\BillingInformationLoader;
 use Teknoo\East\Paas\Loader\ClusterLoader;
 use Teknoo\East\Paas\Loader\JobLoader;
-use Teknoo\East\Paas\Loader\PaymentInformationLoader;
 use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
@@ -98,10 +94,8 @@ use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Writer\AccountWriter;
-use Teknoo\East\Paas\Writer\BillingInformationWriter;
 use Teknoo\East\Paas\Writer\ClusterWriter;
 use Teknoo\East\Paas\Writer\JobWriter;
-use Teknoo\East\Paas\Writer\PaymentInformationWriter;
 use Teknoo\East\Paas\Writer\ProjectWriter;
 use Teknoo\Recipe\Recipe;
 use Teknoo\Recipe\RecipeInterface;
@@ -113,10 +107,6 @@ return [
     //Loaders
     AccountLoader::class => create(AccountLoader::class)
         ->constructor(get(AccountRepositoryInterface::class)),
-    BillingInformationLoader::class => create(BillingInformationLoader::class)
-        ->constructor(get(BillingInformationRepositoryInterface::class)),
-    PaymentInformationLoader::class => create(PaymentInformationLoader::class)
-        ->constructor(get(PaymentInformationRepositoryInterface::class)),
     JobLoader::class => create(JobLoader::class)
         ->constructor(get(JobRepositoryInterface::class)),
     ProjectLoader::class => create(ProjectLoader::class)
@@ -126,10 +116,6 @@ return [
 
     //Writer
     AccountWriter::class => create(AccountWriter::class)
-        ->constructor(get(ManagerInterface::class), get(DatesService::class)),
-    BillingInformationWriter::class => create(BillingInformationWriter::class)
-        ->constructor(get(ManagerInterface::class), get(DatesService::class)),
-    PaymentInformationWriter::class => create(PaymentInformationWriter::class)
         ->constructor(get(ManagerInterface::class), get(DatesService::class)),
     ProjectWriter::class => create(ProjectWriter::class)
         ->constructor(get(ManagerInterface::class), get(DatesService::class)),
@@ -141,10 +127,6 @@ return [
     //Deleting
     'teknoo.east.paas.deleting.account' => create(DeletingService::class)
         ->constructor(get(AccountWriter::class), get(DatesService::class)),
-    'teknoo.east.paas.deleting.billing_information' => create(DeletingService::class)
-        ->constructor(get(BillingInformationWriter::class), get(DatesService::class)),
-    'teknoo.east.paas.deleting.payment_information' => create(DeletingService::class)
-        ->constructor(get(PaymentInformationWriter::class), get(DatesService::class)),
     'teknoo.east.paas.deleting.project' => create(DeletingService::class)
         ->constructor(get(ProjectWriter::class), get(DatesService::class)),
     'teknoo.east.paas.deleting.job' => create(DeletingService::class)

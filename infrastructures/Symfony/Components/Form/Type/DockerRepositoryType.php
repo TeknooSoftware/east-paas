@@ -46,7 +46,6 @@ class DockerRepositoryType extends AbstractType
     {
         parent::buildForm($builder, $options);
 
-        $builder->add('name', TextType::class, ['required' => true]);
         $builder->add('apiUrl', TextType::class, ['required' => true]);
         $builder->add('identity', XRegistryAuthType::class, ['required' => true]);
 
@@ -62,7 +61,6 @@ class DockerRepositoryType extends AbstractType
                 }
 
                 $forms = \iterator_to_array($forms);
-                $forms['name']->setData($data->getName());
                 $forms['apiUrl']->setData($data->getApiUrl());
                 $forms['identity']->setData($data->getIdentity());
             }
@@ -75,7 +73,6 @@ class DockerRepositoryType extends AbstractType
             {
                 $forms = \iterator_to_array($forms);
                 $data = new DockerRepository(
-                    (string) $forms['name']->getData(),
                     (string) $forms['apiUrl']->getData(),
                     $forms['identity']->getData()
                 );

@@ -2,20 +2,16 @@ parameters:
   #Admin
   #Admin form types
   teknoo.east.paas.symfony.form_type.account.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountType'
-  teknoo.east.paas.symfony.form_type.billing_information.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\BillingInformationType'
   teknoo.east.paas.symfony.form_type.environment.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\EnvironmentType'
   teknoo.east.paas.symfony.form_type.git_repository.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\GitRepositoryType'
-  teknoo.east.paas.symfony.form_type.payment_information.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\PaymentInformationType'
   teknoo.east.paas.symfony.form_type.project.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
   teknoo.east.paas.symfony.form_type.cluster.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType'
   teknoo.east.paas.symfony.form_type.ssh_identity.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\SshIdentityType'
 
   #Class
   teknoo.east.paas.symfony.account.class: 'Teknoo\East\Paas\Object\Account'
-  teknoo.east.paas.symfony.billing_information.class: 'Teknoo\East\Paas\Object\BillingInformation'
   teknoo.east.paas.symfony.environment.class: 'Teknoo\East\Paas\Object\Environment'
   teknoo.east.paas.symfony.git_repository.class: 'Teknoo\East\Paas\Object\GitRepository'
-  teknoo.east.paas.symfony.payment_information.class: 'Teknoo\East\Paas\Object\PaymentInformation'
   teknoo.east.paas.symfony.project.class: 'Teknoo\East\Paas\Object\Project'
   teknoo.east.paas.symfony.cluster.class: 'Teknoo\East\Paas\Object\Cluster'
   teknoo.east.paas.symfony.ssh_identity.class: 'Teknoo\East\Paas\Object\SshIdentity'

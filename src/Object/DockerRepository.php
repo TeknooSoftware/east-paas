@@ -48,32 +48,18 @@ class DockerRepository implements
     use ObjectTrait;
     use ImmutableTrait;
 
-    private ?string $name = null;
-
     private ?string $apiUrl = null;
 
     private ?IdentityInterface $identity = null;
 
     public function __construct(
-        string $name = '',
         string $apiUrl = '',
         ?IdentityInterface $identity = null
     ) {
         $this->uniqueConstructorCheck();
 
-        $this->name = $name;
         $this->apiUrl = $apiUrl;
         $this->identity = $identity;
-    }
-
-    public function getName(): string
-    {
-        return (string) $this->name;
-    }
-
-    public function __toString(): string
-    {
-        return (string) $this->name;
     }
 
     public function getApiUrl(): string
@@ -91,7 +77,6 @@ class DockerRepository implements
         $normalizer->injectData([
            '@class' => self::class,
            'id' => $this->getId(),
-           'name' => $this->getName(),
            'api_url' => $this->getApiUrl(),
            'identity' => $this->getIdentity(),
         ]);

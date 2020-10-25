@@ -34,8 +34,8 @@ use Teknoo\East\Paas\Object\Account\Active;
 use Teknoo\East\Paas\Object\Account\Inactive;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
-use Teknoo\States\Automated\Assertion\Property\IsInstanceOf;
-use Teknoo\States\Automated\Assertion\Property\IsNotInstanceOf;
+use Teknoo\States\Automated\Assertion\Property\IsEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
@@ -60,10 +60,6 @@ class Account implements
     }
 
     protected ?string $name = null;
-
-    protected ?BillingInformation $billingInformation = null;
-
-    protected ?PaymentInformation $paymentInformation = null;
 
     /**
      * @var Project[]
@@ -96,12 +92,9 @@ class Account implements
     {
         return [
             (new Property(Active::class))
-                ->with('billingInformation', new IsInstanceOf(BillingInformation::class))
-                ->with('paymentInformation', new IsInstanceOf(PaymentInformation::class)),
+                ->with('name', new IsNotEmpty()),
             (new Property(Inactive::class))
-                ->with('billingInformation', new IsNotInstanceOf(BillingInformation::class)),
-            (new Property(Inactive::class))
-                ->with('paymentInformation', new IsNotInstanceOf(PaymentInformation::class)),
+                ->with('name', new IsEmpty()),
         ];
     }
 
@@ -118,31 +111,6 @@ class Account implements
     public function setName(string $name): Account
     {
         $this->name = $name;
-        return $this;
-    }
-
-    private function getBillingInformation(): ?BillingInformation
-    {
-        return $this->billingInformation;
-    }
-
-    public function setBillingInformation(BillingInformation $billingInformation): Account
-    {
-        $this->billingInformation = $billingInformation;
-
-        $this->updateStates();
-
-        return $this;
-    }
-
-    private function getPaymentInformation(): ?PaymentInformation
-    {
-        return $this->paymentInformation;
-    }
-
-    public function setPaymentInformation(PaymentInformation $paymentInformation): Account
-    {
-        $this->paymentInformation = $paymentInformation;
 
         $this->updateStates();
 
@@ -179,14 +147,6 @@ class Account implements
 
         if (isset($forms['owner'])) {
             $forms['owner']->setData($this->getOwner());
-        }
-
-        if (isset($forms['billingInformation'])) {
-            $forms['billingInformation']->setData($this->getBillingInformation());
-        }
-
-        if (isset($forms['paymentInformation'])) {
-            $forms['paymentInformation']->setData($this->getPaymentInformation());
         }
 
         return $this;

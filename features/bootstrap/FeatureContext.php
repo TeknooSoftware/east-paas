@@ -24,7 +24,6 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
-use Teknoo\East\Paas\Object\BillingInformation;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\GitRepository;
@@ -32,7 +31,6 @@ use Teknoo\East\Paas\Object\DockerRepository;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Job as OriJob;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
-use Teknoo\East\Paas\Object\PaymentInformation;
 use Teknoo\East\Paas\Object\Project as OriProject;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
 use Teknoo\East\Website\Service\DatesService;
@@ -384,10 +382,8 @@ class FeatureContext implements Context
     {
         $this->sfContainer->set(ObjectManager::class, $this->buildObjectManager());
         $this->buildRepository(Account::class);
-        $this->buildRepository(BillingInformation::class);
         $this->buildRepository(Cluster::class);
         $this->buildRepository(Job::class);
-        $this->buildRepository(PaymentInformation::class);
         $this->buildRepository(Project::class);
         $this->buildRepository(Content::class);
         $this->buildRepository(Item::class);
@@ -409,8 +405,6 @@ class FeatureContext implements Context
             $id,
             $this->account = (new Account())->setId($this->accountId)
                 ->setName('Consumer Account')
-                ->setBillingInformation(new BillingInformation())
-                ->setPaymentInformation(new PaymentInformation())
         );
     }
 
@@ -461,7 +455,6 @@ class FeatureContext implements Context
     {
         $this->project->setImagesRepository(
             $this->imagesRepository = (new DockerRepository(
-                'foo',
                 'https://foo.bar'
             ))
         );
@@ -536,7 +529,6 @@ class FeatureContext implements Context
   "images_repository": {
     "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\DockerRepository",
     "id": "530651c2cd6937158eaf11d36b8eeed4",
-    "name": "fooBar",
     "api_url": "fooBar",
     "identity": {
       "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\XRegistryAuth",
@@ -627,7 +619,6 @@ EOF;
             'images_repository' => [
                 '@class' => DockerRepository::class,
                 'id' => '',
-                'name' => 'foo',
                 'api_url' => 'https://foo.bar',
                 'identity' => null,
             ],

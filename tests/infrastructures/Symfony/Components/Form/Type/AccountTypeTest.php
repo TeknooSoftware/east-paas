@@ -30,8 +30,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Website\Object\User as BaseUser;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountType;
 use Teknoo\East\Paas\Object\Account;
-use Teknoo\East\Paas\Object\BillingInformation;
-use Teknoo\East\Paas\Object\PaymentInformation;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -57,9 +55,6 @@ class AccountTypeTest extends TestCase
         return [
             'name' => 'fooBar',
             'owner' => new BaseUser(),
-            'billingInformation' => new BillingInformation(),
-            'paymentInformation' => new PaymentInformation(),
-            'paymentInformation' => new PaymentInformation(),
         ];
     }
 

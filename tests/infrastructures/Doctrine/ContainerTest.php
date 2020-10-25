@@ -30,16 +30,12 @@ use Doctrine\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
-use Teknoo\East\Paas\Contracts\DbSource\Repository\BillingInformationRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
-use Teknoo\East\Paas\Contracts\DbSource\Repository\PaymentInformationRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ProjectRepositoryInterface;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
-use Teknoo\East\Paas\Object\BillingInformation;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
-use Teknoo\East\Paas\Object\PaymentInformation;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
 
 /**
@@ -94,16 +90,6 @@ class ContainerTest extends TestCase
         $this->generateTestForRepository(Account::class, AccountRepositoryInterface::class);
     }
 
-    public function testBillingInformationRepository()
-    {
-        $this->generateTestForRepository(BillingInformation::class, BillingInformationRepositoryInterface::class);
-    }
-
-    public function testPaymentInformationRepository()
-    {
-        $this->generateTestForRepository(PaymentInformation::class, PaymentInformationRepositoryInterface::class);
-    }
-
     public function testProjectRepository()
     {
         $this->generateTestForRepository(Project::class, ProjectRepositoryInterface::class);
@@ -123,18 +109,6 @@ class ContainerTest extends TestCase
     {
         $this->expectException(\RuntimeException::class);
         $this->generateTestForRepositoryWithUnsupportedRepository(Account::class, AccountRepositoryInterface::class);
-    }
-
-    public function testBillingInformationRepositoryWithUnsupportedRepository()
-    {
-        $this->expectException(\RuntimeException::class);
-        $this->generateTestForRepositoryWithUnsupportedRepository(BillingInformation::class, BillingInformationRepositoryInterface::class);
-    }
-
-    public function testPaymentInformationRepositoryWithUnsupportedRepository()
-    {
-        $this->expectException(\RuntimeException::class);
-        $this->generateTestForRepositoryWithUnsupportedRepository(PaymentInformation::class, PaymentInformationRepositoryInterface::class);
     }
 
     public function testProjectRepositoryWithUnsupportedRepository()

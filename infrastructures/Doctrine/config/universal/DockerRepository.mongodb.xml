@@ -7,7 +7,6 @@
 
     <embedded-document name="Teknoo\East\Paas\Object\DockerRepository">
         <id type="string" strategy="UUID"/>
-        <field field-name="name" type="string" nullable="false"/>
         <field field-name="apiUrl" name="api_url" type="string" nullable="false"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
         <field field-name="updatedAt" name="updated_at" type="date" />

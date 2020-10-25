@@ -44,23 +44,7 @@ class DockerRepositoryTest extends TestCase
      */
     public function buildObject(): DockerRepository
     {
-        return new DockerRepository('fooName', 'fooBar', $this->createMock(IdentityInterface::class));
-    }
-
-    public function testGetName()
-    {
-        self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated(['name' => 'fooBar'])->getName()
-        );
-    }
-
-    public function testToString()
-    {
-        self::assertEquals(
-            'fooBar',
-            (string) $this->generateObjectPopulated(['name' => 'fooBar'])
-        );
+        return new DockerRepository('fooBar', $this->createMock(IdentityInterface::class));
     }
 
     public function testGetApiUrl()
@@ -102,7 +86,6 @@ class DockerRepositoryTest extends TestCase
             ->with([
                 '@class' => DockerRepository::class,
                 'id' => '123',
-                'name' => 'fooName',
                 'api_url' => 'fooBar',
                 'identity' => $this->createMock(IdentityInterface::class),
             ]);
