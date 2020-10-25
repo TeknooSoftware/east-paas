@@ -68,8 +68,8 @@ class ClusterCredentialsType extends AbstractType
                 $forms['serverCertificate']->setData($data->getServerCertificate());
                 $forms['privateKey']->setData($data->getPrivateKey());
                 $forms['publicKey']->setData($data->getPublicKey());
-                $forms['username']->setData($data->getPrivateKey());
-                $forms['password']->setData($data->getPublicKey());
+                $forms['username']->setData($data->getUsername());
+                $forms['password']->setData($data->getPassword());
             }
 
             /**

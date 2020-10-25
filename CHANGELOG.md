@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.14] - 2020-10-25
+###Stable Release
+- Fix mistake in ClusterCredentialsType
+
 ##[0.0.13] - 2020-10-25
 ###Stable Release
 - Require Teknoo/States ^4.1.3
