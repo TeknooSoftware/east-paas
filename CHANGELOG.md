@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.13] - 2020-10-25
+###Stable Release
+- Require Teknoo/States ^4.1.3
+
 ##[0.0.12] - 2020-10-23
 ###Dev Release
 - QA
