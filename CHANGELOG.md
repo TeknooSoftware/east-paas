@@ -3,6 +3,7 @@
 ##[0.0.13] - 2020-10-25
 ###Stable Release
 - Require Teknoo/States ^4.1.3
+- Remove useless code : BillingInformation, PaymentInformation, DockerRepository's name
 
 ##[0.0.12] - 2020-10-23
 ###Dev Release
