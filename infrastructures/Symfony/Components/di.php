@@ -30,7 +30,6 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer;
-use Psr\Container\ContainerInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
 use Symfony\Component\Yaml\Parser;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
