@@ -12,6 +12,9 @@ parameters:
             message: '#Cannot access an offset on iterable#'
             path: src/Object/Job/Pending.php
         -
+            message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z0-9\\_]+\|null.#'
+            path: src/Object/Job/Terminated.php
+        -
             message: '#Cannot call method canIPrepareNewJob\(\) on [a-zA-Z0-9\\_]+\|null.#'
             path: src/Object/Project/Executable.php
         -

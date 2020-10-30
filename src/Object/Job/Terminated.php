@@ -44,11 +44,6 @@ class Terminated implements StateInterface
         return function (PromiseInterface $promise): Job {
             $code = 501;
             $history = $this->getHistory();
-            if (!$history instanceof History) {
-                $promise->fail(new \RuntimeException('teknoo.east.paas.error.job.unknown_error', 500));
-
-                return $this;
-            }
 
             $extra = $history->getExtra();
             if (isset($extra['code'])) {

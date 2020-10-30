@@ -445,6 +445,24 @@ class JobTest extends TestCase
         self::assertInstanceOf(Job::class, $object->isRunnable($promise));
     }
 
+    public function testJobTerminatedIsRunnableWithoutHistory()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        $object = (new Job())
+            ->setId('test')
+            ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
+            ->setEnvironment(new Environment('foo'))
+            ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
+            ->setImagesRepository($repo = $this->createMock(ImagesRepositoryInterface::class))
+            ->addCluster($this->createMock(Cluster::class))
+            ->addToHistory('foo', new \DateTimeImmutable('2018-05-01'), true);
+
+        self::assertInstanceOf(Job::class, $object->isRunnable($promise));
+    }
+
     public function testJobExecutingIsRunnable()
     {
         $promise = $this->createMock(PromiseInterface::class);
