@@ -586,10 +586,11 @@ EOF;
     }
 
     /**
-     * @Then with this body answer, in json, :body
+     * @Then with this body answer, the problem json, :body
      */
-    public function withThisBodyAnswerInJson($body)
+    public function withThisBodyAnswerTheProblemJson($body)
     {
+        Assert::assertEquals('application/problem+json', $this->response->headers->get('Content-Type'));
         $expected = \json_decode($body, true);
         $actual = \json_decode($this->response->getContent(), true);
         Assert::assertEquals($expected, $actual);

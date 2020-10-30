@@ -145,13 +145,13 @@ class PushResult
                 self::buildResponse(
                     (string) \json_encode(
                         [
-                            'error' => true,
-                            'message' => $error->getMessage(),
-                            'extra' => $error->getMessage()
+                            'type' => 'https://teknoo.software/probs/issue',
+                            'title' => $error->getMessage(),
+                            'status' => $errorCode,
                         ]
                     ),
                     $errorCode,
-                    'application/json',
+                    'application/problem+json',
                     $this->responseFactory,
                     $this->streamFactory
                 )

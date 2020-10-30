@@ -9,7 +9,7 @@ Feature: Create a job
     And a project on this account "fooBar Project" with the id "projectid"
     When I call the PaaS with this PUT request "/project/anotherid/environment/prod/job/create"
     Then I must obtain an HTTP answer with this status code equals to "404".
-    And with this body answer, in json, '{"error":true, "message":"teknoo.east.paas.error.recipe.project.not_found", "extra":"Object not found"}'
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.project.not_found", "status": 404, "detail":"Object not found"}'
 
   Scenario: Return an error 400 when the environment is not available in the project
     Given I have a configured platform
@@ -20,7 +20,7 @@ Feature: Create a job
     And a repository on the url "https://github.com/foo/bar"
     When I call the PaaS with this PUT request "/project/projectid/environment/dev/job/create"
     Then I must obtain an HTTP answer with this status code equals to "400".
-    And with this body answer, in json, '{"error":true, "message":"teknoo.east.paas.error.job.not_validated", "extra":"teknoo.east.paas.error.job.not_validated"}'
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.job.not_validated", "status": 400, "detail":"teknoo.east.paas.error.job.not_validated"}'
 
   Scenario: Return an error 501 when the project is not fully filled in the PaaS
     Given I have a configured platform
@@ -30,7 +30,7 @@ Feature: Create a job
     And a doctrine repository
     When I call the PaaS with this PUT request "/project/projectid/environment/prod/job/create"
     Then I must obtain an HTTP answer with this status code equals to "501".
-    And with this body answer, in json, '{"error":true,"message":"teknoo.east.paas.error.project.not_executable", "extra":"teknoo.east.paas.error.project.not_executable"}'
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.project.not_executable", "status": 501, "detail":"teknoo.east.paas.error.project.not_executable"}'
 
   Scenario: Return a valid JSON answer when the PaaS could create a job and send it to worker.
     Given I have a configured platform

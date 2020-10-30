@@ -62,13 +62,14 @@ trait ErrorTrait
                 self::buildResponse(
                     (string) \json_encode(
                         [
-                            'error' => true,
-                            'message' => $message,
-                            'extra' => $error->getMessage()
+                            'type' => 'https://teknoo.software/probs/issue',
+                            'title' => $message,
+                            'status' => $httpCode,
+                            'detail' => $error->getMessage(),
                         ]
                     ),
                     $httpCode,
-                    'application/json',
+                    'application/problem+json',
                     $responseFactory,
                     $streamFactory
                 )
