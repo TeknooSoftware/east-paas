@@ -45,11 +45,4 @@ class Generator implements StateInterface
             throw new \RuntimeException('Conductor is in generator state');
         };
     }
-
-    private function getWorkspace(): \Closure
-    {
-        return function (): JobWorkspaceInterface {
-            throw new \RuntimeException('Workspace is in generator state');
-        };
-    }
 }

@@ -154,29 +154,33 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
 
     public function prepare(string $configuration, PromiseInterface $promise): ConductorInterface
     {
-        $this->parseYaml(
-            $configuration,
-            new Promise(
-                function ($result) use ($promise) {
-                    $this->getJob()->updateVariablesIn(
-                        $result,
-                        new Promise(
-                            function ($result) use ($promise) {
-                                $this->configuration = $result;
+        try {
+            $this->parseYaml(
+                $configuration,
+                new Promise(
+                    function ($result) use ($promise) {
+                        $this->getJob()->updateVariablesIn(
+                            $result,
+                            new Promise(
+                                function ($result) use ($promise) {
+                                    $this->configuration = $result;
 
-                                $promise->success($result);
-                            },
-                            static function (\Throwable $error) use ($promise) {
-                                $promise->fail($error);
-                            }
-                        )
-                    );
-                },
-                static function (\Throwable $error) use ($promise) {
-                    $promise->fail($error);
-                }
-            )
-        );
+                                    $promise->success($result);
+                                },
+                                static function (\Throwable $error) use ($promise) {
+                                    $promise->fail($error);
+                                }
+                            )
+                        );
+                    },
+                    static function (\Throwable $error) use ($promise) {
+                        $promise->fail($error);
+                    }
+                )
+            );
+        } catch (\Throwable $error) {
+            $promise->fail($error);
+        }
 
         return $this;
     }

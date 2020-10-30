@@ -61,6 +61,35 @@ class CompiledDeploymentTest extends TestCase
         );
     }
 
+    public function testupdateImageWrongOldImage()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->updateImage(
+            new \stdClass(),
+            $this->createMock(Image::class)
+        );
+    }
+
+    public function testupdateImageWrongNewImage()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->updateImage(
+            $this->createMock(Image::class),
+            new \stdClass()
+        );
+    }
+
+    public function testupdateImage()
+    {
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $this->buildObject()->updateImage(
+                $this->createMock(Image::class),
+                $this->createMock(Image::class)
+            )
+        );
+    }
+
     public function testDefineHookWrongHook()
     {
         $this->expectException(\TypeError::class);

@@ -39,10 +39,10 @@ trait ImageTrait
      * @param array<string, mixed> $new
      * @return array<string, mixed>
      */
-    private static function mergeConfigurations(array $original, array $new): array
+    private static function mergeConfigurations(array $original, iterable $new): array
     {
         foreach ($new as $key => &$value) {
-            if (isset($original[$key]) && is_array($value)) {
+            if (isset($original[$key]) && \is_array($value)) {
                 $original[$key] = self::mergeConfigurations($original[$key], $value);
             } else {
                 $original[$key] = $value;
@@ -53,10 +53,10 @@ trait ImageTrait
     }
 
     /**
-     * @param array<string, array<string, mixed>> $imagesLibrary
+     * @param iterable<string, array<string, mixed>> $imagesLibrary
      */
     private function compileImages(
-        array $imagesLibrary,
+        iterable $imagesLibrary,
         CompiledDeployment $compiledDeployment,
         JobWorkspaceInterface $workspace
     ): callable {
