@@ -45,11 +45,8 @@ use function DI\get;
 
 return [
     DispatchJobInterface::class => get(DispatchJob::class),
-    DispatchJob::class => static function (ContainerInterface $container): DispatchJob {
-        return new DispatchJob(
-            $container->get('messenger.default_bus')
-        );
-    },
+    DispatchJob::class => create()
+        ->constructor(get('messenger.default_bus')),
 
     SymfonyPropertyAccessor::class => get('teknoo.east.paas.symfony.property_accessor'),
     PropertyAccessorInterface::class => get(PropertyAccessor::class),
