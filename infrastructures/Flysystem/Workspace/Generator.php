@@ -38,20 +38,6 @@ class Generator implements StateInterface
 {
     use StateTrait;
 
-    private function getJob(): \Closure
-    {
-        return function (): JobUnitInterface {
-            throw new \RuntimeException('Workspace is in generator state');
-        };
-    }
-
-    private function initFileSystem(): \Closure
-    {
-        return function (): void {
-            throw new \RuntimeException('Workspace is in generator state');
-        };
-    }
-
     private function doClean(): \Closure
     {
         return function (): void {

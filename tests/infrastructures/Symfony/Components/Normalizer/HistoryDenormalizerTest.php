@@ -59,6 +59,13 @@ class HistoryDenormalizerTest extends TestCase
         $this->buildNormalizer()->denormalize(['foo'=>'bar'], 'foo');
     }
 
+
+    public function testDenormalizeWithWrongDate()
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => 'fooo'], History::class);
+    }
+
     /**
      * @throws \Exception
      */

@@ -108,6 +108,29 @@ class WorkspaceTest extends TestCase
         $this->buildJobWorkspace()->writeFile($this->createMock(FileInterface::class), new \stdClass());
     }
 
+    public function testWriteFileWithAGenerator()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $file = $this->createMock(FileInterface::class);
+        $file->expects(self::any())->method('getName')->willReturn($name = 'foo');
+        $file->expects(self::any())->method('getContent')->willReturn($content = 'bar');
+        $file->expects(self::any())->method('getVisibility')->willReturn($v = FileInterface::VISIBILITY_PRIVATE);
+
+        $this->getJobMock()
+            ->expects(self::any())
+            ->method('getId')
+            ->willReturn('fooBar');
+
+        self::assertInstanceOf(
+            JobWorkspaceInterface::class,
+            $this->buildJobWorkspace()->writeFile($file, function ($name, $file) {
+                self::assertNotFalse(\strpos($name, '/foo'));
+                self::assertInstanceOf(FileInterface::class, $file);
+            })
+        );
+    }
+
     public function testWriteFileNotCallable()
     {
         $file = $this->createMock(FileInterface::class);
@@ -175,6 +198,22 @@ class WorkspaceTest extends TestCase
         $this->buildJobWorkspace()->prepareRepository(new \stdClass());
     }
 
+    public function testPrepareRepositoryWithGenerator()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $this->getJobMock()
+            ->expects(self::any())
+            ->method('getId')
+            ->willReturn('fooBar');
+
+        $repository = $this->createMock(CloningAgentInterface::class);
+        $repository->expects(self:: never())
+            ->method('cloningIntoPath');
+
+        $this->buildJobWorkspace()->prepareRepository($repository);
+    }
+
     public function testPrepareRepository()
     {
         $this->getJobMock()
@@ -200,6 +239,23 @@ class WorkspaceTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildJobWorkspace()->loadDeploymentIntoConductor(new \stdClass());
+    }
+
+    public function testLoadDeploymentIntoConductorWithGenerator()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $this->getJobMock()
+            ->expects(self::any())
+            ->method('getId')
+            ->willReturn('fooBar');
+
+        $conductor = $this->createMock(ConductorInterface::class);
+
+        $this->buildJobWorkspace()->loadDeploymentIntoConductor(
+            $conductor,
+            $this->createMock(PromiseInterface::class)
+        );
     }
 
     public function testLoadDeploymentIntoConductor()
@@ -329,5 +385,30 @@ class WorkspaceTest extends TestCase
         );
 
         self::assertTrue($called);
+    }
+
+    public function testCleanWithGenerator()
+    {
+        self::assertInstanceOf(
+            Workspace::class,
+            $this->buildJobWorkspace()->clean()
+        );
+    }
+
+    public function testClean()
+    {
+        $this->getFilesystemMock()
+            ->expects(self::any())
+            ->method('has')
+            ->willReturn(true);
+
+        $this->getFilesystemMock()
+            ->expects(self::once())
+            ->method('deleteDir');
+
+        self::assertInstanceOf(
+            Workspace::class,
+            $this->buildJobWorkspace()->setJob($this->getJobMock())->clean()
+        );
     }
 }

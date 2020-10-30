@@ -180,6 +180,18 @@ class CloningAgentTest extends TestCase
         );
     }
 
+    public function testRunWithGenerator()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $agent = $this->buildAgent();
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent->run()
+        );
+    }
+
     public function testRunWrongIdentityObject()
     {
         $this->expectException(\LogicException::class);
@@ -223,6 +235,17 @@ class CloningAgentTest extends TestCase
         $this->buildAgent()->cloningIntoPath(new \DateTime());
     }
 
+    public function testCloningIntoPathWithGenerator()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $agent = $this->buildAgent();
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent->cloningIntoPath($path = 'foo')
+        );
+    }
     public function testCloningIntoPath()
     {
         $identity = $this->createMock(SshIdentity::class);

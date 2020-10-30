@@ -47,13 +47,6 @@ class Generator implements StateInterface
         };
     }
 
-    private function getSshIdentity(): \Closure
-    {
-        return function (): SshIdentity {
-            throw new \RuntimeException('Agent is in generator state');
-        };
-    }
-
     private function getSourceRepository(): \Closure
     {
         return function (): GitRepository {

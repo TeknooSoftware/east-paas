@@ -37,18 +37,4 @@ use Teknoo\States\State\StateTrait;
 class Generator implements StateInterface
 {
     use StateTrait;
-
-    private function getUrl(): \Closure
-    {
-        return function (): string {
-            throw new \RuntimeException('Builder is in generator state');
-        };
-    }
-
-    private function getAuth(): \Closure
-    {
-        return function (): ?XRegistryAuth {
-            throw new \RuntimeException('Builder is in generator state');
-        };
-    }
 }

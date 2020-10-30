@@ -30,9 +30,7 @@ return [
     ComposerHook::class => static function (): ComposerHook {
         return new ComposerHook(
             __DIR__ . '/bin/composer.phar',
-            static function (array $command, string $cwd): Process {
-                return new Process($command, $cwd);
-            }
+            fn (array $command, string $cwd) => new Process($command, $cwd)
         );
     },
 ];
