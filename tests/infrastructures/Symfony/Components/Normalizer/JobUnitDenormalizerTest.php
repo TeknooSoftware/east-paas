@@ -94,10 +94,272 @@ class JobUnitDenormalizerTest extends TestCase
         $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['foo' => 'bar'], 'foo');
     }
 
+    public function testDenormalizeWithoutSourceRepository()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::any())
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => DockerRepository::class], DockerRepository::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                null,
+                $irepo = $this->createMock(ImagesRepositoryInterface::class),
+                $env = $this->createMock(Environment::class),
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => DockerRepository::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithoutImageRepository()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::any())
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => DockerRepository::class], DockerRepository::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                null,
+                $env = $this->createMock(Environment::class),
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => DockerRepository::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithoutEnvironment()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::any())
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => DockerRepository::class], DockerRepository::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $irepo = $this->createMock(ImagesRepositoryInterface::class),
+                null,
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => DockerRepository::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithoutCluster()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::any())
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => DockerRepository::class], DockerRepository::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $irepo = $this->createMock(ImagesRepositoryInterface::class),
+                $env = $this->createMock(Environment::class),
+                [],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => DockerRepository::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithoutClusterInstance()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::any())
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => DockerRepository::class], DockerRepository::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $irepo = $this->createMock(ImagesRepositoryInterface::class),
+                $env = $this->createMock(Environment::class),
+                [new \stdClass()],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => DockerRepository::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithoutHistory()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::any())
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => DockerRepository::class], DockerRepository::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $irepo = $this->createMock(ImagesRepositoryInterface::class),
+                $env = $this->createMock(Environment::class),
+                $clusters = [$this->createMock(Cluster::class)],
+                null
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => DockerRepository::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
     public function testDenormalize()
     {
-        $env = new Environment();
-
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::exactly(5))
             ->method('denormalize')
