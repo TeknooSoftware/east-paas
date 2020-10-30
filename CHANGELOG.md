@@ -1,5 +1,12 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.15] - 2020-10-30
+###Stable Release
+- Increase coverage
+- Improve DI
+- Implements Problem+json rfc7807
+- Update composer
+
 ##[0.0.14] - 2020-10-25
 ###Stable Release
 - Fix mistake in ClusterCredentialsType
