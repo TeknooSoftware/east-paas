@@ -44,11 +44,4 @@ class Generator implements StateInterface
             throw new \RuntimeException('Client is in generator state');
         };
     }
-
-    private function getCredentials(): \Closure
-    {
-        return function (): ?ClusterCredentials {
-            throw new \RuntimeException('Client is in generator state');
-        };
-    }
 }

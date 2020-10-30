@@ -125,6 +125,27 @@ class ClientTest extends TestCase
         );
     }
 
+    public function testDeployWithGenerator()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $cd = $this->createMock(CompiledDeployment::class);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        $client = $this->buildClient();
+
+        self::assertInstanceOf(
+            Client::class,
+            $client = $client->deploy(
+                $cd,
+                $promise
+            )
+        );
+    }
+
     public function testDeploy()
     {
         $kubeClient = $this->createMock(KubeClient::class);
@@ -284,6 +305,25 @@ class ClientTest extends TestCase
         $this->buildClient()->expose(
             $this->createMock(CompiledDeployment::class),
             new \stdClass()
+        );
+    }
+
+    public function testExposeWithGenerator()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $cd = $this->createMock(CompiledDeployment::class);
+
+        $promise = $this->createMock(PromiseInterface::class);
+
+        $client = $this->buildClient();
+
+        self::assertInstanceOf(
+            Client::class,
+            $client = $client->expose(
+                $cd,
+                $promise
+            )
         );
     }
 
