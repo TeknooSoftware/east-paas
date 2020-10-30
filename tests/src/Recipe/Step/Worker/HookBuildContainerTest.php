@@ -34,6 +34,7 @@ use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
@@ -121,15 +122,23 @@ class HookBuildContainerTest extends TestCase
                 return $hook1;
             }
         );
-        $hook2 = $this->createMock(HookInterface::class);
-        $hook2->expects(self::once())->method('setPath')->with('foo/bar');
-        $hook2->expects(self::once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook2) {
+
+        $hook2 = new class implements HookInterface, HookAwareInterface {
+            public function setContext(JobUnitInterface $jobUnit, JobWorkspaceInterface $workspace): HookAwareInterface {
+                return $this;
+            }
+            public function setPath(string $path): HookInterface {
+                return $this;
+            }
+            public function setOptions(array $options, PromiseInterface $promise): HookInterface {
+                return $this;
+            }
+            public function run(PromiseInterface $promise): HookInterface {
                 $promise->success('foo');
 
-                return $hook2;
+                return $this;
             }
-        );
+        };
 
         $workspace->expects(self::once())
             ->method('runInRoot')

@@ -108,7 +108,7 @@ class ContainerTest extends TestCase
     protected function buildImage() : Container
     {
         $containerDefinition = new ContainerBuilder();
-        $containerDefinition->addDefinitions(__DIR__.'/../../../src/di.php');
+        $containerDefinition->addDefinitions(__DIR__.'/../../src/di.php');
         $containerDefinition->addDefinitions([
             'teknoo.east.paas.worker.add_history_pattern' => 'foo',
         ]);
