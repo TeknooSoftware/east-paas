@@ -52,6 +52,7 @@
         "symfony/messenger": "~4.4||~5.1",
         "symfony/serializer": "~4.4||~5.1",
         "symfony/http-kernel": "~4.4||~5.1",
+        "symfony/console": "~4.4||~5.1",
         "symfony/psr-http-message-bridge": "~2.0",
         "symfony/security-core": "~4.4||~5.1",
         "teknoo/bridge-phpdi-symfony": "^4.0.0"
