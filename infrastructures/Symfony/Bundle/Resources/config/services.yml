@@ -54,3 +54,8 @@ services:
     arguments:
       - '@GuzzleHttp\Client'
       - '@logger'
+
+  teknoo.east.paas.symfony.command.run_job:
+    parent: 'Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand'
+    tags:
+      - {name: 'console.command' }
