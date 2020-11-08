@@ -87,7 +87,10 @@ class RunJobCommand extends Command
         }
 
         $stream = $this->streamFactory->createStream((string) $file);
-        $request = $this->serverRequestFactory->createServerRequest('PUT', 'cli://' . $this->getName());
+        $request = $this->serverRequestFactory->createServerRequest(
+            'PUT',
+            'cli://' . \str_replace(':', '.', $this->getName())
+        );
         $request = $request->withBody($stream);
 
         $client = new class ($output) implements ClientInterface {
