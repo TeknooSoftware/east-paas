@@ -89,7 +89,7 @@ class RunJobCommand extends Command
         $stream = $this->streamFactory->createStream((string) $file);
         $request = $this->serverRequestFactory->createServerRequest(
             'PUT',
-            \str_replace(':', '.', $this->getName())
+            \str_replace(':', '.', (string) $this->getName())
         );
         $request = $request->withBody($stream);
 
