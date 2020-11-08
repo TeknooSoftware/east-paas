@@ -26,6 +26,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony;
 
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Teknoo\East\Foundation\Manager\Manager;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
@@ -58,7 +59,7 @@ return [
         ->constructor(
             get('teknoo.east.paas.symfony.command.run_job.name'),
             get('teknoo.east.paas.symfony.command.run_job.description'),
-            get(ManagerInterface::class),
+            create(Manager::class),
             get(RunJobInterface::class),
             get(ServerRequestFactoryInterface::class),
             get(StreamFactoryInterface::class)

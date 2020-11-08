@@ -89,7 +89,7 @@ class RunJobCommand extends Command
         $stream = $this->streamFactory->createStream((string) $file);
         $request = $this->serverRequestFactory->createServerRequest(
             'PUT',
-            'cli://' . \str_replace(':', '.', $this->getName())
+            \str_replace(':', '.', $this->getName())
         );
         $request = $request->withBody($stream);
 
@@ -162,10 +162,8 @@ class RunJobCommand extends Command
             'client' => $client,
         ];
 
-        $this->runJob->prepare(
-            $workPlan,
-            $this->manager
-        );
+        $this->manager->read($this->runJob);
+        $this->manager->process($workPlan);
 
         return $client->returnCode;
     }
