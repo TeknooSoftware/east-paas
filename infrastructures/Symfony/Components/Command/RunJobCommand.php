@@ -44,8 +44,6 @@ class RunJobCommand extends Command
 {
     private const FILE_ARGUMENT_NAME = 'file';
 
-    private string $description;
-
     private ManagerInterface $manager;
 
     private RunJobInterface $runJob;
@@ -62,18 +60,17 @@ class RunJobCommand extends Command
         ServerRequestFactoryInterface $serverRequestFactory,
         StreamFactoryInterface $streamFactory
     ) {
-        parent::__construct($name);
-
-        $this->description = $description;
+        $this->setDescription($description);
         $this->manager = $manager;
         $this->runJob = $runJob;
         $this->serverRequestFactory = $serverRequestFactory;
         $this->streamFactory = $streamFactory;
+
+        parent::__construct($name);
     }
 
     protected function configure(): void
     {
-        $this->setDescription($this->description);
         $this->addArgument(static::FILE_ARGUMENT_NAME, InputArgument::REQUIRED, 'Filename');
     }
 
