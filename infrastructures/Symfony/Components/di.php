@@ -46,8 +46,14 @@ use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 
 use function DI\create;
 use function DI\get;
+use function DI\value;
 
 return [
+    'teknoo.east.paas.symfony.command.run_job.name' => value('teknoo:paas:run_job'),
+    'teknoo.east.paas.symfony.command.run_job.description' => value(
+        'Run job manually from json file, without PaaS server'
+    ),
+
     RunJobCommand::class => create()
         ->constructor(
             get('teknoo.east.paas.symfony.command.run_job.name'),
