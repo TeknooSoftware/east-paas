@@ -34,6 +34,7 @@ use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 
 /**
@@ -46,6 +47,8 @@ class RunJobCommand extends Command
 
     private ManagerInterface $manager;
 
+    private Client $client;
+
     private RunJobInterface $runJob;
 
     private ServerRequestFactoryInterface $serverRequestFactory;
@@ -56,12 +59,14 @@ class RunJobCommand extends Command
         string $name,
         string $description,
         ManagerInterface $manager,
+        Client $client,
         RunJobInterface $runJob,
         ServerRequestFactoryInterface $serverRequestFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->setDescription($description);
         $this->manager = $manager;
+        $this->client = $client;
         $this->runJob = $runJob;
         $this->serverRequestFactory = $serverRequestFactory;
         $this->streamFactory = $streamFactory;
@@ -93,69 +98,8 @@ class RunJobCommand extends Command
         );
         $request = $request->withBody($stream);
 
-        $client = new class ($output) implements ClientInterface {
-            private OutputInterface $output;
-
-            private ?ResponseInterface $response = null;
-
-            public int $returnCode = 0;
-
-            public function __construct(OutputInterface $output)
-            {
-                $this->output = $output;
-            }
-
-            private function getErrorOutput(): OutputInterface
-            {
-                if ($this->output instanceof ConsoleOutputInterface) {
-                    return $this->output->getErrorOutput();
-                }
-
-                return $this->output;
-            }
-
-            public function updateResponse(callable $modifier): ClientInterface
-            {
-                $modifier($this, $this->response);
-
-                return $this;
-            }
-
-            public function acceptResponse(ResponseInterface $response): ClientInterface
-            {
-                $this->response = $response;
-
-                return $this;
-            }
-
-            public function sendResponse(ResponseInterface $response = null, bool $silently = false): ClientInterface
-            {
-                if ($response instanceof ResponseInterface) {
-                    $this->acceptResponse($response);
-                }
-
-                if (true === $silently && !$this->response instanceof ResponseInterface) {
-                    return $this;
-                }
-
-                if ($this->response instanceof ResponseInterface) {
-                    $this->output->writeln((string) $this->response->getBody());
-                }
-
-                $this->response = null;
-
-                return $this;
-            }
-
-            public function errorInRequest(\Throwable $throwable): ClientInterface
-            {
-                $this->getErrorOutput()->writeln($throwable->getMessage());
-
-                $this->returnCode = 1;
-
-                return $this;
-            }
-        };
+        $client = clone $this->client;
+        $client->setOutput($output);
 
         $workPlan = [
             'request' => $request,
