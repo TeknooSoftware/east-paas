@@ -165,6 +165,8 @@ class RunJobCommand extends Command
         $this->manager->read($this->runJob);
         $this->manager->process($workPlan);
 
+        $client->sendResponse(null, true);
+
         return $client->returnCode;
     }
 }
