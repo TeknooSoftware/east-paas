@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.16] - 2020-11-11
+###Stable
+- Add Symfony command to run a job (thanks to cookbook) without start a PaaS server.
+
 ##[0.0.16-beta1] - 2020-11-07
 ###Beta release
 - Create Symfony command to run a job (thanks to cookbook) without start a PaaS server.
