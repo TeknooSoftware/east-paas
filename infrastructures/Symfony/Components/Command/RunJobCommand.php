@@ -24,15 +24,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Command;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
