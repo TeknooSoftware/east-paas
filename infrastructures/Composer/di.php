@@ -24,12 +24,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Composer;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 
 return [
-    ComposerHook::class => static function (): ComposerHook {
+    ComposerHook::class => static function (ContainerInterface $container): ComposerHook {
         return new ComposerHook(
-            __DIR__ . '/bin/composer.phar',
+            $container->get('teknoo.east.paas.composer.phar.path'),
             fn (array $command, string $cwd) => new Process($command, $cwd)
         );
     },

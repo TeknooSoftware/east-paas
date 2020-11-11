@@ -50,6 +50,7 @@ class ContainerTest extends TestCase
     public function testComposerHook()
     {
         $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.composer.phar.path', '/foo/composer.phar');
 
         self::assertInstanceOf(
             ComposerHook::class,
