@@ -14,7 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2020 Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -144,7 +145,9 @@ class RunJob implements RunJobInterface
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
-        $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
+        $recipe = $recipe->require(
+            new Ingredient(ServerRequestInterface::class, 'request')
+        );
 
         $notification = $this->stepSendHistory;
         $notificationMapping = ['step' => BowlInterface::METHOD_NAME];
