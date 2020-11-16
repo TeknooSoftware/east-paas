@@ -1,15 +1,25 @@
 {
     "name": "teknoo/east-paas",
-    "description": "Universal package, following the #East programming philosophy, build on Teknoo/East-Foundation (and Teknoo/Recipe) to implement a custom PaaS manager like platform.sh, compatible with Docker and Kubernetes",
-    "license": "MIT",
     "type": "library",
+    "description": "Universal package, following the #East programming philosophy, build on Teknoo/East-Foundation (and Teknoo/Recipe) to implement a custom PaaS manager like platform.sh, compatible with Docker and Kubernetes",
     "keywords": ["east","paas","docker","kubernetes","platform","service","ci", "cd","continuous delivery","platform.sh","heroku"],
     "homepage": "http://teknoo.software/paas",
+    "license": "MIT",
     "authors": [
         {
             "name": "Richard Déloge",
             "email": "richarddeloge@gmail.com",
             "role":"Software architect, Lead developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/TeknooSoftware/east-paas/issues",
+        "source": "https://github.com/TeknooSoftware/east-paas"
+    },
+    "funding": [
+        {
+            "type": "patreon",
+            "url": "https://www.patreon.com/teknoo_software"
         }
     ],
     "require": {
