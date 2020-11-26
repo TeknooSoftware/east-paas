@@ -23,7 +23,7 @@
         }
     ],
     "require": {
-        "php": "~7.4",
+        "php": "~7.4||~8.0",
         "ext-json": "*",
         "php-di/php-di": "~6.2",
         "psr/http-client": "~1.0",
