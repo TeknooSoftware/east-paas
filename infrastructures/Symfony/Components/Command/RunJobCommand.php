@@ -102,6 +102,7 @@ class RunJobCommand extends Command
         $workPlan = [
             'request' => $request,
             'client' => $client,
+            OutputInterface::class => $output,
         ];
 
         $this->manager->read($this->runJob);

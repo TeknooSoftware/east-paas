@@ -42,12 +42,15 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory;
+use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer;
+use Teknoo\East\Website\Service\DatesService;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -216,6 +219,29 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             Serializer::class,
             $container->get(Serializer::class)
+        );
+    }
+
+    public function testDisplayHistory()
+    {
+        $container = $this->buildContainer();
+        $container->set(DatesService::class, $this->createMock(DatesService::class));
+
+        self::assertInstanceOf(
+            DisplayHistory::class,
+            $container->get(DisplayHistory::class)
+        );
+    }
+
+    public function testDisplayResult()
+    {
+        $container = $this->buildContainer();
+        $container->set(DatesService::class, $this->createMock(DatesService::class));
+        $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
+
+        self::assertInstanceOf(
+            DisplayResult::class,
+            $container->get(DisplayResult::class)
         );
     }
 }
