@@ -37,10 +37,14 @@ use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
 use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
+use Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP;
+use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
 use Teknoo\East\Website\DBSource\ManagerInterface;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Website\Service\DeletingService;
@@ -84,12 +88,10 @@ use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
 use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
 use Teknoo\East\Paas\Recipe\Step\Job\PrepareJob;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
-use Teknoo\East\Paas\Recipe\Step\Misc\PushResult;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
 use Teknoo\East\Paas\Recipe\Step\History\SerializeHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
@@ -173,7 +175,8 @@ return [
             get(StreamFactoryInterface::class)
         ),
     ReceiveHistory::class => create(),
-    SendHistory::class => create()
+    DispatchHistoryInterface::class => get(SendHistoryOverHTTP::class),
+    SendHistoryOverHTTP::class => create()
         ->constructor(
             get(DatesService::class),
             get('teknoo.east.paas.worker.add_history_pattern'),
@@ -235,7 +238,8 @@ return [
             $container->get(StreamFactoryInterface::class)
         );
     },
-    PushResult::class => create()
+    DispatchResultInterface::class => get(PushResultOverHTTP::class),
+    PushResultOverHTTP::class => create()
         ->constructor(
             get(DatesService::class),
             get('teknoo.east.paas.worker.add_history_pattern'),
@@ -261,13 +265,13 @@ return [
     //Worker
     BuildImages::class => create()
         ->constructor(
-            get(SendHistory::class),
+            get(DispatchHistoryInterface::class),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     BuildVolumes::class => create()
         ->constructor(
-            get(SendHistory::class),
+            get(DispatchHistoryInterface::class),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
@@ -299,19 +303,19 @@ return [
         ),
     Deploying::class => create()
         ->constructor(
-            get(SendHistory::class),
+            get(DispatchHistoryInterface::class),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     Exposing::class => create()
         ->constructor(
-            get(SendHistory::class),
+            get(DispatchHistoryInterface::class),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     HookBuildContainer::class => create()
         ->constructor(
-            get(SendHistory::class),
+            get(DispatchHistoryInterface::class),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
@@ -363,7 +367,7 @@ return [
     RunJob::class => create()
         ->constructor(
             get(RecipeInterface::class),
-            get(SendHistory::class),
+            get(DispatchHistoryInterface::class),
             get(ReceiveJob::class),
             get(DeserializeJob::class),
             get(PrepareWorkspace::class),
@@ -379,7 +383,7 @@ return [
             get(ConfigureClusterClient::class),
             get(Deploying::class),
             get(Exposing::class),
-            get(PushResult::class),
+            get(DispatchResultInterface::class),
             get(DisplayHistory::class),
             get(DisplayError::class),
         ),

@@ -27,12 +27,12 @@ namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Step\History\DisplayHistory;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
 use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
-use Teknoo\East\Paas\Recipe\Step\Misc\PushResult;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -59,7 +59,7 @@ class RunJob implements RunJobInterface
 {
     use CookbookTrait;
 
-    private SendHistory $stepSendHistory;
+    private DispatchHistoryInterface $stepDispatchHistory;
 
     private ReceiveJob $stepReceiveJob;
 
@@ -91,7 +91,7 @@ class RunJob implements RunJobInterface
 
     private Exposing $stepExposing;
 
-    private PushResult $stepPushResult;
+    private DispatchResultInterface $stepDispatchResult;
 
     private DisplayHistory $stepDisplayHistory;
 
@@ -99,7 +99,7 @@ class RunJob implements RunJobInterface
 
     public function __construct(
         RecipeInterface $recipe,
-        SendHistory $stepSendHistory,
+        DispatchHistoryInterface $stepDispatchHistory,
         ReceiveJob $stepReceiveJob,
         DeserializeJob $stepDeserializeJob,
         PrepareWorkspace $stepPrepareWorkspace,
@@ -115,11 +115,11 @@ class RunJob implements RunJobInterface
         ConfigureClusterClient $stepConfigureClusterClient,
         Deploying $stepDeploying,
         Exposing $stepExposing,
-        PushResult $stepPushResult,
+        DispatchResultInterface $stepDispatchResult,
         DisplayHistory $stepDisplayHistory,
         DisplayError $stepDisplayError
     ) {
-        $this->stepSendHistory = $stepSendHistory;
+        $this->stepDispatchHistory = $stepDispatchHistory;
         $this->stepReceiveJob = $stepReceiveJob;
         $this->stepDeserializeJob = $stepDeserializeJob;
         $this->stepPrepareWorkspace = $stepPrepareWorkspace;
@@ -135,7 +135,7 @@ class RunJob implements RunJobInterface
         $this->stepConfigureClusterClient = $stepConfigureClusterClient;
         $this->stepDeploying = $stepDeploying;
         $this->stepExposing = $stepExposing;
-        $this->stepPushResult = $stepPushResult;
+        $this->stepDispatchResult = $stepDispatchResult;
         $this->stepDisplayHistory = $stepDisplayHistory;
         $this->stepDisplayError = $stepDisplayError;
 
@@ -149,7 +149,7 @@ class RunJob implements RunJobInterface
             new Ingredient(ServerRequestInterface::class, 'request')
         );
 
-        $notification = $this->stepSendHistory;
+        $notification = $this->stepDispatchHistory;
         $notificationMapping = ['step' => BowlInterface::METHOD_NAME];
 
         //Startup Run
@@ -342,8 +342,8 @@ class RunJob implements RunJobInterface
 
         //Final
         $recipe = $recipe->cook(
-            $this->stepPushResult,
-            PushResult::class,
+            $this->stepDispatchResult,
+            DispatchResultInterface::class,
             [],
             RunJobInterface::STEP_FINAL
         );
@@ -355,7 +355,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_FINAL
         );
 
-        $recipe = $recipe->onError(new Bowl($this->stepPushResult, ['result' => 'exception']));
+        $recipe = $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
         $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 
         return $recipe;

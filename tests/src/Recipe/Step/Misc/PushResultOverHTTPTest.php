@@ -41,18 +41,18 @@ use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Paas\Recipe\Step\Misc\PushResult;
+use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Recipe\Step\Misc\PushResult
+ * @covers \Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP
  * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
  * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  * @covers \Teknoo\East\Paas\Recipe\Traits\RequestTrait
  */
-class PushResultTest extends TestCase
+class PushResultOverHTTPTest extends TestCase
 {
     /**
      * @var DatesService
@@ -158,9 +158,9 @@ class PushResultTest extends TestCase
         return $this->streamFactory;
     }
 
-    public function buildStep(): PushResult
+    public function buildStep(): PushResultOverHTTP
     {
-        return new PushResult(
+        return new PushResultOverHTTP(
             $this->getDateTimeServiceMock(),
             'https://foo.bar',
             $this->getNormalizer(),
@@ -254,7 +254,7 @@ class PushResultTest extends TestCase
             ->method('sendRequest');
 
         self::assertInstanceOf(
-            PushResult::class,
+            PushResultOverHTTP::class,
             ($this->buildStep())($manager, $client, $job, $result)
         );
     }
@@ -329,7 +329,7 @@ class PushResultTest extends TestCase
             ->method('sendRequest');
 
         self::assertInstanceOf(
-            PushResult::class,
+            PushResultOverHTTP::class,
             ($this->buildStep())($manager, $client, $job)
         );
     }
@@ -418,7 +418,7 @@ class PushResultTest extends TestCase
             ->with(new \Exception('foo'));
 
         self::assertInstanceOf(
-            PushResult::class,
+            PushResultOverHTTP::class,
             ($this->buildStep())($manager, $client, $job, $result)
         );
     }

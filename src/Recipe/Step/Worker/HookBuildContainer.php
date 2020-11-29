@@ -34,8 +34,8 @@ use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
@@ -48,14 +48,14 @@ class HookBuildContainer
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private SendHistory $sendHistory;
+    private DispatchHistoryInterface $dispatchHistory;
 
     public function __construct(
-        SendHistory $sendHistory,
+        DispatchHistoryInterface $dispatchHistory,
         ResponseFactoryInterface $responseFactory,
         StreamFactoryInterface $streamFactory
     ) {
-        $this->sendHistory = $sendHistory;
+        $this->dispatchHistory = $dispatchHistory;
         $this->setResponseFactory($responseFactory);
         $this->setStreamFactory($streamFactory);
     }
@@ -72,7 +72,7 @@ class HookBuildContainer
                 $inError = false;
                 $promise = new Promise(
                     function (string $buildSuccess) use ($jobUnit) {
-                        ($this->sendHistory)(
+                        ($this->dispatchHistory)(
                             $jobUnit,
                             static::class . ':Result',
                             ['hook_output' => $buildSuccess]

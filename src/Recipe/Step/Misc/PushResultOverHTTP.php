@@ -32,6 +32,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -45,7 +46,7 @@ use Teknoo\East\Paas\Recipe\Traits\RequestTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class PushResult
+class PushResultOverHTTP implements DispatchResultInterface
 {
     use ErrorTrait;
     use PsrFactoryTrait;
@@ -92,7 +93,7 @@ class PushResult
                                 function ($extra) use ($manager, $now, &$url) {
                                     $history = new History(
                                         null,
-                                        static::class,
+                                        DispatchResultInterface::class,
                                         $now,
                                         true,
                                         $extra
@@ -129,7 +130,7 @@ class PushResult
         JobUnitInterface $job,
         $result = null,
         ?\Throwable $exception = null
-    ): PushResult {
+    ): DispatchResultInterface {
         if (empty($result)) {
             $result = [];
         }

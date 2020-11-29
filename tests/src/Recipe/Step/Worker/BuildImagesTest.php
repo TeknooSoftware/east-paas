@@ -37,7 +37,7 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 
 /**
@@ -49,18 +49,18 @@ use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
  */
 class BuildImagesTest extends TestCase
 {
-    private ?SendHistory $sendHistory = null;
+    private ?DispatchHistoryInterface $dispatchHistory = null;
 
     /**
-     * @return SendHistory|MockObject
+     * @return DispatchHistoryInterface|MockObject
      */
-    public function getSendHistoryMock(): SendHistory
+    public function getDispatchHistoryMock(): DispatchHistoryInterface
     {
-        if (!$this->sendHistory instanceof SendHistory) {
-            $this->sendHistory = $this->createMock(SendHistory::class);
+        if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
+            $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
         }
 
-        return $this->sendHistory;
+        return $this->dispatchHistory;
     }
 
     public function buildStep(): BuildImages
@@ -80,7 +80,7 @@ class BuildImagesTest extends TestCase
         );
 
         return new BuildImages(
-            $this->getSendHistoryMock(),
+            $this->getDispatchHistoryMock(),
             $responseFactory,
             $streamFactory
         );
@@ -169,7 +169,7 @@ class BuildImagesTest extends TestCase
                 }
             );
 
-        $this->getSendHistoryMock()->expects(self::once())
+        $this->getDispatchHistoryMock()->expects(self::once())
             ->method('__invoke')
             ->with($jobUnit, BuildImages::class . ':Result')
             ->willReturnSelf();
@@ -204,7 +204,7 @@ class BuildImagesTest extends TestCase
                 }
             );
 
-        $this->getSendHistoryMock()->expects(self::never())
+        $this->getDispatchHistoryMock()->expects(self::never())
             ->method('__invoke');
 
         $manager->expects(self::never())

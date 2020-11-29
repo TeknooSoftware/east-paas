@@ -26,13 +26,13 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\History\DisplayHistory;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
 use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
-use Teknoo\East\Paas\Recipe\Step\Misc\PushResult;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -63,7 +63,7 @@ class RunJobTest extends TestCase
     {
         return new RunJob(
             $this->createMock(RecipeInterface::class),
-            $this->createMock(SendHistory::class),
+            $this->createMock(DispatchHistoryInterface::class),
             $this->createMock(ReceiveJob::class),
             $this->createMock(DeserializeJob::class),
             $this->createMock(PrepareWorkspace::class),
@@ -79,7 +79,7 @@ class RunJobTest extends TestCase
             $this->createMock(ConfigureClusterClient::class),
             $this->createMock(Deploying::class),
             $this->createMock(Exposing::class),
-            $this->createMock(PushResult::class),
+            $this->createMock(DispatchResultInterface::class),
             $this->createMock(DisplayHistory::class),
             $this->createMock(DisplayError::class)
         );

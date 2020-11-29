@@ -37,8 +37,8 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as VolumeBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 
 /**
@@ -50,18 +50,18 @@ use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
  */
 class BuildVolumesTest extends TestCase
 {
-    private ?SendHistory $sendHistory = null;
+    private ?DispatchHistoryInterface $dispatchHistory = null;
 
     /**
-     * @return SendHistory|MockObject
+     * @return DispatchHistoryInterface|MockObject
      */
-    public function getSendHistoryMock(): SendHistory
+    public function getDispatchHistoryMock(): DispatchHistoryInterface
     {
-        if (!$this->sendHistory instanceof SendHistory) {
-            $this->sendHistory = $this->createMock(SendHistory::class);
+        if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
+            $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
         }
 
-        return $this->sendHistory;
+        return $this->dispatchHistory;
     }
 
     public function buildStep(): BuildVolumes
@@ -81,7 +81,7 @@ class BuildVolumesTest extends TestCase
         );
 
         return new BuildVolumes(
-            $this->getSendHistoryMock(),
+            $this->getDispatchHistoryMock(),
             $responseFactory,
             $streamFactory
         );
@@ -200,7 +200,7 @@ class BuildVolumesTest extends TestCase
                 }
             );
 
-        $this->getSendHistoryMock()->expects(self::once())
+        $this->getDispatchHistoryMock()->expects(self::once())
             ->method('__invoke')
             ->with($jobUnit, BuildVolumes::class . ':Result')
             ->willReturnSelf();
@@ -247,7 +247,7 @@ class BuildVolumesTest extends TestCase
                 }
             );
 
-        $this->getSendHistoryMock()->expects(self::never())
+        $this->getDispatchHistoryMock()->expects(self::never())
             ->method('__invoke');
 
         $manager->expects(self::never())

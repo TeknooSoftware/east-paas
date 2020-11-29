@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Website\Doctrine\Object\Content;
 use Teknoo\East\Website\Doctrine\Object\Item;
 use Teknoo\East\Website\Doctrine\Object\Media;
@@ -45,7 +46,6 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Recipe\Step\Misc\PushResult;
 use Symfony\Component\DependencyInjection\Container;
 
 /**
@@ -718,7 +718,7 @@ EOF;
     public function withTheFinalHistoryInTheBody($date)
     {
         $history = [
-            'message' => PushResult::class,
+            'message' => DispatchResultInterface::class,
             'date' => $this->historyDate = $date,
             'is_final' => true,
             'extra' => [],

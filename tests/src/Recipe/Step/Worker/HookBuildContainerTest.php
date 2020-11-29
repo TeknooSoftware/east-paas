@@ -38,7 +38,7 @@ use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
@@ -49,18 +49,18 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  */
 class HookBuildContainerTest extends TestCase
 {
-    private ?SendHistory $sendHistory = null;
+    private ?DispatchHistoryInterface $dispatchHistory = null;
 
     /**
-     * @return SendHistory|MockObject
+     * @return DispatchHistoryInterface|MockObject
      */
-    public function getSendHistoryMock(): SendHistory
+    public function getDispatchHistoryMock(): DispatchHistoryInterface
     {
-        if (!$this->sendHistory instanceof SendHistory) {
-            $this->sendHistory = $this->createMock(SendHistory::class);
+        if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
+            $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
         }
 
-        return $this->sendHistory;
+        return $this->dispatchHistory;
     }
 
     public function buildStep(): HookBuildContainer
@@ -80,7 +80,7 @@ class HookBuildContainerTest extends TestCase
         );
 
         return new HookBuildContainer(
-            $this->getSendHistoryMock(),
+            $this->getDispatchHistoryMock(),
             $responseFactory,
             $streamFactory
         );
@@ -162,7 +162,7 @@ class HookBuildContainerTest extends TestCase
                 }
             );
 
-        $this->getSendHistoryMock()->expects(self::exactly(2))
+        $this->getDispatchHistoryMock()->expects(self::exactly(2))
             ->method('__invoke')
             ->with($jobUnit, HookBuildContainer::class . ':Result')
             ->willReturnSelf();
@@ -221,7 +221,7 @@ class HookBuildContainerTest extends TestCase
                 }
             );
 
-        $this->getSendHistoryMock()->expects(self::never())
+        $this->getDispatchHistoryMock()->expects(self::never())
             ->method('__invoke');
 
         $manager->expects(self::never())
@@ -295,7 +295,7 @@ class HookBuildContainerTest extends TestCase
                 }
             );
 
-        $this->getSendHistoryMock()->expects(self::exactly(1))
+        $this->getDispatchHistoryMock()->expects(self::exactly(1))
             ->method('__invoke')
             ->with($jobUnit, HookBuildContainer::class . ':Result')
             ->willReturnSelf();

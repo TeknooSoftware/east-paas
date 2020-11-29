@@ -35,16 +35,16 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Recipe\Step\History\SendHistory
+ * @covers \Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP
  * @covers \Teknoo\East\Paas\Recipe\Traits\RequestTrait
  */
-class SendHistoryTest extends TestCase
+class SendHistoryOverHTTPTest extends TestCase
 {
     /**
      * @var DatesService
@@ -119,9 +119,9 @@ class SendHistoryTest extends TestCase
         return $this->streamFactory;
     }
 
-    public function buildStep(): SendHistory
+    public function buildStep(): SendHistoryOverHTTP
     {
-        return new SendHistory(
+        return new SendHistoryOverHTTP(
             $this->getDateTimeServiceMock(),
             'https://foo.bar',
             $this->getUriFactoryMock(),
@@ -180,7 +180,7 @@ class SendHistoryTest extends TestCase
             ->method('sendRequest');
 
         self::assertInstanceOf(
-            SendHistory::class,
+            SendHistoryOverHTTP::class,
             ($this->buildStep())($job, 'foo')
         );
     }

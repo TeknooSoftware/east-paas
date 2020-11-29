@@ -29,6 +29,7 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Client\ClientInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Object\History;
@@ -39,7 +40,7 @@ use Teknoo\East\Paas\Recipe\Traits\RequestTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class SendHistory
+class SendHistoryOverHTTP implements DispatchHistoryInterface
 {
     use RequestTrait;
 
@@ -95,7 +96,7 @@ class SendHistory
     /**
      * @param array<string, mixed> $extra
      */
-    public function __invoke(JobUnitInterface $job, string $step, array $extra = []): self
+    public function __invoke(JobUnitInterface $job, string $step, array $extra = []): DispatchHistoryInterface
     {
         $this->sendStep($job, $step, $extra);
 
