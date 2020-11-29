@@ -1,0 +1,6 @@
+services:
+  Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface:
+    alias: 'Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory'
+
+  Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface:
+    alias: 'Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult'
