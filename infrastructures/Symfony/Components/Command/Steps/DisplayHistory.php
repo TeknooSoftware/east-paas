@@ -51,7 +51,7 @@ class DisplayHistory implements DispatchHistoryInterface
         ?OutputInterface $output = null
     ): DispatchHistoryInterface {
         if (!$output) {
-           return $this;
+            return $this;
         }
 
         $this->dateTimeService->passMeTheDate(
