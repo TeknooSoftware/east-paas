@@ -37,8 +37,8 @@ use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
 use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
@@ -175,7 +175,15 @@ return [
             get(StreamFactoryInterface::class)
         ),
     ReceiveHistory::class => create(),
-    DispatchHistoryInterface::class => get(SendHistoryOverHTTP::class),
+
+    DHI::class . ':resolver' => static function (ContainerInterface $container): DHI {
+        if ($container->has(DHI::class)) {
+            return $container->get(DHI::class);
+        }
+
+        return $container->get(SendHistoryOverHTTP::class);
+    },
+
     SendHistoryOverHTTP::class => create()
         ->constructor(
             get(DatesService::class),
@@ -238,7 +246,15 @@ return [
             $container->get(StreamFactoryInterface::class)
         );
     },
-    DispatchResultInterface::class => get(PushResultOverHTTP::class),
+
+    DRI::class . ':resolver' => static function (ContainerInterface $container): DRI {
+        if ($container->has(DRI::class)) {
+            return $container->get(DRI::class);
+        }
+
+        return $container->get(PushResultOverHTTP::class);
+    },
+
     PushResultOverHTTP::class => create()
         ->constructor(
             get(DatesService::class),
@@ -265,13 +281,13 @@ return [
     //Worker
     BuildImages::class => create()
         ->constructor(
-            get(DispatchHistoryInterface::class),
+            get(DHI::class . ':resolver'),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     BuildVolumes::class => create()
         ->constructor(
-            get(DispatchHistoryInterface::class),
+            get(DHI::class . ':resolver'),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
@@ -303,19 +319,19 @@ return [
         ),
     Deploying::class => create()
         ->constructor(
-            get(DispatchHistoryInterface::class),
+            get(DHI::class . ':resolver'),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     Exposing::class => create()
         ->constructor(
-            get(DispatchHistoryInterface::class),
+            get(DHI::class . ':resolver'),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     HookBuildContainer::class => create()
         ->constructor(
-            get(DispatchHistoryInterface::class),
+            get(DHI::class . ':resolver'),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
@@ -367,7 +383,7 @@ return [
     RunJob::class => create()
         ->constructor(
             get(RecipeInterface::class),
-            get(DispatchHistoryInterface::class),
+            get(DHI::class . ':resolver'),
             get(ReceiveJob::class),
             get(DeserializeJob::class),
             get(PrepareWorkspace::class),
@@ -383,7 +399,7 @@ return [
             get(ConfigureClusterClient::class),
             get(Deploying::class),
             get(Exposing::class),
-            get(DispatchResultInterface::class),
+            get(DRI::class . ':resolver'),
             get(DisplayHistory::class),
             get(DisplayError::class),
         ),

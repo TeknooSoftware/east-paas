@@ -552,7 +552,6 @@ class ContainerTest extends TestCase
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
-
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
 
         self::assertInstanceOf(
@@ -562,7 +561,18 @@ class ContainerTest extends TestCase
 
         self::assertInstanceOf(
             PushResultOverHTTP::class,
-            $container->get(DispatchResultInterface::class)
+            $container->get(DispatchResultInterface::class . ':resolver')
+        );
+    }
+
+    public function testDispatchResultInterface() {
+
+        $container = $this->buildImage();
+        $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
+
+        self::assertNotInstanceOf(
+            SendHistoryOverHTTP::class,
+            $container->get(DispatchResultInterface::class . ':resolver')
         );
     }
 
@@ -630,7 +640,18 @@ class ContainerTest extends TestCase
 
         self::assertInstanceOf(
             SendHistoryOverHTTP::class,
-            $container->get(DispatchHistoryInterface::class)
+            $container->get(DispatchHistoryInterface::class . ':resolver')
+        );
+    }
+
+    public function testDispatchHistoryInterface() {
+
+        $container = $this->buildImage();
+        $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
+
+        self::assertNotInstanceOf(
+            SendHistoryOverHTTP::class,
+            $container->get(DispatchHistoryInterface::class . ':resolver')
         );
     }
 

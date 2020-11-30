@@ -55,6 +55,9 @@ class CommandListener implements EventSubscriberInterface
         $this->container = $container;
     }
 
+    /**
+     * @return  array<string, array<int, array<int, string>>>
+     */
     public static function getSubscribedEvents(): array
     {
         return [
