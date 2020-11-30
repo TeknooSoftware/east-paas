@@ -63,6 +63,8 @@ services:
       - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory'
       - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult'
       - '@service_container'
+    tags:
+      - { name: 'kernel.event_subscriber' }
 
   teknoo.east.paas.symfony.command.run_job:
     parent: 'Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand'
