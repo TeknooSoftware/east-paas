@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\EastPaasBundle\Listener;
+namespace Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber;
 
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -37,7 +37,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class CommandListener implements EventSubscriberInterface
+class CommandSubscriber implements EventSubscriberInterface
 {
     private DisplayHistory $stepDisplayHistory;
 
