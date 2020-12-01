@@ -8,7 +8,7 @@ parameters:
   teknoo.east.paas.symfony.messenger.transport.factory.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\TransportFactory'
   teknoo.east.paas.symfony.messenger.transport.guzzle.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\GuzzleTransport'
 
-  teknoo.east.paas.symfony.listener.command.class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Listener\CommandListener'
+  teknoo.east.paas.symfony.subscriber.command.class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
 
 services:
   teknoo.east.paas.symfony.property_accessor:
@@ -57,8 +57,8 @@ services:
       - '@GuzzleHttp\Client'
       - '@logger'
 
-  Teknoo\East\Paas\Infrastructures\EastPaasBundle\Listener\CommandListener:
-    class: '%teknoo.east.paas.symfony.listener.command.class%'
+  Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber:
+    class: '%teknoo.east.paas.symfony.subscriber.command.class%'
     arguments:
       - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory'
       - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult'
