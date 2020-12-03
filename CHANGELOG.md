@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.18] - 2020-12-03
+###Stable Release
+- Official Support of PHP8
+
 ##[0.0.17] - 2020-11-11
 ###Stable
 - Remove composer bin in Composer hook and replace by `teknoo.east.paas.composer.phar.path` parameter
