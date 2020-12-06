@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.19] - 2020-12-06
+###Stable Release
+- Display result and history in CLI when RunJob recipe is launch in CLI.
+
 ##[0.0.18] - 2020-12-03
 ###Stable Release
 - Official Support of PHP8
