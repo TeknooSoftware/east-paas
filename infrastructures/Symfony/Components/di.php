@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony;
 
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Manager\Manager;
@@ -48,6 +49,10 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Website\Service\DatesService;
+use Teknoo\Recipe\BaseRecipeInterface;
+use Teknoo\Recipe\ChefInterface;
+use Teknoo\Recipe\CookbookInterface;
+use Teknoo\Recipe\RecipeInterface;
 
 use function DI\create;
 use function DI\get;
@@ -59,13 +64,63 @@ return [
         'Run job manually from json file, without PaaS server'
     ),
 
+    RunJobInterface::class . ':proxy' => static function (ContainerInterface $container): RunJobInterface {
+        return new class ($container) implements RunJobInterface {
+            private ?RunJobInterface $runJob = null;
+
+            private ContainerInterface $container;
+
+            public function __construct(ContainerInterface $container)
+            {
+                $this->container = $container;
+            }
+
+            private function getRunJob(): RunJobInterface
+            {
+                if (null !== $this->runJob) {
+                    return $this->runJob;
+                }
+
+                return $this->runJob = $this->container->get(RunJobInterface::class);
+            }
+
+            public function train(ChefInterface $chef): BaseRecipeInterface
+            {
+                $this->getRunJob()->train($chef);
+
+                return $this;
+            }
+
+            public function prepare(array &$workPlan, ChefInterface $chef): BaseRecipeInterface
+            {
+                $this->getRunJob()->prepare($workPlan, $chef);
+
+                return $this;
+            }
+
+            public function validate($value): BaseRecipeInterface
+            {
+                $this->getRunJob()->validate($value);
+
+                return $this;
+            }
+
+            public function fill(RecipeInterface $recipe): CookbookInterface
+            {
+                $this->getRunJob()->fill($recipe);
+
+                return $this;
+            }
+        };
+    },
+
     RunJobCommand::class => create()
         ->constructor(
             get('teknoo.east.paas.symfony.command.run_job.name'),
             get('teknoo.east.paas.symfony.command.run_job.description'),
             create(Manager::class),
             create(Client::class),
-            get(RunJobInterface::class),
+            get(RunJobInterface::class . ':proxy'),
             get(ServerRequestFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
