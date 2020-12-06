@@ -100,6 +100,9 @@ use Teknoo\East\Paas\Writer\AccountWriter;
 use Teknoo\East\Paas\Writer\ClusterWriter;
 use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\East\Paas\Writer\ProjectWriter;
+use Teknoo\Recipe\BaseRecipeInterface;
+use Teknoo\Recipe\ChefInterface;
+use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\Recipe;
 use Teknoo\Recipe\RecipeInterface;
 
@@ -403,4 +406,56 @@ return [
             get(DisplayHistory::class),
             get(DisplayError::class),
         ),
+
+
+
+    RunJobInterface::class . ':proxy' => static function (ContainerInterface $container): RunJobInterface {
+        return new class ($container) implements RunJobInterface {
+            private ?RunJobInterface $runJob = null;
+
+            private ContainerInterface $container;
+
+            public function __construct(ContainerInterface $container)
+            {
+                $this->container = $container;
+            }
+
+            private function getRunJob(): RunJobInterface
+            {
+                if (null !== $this->runJob) {
+                    return $this->runJob;
+                }
+
+                return $this->runJob = $this->container->get(RunJobInterface::class);
+            }
+
+            public function train(ChefInterface $chef): BaseRecipeInterface
+            {
+                $this->getRunJob()->train($chef);
+
+                return $this;
+            }
+
+            public function prepare(array &$workPlan, ChefInterface $chef): BaseRecipeInterface
+            {
+                $this->getRunJob()->prepare($workPlan, $chef);
+
+                return $this;
+            }
+
+            public function validate($value): BaseRecipeInterface
+            {
+                $this->getRunJob()->validate($value);
+
+                return $this;
+            }
+
+            public function fill(RecipeInterface $recipe): CookbookInterface
+            {
+                $this->getRunJob()->fill($recipe);
+
+                return $this;
+            }
+        };
+    },
 ];

@@ -96,7 +96,9 @@ use Teknoo\East\Paas\Writer\AccountWriter;
 use Teknoo\East\Paas\Writer\ClusterWriter;
 use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\East\Paas\Writer\ProjectWriter;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\CookbookInterface;
+use Teknoo\Recipe\RecipeInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -758,6 +760,39 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             CookbookInterface::class,
             $container->get(RunJobInterface::class)
+        );
+    }
+
+    public function testRunJobProxy()
+    {
+        $container = $this->buildImage();
+
+        $container->set(RunJobInterface::class, $this->createMock(RunJobInterface::class));
+
+        self::assertInstanceOf(
+            RunJobInterface::class,
+            $proxy = $container->get(RunJobInterface::class . ':proxy')
+        );
+
+        self::assertInstanceOf(
+            RunJobInterface::class,
+            $proxy->train($this->createMock(ChefInterface::class))
+        );
+
+        $values = [];
+        self::assertInstanceOf(
+            RunJobInterface::class,
+            $proxy->prepare($values, $this->createMock(ChefInterface::class))
+        );
+
+        self::assertInstanceOf(
+            RunJobInterface::class,
+            $proxy->validate($values)
+        );
+
+        self::assertInstanceOf(
+            RunJobInterface::class,
+            $proxy->fill($this->createMock(RecipeInterface::class))
         );
     }
 
