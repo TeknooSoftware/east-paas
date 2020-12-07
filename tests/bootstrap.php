@@ -13,6 +13,8 @@ date_default_timezone_set('UTC');
 
 error_reporting(E_ALL | E_STRICT);
 
+ini_set('memory_limit', '128M');
+
 include 'fakeQuery.php';
 include 'fakeUOW.php';
 include __DIR__.'/../vendor/autoload.php';

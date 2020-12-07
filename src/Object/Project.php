@@ -31,7 +31,7 @@ use Teknoo\East\Website\Object\ObjectInterface;
 use Teknoo\East\Website\Object\ObjectTrait;
 use Teknoo\East\Website\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
-use Teknoo\East\Paas\Contracts\Object\ImagesRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Project\Draft;
 use Teknoo\East\Paas\Object\Project\Executable;
@@ -69,9 +69,9 @@ class Project implements
 
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
-    protected ?ImagesRepositoryInterface $imagesRepository = null;
+    protected ?ImageRegistryInterface $imagesRepository = null;
 
-    private ?DockerRepository $identity = null;
+    private ?ImageRegistry $identity = null;
 
     /**
      * @var array<int, Cluster>|iterable<Cluster>
@@ -109,7 +109,7 @@ class Project implements
         return [
             (new Property(Executable::class))
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
-                ->with('imagesRepository', new IsInstanceOf(ImagesRepositoryInterface::class))
+                ->with('imagesRepository', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0)),
             (new Callback(Draft::class))
                 ->call(function (Project $project, AssertionInterface $assertion) {
@@ -159,12 +159,12 @@ class Project implements
         return $this;
     }
 
-    private function getImagesRepository(): ?ImagesRepositoryInterface
+    private function getImagesRepository(): ?ImageRegistryInterface
     {
         return $this->imagesRepository;
     }
 
-    public function setImagesRepository(ImagesRepositoryInterface $repository): Project
+    public function setImagesRepository(ImageRegistryInterface $repository): Project
     {
         $this->imagesRepository = $repository;
 

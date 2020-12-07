@@ -97,12 +97,13 @@ class ConductorTest extends TestCase
                 'php-fpm-74' => [
                     'build-name' => 'php-fpm',
                     'tag' => '7.4',
-                    'path' => '/library/php-fpm/7.4/',
+                    'path' => 's/library/php-fpm/7.4/',
                 ],
             ],
             [
                 'composer' => $this->createMock(HookInterface::class)
-            ]
+            ],
+            'foo'
         );
     }
 
@@ -189,7 +190,7 @@ class ConductorTest extends TestCase
                     ]
                 ],
                 'foo' => [
-                    'build-name' => 'foo',
+                    'build-name' => 'regisry/foo',
                     'tag' => 'latest',
                     'path' => '/images/${FOO}'
                 ],
@@ -220,6 +221,28 @@ class ConductorTest extends TestCase
                             'image' => 'php-react',
                             'version' => 7.4,
                             'listen' => [8080]
+                        ],
+                        'php-composer' => [
+                            'replicas' => 3,
+                            'image' => 'registry/php-composer',
+                            'version' => 7.4,
+                            'volumes' => [
+                                'persistent_volume' => [
+                                    'persistent' => true,
+                                    'mount-path' => '/app/persistent/',
+                                ],
+                                'embedded' => [
+                                    'add' => [
+                                      'foo',
+                                      'bar',
+                                    ],
+                                    'mount-path' => '/app/embedded/',
+                                ],
+                                'other_name2' => [
+                                    'from' => 'main',
+                                    'mount-path' => '/app/vendor/',
+                                ],
+                            ]
                         ],
                     ],
                 ],
@@ -585,10 +608,11 @@ EOF;
         self::assertNotNull($out);
     }
 
-    public function testCompileDeploymentWuthNoVolume()
+    public function testCompileDeploymentWithNoVolume()
     {
         $result = $this->getResultArray();
         unset($result['volumes']);
+        unset($result['pods']['php-pod']['containers']['php-composer']);
 
         $conductor = $this->prepareTestForCompile($result);
 
@@ -647,7 +671,8 @@ EOF;
             ],
             new \ArrayIterator([
                 'composer' => $this->createMock(HookInterface::class)
-            ])
+            ]),
+            'foo'
         );
         $conductor = $this->prepareTestForCompile($result, $conductor);
 
@@ -694,7 +719,8 @@ EOF;
             ],
             new \ArrayIterator([
                 'composer' => $hook
-            ])
+            ]),
+            'foo'
         );
         $conductor = $this->prepareTestForCompile($result, $conductor);
 
@@ -746,6 +772,74 @@ EOF;
     {
         $result = $this->getResultArray();
         unset($result['pods']);
+
+        $conductor = $this->prepareTestForCompile($result);
+
+        $promise2 = $this->createMock(PromiseInterface::class);
+        $promise2->expects(self::never())->method('success');
+        $promise2->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment($promise2)
+        );
+    }
+
+    public function testCompileDeploymentWithVolumeWithoutMountPath()
+    {
+        $result = $this->getResultArray();
+        unset($result['pods']['php-pod']['containers']['php-composer']['volumes']['other_name2']['mount-path']);
+
+        $conductor = $this->prepareTestForCompile($result);
+
+        $promise2 = $this->createMock(PromiseInterface::class);
+        $promise2->expects(self::never())->method('success');
+        $promise2->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment($promise2)
+        );
+    }
+
+    public function testCompileDeploymentWithVolumeNotInDefinition()
+    {
+        $result = $this->getResultArray();
+        unset($result['volumes']);
+
+        $conductor = $this->prepareTestForCompile($result);
+
+        $promise2 = $this->createMock(PromiseInterface::class);
+        $promise2->expects(self::never())->method('success');
+        $promise2->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment($promise2)
+        );
+    }
+
+    public function testCompileDeploymentWithPersistentVolumeWithFromKey()
+    {
+        $result = $this->getResultArray();
+        $result['pods']['php-pod']['containers']['php-composer']['volumes']['persistent_volume']['from'] = 'main';
+
+        $conductor = $this->prepareTestForCompile($result);
+
+        $promise2 = $this->createMock(PromiseInterface::class);
+        $promise2->expects(self::never())->method('success');
+        $promise2->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment($promise2)
+        );
+    }
+
+    public function testCompileDeploymentWithPersistentVolumeWithAddKey()
+    {
+        $result = $this->getResultArray();
+        $result['pods']['php-pod']['containers']['php-composer']['volumes']['persistent_volume']['add'] = ['foo'];
 
         $conductor = $this->prepareTestForCompile($result);
 

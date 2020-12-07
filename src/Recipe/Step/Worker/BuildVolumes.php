@@ -77,7 +77,7 @@ class BuildVolumes
                             ($this->dispatchHistory)(
                                 $jobUnit,
                                 static::class . ':Result',
-                                ['docker_output' => $buildSuccess]
+                                ['build_output' => $buildSuccess]
                             );
                         },
                         static::buildFailurePromise(

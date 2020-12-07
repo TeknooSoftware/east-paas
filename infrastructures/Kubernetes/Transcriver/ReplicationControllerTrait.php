@@ -30,6 +30,8 @@ use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Container\Pod;
 use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
+use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -40,9 +42,8 @@ trait ReplicationControllerTrait
     /**
      * @param array<string, mixed> $specs
      * @param array<string, array<string, Image>>|Image[][] $images
-     * @param array<string, Volume>|Volume[] $volumes
      */
-    private static function convertToContainer(array &$specs, Pod $pod, array $images, array $volumes): void
+    private static function convertToContainer(array &$specs, Pod $pod, array $images): void
     {
         foreach ($pod as $container) {
             $image = $images[$container->getImage()][$container->getVersion()];
@@ -71,9 +72,9 @@ trait ReplicationControllerTrait
             $volumesMount = [];
             foreach ($container->getVolumes() as $volume) {
                 $volumesMount[] = [
-                    'name' => $volumes[$volume]->getName(),
-                    'mountPath' => $volumes[$volume]->getTarget(),
-                    'readOnly' => true,
+                    'name' => $volume->getName(),
+                    'mountPath' => $volume->getMountPath(),
+                    'readOnly' => $volume instanceof PopulatedVolumeInterface,
                 ];
             }
 
@@ -92,7 +93,18 @@ trait ReplicationControllerTrait
     private static function convertToVolumes(array &$specs, array $volumes): void
     {
         foreach ($volumes as $volume) {
-            $specs['spec']['template']['spec']['containers'][] = [
+            if ($volume instanceof PersistentVolumeInterface) {
+                $specs['spec']['template']['spec']['volumes'][] = [
+                    'name' => $volume->getName(),
+                    'persistentVolumeClaim' => [
+                        'claimName' => $volume->getStorageIdentifier(),
+                    ],
+                ];
+
+                continue;
+            }
+
+            $specs['spec']['template']['spec']['initContainers'][] = [
                 'name' => $volume->getName(),
                 'image' => $volume->getUrl(),
                 'imagePullPolicy' => 'Always',
@@ -144,7 +156,7 @@ trait ReplicationControllerTrait
         ];
 
         self::convertToVolumes($specs, $volumes);
-        self::convertToContainer($specs, $pod, $images, $volumes);
+        self::convertToContainer($specs, $pod, $images);
 
         return new ReplicationController($specs);
     }

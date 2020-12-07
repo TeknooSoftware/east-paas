@@ -1,5 +1,17 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.20] - 2021-01-01
+###Stable Release
+- Change definitions of volume in Pod
+- Manage external image from image registry
+- Rename DockerRepository to ImageRegistry
+- Pod's containers can use embedded volumes to build a new image with files from the git repository without use
+  and external volume to mount in Kubernetes.
+- Add nez type of Image called EmbedddedVolumeImage and interfaces BuildableInterface and RegistrableInterface
+- Change Docker to BuildKit
+- Image building with BuildKit use only pipes and environments variables without write temp files
+- Persistent volume
+
 ##[0.0.19] - 2020-12-06
 ###Stable Release
 - Display result and history in CLI when RunJob recipe is launch in CLI.

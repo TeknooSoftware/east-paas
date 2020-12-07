@@ -9,7 +9,7 @@ Teknoo Software - PaaS library
 [![PHPStan](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/phpstan/phpstan)
 
 Universal package, following the #East programming philosophy, build on Teknoo/East-Foundation (and Teknoo/Recipe) 
-to implement a custom PaaS manager like platform.sh, compatible with Docker and Kubernetes
+to implement a custom PaaS manager like platform.sh, compatible with Docker or any OCI implementation and Kubernetes.
 
 Example with Symfony
 --------------------
@@ -28,7 +28,7 @@ Example with Symfony
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Flysystem/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Git/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Kubernetes/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Docker/di.php'
+        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/BuildKit/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Composer/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Symfony/Components/di.php'
         - '%kernel.project_dir%/config/di.php'
@@ -157,7 +157,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
     images:
       foo:
         build-name: foo
-        tag: latest
+        tag: lastest
         path: '/images/${FOO}'
     
     #Hook to build the project before container, Called in this order
@@ -167,38 +167,41 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
     
     #Volume to build to use with container
     volumes:
-      main: #Name of the module
-        target: '/opt/paas/' #Path where data will be stored into the volume
+      extra: #Name of the volume
+        local_path: "/foo/bar" #optional local path where store data in the volume
         add: #folder or file, from .paas.yml where is located to add to the volume
-          - 'src'
-          - 'vendor'
-          - 'composer.json'
-          - 'composer.lock'
-          - 'composer.phar'
+          - 'extra'
       other_name: #Name of the volume
-        target: '/opt/vendor/' #Path where data will be stored into the volume
         add: #folder or file, from .paas.yml where is located to add to the volume
           - 'vendor'
-          
+    
     #Pods (set of container)
     pods:
       php-pods: #podset name
-        replicas: 1 #instance of pods
+        replicas: 2 #instance of pods
         containers:
-          foo-run:
-            image: foo
-            version: latest
-            volumes: #Volumes to link
-              - target
           php-run: #Container name
-            image: php-run #Container image to use
+            image: registry.teknoo.io/php-run #Container image to use
             version: 7.4
             listen: #Port listen by the container
               - 8080
             volumes: #Volumes to link
-              - main
+              extra:
+                from: 'extra'
+                mount-path: '/opt/extra' #Path where volume will be mount
+              app:
+                mount-path: '/opt/app' #Path where data will be stored
+                add: #folder or file, from .paas.yml where is located to add to the volume
+                  - 'src'
+                  - 'vendor'
+                  - 'composer.json'
+                  - 'composer.lock'
+                  - 'composer.phar'
+              data: #Persistent volume, can not be pre-populated
+                mount-path: '/opt/data'
+                persistent: true
             variables:
-              SERVER_SCRIPT: '/opt/paas/src/server.php'
+              SERVER_SCRIPT: '/opt/app/src/server.php'
     
     #Pods expositions
     services:

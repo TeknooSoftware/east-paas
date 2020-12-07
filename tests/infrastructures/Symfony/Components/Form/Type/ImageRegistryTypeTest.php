@@ -28,27 +28,27 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\DockerRepositoryType;
-use Teknoo\East\Paas\Object\DockerRepository;
+use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ImageRegistryType;
+use Teknoo\East\Paas\Object\ImageRegistry;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\DockerRepositoryType
+ * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ImageRegistryType
  */
-class DockerRepositoryTypeTest extends TestCase
+class ImageRegistryTypeTest extends TestCase
 {
     use FormTestTrait;
 
     public function buildForm()
     {
-        return new DockerRepositoryType();
+        return new ImageRegistryType();
     }
 
     private function getObject()
     {
-        return new DockerRepository();
+        return new ImageRegistry();
     }
 
     private function getFormArray(): array

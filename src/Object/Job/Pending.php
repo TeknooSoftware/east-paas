@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Object\Job;
 
 use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Contracts\Object\ImagesRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
@@ -79,7 +79,7 @@ class Pending implements StateInterface
 
     private function settingImagesRepository(): \Closure
     {
-        return function (ImagesRepositoryInterface $repository): Job {
+        return function (ImageRegistryInterface $repository): Job {
             $this->imagesRepository = $repository;
 
             $this->updateStates();

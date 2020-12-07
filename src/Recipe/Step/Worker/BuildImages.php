@@ -34,6 +34,7 @@ use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
@@ -61,29 +62,35 @@ class BuildImages
     public function __invoke(
         ImageBuilder $builder,
         CompiledDeployment $compiledDeployment,
+        JobWorkspaceInterface $workspace,
         JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
-        $builder->buildImages(
-            $compiledDeployment,
-            new Promise(
-                function (string $buildSuccess) use ($jobUnit) {
-                    ($this->dispatchHistory)(
-                        $jobUnit,
-                        static::class . ':Result',
-                        ['docker_output' => $buildSuccess]
-                    );
-                },
-                static::buildFailurePromise(
-                    $client,
-                    $manager,
-                    'teknoo.east.paas.error.recipe.images.building_error',
-                    500,
-                    $this->responseFactory,
-                    $this->streamFactory
-                )
-            )
+        $workspace->runInRoot(
+            function (string $root) use ($builder, $compiledDeployment, $jobUnit, $client, $manager) {
+                $builder->buildImages(
+                    $compiledDeployment,
+                    $root,
+                    new Promise(
+                        function (string $buildSuccess) use ($jobUnit) {
+                            ($this->dispatchHistory)(
+                                $jobUnit,
+                                static::class . ':Result',
+                                ['build_output' => $buildSuccess]
+                            );
+                        },
+                        static::buildFailurePromise(
+                            $client,
+                            $manager,
+                            'teknoo.east.paas.error.recipe.images.building_error',
+                            500,
+                            $this->responseFactory,
+                            $this->streamFactory
+                        )
+                    )
+                );
+            }
         );
 
         return $this;

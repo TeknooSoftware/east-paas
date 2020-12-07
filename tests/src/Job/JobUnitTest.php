@@ -35,7 +35,7 @@ use Teknoo\East\Paas\Job\JobUnit;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-use Teknoo\East\Paas\Contracts\Object\ImagesRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
@@ -57,7 +57,7 @@ class JobUnitTest extends TestCase
     private $sourceRepository;
     
     /**
-     * @var ImagesRepositoryInterface
+     * @var ImageRegistryInterface
      */
     private $imagesRepository;
 
@@ -79,12 +79,12 @@ class JobUnitTest extends TestCase
     }
 
     /**
-     * @return ImagesRepositoryInterface
+     * @return ImageRegistryInterface
      */
-    public function getImagesRepositoryMock(): ImagesRepositoryInterface
+    public function getImagesRepositoryMock(): ImageRegistryInterface
     {
-        if (!$this->imagesRepository instanceof ImagesRepositoryInterface) {
-            $this->imagesRepository = $this->createMock(ImagesRepositoryInterface::class);
+        if (!$this->imagesRepository instanceof ImageRegistryInterface) {
+            $this->imagesRepository = $this->createMock(ImageRegistryInterface::class);
 
             $this->imagesRepository->expects(self::any())->method('getApiUrl')->willReturn('foo');
             $this->imagesRepository->expects(self::any())->method('getIdentity')->willReturn(

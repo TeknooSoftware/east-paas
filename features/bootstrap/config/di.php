@@ -30,6 +30,7 @@ return [
             'path' => '/library/php-run/7.4/',
         ],
     ],
+    'teknoo.east.paas.default_storage_provider' => 'nfs',
     UriFactoryInterface::class => get(UriFactory::class),
     UriFactory::class => create(),
 

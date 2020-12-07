@@ -2,7 +2,7 @@
     "name": "teknoo/east-paas",
     "type": "library",
     "description": "Universal package, following the #East programming philosophy, build on Teknoo/East-Foundation (and Teknoo/Recipe) to implement a custom PaaS manager like platform.sh, compatible with Docker and Kubernetes",
-    "keywords": ["east","paas","docker","kubernetes","platform","service","ci", "cd","continuous delivery","platform.sh","heroku"],
+    "keywords": ["east","paas","buildkit","containerd","oci","docker","kubernetes","platform","service","ci", "cd","continuous delivery","platform.sh","heroku"],
     "homepage": "http://teknoo.software/paas",
     "license": "MIT",
     "authors": [
@@ -20,6 +20,10 @@
         {
             "type": "patreon",
             "url": "https://www.patreon.com/teknoo_software"
+        },
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/TeknooSoftware"
         }
     ],
     "require": {
@@ -73,7 +77,7 @@
         "psr-4": {
             "Teknoo\\East\\Paas\\": "src/",
             "Teknoo\\East\\Paas\\Infrastructures\\Composer\\": "infrastructures/Composer/",
-            "Teknoo\\East\\Paas\\Infrastructures\\Docker\\": "infrastructures/Docker/",
+            "Teknoo\\East\\Paas\\Infrastructures\\BuildKit\\": "infrastructures/BuildKit/",
             "Teknoo\\East\\Paas\\Infrastructures\\Doctrine\\": "infrastructures/Doctrine/",
             "Teknoo\\East\\Paas\\Infrastructures\\Flysystem\\": "infrastructures/Flysystem/",
             "Teknoo\\East\\Paas\\Infrastructures\\Git\\": "infrastructures/Git/",
@@ -87,7 +91,7 @@
         "psr-4": {
             "Teknoo\\Tests\\East\\Paas\\": "tests/src/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Composer\\": "tests/infrastructures/Composer/",
-            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Docker\\": "tests/infrastructures/Docker/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\BuildKit\\": "tests/infrastructures/BuildKit/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Doctrine\\\\": "tests/infrastructures/Doctrine/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Flysystem\\": "tests/infrastructures/Flysystem/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Git\\": "tests/infrastructures/Git/",

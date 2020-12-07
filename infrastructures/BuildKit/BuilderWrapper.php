@@ -23,15 +23,16 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Docker;
+namespace Teknoo\East\Paas\Infrastructures\BuildKit;
 
-use Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper\Generator;
-use Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper\Running;
-use Teknoo\East\Paas\Infrastructures\Docker\Contracts\ProcessFactoryInterface;
-use Teknoo\East\Paas\Infrastructures\Docker\Contracts\ScriptWriterInterface;
+use Teknoo\East\Paas\Container\EmbeddedVolumeImage;
+use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
+use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
+use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Generator;
+use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Running;
+use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Container\Volume;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -65,9 +66,9 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
 
     private ProcessFactoryInterface $processFactory;
 
-    private ScriptWriterInterface $scriptWriter;
+    private string $builderName;
 
-    private string $mountSuffix;
+    private string $platforms;
 
     private ?int $timeout;
 
@@ -84,24 +85,22 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
         string $binary,
         array $templates,
         ProcessFactoryInterface $processFactory,
-        ?int $timeout,
-        ScriptWriterInterface $scriptWriter,
-        string $mountSuffix
+        string $builderName,
+        string $platforms,
+        ?int $timeout
     ) {
-        if (empty($templates['image'])) {
-            throw new \DomainException('Missing image template');
-        }
-
-        if (empty($templates['volume'])) {
-            throw new \DomainException('Missing image template');
+        foreach (['image', 'embedded-volume-image', 'volume'] as $entry) {
+            if (empty($templates[$entry])) {
+                throw new \DomainException("Missing $entry template");
+            }
         }
 
         $this->binary = $binary;
         $this->templates = $templates;
         $this->processFactory = $processFactory;
+        $this->builderName = $builderName;
+        $this->platforms = $platforms;
         $this->timeout = $timeout;
-        $this->scriptWriter = $scriptWriter;
-        $this->mountSuffix = $mountSuffix;
 
         $this->initializeStateProxy();
         $this->updateStates();
@@ -151,22 +150,61 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
 
     public function buildImages(
         CompiledDeployment $compiledDeployment,
+        string $workingPath,
         PromiseInterface $promise
     ): BuilderInterface {
         $this->setTimeout();
 
         $processes = [];
         $compiledDeployment->foreachImage(
-            function (Image $image) use (&$processes, $compiledDeployment) {
-                //Prefix image with the repository url
-                $newImage = $image->updateUrl((string) $this->getUrl());
+            function (BuildableInterface $image) use (&$processes, $workingPath, $compiledDeployment) {
+                $newImage = $image->withRegistry((string) $this->getUrl());
                 $compiledDeployment->updateImage($image, $newImage);
 
-                $scriptFileName = $this->generateShellScriptForImage($newImage);
+                $template = 'image';
+                if ($image instanceof EmbeddedVolumeImage) {
+                    $template = 'embedded-volume-image';
+                }
 
-                $process = ($this->processFactory)([$scriptFileName], $newImage->getPath());
+                $script = $this->generateShellScript(
+                    $image->getVariables(),
+                    $image->getPath(),
+                    $image->getUrl() . ':' . $image->getTag(),
+                    $image->getName() . $this->hash($image->getName()),
+                    $template
+                );
 
-                $this->startProcess($process, $newImage->getVariables());
+                $path = $newImage->getPath();
+                if (empty($path) && $image instanceof EmbeddedVolumeImage) {
+                    $path = $workingPath;
+                }
+
+                $process = ($this->processFactory)($path);
+                $process->setInput($script);
+
+                $variables = $newImage->getVariables();
+                $variables['PAAS_BUILDKIT_BUILDER_NAME'] = $this->builderName;
+                $variables['PAAS_BUILDKIT_PLATFORM'] = $this->platforms;
+
+                if ($image instanceof EmbeddedVolumeImage) {
+                    $paths = [];
+                    foreach ($image->getVolumes() as $volume) {
+                        if ($volume instanceof PersistentVolumeInterface) {
+                            continue;
+                        }
+
+                        foreach ($volume->getPaths() as $path) {
+                            $paths[$path] = $volume->getMountPath() . '/' . $path;
+                        }
+                    }
+
+                    $variables['PAAS_DOCKERFILE_CONTENT'] = $this->generateDockerFile(
+                        $image->getOriginalName() . ':' . $image->getTag(),
+                        $paths
+                    );
+                }
+
+                $this->startProcess($process, $variables);
 
                 $processes[] = $process;
             }
@@ -187,18 +225,36 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
         $processes = [];
         $compiledDeployment->foreachVolume(
             function (string $name, Volume $volume) use (&$processes, $workingPath, $compiledDeployment) {
-                //Prefix image with the repository url
-                $newVolume = $volume->updateUrl((string) $this->getUrl());
-                $newVolume = $newVolume->updateMountPath(
-                    \rtrim($volume->getTarget(), '/') . $this->mountSuffix
+                $volumeUpdated = $volume->withRegistry((string) $this->getUrl());
+                $compiledDeployment->defineVolume($name, $volumeUpdated);
+
+                $script = $this->generateShellScript(
+                    [],
+                    $workingPath,
+                    $volumeUpdated->getUrl(),
+                    $volumeUpdated->getName() . $this->hash(\uniqid() . $volumeUpdated->getName()),
+                    'volume'
                 );
-                $compiledDeployment->defineVolume($name, $newVolume);
 
-                $scriptFileName = $this->generateShellScriptForVolume($newVolume, $workingPath);
+                $process = ($this->processFactory)($workingPath);
+                $process->setInput($script);
 
-                $process = ($this->processFactory)([$scriptFileName], $workingPath);
+                $paths = [];
+                foreach ($volumeUpdated->getPaths() as $path) {
+                    $paths[$path] = $volumeUpdated->getLocalPath() . '/' . $path;
+                }
 
-                $this->startProcess($process, []);
+                $variables = [
+                    'PAAS_BUILDKIT_BUILDER_NAME' => $this->builderName,
+                    'PAAS_BUILDKIT_PLATFORM' => $this->platforms,
+                    'PAAS_DOCKERFILE_CONTENT' => $this->generateDockerFile(
+                        'alpine:latest',
+                        $paths,
+                        'cp -rf ' . $volumeUpdated->getLocalPath() . '/. ' . $volumeUpdated->getMountPath()
+                    ),
+                ];
+
+                $this->startProcess($process, $variables);
 
                 $processes[] = $process;
             }

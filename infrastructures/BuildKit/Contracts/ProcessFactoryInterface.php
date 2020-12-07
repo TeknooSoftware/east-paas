@@ -23,29 +23,18 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\East\Paas\Infrastructures\BuildKit\Contracts;
 
-use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+use Symfony\Component\Process\Process;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface BuilderInterface
+interface ProcessFactoryInterface
 {
-    public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface;
-
-    public function buildImages(
-        CompiledDeployment $compiledDeployment,
-        string $workingPath,
-        PromiseInterface $promise
-    ): BuilderInterface;
-
-    public function buildVolumes(
-        CompiledDeployment $compiledDeployment,
-        string $workingPath,
-        PromiseInterface $promise
-    ): BuilderInterface;
+    /**
+     * @return Process<mixed>
+     */
+    public function __invoke(string $cwd): Process;
 }

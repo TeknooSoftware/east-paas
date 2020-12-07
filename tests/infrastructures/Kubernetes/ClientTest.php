@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
+use Teknoo\East\Paas\Container\PersistentVolume;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Maclof\Kubernetes\Client as KubeClient;
@@ -156,21 +157,21 @@ class ClientTest extends TestCase
             ->method('foreachPod')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
-                $image1 = $image1->updateUrl('docker.teknoo.run');
+                $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
-                $image2 = $image2->updateUrl('docker.teknoo.run');
+                $image2 = $image2->withRegistry('repository.teknoo.run');
 
-                $volume1 = new Volume('foo1', '/foo', ['foo' => 'bar']);
-                $volume2 = new Volume('bar1', '/bar', ['bar' => 'foo']);
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar');
 
-                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo'], ['foo' => 'bar', 'bar' => 'foo']);
-                $c2 = new Container('c2', 'bar', '7.4', [80], ['bar'], []);
+                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], ['foo' => 'bar', 'bar' => 'foo']);
+                $c2 = new Container('c2', 'bar', '7.4', [80], ['bar' => $volume2->import('/bar'), 'data' => new PersistentVolume('foo', 'bar')], []);
 
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2]);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1]);
-                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2]);
+                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2, 'data' => new PersistentVolume('foo', 'bar')]);
                 return $cd;
             });
 
@@ -228,15 +229,15 @@ class ClientTest extends TestCase
             ->method('foreachPod')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
-                $image1 = $image1->updateUrl('docker.teknoo.run');
+                $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
-                $image2 = $image2->updateUrl('docker.teknoo.run');
+                $image2 = $image2->withRegistry('repository.teknoo.run');
 
-                $volume1 = new Volume('foo1', '/foo', ['foo' => 'bar']);
-                $volume2 = new Volume('bar1', '/bar', ['bar' => 'foo']);
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar');
 
-                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo'], []);
-                $c2 = new Container('c2', 'bar', '7.4', [80], ['bar'], []);
+                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], []);
+                $c2 = new Container('c2', 'bar', '7.4', [80], ['bar' => $volume2->import('/bar')], []);
 
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2]);

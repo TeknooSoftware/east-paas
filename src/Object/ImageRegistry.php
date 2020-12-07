@@ -33,16 +33,16 @@ use Teknoo\East\Website\Object\TimestampableInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-use Teknoo\East\Paas\Contracts\Object\ImagesRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class DockerRepository implements
+class ImageRegistry implements
     ObjectInterface,
     ImmutableInterface,
-    ImagesRepositoryInterface,
+    ImageRegistryInterface,
     NormalizableInterface,
     TimestampableInterface
 {

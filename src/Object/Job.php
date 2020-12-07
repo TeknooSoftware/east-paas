@@ -30,7 +30,7 @@ use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Website\Object\ObjectInterface;
 use Teknoo\East\Website\Object\ObjectTrait;
 use Teknoo\East\Website\Object\TimestampableInterface;
-use Teknoo\East\Paas\Contracts\Object\ImagesRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Job\Executing;
 use Teknoo\East\Paas\Object\Job\Pending;
@@ -73,7 +73,7 @@ class Job implements
 
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
-    protected ?ImagesRepositoryInterface $imagesRepository = null;
+    protected ?ImageRegistryInterface $imagesRepository = null;
 
     /**
      * @var array<int, Cluster>
@@ -106,7 +106,7 @@ class Job implements
                 ->with('project', new IsInstanceOf(Project::class))
                 ->with('environment', new IsInstanceOf(Environment::class))
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
-                ->with('imagesRepository', new IsInstanceOf(ImagesRepositoryInterface::class))
+                ->with('imagesRepository', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0))
                 ->with('history', new IsInstanceOf(History::class))
                 ->with('history', new Property\Callback(function (History $history, Property\Callback $assertion) {
@@ -119,7 +119,7 @@ class Job implements
                 ->with('project', new IsInstanceOf(Project::class))
                 ->with('environment', new IsInstanceOf(Environment::class))
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
-                ->with('imagesRepository', new IsInstanceOf(ImagesRepositoryInterface::class))
+                ->with('imagesRepository', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0))
                 ->with('history', new IsEmpty()),
 
@@ -227,7 +227,7 @@ class Job implements
         return $this->settingSourceRepository($repository);
     }
 
-    public function setImagesRepository(ImagesRepositoryInterface $repository): Job
+    public function setImagesRepository(ImageRegistryInterface $repository): Job
     {
         return $this->settingImagesRepository($repository);
     }

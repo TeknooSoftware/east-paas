@@ -157,7 +157,8 @@ return [
             $container->get(PropertyAccessorInterface::class),
             $container->get(YamlParserInterface::class),
             $imagesLibrary,
-            $container->get(HooksCollectionInterface::class)
+            $container->get(HooksCollectionInterface::class),
+            $container->get('teknoo.east.paas.default_storage_provider')
         );
     },
 

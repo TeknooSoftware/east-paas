@@ -23,11 +23,13 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Docker;
+namespace Teknoo\Tests\East\Paas\Infrastructures\BuildKit;
 
-use Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper;
-use Teknoo\East\Paas\Infrastructures\Docker\Contracts\ProcessFactoryInterface;
-use Teknoo\East\Paas\Infrastructures\Docker\Contracts\ScriptWriterInterface;
+use Teknoo\East\Paas\Container\EmbeddedVolumeImage;
+use Teknoo\East\Paas\Container\PersistentVolume;
+use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
+use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
+use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
@@ -41,15 +43,13 @@ use Teknoo\East\Paas\Object\XRegistryAuth;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper
- * @covers \Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper\Generator
- * @covers \Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper\Running
+ * @covers \Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper
+ * @covers \Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Generator
+ * @covers \Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Running
  */
 class BuilderWrapperTest extends TestCase
 {
     private ?ProcessFactoryInterface $processFactory = null;
-
-    private ?ScriptWriterInterface $scriptWriter = null;
 
     protected function tearDown(): void
     {
@@ -69,30 +69,19 @@ class BuilderWrapperTest extends TestCase
         return $this->processFactory;
     }
 
-    /**
-     * @return ScriptWriterInterface|MockObject
-     */
-    public function getScriptWriterMock(): ?ScriptWriterInterface
-    {
-        if (!$this->scriptWriter instanceof ScriptWriterInterface) {
-            $this->scriptWriter = $this->createMock(ScriptWriterInterface::class);
-        }
-
-        return $this->scriptWriter;
-    }
-
     public function buildWrapper($timeout = 300): BuilderWrapper
     {
         return new BuilderWrapper(
             'docker',
             [
                 'image' => 'foo',
+                'embedded-volume-image' => 'foo',
                 'volume' => 'bar',
             ],
             $this->getProcessFactoryMock(),
-            $timeout,
-            $this->getScriptWriterMock(),
-            '_mount'
+            'foo',
+            'bar',
+            $timeout
         );
     }
 
@@ -105,9 +94,9 @@ class BuilderWrapperTest extends TestCase
                 'volume' => 'bar',
             ],
             $this->getProcessFactoryMock(),
+            'foo',
+            'bar',
             0,
-            $this->getScriptWriterMock(),
-            '_mount'
         );
     }
 
@@ -120,9 +109,9 @@ class BuilderWrapperTest extends TestCase
                 'image' => 'foo',
             ],
             $this->getProcessFactoryMock(),
-            0,
-            $this->getScriptWriterMock(),
-            '_mount'
+            'foo',
+            'bar',
+            0
         );
     }
 
@@ -183,7 +172,18 @@ class BuilderWrapperTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildWrapper()->buildImages(
             new \stdClass(),
+            'foo',
             $this->createMock(PromiseInterface::class)
+        );
+    }
+
+    public function testBuildImagesWrongWorkingPath()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildWrapper()->buildImages(
+            $this->createMock(CompiledDeployment::class),
+            new \stdClass(),
+            $this->createMock(PromiseInterface::class),
         );
     }
     
@@ -192,6 +192,7 @@ class BuilderWrapperTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildWrapper()->buildImages(
             $this->createMock(CompiledDeployment::class),
+            'foo',
             new \stdClass()
         );
     }
@@ -213,16 +214,9 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::exactly(2))
             ->method('updateImage')
             ->willReturnCallback(function (Image $oldImage, Image $image) use ($cd) {
-                self::assertEquals(0, \strpos($image->getUrl(), 'docker.teknoo.run'));
+                self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
-            });
-
-        $this->getScriptWriterMock()
-            ->expects(self::exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function () {
-                return \tempnam('/tmp', 'east-paas-docker-') . '.sh';
             });
 
         $p1 = $this->createMock(Process::class);
@@ -250,7 +244,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $builder = $builder->configure(
                 'bar',
-                'docker.teknoo.run',
+                'repository.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
         );
@@ -259,6 +253,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $builder->buildImages(
                 $cd,
+                'foo',
                 $promise
             )
         );
@@ -271,7 +266,11 @@ class BuilderWrapperTest extends TestCase
             ->method('foreachImage')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
-                $image2 = new Image('bar', '/bar', true, '7.4', []);
+                $volumes = [
+                    new Volume('v!', ['/bar'], '/volume'),
+                    new PersistentVolume('v!', '/bar', 'pv'),
+                ];
+                $image2 = new EmbeddedVolumeImage('bar1', 'bar', 'bar', $volumes);
 
                 $callback($image1);
                 $callback($image2);
@@ -280,17 +279,10 @@ class BuilderWrapperTest extends TestCase
 
         $cd->expects(self::exactly(2))
             ->method('updateImage')
-            ->willReturnCallback(function (Image $oldImage, Image $image) use ($cd) {
-                self::assertEquals(0, \strpos($image->getUrl(), 'docker.teknoo.run'));
+            ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd) {
+                self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
-            });
-
-        $this->getScriptWriterMock()
-            ->expects(self::exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function () {
-                return \tempnam('/tmp', 'east-paas-docker-') . '.sh';
             });
 
         $this->getProcessFactoryMock()
@@ -314,7 +306,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $builder = $builder->configure(
                 'bar',
-                'docker.teknoo.run',
+                'repository.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
         );
@@ -323,6 +315,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $builder->buildImages(
                 $cd,
+                'foo',
                 $promise
             )
         );
@@ -345,16 +338,9 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::exactly(2))
             ->method('updateImage')
             ->willReturnCallback(function (Image $oldImage, Image $image) use ($cd) {
-                self::assertEquals(0, \strpos($image->getUrl(), 'docker.teknoo.run'));
+                self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
-            });
-
-        $this->getScriptWriterMock()
-            ->expects(self::exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function () {
-                return \tempnam('/tmp', 'east-paas-docker-') . '.sh';
             });
 
         $this->getProcessFactoryMock()
@@ -378,7 +364,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $builder = $builder->configure(
                 'bar',
-                'docker.teknoo.run',
+                'repository.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
         );
@@ -387,6 +373,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $builder->buildImages(
                 $cd,
+                'foo',
                 $promise
             )
         );
@@ -428,8 +415,8 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $volume1 = new Volume('foo1', '/foo', ['foo' => 'bar']);
-                $volume2 = new Volume('bar1', '/bar', ['bar' => 'foo']);
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar');
 
                 $callback('foo', $volume1);
                 $callback('bar', $volume2);
@@ -443,16 +430,9 @@ class BuilderWrapperTest extends TestCase
                 ['bar']
             )
             ->willReturnCallback(function ($name, Volume $volume) use ($cd) {
-                self::assertEquals(0, \strpos($volume->getUrl(), 'docker.teknoo.run'));
+                self::assertEquals(0, \strpos($volume->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
-            });
-
-        $this->getScriptWriterMock()
-            ->expects(self::exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function () {
-                return \tempnam('/tmp', 'east-paas-docker-') . '.sh';
             });
 
         $p1 = $this->createMock(Process::class);
@@ -480,7 +460,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $builder = $builder->configure(
                 'bar',
-                'docker.teknoo.run',
+                'repository.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
         );
@@ -501,8 +481,8 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $volume1 = new Volume('foo1', '/foo', ['foo' => 'bar']);
-                $volume2 = new Volume('bar1', '/bar', ['bar' => 'foo']);
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar');
 
                 $callback('foo', $volume1);
                 $callback('bar', $volume2);
@@ -516,16 +496,9 @@ class BuilderWrapperTest extends TestCase
                 ['bar']
             )
             ->willReturnCallback(function ($name, Volume $volume) use ($cd) {
-                self::assertEquals(0, \strpos($volume->getUrl(), 'docker.teknoo.run'));
+                self::assertEquals(0, \strpos($volume->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
-            });
-
-        $this->getScriptWriterMock()
-            ->expects(self::exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function () {
-                return \tempnam('/tmp', 'east-paas-docker-') . '.sh';
             });
 
         $this->getProcessFactoryMock()
@@ -549,7 +522,7 @@ class BuilderWrapperTest extends TestCase
             BuilderWrapper::class,
             $builder = $builder->configure(
                 'bar',
-                'docker.teknoo.run',
+                'repository.teknoo.run',
                 new XRegistryAuth('foo', 'bar', '', '', '')
             )
         );

@@ -58,11 +58,12 @@ class Running implements StateInterface
     private function extractAndCompile(): \Closure
     {
         return function (CompiledDeployment $compiledDeployment): void {
+            $volumes = [];
             $this->extract(
                 $this->configuration,
                 static::CONFIG_VOLUMES,
                 [],
-                $this->compileVolumes($compiledDeployment, $this->getJob()->getId())
+                $this->compileVolumes($compiledDeployment, $this->getJob()->getId(), $volumes)
             );
 
             $this->extract(
@@ -83,7 +84,7 @@ class Running implements StateInterface
                 $this->configuration,
                 static::CONFIG_PODS,
                 [],
-                $this->compilePods($compiledDeployment)
+                $this->compilePods($compiledDeployment, $volumes)
             );
 
             $this->extract(

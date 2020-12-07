@@ -23,20 +23,20 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Docker;
+namespace Teknoo\Tests\East\Paas\Infrastructures\BuildKit;
 
 use DI\Container;
 use DI\ContainerBuilder;
-use Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper;
-use Teknoo\East\Paas\Infrastructures\Docker\Contracts\ProcessFactoryInterface;
-use Teknoo\East\Paas\Infrastructures\Docker\Contracts\ScriptWriterInterface;
+use Symfony\Component\Process\Process;
+use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
+use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @package Teknoo\Tests\East\Paas\Infrastructures\Docker
+ * @package Teknoo\Tests\East\Paas\Infrastructures\BuildKit
  */
 class ContainerTest extends TestCase
 {
@@ -47,7 +47,7 @@ class ContainerTest extends TestCase
     protected function buildContainer() : Container
     {
         $containerDefinition = new ContainerBuilder();
-        $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Docker/di.php');
+        $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/BuildKit/di.php');
 
         return $containerDefinition->build();
     }
@@ -58,18 +58,12 @@ class ContainerTest extends TestCase
 
         self::assertInstanceOf(
             ProcessFactoryInterface::class,
-            $container->get(ProcessFactoryInterface::class)
+            $factory = $container->get(ProcessFactoryInterface::class)
         );
-    }
-
-    public function testScriptWriterInterface()
-    {
-        $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
 
         self::assertInstanceOf(
-            ScriptWriterInterface::class,
-            $container->get(ScriptWriterInterface::class)
+            Process::class,
+            $factory('foo')
         );
     }
 
@@ -77,6 +71,8 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.buildkit.builder.name', 'foo');
+        $container->set('teknoo.east.paas.buildkit.build.platforms', 'bar');
 
         self::assertInstanceOf(
             BuilderInterface::class,
@@ -88,6 +84,22 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.buildkit.builder.name', 'foo');
+        $container->set('teknoo.east.paas.buildkit.build.platforms', 'bar');
+
+        self::assertInstanceOf(
+            BuilderWrapper::class,
+            $container->get(BuilderWrapper::class)
+        );
+    }
+
+    public function testBuilderWrapperWithTileout()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.buildkit.builder.name', 'foo');
+        $container->set('teknoo.east.paas.buildkit.build.platforms', 'bar');
+        $container->set('teknoo.east.paas.buildkit.build.timeout', 123);
 
         self::assertInstanceOf(
             BuilderWrapper::class,

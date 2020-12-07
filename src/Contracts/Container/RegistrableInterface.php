@@ -33,19 +33,7 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface BuilderInterface
+interface RegistrableInterface
 {
-    public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface;
-
-    public function buildImages(
-        CompiledDeployment $compiledDeployment,
-        string $workingPath,
-        PromiseInterface $promise
-    ): BuilderInterface;
-
-    public function buildVolumes(
-        CompiledDeployment $compiledDeployment,
-        string $workingPath,
-        PromiseInterface $promise
-    ): BuilderInterface;
+    public function withRegistry(string $registry): self;
 }

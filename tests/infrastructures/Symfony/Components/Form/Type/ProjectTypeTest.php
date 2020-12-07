@@ -30,7 +30,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType;
 use Teknoo\East\Paas\Object\Account;
-use Teknoo\East\Paas\Object\DockerRepository;
+use Teknoo\East\Paas\Object\ImageRegistry;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Object\Cluster;
@@ -59,7 +59,7 @@ class ProjectTypeTest extends TestCase
         return [
             'name' => 'fooBar',
             'sourceRepository' => new GitRepository(),
-            'imagesRepository' => new DockerRepository(),
+            'imagesRepository' => new ImageRegistry(),
             'clusters' => [new Cluster()],
         ];
     }

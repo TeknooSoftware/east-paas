@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use Teknoo\East\Paas\Contracts\Object\ImagesRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Job\JobUnit;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -79,7 +79,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
             $format,
             $context
         );
-        if (!$imagesRepository instanceof ImagesRepositoryInterface) {
+        if (!$imagesRepository instanceof ImageRegistryInterface) {
             throw new \RuntimeException('Bad denormalized image repository');
         }
 

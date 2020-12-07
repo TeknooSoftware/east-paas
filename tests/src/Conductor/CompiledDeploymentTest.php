@@ -29,6 +29,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Container\Container;
+use Teknoo\East\Paas\Container\PersistentVolume;
 use Teknoo\East\Paas\Container\Pod;
 use Teknoo\East\Paas\Container\Service;
 use Teknoo\East\Paas\Container\Volume;
@@ -195,6 +196,10 @@ class CompiledDeploymentTest extends TestCase
                     'bar',
                     new Pod('bar', 1, [new Container('bar', 'foo', '1.2', [80], [], [])])
                 )
+                ->addPod(
+                    'bar',
+                    new Pod('bar', 1, [new Container('bar', 'registry/foo', '1.2', [80], [], [])])
+                )
         );
     }
 
@@ -245,12 +250,12 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->defineVolume(
             'foo1',
-            new Volume('foo1', 'bar', [])
+            new Volume('foo1', [], 'bar')
         );
 
         $cd->defineVolume(
             'foo2',
-            new Volume('foo2', 'bar', [])
+            new Volume('foo2', [], 'bar')
         );
 
         $count = 0;
@@ -302,7 +307,7 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->addPod(
             'bar1',
-            new Pod('bar1', 1, [new Container('bar1', 'bar', '1.2', [80], [], [])])
+            new Pod('bar1', 1, [new Container('registry/bar1', 'bar', '1.2', [80], [], [])])
         );
 
         $count = 0;
@@ -344,27 +349,77 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->defineVolume(
             'foo',
-            (new Volume('foo1', '/foo', []))
+            $foo = (new Volume('foo1', [], '/foo'))
         );
 
         $cd->defineVolume(
             'bar',
-            (new Volume('bar1', '/bar', []))
+            $bar = (new Volume('bar1', [], '/bar'))
         );
 
         $cd->addPod(
             'foo1',
-            new Pod('foo1', 1, [new Container('foo1', 'foo', '1.2', [80], ['foo'], [])])
+            new Pod(
+                'foo1',
+                1,
+                [
+                    new Container(
+                        'foo1',
+                        'foo',
+                        '1.2',
+                        [
+                            80
+                        ],
+                        [
+                            'foo' => $foo
+                        ],
+                        []
+                    )
+                ]
+            )
         );
 
         $cd->addPod(
             'foo2',
-            new Pod('foo2', 1, [new Container('foo2', 'foo', '1.2', [80], ['bar'], [])])
+            new Pod(
+                'foo2',
+                1,
+                [
+                    new Container(
+                        'foo2',
+                        'foo',
+                        '1.2',
+                        [
+                            80
+                        ],
+                        [
+                            'bar' => $bar,
+                            'p1' => new PersistentVolume('p1', '/mnt', 'foo'),
+                        ],
+                        []
+                    )
+                ]
+            )
         );
 
         $cd->addPod(
             'bar1',
-            new Pod('bar1', 1, [new Container('bar1', 'bar', '1.2', [80], [], [])])
+            new Pod(
+                'bar1',
+                1,
+                [
+                    new Container(
+                        'bar1',
+                        'bar',
+                        '1.2',
+                        [
+                            80
+                        ],
+                        [],
+                        []
+                    )
+                ]
+            )
         );
 
         $count = 0;

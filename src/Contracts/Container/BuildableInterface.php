@@ -23,19 +23,28 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Docker\Contracts;
+namespace Teknoo\East\Paas\Contracts\Container;
 
-use Symfony\Component\Process\Process;
+use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface ProcessFactoryInterface
+interface BuildableInterface extends RegistrableInterface
 {
+    public function getName(): string;
+
+    public function getUrl(): string;
+
+    public function getPath(): string;
+
+    public function getTag(): ?string;
+
     /**
-     * @param string[] $command
-     * @return Process<mixed>
+     * @return array<string, mixed>
      */
-    public function __invoke(array $command, string $cwd): Process;
+    public function getVariables(): array;
 }

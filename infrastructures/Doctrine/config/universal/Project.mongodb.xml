@@ -11,7 +11,7 @@
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
         <field field-name="updatedAt" name="updated_at" type="date" />
         <embed-one field="sourceRepository" target-document="Teknoo\East\Paas\Object\GitRepository" nullable="false"/>
-        <embed-one field="imagesRepository" target-document="Teknoo\East\Paas\Object\DockerRepository" nullable="false"/>
+        <embed-one field="imagesRepository" target-document="Teknoo\East\Paas\Object\ImageRegistry" nullable="false"/>
         <reference-one field="account" target-document="Teknoo\East\Paas\Object\Account" inversed-by="projects" nullable="false">
             <cascade />
         </reference-one>

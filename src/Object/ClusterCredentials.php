@@ -115,8 +115,8 @@ class ClusterCredentials implements
             'server_certificate' => $this->getServerCertificate(),
             'private_key' => $this->getPrivateKey(),
             'public_key' => $this->getPublicKey(),
-            'username' => $this->getPrivateKey(),
-            'password' => $this->getPublicKey(),
+            'username' => $this->getUsername(),
+            'password' => $this->getPassword(),
         ]);
 
         return $this;

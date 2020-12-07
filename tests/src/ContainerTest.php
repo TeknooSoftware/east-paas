@@ -804,6 +804,7 @@ class ContainerTest extends TestCase
         $container->set(YamlParserInterface::class, $this->createMock(YamlParserInterface::class));
         $container->set(HooksCollectionInterface::class, $this->createMock(HooksCollectionInterface::class));
         $container->set('teknoo.east.paas.root_dir', '/foo');
+        $container->set('teknoo.east.paas.default_storage_provider', 'foo');
 
         $container->set(
             'teknoo.east.paas.conductor.images_library',

@@ -73,6 +73,10 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
     private const CONFIG_BUILDS = '[builds]';
     private const CONFIG_PODS = '[pods]';
     private const CONFIG_SERVICES = '[services]';
+    private const CONFIG_KEY_VERSION = 'version';
+
+    private const DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
+    private const DEFAULT_MOUNT_PATH_IN_VOLUME = '/mnt';
 
     private JobUnitInterface $job;
 
@@ -103,12 +107,14 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
         PropertyAccessorInterface $propertyAccessor,
         YamlParserInterface $parser,
         iterable $imagesLibrary,
-        iterable $hooksLibrary
+        iterable $hooksLibrary,
+        string $defaultStorageIdentifier
     ) {
         $this->setPropertyAccessor($propertyAccessor);
         $this->setParser($parser);
         $this->imagesLibrary = $imagesLibrary;
         $this->hooksLibrary = $hooksLibrary;
+        $this->defaultStorageIdentifier = $defaultStorageIdentifier;
 
         $this->initializeStateProxy();
         $this->updateStates();
@@ -198,7 +204,7 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
                 'version' => 'v1',
             ],
             function ($paas) use ($promise): void {
-                if (!isset($paas['version']) || 'v1' !== $paas['version']) {
+                if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
                     $promise->fail(new \RuntimeException('Paas config file version not supported'));
 
                     return;

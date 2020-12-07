@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Container;
 
+use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
+use Teknoo\East\Paas\Contracts\Container\RegistrableInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -32,13 +34,13 @@ use Teknoo\Immutable\ImmutableTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Image implements ImmutableInterface
+class Image implements ImmutableInterface, BuildableInterface, RegistrableInterface
 {
     use ImmutableTrait;
 
     private string $name;
 
-    private ?string $url = null;
+    private ?string $registry = null;
 
     private string $path;
 
@@ -70,17 +72,17 @@ class Image implements ImmutableInterface
         return $this->name;
     }
 
-    public function updateUrl(string $url): self
+    public function withRegistry(string $registry): self
     {
         $that = clone $this;
-        $that->url = $url;
+        $that->registry = $registry;
 
         return $that;
     }
 
     public function getUrl(): string
     {
-        return \trim($this->url . '/' . $this->name, '/');
+        return \trim($this->registry . '/' . $this->name, '/');
     }
 
     public function getPath(): string

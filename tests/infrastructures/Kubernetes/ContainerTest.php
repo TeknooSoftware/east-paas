@@ -27,10 +27,12 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
 use DI\Container;
 use DI\ContainerBuilder;
+use Maclof\Kubernetes\Client as KubClient;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
+use Teknoo\East\Paas\Object\ClusterCredentials;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -53,13 +55,25 @@ class ContainerTest extends TestCase
     public function testClientFactoryInterface()
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
 
         self::assertInstanceOf(
             ClientFactoryInterface::class,
-            $container->get(ClientFactoryInterface::class)
+            $factory = $container->get(ClientFactoryInterface::class)
         );
+
+        self::assertInstanceOf(
+            KubClient::class,
+            $factory('foo', null)
+        );
+
+        self::assertInstanceOf(
+            KubClient::class,
+            $factory('foo', new ClusterCredentials('certBar', 'barFoo', 'fooBar', 'barFoo2', 'barBar'))
+        );
+
+        unset($factory);
     }
 
     public function testClusterClientInterface()

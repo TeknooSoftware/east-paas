@@ -35,6 +35,12 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  */
 trait ImageTrait
 {
+    private static string $keyImageBuildName = 'build-name';
+    private static string $keyImageTag = 'tag';
+    private static string $keyImageVariables = 'variables';
+    private static string $keyImagePath = 'path';
+    private static string $valueTagLatest = 'latest';
+
     /**
      * @param array<string, mixed> $original
      * @param array<string, mixed> $new
@@ -65,10 +71,10 @@ trait ImageTrait
             $imagesConfigs = self::mergeConfigurations($innerImagesConfigs, $imagesLibrary);
 
             foreach ($imagesConfigs as $name => &$config) {
-                $buildName = $config['build-name'] ?? $name;
+                $buildName = $config[self::$keyImageBuildName] ?? $name;
                 $isLibrary = !isset($innerImagesConfigs[$name]);
-                $tag = (string) ($config['tag'] ?? 'latest');
-                $variables = ($config['variables'] ?? []);
+                $tag = (string) ($config[self::$keyImageTag] ?? self::$valueTagLatest);
+                $variables = ($config[self::$keyImageVariables] ?? []);
 
                 $addImage = static function ($path) use (
                     $compiledDeployment,
@@ -77,25 +83,28 @@ trait ImageTrait
                     $tag,
                     $variables
                 ) {
-                    $compiledDeployment->addImage(
-                        new Image(
-                            $buildName,
-                            $path,
-                            $isLibrary,
-                            $tag,
-                            $variables
-                        )
+                    $parts = \explode('/', $buildName);
+                    $imageName = \array_pop($parts);
+
+                    $image = new Image(
+                        $imageName,
+                        $path,
+                        $isLibrary,
+                        $tag,
+                        $variables
                     );
+
+                    $compiledDeployment->addImage($image);
                 };
 
                 if (true === $isLibrary) {
-                    $addImage($config['path']);
+                    $addImage($config[self::$keyImagePath]);
 
                     return;
                 }
 
                 $workspace->runInRoot(
-                    fn ($root) => $addImage($root . $config['path'])
+                    fn ($root) => $addImage($root . $config[self::$keyImagePath])
                 );
             }
         };

@@ -27,6 +27,8 @@ namespace Teknoo\East\Paas\Conductor\Compilation;
 
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
+use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -34,11 +36,19 @@ use Teknoo\East\Paas\Container\Volume;
  */
 trait VolumeTrait
 {
+    private static string $keyVolumeAdd = 'add';
+    private static string $keyVolumeLocalPath = 'local-path';
+    private static string $keyVolumeMountPath = 'mount-path';
+
+    /**
+     * @param array<string, PopulatedVolumeInterface> $volumes
+     */
     private function compileVolumes(
         CompiledDeployment $compiledDeployment,
-        string $jobId
+        string $jobId,
+        array &$volumes
     ): callable {
-        return static function ($volumesConfigs) use ($compiledDeployment, $jobId): void {
+        return static function ($volumesConfigs) use ($compiledDeployment, $jobId, &$volumes): void {
             if (empty($volumesConfigs)) {
                 return;
             }
@@ -48,12 +58,15 @@ trait VolumeTrait
 
                 $compiledDeployment->defineVolume(
                     $volumeName,
-                    new Volume(
+                    $volume = new Volume(
                         $volumeName . $jobId,
-                        $config['target'],
-                        $config['add']
+                        $config[self::$keyVolumeAdd],
+                        $config[self::$keyVolumeLocalPath] ?? self::DEFAULT_LOCAL_PATH_IN_VOLUME,
+                        $config[self::$keyVolumeMountPath] ?? self::DEFAULT_MOUNT_PATH_IN_VOLUME
                     )
                 );
+
+                $volumes[$volumeName] = $volume;
             }
         };
     }

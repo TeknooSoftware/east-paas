@@ -23,13 +23,19 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Docker\Contracts;
+namespace Teknoo\East\Paas\Contracts\Container;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface ScriptWriterInterface
+interface PopulatedVolumeInterface extends VolumeInterface
 {
-    public function __invoke(string $content): string;
+    public function getLocalPath(): string;
+
+    public function getMountPath(): ?string;
+
+    public function isEmbedded(): bool;
+
+    public function import(string $mountPath): PopulatedVolumeInterface;
 }

@@ -26,18 +26,27 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Container;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Container\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Container\Image;
+use Teknoo\East\Paas\Container\Volume;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Container\Image
+ * @covers \Teknoo\East\Paas\Container\EmbeddedVolumeImage
  */
-class ImageTest extends TestCase
+class EmbeddedVolumeImageTest extends TestCase
 {
-    private function buildObject(): Image
+    private function buildObject(): EmbeddedVolumeImage
     {
-        return new Image('foo', 'bar', true, '1.2', ['foo' => 'bar']);
+        return new EmbeddedVolumeImage(
+            'foo',
+            '1.2',
+            'orignal',
+            [
+                new Volume('foo', ['foo', 'bar'], 'bar')
+            ]
+        );
     }
 
     public function testGetName()
@@ -53,7 +62,7 @@ class ImageTest extends TestCase
         $image1 = $this->buildObject();
         self::assertEquals('foo', $image1->getUrl());
         $image2 = $image1->withRegistry('bar');
-        self::assertInstanceOf(Image::class, $image2);
+        self::assertInstanceOf(EmbeddedVolumeImage::class, $image2);
         self::assertNotSame($image1, $image2);
         self::assertEquals('foo', $image1->getUrl());
         self::assertEquals('bar/foo', $image2->getUrl());
@@ -62,15 +71,8 @@ class ImageTest extends TestCase
     public function testGetPath()
     {
         self::assertEquals(
-            'bar',
+            '',
             $this->buildObject()->getPath()
-        );
-    }
-
-    public function testIsLibrary()
-    {
-        self::assertTrue(
-            $this->buildObject()->isLibrary()
         );
     }
 
@@ -82,11 +84,29 @@ class ImageTest extends TestCase
         );
     }
 
+    public function testGetOriginalName()
+    {
+        self::assertEquals(
+            'orignal',
+            $this->buildObject()->getOriginalName()
+        );
+    }
+
     public function testGetVariables()
     {
         self::assertEquals(
-            ['foo' => 'bar'],
+            [],
             $this->buildObject()->getVariables()
+        );
+    }
+
+    public function testGetVolumes()
+    {
+        self::assertEquals(
+            [
+                new Volume('foo', ['foo', 'bar'], 'bar')
+            ],
+            $this->buildObject()->getVolumes()
         );
     }
 }

@@ -25,27 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Container;
 
-use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface BuilderInterface
+interface VolumeInterface
 {
-    public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface;
+    public function getName(): string;
 
-    public function buildImages(
-        CompiledDeployment $compiledDeployment,
-        string $workingPath,
-        PromiseInterface $promise
-    ): BuilderInterface;
-
-    public function buildVolumes(
-        CompiledDeployment $compiledDeployment,
-        string $workingPath,
-        PromiseInterface $promise
-    ): BuilderInterface;
+    public function getMountPath(): ?string;
 }

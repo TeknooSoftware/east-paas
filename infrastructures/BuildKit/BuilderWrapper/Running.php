@@ -23,13 +23,11 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper;
+namespace Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
 
-use Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper;
+use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Container\Image;
-use Teknoo\East\Paas\Container\Volume;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
@@ -62,11 +60,27 @@ class Running implements StateInterface
         return fn(string $name) => \substr(\sha1($this->projectId . $name), 0, 10);
     }
 
-    private function generateShellScriptForImage(): \Closure
+    private function setTimeout(): \Closure
     {
-        return function (Image $image): string {
+        return function (): void {
+            if (empty($this->timeout)) {
+                \set_time_limit(0);
+            } else {
+                \set_time_limit(($this->timeout + self::GRACEFULTIME));
+            }
+        };
+    }
+
+    private function generateShellScript(): \Closure
+    {
+        return function (
+            array $variables,
+            string $path,
+            string $imageName,
+            string $imageShortName,
+            string $template
+        ): string {
             $buildsArgs = '';
-            $variables = $image->getVariables();
             if (!empty($variables)) {
                 $variablesList = [];
                 foreach (\array_keys($variables) as $key) {
@@ -85,58 +99,33 @@ class Running implements StateInterface
                     '{% imageShortName %}',
                 ],
                 [
-                    $image->getPath(),
+                    $path,
                     $this->binary,
                     $buildsArgs,
-                    $image->getUrl() . ':' . $image->getTag(),
-                    $image->getName() . $this->hash($image->getName()),
+                    $imageName,
+                    $imageShortName,
                 ],
-                $this->templates['image']
+                $this->templates[$template]
             );
 
-            return ($this->scriptWriter)($scriptContent);
+            return $scriptContent;
         };
     }
 
-    private function generateShellScriptForVolume(): \Closure
+    private function generateDockerFile(): \Closure
     {
-        return function (Volume $volume, string $volumePath): string {
-            $scriptContent = \str_replace(
-                [
-                    '{% volumePath %}',
-                    '{% volumeTarget %}',
-                    '{% volumeAdds %}',
-                    '{% volumeMount %}',
-                    '{% binary %}',
-                    '{% volumeName %}',
-                    '{% volumeShortName %}',
-                    '{% Dockerfile %}'
-                ],
-                [
-                    $volumePath,
-                    \rtrim($volume->getTarget(), '/'),
-                    \implode(' ', $volume->getPaths()),
-                    $volume->getMountPath(),
-                    $this->binary,
-                    $volume->getUrl(),
-                    $volume->getName() . $this->hash(\uniqid() . $volume->getName()),
-                    'Dockerfile' . $volume->getName(),
-                ],
-                $this->templates['volume']
-            );
+        return function (string $fromImage, array $paths, ?string $command = null): string {
+            $output = "FROM $fromImage" . PHP_EOL;
 
-            return ($this->scriptWriter)($scriptContent);
-        };
-    }
-
-    private function setTimeout(): \Closure
-    {
-        return function (): void {
-            if (empty($this->timeout)) {
-                \set_time_limit(0);
-            } else {
-                \set_time_limit(($this->timeout + self::GRACEFULTIME));
+            foreach ($paths as $sourcePath => $localPath) {
+                $output .= "COPY $sourcePath $localPath" . PHP_EOL;
             }
+
+            if (!empty($command)) {
+                $output .= "CMD $command" . PHP_EOL;
+            }
+
+            return $output . PHP_EOL;
         };
     }
 
@@ -148,16 +137,16 @@ class Running implements StateInterface
          */
         return function (Process $process, array $variables): void {
             $authEnvs = [
-                'PAAS_DOCKER_USER' => '',
-                'PAAS_DOCKER_PWD' => '',
-                'PAAS_DOCKER_HOST' => '',
+                'PAAS_REGISTRY_USER' => '',
+                'PAAS_REGISTRY_PWD' => '',
+                'PAAS_REGISTRY_HOST' => '',
             ];
 
             if (null !== ($auth = $this->getAuth())) {
                 $authEnvs = [
-                    'PAAS_DOCKER_USER' => $auth->getUsername(),
-                    'PAAS_DOCKER_PWD' => $auth->getPassword(),
-                    'PAAS_DOCKER_HOST' => $this->getUrl(),
+                    'PAAS_REGISTRY_USER' => $auth->getUsername(),
+                    'PAAS_REGISTRY_PWD' => $auth->getPassword(),
+                    'PAAS_REGISTRY_HOST' => $this->getUrl(),
                 ];
             }
 

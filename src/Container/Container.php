@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Container;
 
+use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -48,7 +49,7 @@ class Container implements ImmutableInterface
     private array $listen;
 
     /**
-     * @var string[]
+     * @var array<string, VolumeInterface>
      */
     private array $volumes;
 
@@ -59,7 +60,7 @@ class Container implements ImmutableInterface
 
     /**
      * @param int[] $listen
-     * @param string[] $volumes
+     * @param array<string, VolumeInterface> $volumes
      * @param array<string, mixed> $variables
      */
     public function __construct(
@@ -104,7 +105,7 @@ class Container implements ImmutableInterface
     }
 
     /**
-     * @return string[]
+     * @return array<string, VolumeInterface>
      */
     public function getVolumes(): array
     {

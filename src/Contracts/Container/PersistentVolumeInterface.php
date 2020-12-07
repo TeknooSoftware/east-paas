@@ -23,19 +23,13 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper;
-
-use Teknoo\East\Paas\Infrastructures\Docker\BuilderWrapper;
-use Teknoo\East\Paas\Object\XRegistryAuth;
-use Teknoo\States\State\StateInterface;
-use Teknoo\States\State\StateTrait;
+namespace Teknoo\East\Paas\Contracts\Container;
 
 /**
- * @mixin BuilderWrapper
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Generator implements StateInterface
+interface PersistentVolumeInterface extends VolumeInterface
 {
-    use StateTrait;
+    public function getStorageIdentifier(): ?string;
 }

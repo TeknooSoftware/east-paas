@@ -34,7 +34,7 @@ use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Paas\Contracts\Object\ImagesRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Cluster;
@@ -59,7 +59,7 @@ class JobUnit implements JobUnitInterface
 
     private SourceRepositoryInterface $sourceRepository;
 
-    private ImagesRepositoryInterface $imagesRepository;
+    private ImageRegistryInterface $imagesRepository;
 
     /**
      * @var Cluster[]
@@ -83,7 +83,7 @@ class JobUnit implements JobUnitInterface
         array $projectResume,
         Environment $environment,
         SourceRepositoryInterface $sourceRepository,
-        ImagesRepositoryInterface $imagesRepository,
+        ImageRegistryInterface $imagesRepository,
         array $clusters,
         array $variables,
         History $history

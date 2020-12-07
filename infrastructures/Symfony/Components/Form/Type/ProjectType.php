@@ -51,7 +51,7 @@ class ProjectType extends AbstractType
 
         $builder->add('name', TextType::class, ['required' => true]);
         $builder->add('sourceRepository', GitRepositoryType::class, ['required' => true]);
-        $builder->add('imagesRepository', DockerRepositoryType::class, ['required' => true]);
+        $builder->add('imagesRepository', ImageRegistryType::class, ['required' => true]);
 
         $builder->add(
             'clusters',

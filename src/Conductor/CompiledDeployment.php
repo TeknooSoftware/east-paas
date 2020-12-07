@@ -25,8 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor;
 
+use Teknoo\East\Paas\Container\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Container\Service;
 use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
+use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
+use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Container\Pod;
@@ -38,12 +42,12 @@ use Teknoo\East\Paas\Container\Pod;
 class CompiledDeployment
 {
     /**
-     * @var array<string, array<string, Image>>
+     * @var array<string, array<string, BuildableInterface>>
      */
     private array $images = [];
 
     /**
-     * @var array<string, Volume>
+     * @var array<string, VolumeInterface>
      */
     private array $volumes = [];
 
@@ -62,21 +66,22 @@ class CompiledDeployment
      */
     private array $services = [];
 
-    public function addImage(Image $image): self
+    public function addImage(BuildableInterface $image): self
     {
-        $this->images[$image->getName()][$image->getTag()] = $image;
+        $this->images[$image->getUrl()][$image->getTag()] = $image;
 
         return $this;
     }
 
-    public function updateImage(Image $old, Image $new): self
+    public function updateImage(BuildableInterface $old, BuildableInterface $new): self
     {
-        $this->images[$old->getName()][$old->getTag()] = $new;
+        unset($this->images[$old->getUrl()][$old->getTag()]);
+        $this->addImage($new);
 
         return $this;
     }
 
-    public function defineVolume(string $name, Volume $volume): self
+    public function defineVolume(string $name, VolumeInterface $volume): self
     {
         $this->volumes[$name] = $volume;
 
@@ -93,7 +98,13 @@ class CompiledDeployment
     public function addPod(string $name, Pod $pod): self
     {
         foreach ($pod as $container) {
-            if (!isset($this->images[$image = $container->getImage()][$version = $container->getVersion()])) {
+            $image = $container->getImage();
+            if (false !== \strpos($image, '/')) {
+                //Is an external image
+                continue;
+            }
+
+            if (!isset($this->images[$image][$version = $container->getVersion()])) {
                 throw new \DomainException("Image $image:$version is not available");
             }
         }
@@ -143,7 +154,7 @@ class CompiledDeployment
                 $processedImages[$image][$version] = true;
 
                 $callback(
-                    $this->images[$image][$version],
+                    $this->images[$image][$version]
                 );
             }
         }
@@ -160,9 +171,12 @@ class CompiledDeployment
                 $imgName = $container->getImage();
                 $imgVersion = $container->getVersion();
                 $images[$imgName][$imgVersion] = $this->images[$imgName][$imgVersion];
-
-                foreach ($container->getVolumes() as $volumeName) {
-                    $volumes[$volumeName] = $this->volumes[$volumeName];
+                foreach ($container->getVolumes() as $name => $volume) {
+                    if ($volume instanceof PopulatedVolumeInterface) {
+                        $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
+                    } else {
+                        $volumes[$container->getName() . '_' . $name] = $volume;
+                    }
                 }
             }
 

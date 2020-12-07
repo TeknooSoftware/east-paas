@@ -34,6 +34,10 @@ use Teknoo\East\Paas\Container\Service;
  */
 trait ServiceTrait
 {
+    private static string $keyServiceListen = 'listen';
+    private static string $keyServiceTarget = 'target';
+    private static string $keyServiceProtocol = 'protocol';
+
     private function compileServices(
         CompiledDeployment $compiledDeployment
     ): callable {
@@ -45,7 +49,7 @@ trait ServiceTrait
             foreach ($servicesConfigs as $name => &$config) {
                 $ports = [];
                 foreach ($config as $row) {
-                    $ports[(int) $row['listen']] = (int) $row['target'];
+                    $ports[(int) $row[self::$keyServiceListen]] = (int) $row[self::$keyServiceTarget];
                 }
 
                 $compiledDeployment->addService(
@@ -53,7 +57,7 @@ trait ServiceTrait
                     new Service(
                         $name,
                         $ports,
-                        $config['protocol'] ?? Service::TCP
+                        $config[self::$keyServiceProtocol] ?? Service::TCP
                     )
                 );
             }

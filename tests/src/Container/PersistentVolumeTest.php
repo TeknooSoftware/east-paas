@@ -23,17 +23,44 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Object;
+namespace Teknoo\Tests\East\Paas\Container;
 
-use Teknoo\Immutable\ImmutableInterface;
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Container\PersistentVolume;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @covers \Teknoo\East\Paas\Container\PersistentVolume
  */
-interface ImagesRepositoryInterface extends ImmutableInterface
+class PersistentVolumeTest extends TestCase
 {
-    public function getApiUrl(): string;
+    private function buildObject(): PersistentVolume
+    {
+        return new PersistentVolume('foo', 'bar', 'foobar');
+    }
 
-    public function getIdentity(): ?IdentityInterface;
+    public function testGetName()
+    {
+        self::assertEquals(
+            'foo',
+            $this->buildObject()->getName()
+        );
+    }
+
+    public function testGetMountPath()
+    {
+        self::assertEquals(
+            'bar',
+            $this->buildObject()->getMountPath()
+        );
+    }
+
+    public function testGetStorageIdentifier()
+    {
+        self::assertEquals(
+            'foobar',
+            $this->buildObject()->getStorageIdentifier()
+        );
+    }
 }

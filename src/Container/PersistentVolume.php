@@ -25,8 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Container;
 
-use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
-use Teknoo\East\Paas\Contracts\Container\RegistrableInterface;
+use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -34,42 +33,26 @@ use Teknoo\Immutable\ImmutableTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolumeInterface
+class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
 {
     use ImmutableTrait;
 
     private string $name;
 
-    /**
-     * @var string[]
-     */
-    private array $paths;
-
-    private string $localPath;
-
     private ?string $mountPath = null;
 
-    private bool $isEmbedded = false;
+    private ?string $storageIdentifier = null;
 
-    private ?string $registry = null;
-
-    /**
-     * @param string[] $paths
-     */
     public function __construct(
         string $name,
-        array $paths,
-        string $localPath,
         string $mountPath = null,
-        bool $isEmbedded = false
+        string $storageIdentifier = null
     ) {
         $this->uniqueConstructorCheck();
 
         $this->name = $name;
-        $this->paths = $paths;
-        $this->localPath = $localPath;
         $this->mountPath = $mountPath;
-        $this->isEmbedded = $isEmbedded;
+        $this->storageIdentifier = $storageIdentifier;
     }
 
     public function getName(): string
@@ -77,47 +60,13 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
         return $this->name;
     }
 
-    /**
-     * @return string[]
-     */
-    public function getPaths(): array
-    {
-        return $this->paths;
-    }
-
-    public function getLocalPath(): string
-    {
-        return $this->localPath;
-    }
-
     public function getMountPath(): ?string
     {
         return $this->mountPath;
     }
 
-    public function isEmbedded(): bool
+    public function getStorageIdentifier(): ?string
     {
-        return $this->isEmbedded;
-    }
-
-    public function import(string $mountPath): PopulatedVolumeInterface
-    {
-        $volume = clone $this;
-        $volume->mountPath = $mountPath;
-
-        return $volume;
-    }
-
-    public function withRegistry(string $registry): self
-    {
-        $that = clone $this;
-        $that->registry = $registry;
-
-        return $that;
-    }
-
-    public function getUrl(): string
-    {
-        return \trim($this->registry . '/' . $this->name, '/');
+        return $this->storageIdentifier;
     }
 }

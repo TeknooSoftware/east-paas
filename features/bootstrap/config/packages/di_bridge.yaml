@@ -11,7 +11,7 @@ di_bridge:
     - '%kernel.project_dir%/infrastructures/Flysystem/di.php'
     - '%kernel.project_dir%/infrastructures/Git/di.php'
     - '%kernel.project_dir%/infrastructures/Kubernetes/di.php'
-    - '%kernel.project_dir%/infrastructures/Docker/di.php'
+    - '%kernel.project_dir%/infrastructures/BuildKit/di.php'
     - '%kernel.project_dir%/infrastructures/Composer/di.php'
     - '%kernel.project_dir%/infrastructures/Symfony/Components/di.php'
     - '%kernel.project_dir%/features/bootstrap/config/di.php'

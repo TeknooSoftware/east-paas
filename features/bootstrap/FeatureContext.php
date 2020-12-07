@@ -28,7 +28,7 @@ use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\GitRepository;
-use Teknoo\East\Paas\Object\DockerRepository;
+use Teknoo\East\Paas\Object\ImageRegistry;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Job as OriJob;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
@@ -156,7 +156,7 @@ class FeatureContext implements Context
     private $sourceRepository;
 
     /**
-     * @var DockerRepository
+     * @var ImageRegistry
      */
     private $imagesRepository;
 
@@ -454,7 +454,7 @@ class FeatureContext implements Context
     public function aDoctrineRepository()
     {
         $this->project->setImagesRepository(
-            $this->imagesRepository = (new DockerRepository(
+            $this->imagesRepository = (new ImageRegistry(
                 'https://foo.bar'
             ))
         );
@@ -527,7 +527,7 @@ class FeatureContext implements Context
     }
   },
   "images_repository": {
-    "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\DockerRepository",
+    "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\ImageRegistry",
     "id": "530651c2cd6937158eaf11d36b8eeed4",
     "api_url": "fooBar",
     "identity": {
@@ -618,7 +618,7 @@ EOF;
                 'identity' => null,
             ],
             'images_repository' => [
-                '@class' => DockerRepository::class,
+                '@class' => ImageRegistry::class,
                 'id' => '',
                 'api_url' => 'https://foo.bar',
                 'identity' => null,
@@ -786,7 +786,6 @@ builds:
 #Volume to build to use with container
 volumes:
   main: #Name of the module
-    target: '/opt/foo/' #Path where data will be stored into the volume
     add: #folder or file, from .paas.yml where is located to add to the volume
       - 'src'
       - 'vendor'
@@ -805,7 +804,9 @@ pods:
         listen: #Port listen by the container
           - 8080
         volumes: #Volumes to link
-          - main
+          main:
+            from: main
+            mount-path: '/opt/foo/' #Path where data will be mount in the container
         variables:
           SERVER_SCRIPT: '/opt/foo/src/server.php'
 
@@ -947,6 +948,7 @@ EOF;
 
             public function buildImages(
                 CompiledDeployment $compiledDeployment,
+                string $workingPath,
                 PromiseInterface $promise
             ): BuilderInterface {
                 $promise->success('foo');

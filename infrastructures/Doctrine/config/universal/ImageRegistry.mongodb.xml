@@ -5,7 +5,7 @@
                         xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
                                             http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
 
-    <embedded-document name="Teknoo\East\Paas\Object\DockerRepository">
+    <embedded-document name="Teknoo\East\Paas\Object\ImageRegistry">
         <id type="string" strategy="UUID"/>
         <field field-name="apiUrl" name="api_url" type="string" nullable="false"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>

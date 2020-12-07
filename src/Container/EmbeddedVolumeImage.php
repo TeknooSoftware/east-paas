@@ -25,8 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Container;
 
-use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
+use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Container\RegistrableInterface;
+use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -34,42 +35,38 @@ use Teknoo\Immutable\ImmutableTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolumeInterface
+class EmbeddedVolumeImage implements ImmutableInterface, BuildableInterface, RegistrableInterface
 {
     use ImmutableTrait;
 
     private string $name;
 
-    /**
-     * @var string[]
-     */
-    private array $paths;
-
-    private string $localPath;
-
-    private ?string $mountPath = null;
-
-    private bool $isEmbedded = false;
+    private ?string $tag;
 
     private ?string $registry = null;
 
+    private string $originalName;
+
     /**
-     * @param string[] $paths
+     * @var VolumeInterface[]
+     */
+    private array $volumes;
+
+    /**
+     * @param VolumeInterface[] $volumes
      */
     public function __construct(
         string $name,
-        array $paths,
-        string $localPath,
-        string $mountPath = null,
-        bool $isEmbedded = false
+        string $tag,
+        string $originalName,
+        array $volumes
     ) {
         $this->uniqueConstructorCheck();
 
         $this->name = $name;
-        $this->paths = $paths;
-        $this->localPath = $localPath;
-        $this->mountPath = $mountPath;
-        $this->isEmbedded = $isEmbedded;
+        $this->tag = $tag;
+        $this->originalName = $originalName;
+        $this->volumes = $volumes;
     }
 
     public function getName(): string
@@ -77,35 +74,14 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
         return $this->name;
     }
 
-    /**
-     * @return string[]
-     */
-    public function getPaths(): array
+    public function getTag(): ?string
     {
-        return $this->paths;
+        return $this->tag;
     }
 
-    public function getLocalPath(): string
+    public function getOriginalName(): string
     {
-        return $this->localPath;
-    }
-
-    public function getMountPath(): ?string
-    {
-        return $this->mountPath;
-    }
-
-    public function isEmbedded(): bool
-    {
-        return $this->isEmbedded;
-    }
-
-    public function import(string $mountPath): PopulatedVolumeInterface
-    {
-        $volume = clone $this;
-        $volume->mountPath = $mountPath;
-
-        return $volume;
+        return $this->originalName;
     }
 
     public function withRegistry(string $registry): self
@@ -119,5 +95,23 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
     public function getUrl(): string
     {
         return \trim($this->registry . '/' . $this->name, '/');
+    }
+
+    /**
+     * @return VolumeInterface[]
+     */
+    public function getVolumes(): array
+    {
+        return $this->volumes;
+    }
+
+    public function getVariables(): array
+    {
+        return [];
+    }
+
+    public function getPath(): string
+    {
+        return '';
     }
 }

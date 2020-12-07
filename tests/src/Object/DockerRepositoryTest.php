@@ -27,25 +27,25 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Paas\Object\DockerRepository;
+use Teknoo\East\Paas\Object\ImageRegistry;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Object\DockerRepository
+ * @covers \Teknoo\East\Paas\Object\ImageRegistry
  */
-class DockerRepositoryTest extends TestCase
+class ImageRegistryTest extends TestCase
 {
     use ObjectTestTrait;
 
     /**
-     * @return DockerRepository
+     * @return ImageRegistry
      */
-    public function buildObject(): DockerRepository
+    public function buildObject(): ImageRegistry
     {
-        return new DockerRepository('fooBar', $this->createMock(IdentityInterface::class));
+        return new ImageRegistry('fooBar', $this->createMock(IdentityInterface::class));
     }
 
     public function testGetApiUrl()
@@ -85,14 +85,14 @@ class DockerRepositoryTest extends TestCase
         $normalizer->expects(self::once())
             ->method('injectData')
             ->with([
-                '@class' => DockerRepository::class,
+                '@class' => ImageRegistry::class,
                 'id' => '123',
                 'api_url' => 'fooBar',
                 'identity' => $this->createMock(IdentityInterface::class),
             ]);
 
         self::assertInstanceOf(
-            DockerRepository::class,
+            ImageRegistry::class,
             $this->buildObject()->setId('123')->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']

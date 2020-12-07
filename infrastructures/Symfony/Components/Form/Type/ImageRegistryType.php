@@ -31,16 +31,16 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Teknoo\East\Paas\Object\DockerRepository;
+use Teknoo\East\Paas\Object\ImageRegistry;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class DockerRepositoryType extends AbstractType
+class ImageRegistryType extends AbstractType
 {
     /**
-     * @param FormBuilderInterface<DockerRepository> $builder
+     * @param FormBuilderInterface<ImageRegistry> $builder
      * @param array<string, mixed> $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options): self
@@ -53,11 +53,11 @@ class DockerRepositoryType extends AbstractType
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
              * @param \Traversable<string, FormInterface> $forms
-             * @param ?DockerRepository $data
+             * @param ?ImageRegistry $data
              */
             public function mapDataToForms($data, $forms): void
             {
-                if (!$data instanceof DockerRepository) {
+                if (!$data instanceof ImageRegistry) {
                     return;
                 }
 
@@ -68,12 +68,12 @@ class DockerRepositoryType extends AbstractType
 
             /**
              * @param \Traversable<string, FormInterface> $forms
-             * @param ?DockerRepository $data
+             * @param ?ImageRegistry $data
              */
             public function mapFormsToData($forms, &$data): void
             {
                 $forms = \iterator_to_array($forms);
-                $data = new DockerRepository(
+                $data = new ImageRegistry(
                     (string) $forms['apiUrl']->getData(),
                     $forms['identity']->getData()
                 );
@@ -88,7 +88,7 @@ class DockerRepositoryType extends AbstractType
         parent::configureOptions($resolver);
 
         $resolver->setDefaults([
-            'data_class' => DockerRepository::class,
+            'data_class' => ImageRegistry::class,
             'empty_data' => null,
         ]);
 
