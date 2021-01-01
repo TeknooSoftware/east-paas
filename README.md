@@ -195,7 +195,6 @@ Example with Symfony
 
     //Misc
     ClientInterface::class => ...
-    ];
 
 Example of **.paas.yml** configuration file present into git repository to deploy
 ---------------------------------------------------------------------------------
