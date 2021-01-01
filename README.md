@@ -17,12 +17,27 @@ Example with Symfony
     //config/packages/di_bridge.yaml:
     di_bridge:
       definitions:
+        - '%kernel.project_dir%/config/di.php'
+    
+    //config/packages/east_foundation.yaml:
+    di_bridge:
+      definitions:
         - '%kernel.project_dir%/vendor/teknoo/east-foundation/src/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/Resources/config/di.php'
+
+    //config/packages/east_website_di.yaml:
+    di_bridge:
+      definitions:
         - '%kernel.project_dir%/vendor/teknoo/east-website/src/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/doctrine/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/symfony/Resources/config/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/di.php'
+      import:
+        Doctrine\Persistence\ObjectManager: 'doctrine_mongodb.odm.default_document_manager'
+    
+    //config/packages/east_paas_di.yaml:
+    di_bridge:
+      definitions:
         - '%kernel.project_dir%/vendor/teknoo/east-paas/src/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Doctrine/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Flysystem/di.php'
@@ -32,8 +47,11 @@ Example with Symfony
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Composer/di.php'
         - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Symfony/Components/di.php'
         - '%kernel.project_dir%/config/di.php'
-      import:
-        Doctrine\Persistence\ObjectManager: 'doctrine_mongodb.odm.default_document_manager'
+      
+    //config/packages/di_bridge.yaml:
+    di_bridge:
+      definitions:
+        - '%kernel.project_dir%/config/di.php'
 
     
     //bundles.php
@@ -79,7 +97,6 @@ Example with Symfony
         routing:
           Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Job: 'app_message_job'
 
-
     //In security.yml
     security:
       //..
@@ -108,41 +125,76 @@ Example with Symfony
 
     //in config/di.php
     return [
-        'app.paas.hostname' => env('WEBSITE_HOSTNAME', 'localhost'),
-        'app.paas.job_root' => env('JOB_ROOT', \sys_get_temp_dir()),
+       'app.paas.hostname' => env('WEBSITE_HOSTNAME', 'localhost'),
+       'app.paas.job_root' => env('JOB_ROOT', \sys_get_temp_dir()),
+       'app.http_client.verify_ssl' => env('HTTP_CLIENT_VERIFY_SSL', true),
+       'app.http_client.timeout' => env('HTTP_CLIENT_TIMEOUT', 30),
+   
+       'teknoo.east.paas.worker.add_history_pattern' => function (ContainerInterface $container): string {
+           return 'https://' . $container->get('app.paas.hostname') . '/project/{projectId}/environment/{envName}/job/{jobId}/log';
+       },
+   
+       'teknoo.east.paas.worker.global_variables' => [
+           'ROOT' => \dirname(__DIR__)
+       ],
+   
+       'teknoo.east.paas.kubernetes.ssl.verify' => value(false),
+       'teknoo.east.paas.buildkit.build.timeout' => value(10*60),
+       'teknoo.east.paas.buildkit.builder.name' => 'paas_builderx_mono',
+       'teknoo.east.paas.default_storage_provider' => 'paas-nfs-pvc',
+       'teknoo.east.paas.buildkit.build.platforms' => 'linux/arm64',
     
-        'teknoo.east.paas.worker.add_history_pattern' => function (ContainerInterface $container): string {
-            return 'https://' . $container->get('app.paas.hostname') . '/project/{projectId}/environment/{envName}/job/{jobId}/log';
-        },
-    
-        'teknoo.east.paas.conductor.images_library' => [
-            'php-run-74' => [
-                'build-name' => 'php-run',
-                'tag' => '7.4',
-                'path' => '/library/php-run/7.4/',
-            ],
-            'php-fpm-74' => [
-                'build-name' => 'php-fpm',
-                'tag' => '7.4',
-                'path' => '/library/php-fpm/7.4/',
-            ],
+        HostnameRedirectionMiddleware::class => function (ContainerInterface $container): HostnameRedirectionMiddleware {
+        return new HostnameRedirectionMiddleware($container->get('app.paas.hostname'));
+    },
+
+    RecipeInterface::class => decorate(function ($previous, ContainerInterface $container) {
+        if ($previous instanceof RecipeInterface) {
+            $previous = $previous->registerMiddleware(
+                $container->get(HostnameRedirectionMiddleware::class),
+                4
+            );
+        }
+
+        return $previous;
+    }),
+
+    'teknoo.east.paas.conductor.images_library' => [
+        'php-run-74' => [
+            'build-name' => 'php-run',
+            'tag' => '7.4',
+            'path' => '/library/php-run/7.4/',
         ],
-    
-        'teknoo.east.paas.root_dir' => \dirname(__DIR__),
-        'teknoo.east.paas.worker.tmp_dir' => get('app.paas.job_root'),
-    
-        HooksCollectionInterface::class => static function (ContainerInterface $container): HooksCollectionInterface {
-            return [
-                'composer' => $container->get(ComposerHook::class),
-                'git' => $container->get(Git\Hook::class),
-            ]
-        },
-    
-        UriFactoryInterface::class => ...
-        ResponseFactoryInterface::class => ...
-        RequestFactoryInterface::class => ...
-        StreamFactoryInterface::class => ...
-        ClientInterface::class => ...
+    ],
+
+    'teknoo.east.paas.root_dir' => \dirname(__DIR__),
+    'teknoo.east.paas.worker.tmp_dir' => get('app.paas.job_root'),
+
+    'teknoo.east.paas.composer.phar.path' => \dirname(__DIR__) . '/composer.phar',
+
+    HooksCollectionInterface::class => static function (ContainerInterface $container): HooksCollectionInterface {
+        return new class ($container) implements HooksCollectionInterface {
+
+            private ContainerInterface $container;
+
+            public function __construct(ContainerInterface $container)
+            {
+                $this->container = $container;
+            }
+
+            public function getIterator(): \Traversable {
+                yield 'composer' => $this->container->get(ComposerHook::class);
+            }
+        };
+    },
+
+    UriFactoryInterface::class => ...
+    ResponseFactoryInterface::class => ...
+    RequestFactoryInterface::class => ...
+    StreamFactoryInterface::class => ...
+
+    //Misc
+    ClientInterface::class => ...
     ];
 
 Example of **.paas.yml** configuration file present into git repository to deploy
