@@ -28,7 +28,9 @@ namespace Teknoo\East\Paas\Conductor;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Conductor\Compilation\HookTrait;
 use Teknoo\East\Paas\Conductor\Compilation\ImageTrait;
+use Teknoo\East\Paas\Conductor\Compilation\IngressTrait;
 use Teknoo\East\Paas\Conductor\Compilation\PodTrait;
+use Teknoo\East\Paas\Conductor\Compilation\SecretTrait;
 use Teknoo\East\Paas\Conductor\Compilation\ServiceTrait;
 use Teknoo\East\Paas\Conductor\Compilation\VolumeTrait;
 use Teknoo\East\Paas\Conductor\Conductor\Generator;
@@ -57,22 +59,26 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
 {
     use YamlTrait;
     use ArrayTrait;
+    use SecretTrait;
     use ImageTrait;
     use VolumeTrait;
     use HookTrait;
     use PodTrait;
     use ServiceTrait;
+    use IngressTrait;
     use ProxyTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
     private const CONFIG_PAAS = '[paas]';
+    private const CONFIG_SECRETS = '[secrets]';
     private const CONFIG_VOLUMES = '[volumes]';
     private const CONFIG_IMAGES = '[images]';
     private const CONFIG_BUILDS = '[builds]';
     private const CONFIG_PODS = '[pods]';
     private const CONFIG_SERVICES = '[services]';
+    private const CONFIG_INGRESSES = '[ingresses]';
     private const CONFIG_KEY_VERSION = 'version';
 
     private const DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';

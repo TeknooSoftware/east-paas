@@ -45,10 +45,12 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * @covers \Teknoo\East\Paas\Conductor\Conductor
  * @covers \Teknoo\East\Paas\Conductor\Conductor\Generator
  * @covers \Teknoo\East\Paas\Conductor\Conductor\Running
+ * @covers \Teknoo\East\Paas\Conductor\Compilation\SecretTrait
  * @covers \Teknoo\East\Paas\Conductor\Compilation\HookTrait
  * @covers \Teknoo\East\Paas\Conductor\Compilation\ImageTrait
  * @covers \Teknoo\East\Paas\Conductor\Compilation\VolumeTrait
  * @covers \Teknoo\East\Paas\Conductor\Compilation\ServiceTrait
+ * @covers \Teknoo\East\Paas\Conductor\Compilation\IngressTrait
  * @covers \Teknoo\East\Paas\Conductor\Compilation\PodTrait
  * @covers \Teknoo\East\Paas\Parser\ArrayTrait
  * @covers \Teknoo\East\Paas\Parser\YamlTrait
@@ -195,6 +197,21 @@ class ConductorTest extends TestCase
                     'path' => '/images/${FOO}'
                 ],
             ],
+            'secrets' => [
+                'demo_vault' => [
+                    'provider' => 'hashicorp/vault',
+                    'options' => [
+                        'server' => 'vault.teknoo.software',
+                    ],
+                ],
+                'map_vault' => [
+                    'provider' => 'map',
+                    'options' => [
+                        'key1' =>  'value1',
+                        'key2' =>  'foo',
+                    ]
+                ],
+            ],
             'builds' => [
                 'composer-init' => [
                     'composer' => '${COMPOSER}',
@@ -224,7 +241,13 @@ class ConductorTest extends TestCase
                         ],
                         'php-composer' => [
                             'replicas' => 3,
-                            'image' => 'registry/php-composer',
+                            'image' => 'registry/lib/php-composer',
+                            'variables' => [
+                                'from-secrets' => [
+                                    'bar' => 'myvauult.key',
+                                ],
+                                'foo' => 'bar'
+                            ],
                             'version' => 7.4,
                             'volumes' => [
                                 'persistent_volume' => [
@@ -242,6 +265,10 @@ class ConductorTest extends TestCase
                                     'from' => 'main',
                                     'mount-path' => '/app/vendor/',
                                 ],
+                                'vault' => [
+                                    'from-secret' => 'vault',
+                                    'mount-path' => '/app/vendor/',
+                                ],
                             ]
                         ],
                     ],
@@ -249,9 +276,43 @@ class ConductorTest extends TestCase
             ],
             'services' => [
                 'php-react' => [
-                    [
-                        'listen' => 80,
-                        'target' => 8080,
+                    'ports' => [
+                        [
+                            'listen' => 80,
+                            'target' => 8080,
+                        ],
+                    ],
+                ],
+                'php-udp' => [
+                    'pod' => 'php-react',
+                    'protocol' => 'udp',
+                    'ports' => [
+                        [
+                            'listen' => 80,
+                            'target' => 8080,
+                        ],
+                    ],
+                ],
+            ],
+            'ingresses' => [
+                'demo' => [
+                    'host' => 'demo-paas.teknoo.io',
+                    'tls' => [
+                        'cert' => 'foo',
+                        'key' => 'bar',
+                    ],
+                    'service' => [
+                        'name' => 'php-react',
+                        'port' => 80
+                    ],
+                    'paths' => [
+                        [
+                            'path' => '/demo',
+                            'service' => [
+                                'name' => 'php-udp',
+                                'port' => 8080,
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -629,6 +690,46 @@ EOF;
         self::assertNotNull($out);
     }
 
+    public function testCompileDeploymentWithNoIngresses()
+    {
+        $result = $this->getResultArray();
+        unset($result['ingresses']);
+
+        $conductor = $this->prepareTestForCompile($result);
+
+        $out = null;
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment(new Promise(function ($cd) use (&$out) {
+                $out = $cd;
+
+                self::assertInstanceOf(CompiledDeployment::class, $cd);
+            }))
+        );
+
+        self::assertNotNull($out);
+    }
+
+    public function testCompileDeploymentWithNoIngressesTls()
+    {
+        $result = $this->getResultArray();
+        unset($result['ingresses']['demo']['tls']);
+
+        $conductor = $this->prepareTestForCompile($result);
+
+        $out = null;
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment(new Promise(function ($cd) use (&$out) {
+                $out = $cd;
+
+                self::assertInstanceOf(CompiledDeployment::class, $cd);
+            }))
+        );
+
+        self::assertNotNull($out);
+    }
+
     public function testCompileDeploymentWithNoHook()
     {
         $result = $this->getResultArray();
@@ -751,23 +852,6 @@ EOF;
         );
     }
 
-    public function testCompileDeploymentWithNoServices()
-    {
-        $result = $this->getResultArray();
-        unset($result['services']);
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $promise2 = $this->createMock(PromiseInterface::class);
-        $promise2->expects(self::never())->method('success');
-        $promise2->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise2)
-        );
-    }
-
     public function testCompileDeploymentWithNoPods()
     {
         $result = $this->getResultArray();
@@ -806,40 +890,6 @@ EOF;
     {
         $result = $this->getResultArray();
         unset($result['volumes']);
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $promise2 = $this->createMock(PromiseInterface::class);
-        $promise2->expects(self::never())->method('success');
-        $promise2->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise2)
-        );
-    }
-
-    public function testCompileDeploymentWithPersistentVolumeWithFromKey()
-    {
-        $result = $this->getResultArray();
-        $result['pods']['php-pod']['containers']['php-composer']['volumes']['persistent_volume']['from'] = 'main';
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $promise2 = $this->createMock(PromiseInterface::class);
-        $promise2->expects(self::never())->method('success');
-        $promise2->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise2)
-        );
-    }
-
-    public function testCompileDeploymentWithPersistentVolumeWithAddKey()
-    {
-        $result = $this->getResultArray();
-        $result['pods']['php-pod']['containers']['php-composer']['volumes']['persistent_volume']['add'] = ['foo'];
 
         $conductor = $this->prepareTestForCompile($result);
 

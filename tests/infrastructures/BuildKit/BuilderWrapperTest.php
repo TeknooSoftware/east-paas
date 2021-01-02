@@ -25,8 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\BuildKit;
 
-use Teknoo\East\Paas\Container\EmbeddedVolumeImage;
-use Teknoo\East\Paas\Container\PersistentVolume;
+use Teknoo\East\Paas\Container\Image\EmbeddedVolumeImage;
+use Teknoo\East\Paas\Container\Image\Image;
+use Teknoo\East\Paas\Container\Volume\PersistentVolume;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
 use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
@@ -35,8 +36,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Image;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 
@@ -201,7 +201,7 @@ class BuilderWrapperTest extends TestCase
     {
         $cd = $this->createMock(CompiledDeployment::class);
         $cd->expects(self::once())
-            ->method('foreachImage')
+            ->method('foreachBuildable')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -212,8 +212,8 @@ class BuilderWrapperTest extends TestCase
             });
 
         $cd->expects(self::exactly(2))
-            ->method('updateImage')
-            ->willReturnCallback(function (Image $oldImage, Image $image) use ($cd) {
+            ->method('updateBuildable')
+            ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd) {
                 self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
@@ -263,11 +263,11 @@ class BuilderWrapperTest extends TestCase
     {
         $cd = $this->createMock(CompiledDeployment::class);
         $cd->expects(self::once())
-            ->method('foreachImage')
+            ->method('foreachBuildable')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $volumes = [
-                    new Volume('v!', ['/bar'], '/volume'),
+                    new Volume('v!', ['/bar'], '/volume', '/mount'),
                     new PersistentVolume('v!', '/bar', 'pv'),
                 ];
                 $image2 = new EmbeddedVolumeImage('bar1', 'bar', 'bar', $volumes);
@@ -278,7 +278,7 @@ class BuilderWrapperTest extends TestCase
             });
 
         $cd->expects(self::exactly(2))
-            ->method('updateImage')
+            ->method('updateBuildable')
             ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd) {
                 self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
 
@@ -325,7 +325,7 @@ class BuilderWrapperTest extends TestCase
     {
         $cd = $this->createMock(CompiledDeployment::class);
         $cd->expects(self::once())
-            ->method('foreachImage')
+            ->method('foreachBuildable')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -336,8 +336,8 @@ class BuilderWrapperTest extends TestCase
             });
 
         $cd->expects(self::exactly(2))
-            ->method('updateImage')
-            ->willReturnCallback(function (Image $oldImage, Image $image) use ($cd) {
+            ->method('updateBuildable')
+            ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd) {
                 self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
@@ -415,8 +415,8 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo');
-                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar');
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
 
                 $callback('foo', $volume1);
                 $callback('bar', $volume2);
@@ -481,8 +481,8 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo');
-                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar');
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
 
                 $callback('foo', $volume1);
                 $callback('bar', $volume2);

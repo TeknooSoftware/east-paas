@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\BuildKit;
 
-use Teknoo\East\Paas\Container\EmbeddedVolumeImage;
+use Teknoo\East\Paas\Container\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Generator;
@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Running;
 use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
@@ -156,26 +156,26 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
         $this->setTimeout();
 
         $processes = [];
-        $compiledDeployment->foreachImage(
+        $compiledDeployment->foreachBuildable(
             function (BuildableInterface $image) use (&$processes, $workingPath, $compiledDeployment) {
                 $newImage = $image->withRegistry((string) $this->getUrl());
-                $compiledDeployment->updateImage($image, $newImage);
+                $compiledDeployment->updateBuildable($image, $newImage);
 
                 $template = 'image';
-                if ($image instanceof EmbeddedVolumeImage) {
+                if ($newImage instanceof EmbeddedVolumeImage) {
                     $template = 'embedded-volume-image';
                 }
 
                 $script = $this->generateShellScript(
-                    $image->getVariables(),
-                    $image->getPath(),
-                    $image->getUrl() . ':' . $image->getTag(),
-                    $image->getName() . $this->hash($image->getName()),
+                    $newImage->getVariables(),
+                    $newImage->getPath(),
+                    $newImage->getUrl() . ':' . $newImage->getTag(),
+                    $newImage->getName() . $this->hash($newImage->getName()),
                     $template
                 );
 
                 $path = $newImage->getPath();
-                if (empty($path) && $image instanceof EmbeddedVolumeImage) {
+                if (empty($path) && $newImage instanceof EmbeddedVolumeImage) {
                     $path = $workingPath;
                 }
 
@@ -186,20 +186,21 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
                 $variables['PAAS_BUILDKIT_BUILDER_NAME'] = $this->builderName;
                 $variables['PAAS_BUILDKIT_PLATFORM'] = $this->platforms;
 
-                if ($image instanceof EmbeddedVolumeImage) {
+                if ($newImage instanceof EmbeddedVolumeImage) {
                     $paths = [];
-                    foreach ($image->getVolumes() as $volume) {
+                    foreach ($newImage->getVolumes() as $volume) {
                         if ($volume instanceof PersistentVolumeInterface) {
                             continue;
                         }
 
                         foreach ($volume->getPaths() as $path) {
-                            $paths[$path] = $volume->getMountPath() . '/' . $path;
+                            $parts = \explode('/', \rtrim($path, '/'));
+                            $paths[$path] = $volume->getMountPath() . '/' . \array_pop($parts);
                         }
                     }
 
                     $variables['PAAS_DOCKERFILE_CONTENT'] = $this->generateDockerFile(
-                        $image->getOriginalName() . ':' . $image->getTag(),
+                        $newImage->getOriginalName() . ':' . $newImage->getTag(),
                         $paths
                     );
                 }
@@ -241,7 +242,8 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
 
                 $paths = [];
                 foreach ($volumeUpdated->getPaths() as $path) {
-                    $paths[$path] = $volumeUpdated->getLocalPath() . '/' . $path;
+                    $parts = \explode('/', \rtrim($path, '/'));
+                    $paths[$path] = $volumeUpdated->getLocalPath() . '/' . \array_pop($parts);
                 }
 
                 $variables = [

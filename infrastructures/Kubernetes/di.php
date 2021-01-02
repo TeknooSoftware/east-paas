@@ -124,6 +124,28 @@ return [
     },
 
     ClusterClientInterface::class => get(Client::class),
-    Client::class => create()
-        ->constructor(get(ClientFactoryInterface::class)),
+    Client::class => static function (ContainerInterface $container): Client {
+        $defaultIngressClass = null;
+        $defaultServiceName = null;
+        $defaultServicePort = null;
+
+        if ($container->has('teknoo.east.paas.kubernetes.default_ingress_class')) {
+            $defaultIngressClass = (string) $container->get('teknoo.east.paas.kubernetes.default_ingress_class');
+        }
+
+        if ($container->has('teknoo.east.paas.kubernetes.default_service.name')) {
+            $defaultServiceName = (string) $container->get('teknoo.east.paas.kubernetes.default_service.name');
+        }
+
+        if ($container->has('teknoo.east.paas.kubernetes.default_service.port')) {
+            $defaultServicePort = (int) $container->get('teknoo.east.paas.kubernetes.default_service.port');
+        }
+
+        return new Client(
+            $container->get(ClientFactoryInterface::class),
+            $defaultIngressClass,
+            $defaultServiceName,
+            $defaultServicePort
+        );
+    },
 ];

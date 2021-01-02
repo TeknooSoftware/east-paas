@@ -23,17 +23,38 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\East\Paas\Container;
+
+use Teknoo\Immutable\ImmutableInterface;
+use Teknoo\Immutable\ImmutableTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface PopulatedVolumeInterface extends VolumeInterface
+class SecretReference implements ImmutableInterface
 {
-    public function getLocalPath(): string;
+    use ImmutableTrait;
 
-    public function isEmbedded(): bool;
+    private string $name;
 
-    public function import(string $mountPath): PopulatedVolumeInterface;
+    private ?string $key = null;
+
+    public function __construct(string $name, ?string $key = null)
+    {
+        $this->uniqueConstructorCheck();
+
+        $this->name = $name;
+        $this->key = $key;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getKey(): ?string
+    {
+        return $this->key;
+    }
 }

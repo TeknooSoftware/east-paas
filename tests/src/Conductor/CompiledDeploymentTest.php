@@ -27,12 +27,15 @@ namespace Teknoo\Tests\East\Paas\Conductor;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Container\Container;
-use Teknoo\East\Paas\Container\PersistentVolume;
+use Teknoo\East\Paas\Container\Image\Image;
+use Teknoo\East\Paas\Container\Expose\Ingress;
+use Teknoo\East\Paas\Container\Volume\PersistentVolume;
 use Teknoo\East\Paas\Container\Pod;
-use Teknoo\East\Paas\Container\Service;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\Secret;
+use Teknoo\East\Paas\Container\Expose\Service;
+use Teknoo\East\Paas\Container\Volume\Volume;
+use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 
 /**
@@ -47,47 +50,47 @@ class CompiledDeploymentTest extends TestCase
         return new CompiledDeployment();
     }
 
-    public function testAddImageWrongImage()
+    public function testAddBuildableWrongBuildable()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->addImage(new \stdClass());
+        $this->buildObject()->addBuildable(new \stdClass());
     }
 
-    public function testAddImage()
+    public function testAddBuildable()
     {
         self::assertInstanceOf(
             CompiledDeployment::class,
-            $this->buildObject()->addImage(
-                $this->createMock(Image::class)
+            $this->buildObject()->addBuildable(
+                $this->createMock(BuildableInterface::class)
             )
         );
     }
 
-    public function testupdateImageWrongOldImage()
+    public function testupdateBuildableWrongOldBuildable()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->updateImage(
+        $this->buildObject()->updateBuildable(
             new \stdClass(),
-            $this->createMock(Image::class)
+            $this->createMock(BuildableInterface::class)
         );
     }
 
-    public function testupdateImageWrongNewImage()
+    public function testupdateBuildableWrongNewBuildable()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->updateImage(
-            $this->createMock(Image::class),
+        $this->buildObject()->updateBuildable(
+            $this->createMock(BuildableInterface::class),
             new \stdClass()
         );
     }
 
-    public function testupdateImage()
+    public function testupdateBuildable()
     {
         self::assertInstanceOf(
             CompiledDeployment::class,
-            $this->buildObject()->updateImage(
-                $this->createMock(Image::class),
-                $this->createMock(Image::class)
+            $this->buildObject()->updateBuildable(
+                $this->createMock(BuildableInterface::class),
+                $this->createMock(BuildableInterface::class)
             )
         );
     }
@@ -160,6 +163,52 @@ class CompiledDeploymentTest extends TestCase
             )
         );
     }
+    
+    public function testAddSecretWrongSecret()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->addSecret('foo', new \stdClass());
+    }
+
+    public function testAddSecretWrongSecretName()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->addSecret(new \stdClass(), $this->createMock(Secret::class));
+    }
+
+    public function testAddSecret()
+    {
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $this->buildObject()->addSecret(
+                'foo',
+                $this->createMock(Secret::class)
+            )
+        );
+    }
+
+    public function testAddIngressWrongIngress()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->addIngress('foo', new \stdClass());
+    }
+
+    public function testAddIngressWrongIngressName()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->addIngress(new \stdClass(), $this->createMock(Ingress::class));
+    }
+
+    public function testAddIngress()
+    {
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $this->buildObject()->addIngress(
+                'foo',
+                $this->createMock(Ingress::class)
+            )
+        );
+    }
 
     public function testAddPodWrongContainer()
     {
@@ -173,7 +222,7 @@ class CompiledDeploymentTest extends TestCase
         $this->buildObject()->addPod(new \stdClass(), $this->createMock(Pod::class));
     }
 
-    public function testAddPodMissingImage()
+    public function testAddPodMissingBuildable()
     {
         $this->expectException(\DomainException::class);
 
@@ -189,7 +238,7 @@ class CompiledDeploymentTest extends TestCase
         self::assertInstanceOf(
             CompiledDeployment::class,
             $this->buildObject()
-                ->addImage(
+                ->addBuildable(
                     (new Image('foo', 'bar', false, '1.2', ['foo' => 'bar']))
                 )
                 ->addPod(
@@ -250,12 +299,12 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->defineVolume(
             'foo1',
-            new Volume('foo1', [], 'bar')
+            new Volume('foo1', [], 'bar', '/mount')
         );
 
         $cd->defineVolume(
             'foo2',
-            new Volume('foo2', [], 'bar')
+            new Volume('foo2', [], 'bar', '/mount')
         );
 
         $count = 0;
@@ -272,26 +321,26 @@ class CompiledDeploymentTest extends TestCase
         self::assertEquals(2, $count);
     }
 
-    public function testForeachImageBadCallback()
+    public function testForeachBuildableBadCallback()
     {
         $this->expectException(\TypeError::class);
 
-        $this->buildObject()->foreachImage(new \stdClass());
+        $this->buildObject()->foreachBuildable(new \stdClass());
     }
 
-    public function testForeachImage()
+    public function testForeachBuildable()
     {
         $cd = $this->buildObject();
 
-        $cd->addImage(
+        $cd->addBuildable(
             (new Image('foo', 'bar', false, '1.2', ['foo' => 'bar']))
         );
 
-        $cd->addImage(
+        $cd->addBuildable(
             (new Image('bar', 'foo', false, '1.2', ['foo' => 'bar']))
         );
 
-        $cd->addImage(
+        $cd->addBuildable(
             (new Image('hello', 'world', false, '1.2', ['foo' => 'bar']))
         );
 
@@ -313,9 +362,9 @@ class CompiledDeploymentTest extends TestCase
         $count = 0;
         self::assertInstanceOf(
             CompiledDeployment::class,
-            $cd->foreachImage(function ($image) use (&$count) {
-                self::assertInstanceOf(Image::class, $image);
-                self::assertNotEquals('hello', $image->getName());
+            $cd->foreachBuildable(function ($buildable) use (&$count) {
+                self::assertInstanceOf(BuildableInterface::class, $buildable);
+                self::assertNotEquals('hello', $buildable->getName());
 
                 $count++;
             })
@@ -335,26 +384,26 @@ class CompiledDeploymentTest extends TestCase
     {
         $cd = $this->buildObject();
 
-        $cd->addImage(
-            (new Image('foo', 'bar', false, '1.2', ['foo' => 'bar']))
+        $cd->addBuildable(
+            $img = (new Image('foo', 'bar', false, '1.2', ['foo' => 'bar']))
         );
 
-        $cd->addImage(
-            (new Image('bar', 'foo', false, '1.2', ['foo' => 'bar']))
+        $cd->addBuildable(
+            (new Image('bar', 'foo', false, 'latest', ['foo' => 'bar']))
         );
 
-        $cd->addImage(
+        $cd->addBuildable(
             (new Image('hello', 'world', false, '1.2', ['foo' => 'bar']))
         );
 
         $cd->defineVolume(
             'foo',
-            $foo = (new Volume('foo1', [], '/foo'))
+            $foo = (new Volume('foo1', [], '/foo', '/mount'))
         );
 
         $cd->defineVolume(
             'bar',
-            $bar = (new Volume('bar1', [], '/bar'))
+            $bar = (new Volume('bar1', [], '/bar', '/mount'))
         );
 
         $cd->addPod(
@@ -379,6 +428,8 @@ class CompiledDeploymentTest extends TestCase
             )
         );
 
+        $cd->updateBuildable($img, $img->withRegistry('registry.io'));
+
         $cd->addPod(
             'foo2',
             new Pod(
@@ -394,7 +445,7 @@ class CompiledDeploymentTest extends TestCase
                         ],
                         [
                             'bar' => $bar,
-                            'p1' => new PersistentVolume('p1', '/mnt', 'foo'),
+                            'p1' => new PersistentVolume('p1', '/mnt', 'foo', '/mount'),
                         ],
                         []
                     )
@@ -411,7 +462,7 @@ class CompiledDeploymentTest extends TestCase
                     new Container(
                         'bar1',
                         'bar',
-                        '1.2',
+                        null,
                         [
                             80
                         ],
@@ -425,12 +476,12 @@ class CompiledDeploymentTest extends TestCase
         $count = 0;
         self::assertInstanceOf(
             CompiledDeployment::class,
-            $cd->foreachPod(function ($pod, $images, $volumes) use (&$count) {
+            $cd->foreachPod(function ($pod, $buildables, $volumes) use (&$count) {
                 self::assertInstanceOf(Pod::class, $pod);
-                self::assertNotEmpty($images);
+                self::assertNotEmpty($buildables);
                 self::assertInstanceOf(
-                    Image::class,
-                    \current(\current($images))
+                    BuildableInterface::class,
+                    \current(\current($buildables))
                 );
 
                 if ('bar1' === $pod->getName()) {
@@ -479,6 +530,74 @@ class CompiledDeploymentTest extends TestCase
             CompiledDeployment::class,
             $cd->foreachService(function ($service) use (&$count) {
                 self::assertInstanceOf(Service::class, $service);
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(2, $count);
+    }
+
+    public function testForeachSecretBadCallback()
+    {
+        $this->expectException(\TypeError::class);
+
+        $this->buildObject()->foreachSecret(new \stdClass());
+    }
+
+    public function testForeachSecret()
+    {
+        $cd = $this->buildObject();
+
+        $cd->addSecret(
+            'foo1',
+            $this->createMock(Secret::class)
+        );
+
+        $cd->addSecret(
+            'foo2',
+            $this->createMock(Secret::class)
+        );
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachSecret(function ($secret) use (&$count) {
+                self::assertInstanceOf(Secret::class, $secret);
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(2, $count);
+    }
+
+    public function testForeachIngressBadCallback()
+    {
+        $this->expectException(\TypeError::class);
+
+        $this->buildObject()->foreachIngress(new \stdClass());
+    }
+
+    public function testForeachIngress()
+    {
+        $cd = $this->buildObject();
+
+        $cd->addIngress(
+            'foo1',
+            $this->createMock(Ingress::class)
+        );
+
+        $cd->addIngress(
+            'foo2',
+            $this->createMock(Ingress::class)
+        );
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachIngress(function ($ingress) use (&$count) {
+                self::assertInstanceOf(Ingress::class, $ingress);
 
                 $count++;
             })

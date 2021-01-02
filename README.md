@@ -200,15 +200,28 @@ Example of **.paas.yml** configuration file present into git repository to deplo
 ---------------------------------------------------------------------------------
 
 Project demo available [here](https://github.com/TeknooSoftware/east-paas-project-demo).
-
+   
     paas: #Dedicated to compiler
       version: v1
+    
+    #Secrets provider
+    secrets:
+      map_vault:
+        provider: map #Internal secrets, must be passed in this file
+        options:
+          key1: value1
+          key2: ${FOO}
+      volume_vault:
+        provider: map
+        options:
+          foo: bar
+          bar: foo
     
     #Custom image, not available in the library
     images:
       foo:
         build-name: foo
-        tag: lastest
+        tag: latest
         path: '/images/${FOO}'
     
     #Hook to build the project before container, Called in this order
@@ -251,15 +264,60 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
               data: #Persistent volume, can not be pre-populated
                 mount-path: '/opt/data'
                 persistent: true
-            variables:
+              vault:
+                mount-path: '/vault'
+                from-secret: 'volume_vault'
+            variables: #To define some environment variables
               SERVER_SCRIPT: '/opt/app/src/server.php'
+              from-secrets: #To fetch some value from secret/vault
+                KEY1: 'map_vault.key1'
+      demo-pods:
+        replicas: 1
+        containers:
+          nginx:
+            image: registry.hub.docker.com/library/nginx
+            version: alpine
+            listen: #Port listen by the container
+              - 8080
+            volumes:
+              www:
+                mount-path: '/var'
+                add:
+                  - 'nginx/www'
+              config:
+                mount-path: '/etc/nginx/conf.d/'
+                add:
+                  - 'nginx/conf.d/default.conf'
     
     #Pods expositions
     services:
-      php-pods: #Pod name
-        - listen: 9876 #Port listened
-          target: 8080 #Pod's port targeted
-
+      php-service: #Service name
+        pod: "php-pods" #Pod name, use service name by default
+        internal: false #If false, a load balancer is use to access it from outside
+        protocol: 'TCP' #Or UDP
+        ports:
+          - listen: 9876 #Port listened
+            target: 8080 #Pod's port targeted
+      demo-service: #Service name
+        pod: "demo-pods" #Pod name, use service name by default
+        ports:
+          - listen: 8080 #Port listened
+            target: 8080 #Pod's port targeted
+    
+    #Ingresses configuration
+    ingresses:
+      demo: #rule name
+        host: demo-paas.teknoo.io
+        tls:
+          secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+        service: #default service
+          name: demo-service
+          port: 8080
+        paths:
+          - path: /php
+            service:
+              name: php-service
+              port: 9876
 
 Support this project
 ---------------------

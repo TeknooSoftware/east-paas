@@ -582,7 +582,7 @@ EOF;
     public function iMustObtainAnHttpAnswerWithThisStatusCodeEqualsTo($code)
     {
         Assert::assertInstanceOf(Response::class, $this->response);
-        Assert::assertEquals($code, $this->response->getStatusCode());
+        Assert::assertEquals($code, $this->response->getStatusCode(), $this->response->getContent());
     }
 
     /**
@@ -771,6 +771,19 @@ EOF;
 paas: #Dedicated to compiler
   version: v1
 
+#Secrets provider
+secrets:
+  map_vault:
+    provider: map #Internal secrets, must be passed in this file
+    options:
+      key1: value1
+      key2: ${FOO}
+  volume_vault:
+    provider: map
+    options:
+      foo: bar
+      bar: foo
+
 #Custom image, not available in the library
 images:
   foo:
@@ -785,36 +798,94 @@ builds:
 
 #Volume to build to use with container
 volumes:
-  main: #Name of the module
+  extra: #Name of the volume
+    local_path: "/foo/bar" #optional local path where store data in the volume
     add: #folder or file, from .paas.yml where is located to add to the volume
-      - 'src'
+      - 'extra'
+  other_name: #Name of the volume
+    add: #folder or file, from .paas.yml where is located to add to the volume
       - 'vendor'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'composer.phar'
 
 #Pods (set of container)
 pods:
   php-pods: #podset name
-    replicas: 1 #instance of pods
+    replicas: 2 #instance of pods
     containers:
       php-run: #Container name
-        image: php-run #Container image to use
+        image: registry.teknoo.io/php-run #Container image to use
         version: 7.4
         listen: #Port listen by the container
           - 8080
         volumes: #Volumes to link
-          main:
-            from: main
-            mount-path: '/opt/foo/' #Path where data will be mount in the container
-        variables:
-          SERVER_SCRIPT: '/opt/foo/src/server.php'
+          extra:
+            from: 'extra'
+            mount-path: '/opt/extra' #Path where volume will be mount
+          app:
+            mount-path: '/opt/app' #Path where data will be stored
+            add: #folder or file, from .paas.yml where is located to add to the volume
+              - 'src'
+              - 'vendor'
+              - 'composer.json'
+              - 'composer.lock'
+              - 'composer.phar'
+          data: #Persistent volume, can not be pre-populated
+            mount-path: '/opt/data'
+            persistent: true
+          vault:
+            mount-path: '/vault'
+            from-secret: 'volume_vault'
+        variables: #To define some environment variables
+          SERVER_SCRIPT: '/opt/app/src/server.php'
+          from-secrets: #To fetch some value from secret/vault
+            KEY1: 'map_vault.key1'
+  demo-pods:
+    replicas: 1
+    containers:
+      nginx:
+        image: registry.hub.docker.com/library/nginx
+        version: alpine
+        listen: #Port listen by the container
+          - 8080
+        volumes:
+          www:
+            mount-path: '/var'
+            add:
+              - 'nginx/www'
+          config:
+            mount-path: '/etc/nginx/conf.d/'
+            add:
+              - 'nginx/conf.d/default.conf'
 
 #Pods expositions
 services:
-  php-pods: #Pod name
-    - listen: 9876 #Port listened
-      target: 8080 #Pod's port targeted
+  php-service: #Service name
+    pod: "php-pods" #Pod name, use service name by default
+    internal: false #If false, a load balancer is use to access it from outside
+    protocol: 'TCP' #Or UDP
+    ports:
+      - listen: 9876 #Port listened
+        target: 8080 #Pod's port targeted
+  demo-service: #Service name
+    pod: "demo-pods" #Pod name, use service name by default
+    ports:
+      - listen: 8080 #Port listened
+        target: 8080 #Pod's port targeted
+
+#Ingresses configuration
+ingresses:
+  demo: #rule name
+    host: demo-paas.teknoo.io
+    tls:
+      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+    service: #default service
+      name: demo-service
+      port: 8080
+    paths:
+      - path: /php
+        service:
+          name: php-service
+          port: 9876
+
 EOF;
 
                 $conductor->prepare(

@@ -23,17 +23,44 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\Tests\East\Paas\Container\Volume;
+
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Container\Volume\SecretVolume;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @covers \Teknoo\East\Paas\Container\Volume\SecretVolume
  */
-interface PopulatedVolumeInterface extends VolumeInterface
+class SecretVolumeTest extends TestCase
 {
-    public function getLocalPath(): string;
+    private function buildObject(): SecretVolume
+    {
+        return new SecretVolume('foo', 'bar', 'foobar');
+    }
 
-    public function isEmbedded(): bool;
+    public function testGetName()
+    {
+        self::assertEquals(
+            'foo',
+            $this->buildObject()->getName()
+        );
+    }
 
-    public function import(string $mountPath): PopulatedVolumeInterface;
+    public function testGetMountPath()
+    {
+        self::assertEquals(
+            'bar',
+            $this->buildObject()->getMountPath()
+        );
+    }
+
+    public function testGetSecretIdentifier()
+    {
+        self::assertEquals(
+            'foobar',
+            $this->buildObject()->getSecretIdentifier()
+        );
+    }
 }

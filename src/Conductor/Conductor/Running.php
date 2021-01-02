@@ -58,6 +58,13 @@ class Running implements StateInterface
     private function extractAndCompile(): \Closure
     {
         return function (CompiledDeployment $compiledDeployment): void {
+            $this->extract(
+                $this->configuration,
+                static::CONFIG_SECRETS,
+                [],
+                $this->compileSecrets($compiledDeployment)
+            );
+
             $volumes = [];
             $this->extract(
                 $this->configuration,
@@ -92,6 +99,13 @@ class Running implements StateInterface
                 static::CONFIG_SERVICES,
                 [],
                 $this->compileServices($compiledDeployment)
+            );
+
+            $this->extract(
+                $this->configuration,
+                static::CONFIG_INGRESSES,
+                [],
+                $this->compileIngresses($compiledDeployment)
             );
         };
     }

@@ -23,44 +23,34 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Container;
+namespace Teknoo\East\Paas\Conductor\Compilation;
 
-use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Container\Service;
+use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Container\Secret;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Container\Service
  */
-class ServiceTest extends TestCase
+trait SecretTrait
 {
-    private function buildObject(): Service
-    {
-        return new Service('foo', [80 => 8080], 'TCP');
-    }
+    private static string $keySecretProvider = 'provider';
+    private static string $keySecretOptions = 'options';
 
-    public function testGetName()
-    {
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getName()
-        );
-    }
-
-    public function testGetPorts()
-    {
-        self::assertEquals(
-            [80 => 8080],
-            $this->buildObject()->getPorts()
-        );
-    }
-
-    public function testGetProtocol()
-    {
-        self::assertEquals(
-            'TCP',
-            $this->buildObject()->getProtocol()
-        );
+    private function compileSecrets(
+        CompiledDeployment $compiledDeployment
+    ): callable {
+        return static function ($secretsConfigs) use ($compiledDeployment): void {
+            foreach ($secretsConfigs as $name => &$config) {
+                $compiledDeployment->addSecret(
+                    $name,
+                    new Secret(
+                        $name,
+                        $config[static::$keySecretProvider],
+                        $config[static::$keySecretOptions]
+                    )
+                );
+            }
+        };
     }
 }

@@ -110,6 +110,11 @@ class JobUnitDenormalizer implements DenormalizerInterface
             throw new \RuntimeException('Bad denormalized history');
         }
 
+        $variables = \array_merge(
+            $context['variables'] ?? [],
+            $data['variables'] ?? []
+        );
+
         return new JobUnit(
             $jobId,
             $projectResume,
@@ -117,7 +122,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
             $sourceRepository,
             $imagesRepository,
             $clusters,
-            $data['variables'] ?? [],
+            $variables,
             $history
         );
     }

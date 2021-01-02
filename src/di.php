@@ -207,13 +207,17 @@ return [
 
     //Job
     CreateNewJob::class => create(),
-    DeserializeJob::class => create()
-        ->constructor(
-            get(DeserializerInterface::class),
-            get(ResponseFactoryInterface::class),
-            get(StreamFactoryInterface::class),
-            get('teknoo.east.paas.worker.global_variables')
-        ),
+    DeserializeJob::class => static function (ContainerInterface $container): DeserializeJob {
+        return new DeserializeJob(
+            $container->get(DeserializerInterface::class),
+            $container->get(ResponseFactoryInterface::class),
+            $container->get(StreamFactoryInterface::class),
+            \array_merge(
+                $container->get('teknoo.east.paas.worker.global_variables'),
+                $_ENV
+            )
+        );
+    },
     DisplayJob::class => create()
         ->constructor(
             get(ResponseFactoryInterface::class),

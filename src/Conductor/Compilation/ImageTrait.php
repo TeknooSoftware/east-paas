@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Conductor\Compilation;
 
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Image;
+use Teknoo\East\Paas\Container\Image\Image;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
@@ -50,7 +50,7 @@ trait ImageTrait
     {
         foreach ($new as $key => &$value) {
             if (isset($original[$key]) && \is_array($value)) {
-                $original[$key] = self::mergeConfigurations($original[$key], $value);
+                $original[$key] = static::mergeConfigurations($original[$key], $value);
             } else {
                 $original[$key] = $value;
             }
@@ -68,13 +68,13 @@ trait ImageTrait
         JobWorkspaceInterface $workspace
     ): callable {
         return static function ($innerImagesConfigs) use ($imagesLibrary, $compiledDeployment, $workspace): void {
-            $imagesConfigs = self::mergeConfigurations($innerImagesConfigs, $imagesLibrary);
+            $imagesConfigs = static::mergeConfigurations($innerImagesConfigs, $imagesLibrary);
 
             foreach ($imagesConfigs as $name => &$config) {
-                $buildName = $config[self::$keyImageBuildName] ?? $name;
+                $buildName = $config[static::$keyImageBuildName] ?? $name;
                 $isLibrary = !isset($innerImagesConfigs[$name]);
-                $tag = (string) ($config[self::$keyImageTag] ?? self::$valueTagLatest);
-                $variables = ($config[self::$keyImageVariables] ?? []);
+                $tag = (string) ($config[static::$keyImageTag] ?? static::$valueTagLatest);
+                $variables = ($config[static::$keyImageVariables] ?? []);
 
                 $addImage = static function ($path) use (
                     $compiledDeployment,
@@ -94,17 +94,17 @@ trait ImageTrait
                         $variables
                     );
 
-                    $compiledDeployment->addImage($image);
+                    $compiledDeployment->addBuildable($image);
                 };
 
                 if (true === $isLibrary) {
-                    $addImage($config[self::$keyImagePath]);
+                    $addImage($config[static::$keyImagePath]);
 
                     return;
                 }
 
                 $workspace->runInRoot(
-                    fn ($root) => $addImage($root . $config[self::$keyImagePath])
+                    fn ($root) => $addImage($root . $config[static::$keyImagePath])
                 );
             }
         };

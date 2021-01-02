@@ -23,44 +23,50 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Container;
+namespace Teknoo\East\Paas\Container\Volume;
 
-use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Container\PersistentVolume;
+use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
+use Teknoo\Immutable\ImmutableInterface;
+use Teknoo\Immutable\ImmutableTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Container\PersistentVolume
  */
-class PersistentVolumeTest extends TestCase
+class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
 {
-    private function buildObject(): PersistentVolume
-    {
-        return new PersistentVolume('foo', 'bar', 'foobar');
+    use ImmutableTrait;
+
+    private string $name;
+
+    private string $mountPath;
+
+    private ?string $storageIdentifier = null;
+
+    public function __construct(
+        string $name,
+        string $mountPath,
+        string $storageIdentifier = null
+    ) {
+        $this->uniqueConstructorCheck();
+
+        $this->name = $name;
+        $this->mountPath = $mountPath;
+        $this->storageIdentifier = $storageIdentifier;
     }
 
-    public function testGetName()
+    public function getName(): string
     {
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getName()
-        );
+        return $this->name;
     }
 
-    public function testGetMountPath()
+    public function getMountPath(): string
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()->getMountPath()
-        );
+        return $this->mountPath;
     }
 
-    public function testGetStorageIdentifier()
+    public function getStorageIdentifier(): ?string
     {
-        self::assertEquals(
-            'foobar',
-            $this->buildObject()->getStorageIdentifier()
-        );
+        return $this->storageIdentifier;
     }
 }

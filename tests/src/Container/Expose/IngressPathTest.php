@@ -23,17 +23,44 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\Tests\East\Paas\Container\Expose;
+
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Container\Expose\IngressPath;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @covers \Teknoo\East\Paas\Container\Expose\IngressPath
  */
-interface PopulatedVolumeInterface extends VolumeInterface
+class IngressPathTest extends TestCase
 {
-    public function getLocalPath(): string;
+    private function buildObject($internal = false): IngressPath
+    {
+        return new IngressPath('/foo', 'bar', 80);
+    }
 
-    public function isEmbedded(): bool;
+    public function testGetPath()
+    {
+        self::assertEquals(
+            '/foo',
+            $this->buildObject()->getPath()
+        );
+    }
 
-    public function import(string $mountPath): PopulatedVolumeInterface;
+    public function testGetPodName()
+    {
+        self::assertEquals(
+            'bar',
+            $this->buildObject()->getServiceName()
+        );
+    }
+
+    public function testGetPorts()
+    {
+        self::assertEquals(
+            80,
+            $this->buildObject()->getServicePort()
+        );
+    }
 }

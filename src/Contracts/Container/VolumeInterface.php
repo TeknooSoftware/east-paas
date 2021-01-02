@@ -33,5 +33,5 @@ interface VolumeInterface
 {
     public function getName(): string;
 
-    public function getMountPath(): ?string;
+    public function getMountPath(): string;
 }

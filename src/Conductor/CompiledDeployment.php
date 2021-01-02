@@ -25,14 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor;
 
-use Teknoo\East\Paas\Container\EmbeddedVolumeImage;
-use Teknoo\East\Paas\Container\Service;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\Expose\Ingress;
+use Teknoo\East\Paas\Container\Secret;
+use Teknoo\East\Paas\Container\Expose\Service;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
 use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
-use Teknoo\East\Paas\Container\Image;
 use Teknoo\East\Paas\Container\Pod;
 
 /**
@@ -42,9 +41,14 @@ use Teknoo\East\Paas\Container\Pod;
 class CompiledDeployment
 {
     /**
-     * @var array<string, array<string, BuildableInterface>>
+     * @var array<string, Secret>
      */
-    private array $images = [];
+    private array $secrets = [];
+
+    /**
+     * @var array<string, array<string, string|BuildableInterface>>
+     */
+    private array $buildables = [];
 
     /**
      * @var array<string, VolumeInterface>
@@ -66,19 +70,43 @@ class CompiledDeployment
      */
     private array $services = [];
 
-    public function addImage(BuildableInterface $image): self
+    /**
+     * @var array<string, Ingress>
+     */
+    private array $ingresses = [];
+
+    public function addBuildable(BuildableInterface $buildable): self
     {
-        $this->images[$image->getUrl()][$image->getTag()] = $image;
+        $this->buildables[$buildable->getUrl()][$buildable->getTag()] = $buildable;
 
         return $this;
     }
 
-    public function updateImage(BuildableInterface $old, BuildableInterface $new): self
+    public function updateBuildable(BuildableInterface $old, BuildableInterface $new): self
     {
-        unset($this->images[$old->getUrl()][$old->getTag()]);
-        $this->addImage($new);
+        $this->buildables[$old->getUrl()][$old->getTag()] = $new->getUrl();
+        $this->addBuildable($new);
 
         return $this;
+    }
+
+    private function getBuildable(string $url, ?string $tag): BuildableInterface
+    {
+        if (empty($tag)) {
+            $tag = 'latest';
+        }
+
+        if (!isset($this->buildables[$url][$tag])) {
+            throw new \DomainException("Buildable $url:$tag is not referenced");
+        }
+
+        $value = $this->buildables[$url][$tag];
+
+        if (\is_string($value)) {
+            return $this->getBuildable($value, $tag);
+        }
+
+        return $value;
     }
 
     public function defineVolume(string $name, VolumeInterface $volume): self
@@ -98,15 +126,13 @@ class CompiledDeployment
     public function addPod(string $name, Pod $pod): self
     {
         foreach ($pod as $container) {
-            $image = $container->getImage();
-            if (false !== \strpos($image, '/')) {
-                //Is an external image
+            $buildable = $container->getImage();
+            if (false !== \strpos($buildable, '/')) {
+                //Is an external buildable
                 continue;
             }
 
-            if (!isset($this->images[$image][$version = $container->getVersion()])) {
-                throw new \DomainException("Image $image:$version is not available");
-            }
+            $this->getBuildable($buildable, $version = $container->getVersion());
         }
 
         $this->pods[$name] = $pod;
@@ -114,9 +140,23 @@ class CompiledDeployment
         return $this;
     }
 
+    public function addSecret(string $name, Secret $secret): self
+    {
+        $this->secrets[$name] = $secret;
+
+        return $this;
+    }
+
     public function addService(string $name, Service $service): self
     {
         $this->services[$name] = $service;
+
+        return $this;
+    }
+
+    public function addIngress(string $name, Ingress $ingress): self
+    {
+        $this->ingresses[$name] = $ingress;
 
         return $this;
     }
@@ -139,22 +179,31 @@ class CompiledDeployment
         return $this;
     }
 
-    public function foreachImage(callable $callback): self
+    public function foreachSecret(callable $callback): self
     {
-        $processedImages = [];
+        foreach ($this->secrets as $secret) {
+            $callback($secret);
+        }
+
+        return $this;
+    }
+
+    public function foreachBuildable(callable $callback): self
+    {
+        $processedBuildables = [];
         foreach ($this->pods as $pod) {
             foreach ($pod as $container) {
-                $image = $container->getImage();
+                $buildable = $container->getImage();
                 $version = $container->getVersion();
 
-                if (isset($processedImages[$image][$version])) {
+                if (isset($processedBuildables[$buildable][$version])) {
                     continue;
                 }
 
-                $processedImages[$image][$version] = true;
+                $processedBuildables[$buildable][$version] = true;
 
                 $callback(
-                    $this->images[$image][$version]
+                    $this->getBuildable($buildable, $version)
                 );
             }
         }
@@ -165,12 +214,12 @@ class CompiledDeployment
     public function foreachPod(callable $callback): self
     {
         foreach ($this->pods as $pod) {
-            $images = [];
+            $buildables = [];
             $volumes = [];
             foreach ($pod as $container) {
                 $imgName = $container->getImage();
                 $imgVersion = $container->getVersion();
-                $images[$imgName][$imgVersion] = $this->images[$imgName][$imgVersion];
+                $buildables[$imgName][$imgVersion] = $this->getBuildable($imgName, $imgVersion);
                 foreach ($container->getVolumes() as $name => $volume) {
                     if ($volume instanceof PopulatedVolumeInterface) {
                         $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
@@ -180,7 +229,7 @@ class CompiledDeployment
                 }
             }
 
-            $callback($pod, $images, $volumes);
+            $callback($pod, $buildables, $volumes);
         }
 
         return $this;
@@ -190,6 +239,15 @@ class CompiledDeployment
     {
         foreach ($this->services as $service) {
             $callback($service);
+        }
+
+        return $this;
+    }
+
+    public function foreachIngress(callable $callback): self
+    {
+        foreach ($this->ingresses as $ingress) {
+            $callback($ingress);
         }
 
         return $this;

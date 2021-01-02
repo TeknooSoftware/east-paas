@@ -23,17 +23,16 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Container;
+namespace Teknoo\Tests\East\Paas\Container\Image;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Container\EmbeddedVolumeImage;
-use Teknoo\East\Paas\Container\Image;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\Image\EmbeddedVolumeImage;
+use Teknoo\East\Paas\Container\Volume\Volume;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Container\EmbeddedVolumeImage
+ * @covers \Teknoo\East\Paas\Container\Image\EmbeddedVolumeImage
  */
 class EmbeddedVolumeImageTest extends TestCase
 {
@@ -44,7 +43,7 @@ class EmbeddedVolumeImageTest extends TestCase
             '1.2',
             'orignal',
             [
-                new Volume('foo', ['foo', 'bar'], 'bar')
+                new Volume('foo', ['foo', 'bar'], 'bar', '/mount')
             ]
         );
     }
@@ -104,7 +103,7 @@ class EmbeddedVolumeImageTest extends TestCase
     {
         self::assertEquals(
             [
-                new Volume('foo', ['foo', 'bar'], 'bar')
+                new Volume('foo', ['foo', 'bar'], 'bar', '/mount')
             ],
             $this->buildObject()->getVolumes()
         );

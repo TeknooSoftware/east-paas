@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Conductor\Compilation;
 
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
 use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 
@@ -60,9 +60,9 @@ trait VolumeTrait
                     $volumeName,
                     $volume = new Volume(
                         $volumeName . $jobId,
-                        $config[self::$keyVolumeAdd],
-                        $config[self::$keyVolumeLocalPath] ?? self::DEFAULT_LOCAL_PATH_IN_VOLUME,
-                        $config[self::$keyVolumeMountPath] ?? self::DEFAULT_MOUNT_PATH_IN_VOLUME
+                        $config[static::$keyVolumeAdd],
+                        $config[static::$keyVolumeLocalPath] ?? static::DEFAULT_LOCAL_PATH_IN_VOLUME,
+                        $config[static::$keyVolumeMountPath] ?? static::DEFAULT_MOUNT_PATH_IN_VOLUME
                     )
                 );
 

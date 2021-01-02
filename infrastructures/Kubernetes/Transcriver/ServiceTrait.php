@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriver;
 
 use Maclof\Kubernetes\Models\Service as KubeService;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Service;
+use Teknoo\East\Paas\Container\Expose\Service;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -46,18 +46,23 @@ trait ServiceTrait
             ];
         }
 
+        $type = 'LoadBalancer';
+        if ($service->isInternal()) {
+            $type = 'ClusterIP';
+        }
+
         $specs = [
             'metadata' => [
-                'name' => $service->getName() . '-service',
+                'name' => $service->getName(),
                 'labels' => [
                     'name' => $service->getName(),
                 ],
             ],
             'spec' => [
                 'selector' => [
-                    'name' => $service->getName(),
+                    'name' => $service->getPodName(),
                 ],
-                'type' => 'LoadBalancer',
+                'type' => $type,
                 'ports' => $ports,
             ],
         ];

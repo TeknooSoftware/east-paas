@@ -23,10 +23,9 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Container;
+namespace Teknoo\East\Paas\Container\Image;
 
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
-use Teknoo\East\Paas\Contracts\Container\RegistrableInterface;
 use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
@@ -35,7 +34,7 @@ use Teknoo\Immutable\ImmutableTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class EmbeddedVolumeImage implements ImmutableInterface, BuildableInterface, RegistrableInterface
+class EmbeddedVolumeImage implements ImmutableInterface, BuildableInterface
 {
     use ImmutableTrait;
 

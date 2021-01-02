@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Conductor\Compilation;
 
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Service;
+use Teknoo\East\Paas\Container\Expose\Service;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -34,30 +34,31 @@ use Teknoo\East\Paas\Container\Service;
  */
 trait ServiceTrait
 {
+    private static string $keyServicePorts = 'ports';
     private static string $keyServiceListen = 'listen';
     private static string $keyServiceTarget = 'target';
+    private static string $keyServicePodName = 'pod';
     private static string $keyServiceProtocol = 'protocol';
+    private static string $keyServiceInternal = 'internal';
 
     private function compileServices(
         CompiledDeployment $compiledDeployment
     ): callable {
         return static function ($servicesConfigs) use ($compiledDeployment): void {
-            if (empty($servicesConfigs)) {
-                throw new \UnexpectedValueException('Services are not defined in the configuration');
-            }
-
             foreach ($servicesConfigs as $name => &$config) {
                 $ports = [];
-                foreach ($config as $row) {
-                    $ports[(int) $row[self::$keyServiceListen]] = (int) $row[self::$keyServiceTarget];
+                foreach ($config[static::$keyServicePorts] as $row) {
+                    $ports[(int) $row[static::$keyServiceListen]] = (int) $row[static::$keyServiceTarget];
                 }
 
                 $compiledDeployment->addService(
                     $name,
                     new Service(
                         $name,
+                        $config[static::$keyServicePodName] ?? $name,
                         $ports,
-                        $config[self::$keyServiceProtocol] ?? Service::TCP
+                        $config[static::$keyServiceProtocol] ?? Service::TCP,
+                        !empty($config[static::$keyServiceInternal])
                     )
                 );
             }

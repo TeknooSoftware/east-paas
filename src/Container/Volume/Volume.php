@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Container;
+namespace Teknoo\East\Paas\Container\Volume;
 
 use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
 use Teknoo\East\Paas\Contracts\Container\RegistrableInterface;
@@ -47,7 +47,7 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
 
     private string $localPath;
 
-    private ?string $mountPath = null;
+    private string $mountPath;
 
     private bool $isEmbedded = false;
 
@@ -60,7 +60,7 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
         string $name,
         array $paths,
         string $localPath,
-        string $mountPath = null,
+        string $mountPath,
         bool $isEmbedded = false
     ) {
         $this->uniqueConstructorCheck();
@@ -90,7 +90,7 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
         return $this->localPath;
     }
 
-    public function getMountPath(): ?string
+    public function getMountPath(): string
     {
         return $this->mountPath;
     }

@@ -27,11 +27,15 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriver;
 
 use Maclof\Kubernetes\Models\ReplicationController;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
-use Teknoo\East\Paas\Container\Image;
+use Teknoo\East\Paas\Container\Image\Image;
 use Teknoo\East\Paas\Container\Pod;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\SecretReference;
+use Teknoo\East\Paas\Container\Volume\SecretVolume;
+use Teknoo\East\Paas\Container\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
+use Teknoo\East\Paas\Contracts\Container\RegistrableInterface;
+use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -59,6 +63,20 @@ trait ReplicationControllerTrait
 
             $envsVars = [];
             foreach ($container->getVariables() as $name => &$value) {
+                if ($value instanceof SecretReference) {
+                    $envsVars[] = [
+                        'name' => $name,
+                        'valueFrom' => [
+                            'secretKeyRef' => [
+                                'name' => $value->getName(),
+                                'key' => $value->getKey(),
+                            ],
+                        ],
+                    ];
+
+                    continue;
+                }
+
                 $envsVars[] = [
                     'name' => $name,
                     'value' => $value
@@ -88,7 +106,7 @@ trait ReplicationControllerTrait
 
     /**
      * @param array<string, mixed> $specs
-     * @param array<string, Volume>|Volume[] $volumes
+     * @param array<string, SecretVolume|Volume> $volumes
      */
     private static function convertToVolumes(array &$specs, array $volumes): void
     {
@@ -98,6 +116,17 @@ trait ReplicationControllerTrait
                     'name' => $volume->getName(),
                     'persistentVolumeClaim' => [
                         'claimName' => $volume->getStorageIdentifier(),
+                    ],
+                ];
+
+                continue;
+            }
+
+            if ($volume instanceof SecretVolume) {
+                $specs['spec']['template']['spec']['volumes'][] = [
+                    'name' => $volume->getName(),
+                    'secret' => [
+                        'secretName' => $volume->getSecretIdentifier(),
                     ],
                 ];
 

@@ -23,21 +23,21 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Container;
+namespace Teknoo\Tests\East\Paas\Container\Volume;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\Volume\Volume;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Container\Volume
+ * @covers \Teknoo\East\Paas\Container\Volume\Volume
  */
 class VolumeTest extends TestCase
 {
     private function buildObject(): Volume
     {
-        return new Volume('foo', ['foo', 'bar'], 'bar');
+        return new Volume('foo', ['foo', 'bar'], 'bar', '/mount');
     }
 
     public function testGetName()
@@ -78,7 +78,7 @@ class VolumeTest extends TestCase
     public function testGetMountPath()
     {
         self::assertEquals(
-            '',
+            '/mount',
             $this->buildObject()->getMountPath()
         );
 
@@ -116,7 +116,7 @@ class VolumeTest extends TestCase
         );
 
         self::assertEquals(
-            '',
+            '/mount',
             $volume->getMountPath()
         );
 

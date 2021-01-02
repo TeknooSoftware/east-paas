@@ -23,58 +23,44 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Container;
+namespace Teknoo\Tests\East\Paas\Container\Volume;
 
-use Teknoo\Immutable\ImmutableInterface;
-use Teknoo\Immutable\ImmutableTrait;
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Container\Volume\PersistentVolume;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @covers \Teknoo\East\Paas\Container\Volume\PersistentVolume
  */
-class Service implements ImmutableInterface
+class PersistentVolumeTest extends TestCase
 {
-    use ImmutableTrait;
-
-    public const TCP = 'TCP';
-    public const UDP = 'UDP';
-
-    private string $name;
-
-    /**
-     * @var array<int, int>
-     */
-    private array $ports;
-
-    private string $protocol;
-
-    /**
-     * @param array<int, int> $ports
-     */
-    public function __construct(string $name, array $ports, string $protocol)
+    private function buildObject(): PersistentVolume
     {
-        $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->ports = $ports;
-        $this->protocol = $protocol;
+        return new PersistentVolume('foo', 'bar', 'foobar');
     }
 
-    public function getName(): string
+    public function testGetName()
     {
-        return $this->name;
+        self::assertEquals(
+            'foo',
+            $this->buildObject()->getName()
+        );
     }
 
-    /**
-     * @return array<int, int>
-     */
-    public function getPorts(): array
+    public function testGetMountPath()
     {
-        return $this->ports;
+        self::assertEquals(
+            'bar',
+            $this->buildObject()->getMountPath()
+        );
     }
 
-    public function getProtocol(): string
+    public function testGetStorageIdentifier()
     {
-        return $this->protocol;
+        self::assertEquals(
+            'foobar',
+            $this->buildObject()->getStorageIdentifier()
+        );
     }
 }

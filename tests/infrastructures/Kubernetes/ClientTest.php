@@ -25,7 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
-use Teknoo\East\Paas\Container\PersistentVolume;
+use Maclof\Kubernetes\Repositories\IngressRepository;
+use Maclof\Kubernetes\Repositories\SecretRepository;
+use Teknoo\East\Paas\Container\Expose\Ingress;
+use Teknoo\East\Paas\Container\Expose\IngressPath;
+use Teknoo\East\Paas\Container\Secret;
+use Teknoo\East\Paas\Container\SecretReference;
+use Teknoo\East\Paas\Container\Volume\PersistentVolume;
+use Teknoo\East\Paas\Container\Volume\SecretVolume;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Maclof\Kubernetes\Client as KubeClient;
@@ -36,10 +43,10 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Container;
-use Teknoo\East\Paas\Container\Image;
+use Teknoo\East\Paas\Container\Image\Image;
 use Teknoo\East\Paas\Container\Pod;
-use Teknoo\East\Paas\Container\Service;
-use Teknoo\East\Paas\Container\Volume;
+use Teknoo\East\Paas\Container\Expose\Service;
+use Teknoo\East\Paas\Container\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
@@ -68,7 +75,7 @@ class ClientTest extends TestCase
 
     public function buildClient(): Client
     {
-        return new Client($this->getClientFactory());
+        return new Client($this->getClientFactory(), 'provider', 'foo', 80);
     }
 
     public function testConfigureWrongUrl()
@@ -154,6 +161,14 @@ class ClientTest extends TestCase
         $cd = $this->createMock(CompiledDeployment::class);
 
         $cd->expects(self::once())
+            ->method('foreachSecret')
+            ->willReturnCallback(function (callable $callback) use ($cd) {
+                $callback(new Secret('foo', 'map', ['foo' => 'bar']));
+                $callback(new Secret('foo2', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]]));
+                return $cd;
+            });
+
+        $cd->expects(self::once())
             ->method('foreachPod')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
@@ -161,17 +176,41 @@ class ClientTest extends TestCase
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
                 $image2 = $image2->withRegistry('repository.teknoo.run');
 
-                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo');
-                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar');
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
 
                 $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], ['foo' => 'bar', 'bar' => 'foo']);
-                $c2 = new Container('c2', 'bar', '7.4', [80], ['bar' => $volume2->import('/bar'), 'data' => new PersistentVolume('foo', 'bar')], []);
+                $c2 = new Container(
+                    'c2',
+                    'bar',
+                    '7.4',
+                    [80],
+                    [
+                        'bar' => $volume2->import('/bar'),
+                        'data' => new PersistentVolume('foo', 'bar'),
+                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                    ],
+                    [
+                        'foo' => 'bar',
+                        'secret' => new SecretReference('foo', 'bar'),
+                    ]
+                );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2]);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1]);
-                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2, 'data' => new PersistentVolume('foo', 'bar')]);
+                $callback(
+                    $pod2,
+                    [
+                        'bar' => ['7.4' => $image2]
+                    ],
+                    [
+                        'bar' => $volume2,
+                        'data' => new PersistentVolume('foo', 'bar'),
+                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                    ]
+                );
                 return $cd;
             });
 
@@ -180,26 +219,41 @@ class ClientTest extends TestCase
             ->method('__invoke')
             ->willReturn($kubeClient);
 
-        $repo = $this->createMock(ReplicationControllerRepository::class);
+        $srRepo = $this->createMock(ReplicationControllerRepository::class);
+        $seRepo = $this->createMock(SecretRepository::class);
         $kubeClient->expects(self::any())
             ->method('__call')
-            ->with('replicationControllers')
-            ->willReturn($repo);
+            ->willReturnMap([
+                ['replicationControllers', [], $srRepo],
+                ['secrets', [], $seRepo],
+            ]);
 
-        $repo->expects(self::exactly(2))
+        $srRepo->expects(self::exactly(2))
             ->method('exists')
             ->willReturnOnConsecutiveCalls(false, true);
 
-        $repo->expects(self::once())
+        $srRepo->expects(self::once())
             ->method('create')
             ->willReturn(['foo']);
 
-        $repo->expects(self::once())
+        $srRepo->expects(self::once())
+            ->method('update')
+            ->willReturn(['foo']);
+
+        $seRepo->expects(self::exactly(2))
+            ->method('exists')
+            ->willReturnOnConsecutiveCalls(false, true);
+
+        $seRepo->expects(self::once())
+            ->method('create')
+            ->willReturn(['foo']);
+
+        $seRepo->expects(self::once())
             ->method('update')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
+        $promise->expects(self::exactly(4))->method('success')->with(['foo']);
         $promise->expects(self::never())->method('fail');
 
         $client = $this->buildClient();
@@ -220,7 +274,65 @@ class ClientTest extends TestCase
         );
     }
 
-    public function testDeployError()
+    public function testDeployErrorInSecret()
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeployment::class);
+
+        $cd->expects(self::once())
+            ->method('foreachSecret')
+            ->willReturnCallback(function (callable $callback) use ($cd) {
+                $callback(new Secret('foo', 'map', ['foo' => 'bar']));
+                $callback(new Secret('foo2', 'map', ['foo' => 'bar']));
+                return $cd;
+            });
+
+        $this->getClientFactory()
+            ->expects(self::any())
+            ->method('__invoke')
+            ->willReturn($kubeClient);
+
+        $repo = $this->createMock(SecretRepository::class);
+        $kubeClient->expects(self::any())
+            ->method('__call')
+            ->with('secrets')
+            ->willReturn($repo);
+
+        $repo->expects(self::exactly(2))
+            ->method('exists')
+            ->willReturnOnConsecutiveCalls(false, true);
+
+        $repo->expects(self::once())
+            ->method('create')
+            ->willReturn(['foo']);
+
+        $repo->expects(self::once())
+            ->method('update')
+            ->willThrowException(new \Exception());
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success')->with(['foo']);
+        $promise->expects(self::once())->method('fail');
+
+        $client = $this->buildClient();
+        self::assertInstanceOf(
+            Client::class,
+            $client = $client->configure(
+                'kube.teknoo.run',
+                $this->createMock(ClusterCredentials::class)
+            )
+        );
+
+        self::assertInstanceOf(
+            Client::class,
+            $client = $client->deploy(
+                $cd,
+                $promise
+            )
+        );
+    }
+
+    public function testDeployErrorInController()
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeployment::class);
@@ -233,8 +345,8 @@ class ClientTest extends TestCase
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
                 $image2 = $image2->withRegistry('repository.teknoo.run');
 
-                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo');
-                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar');
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
 
                 $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], []);
                 $c2 = new Container('c2', 'bar', '7.4', [80], ['bar' => $volume2->import('/bar')], []);
@@ -337,8 +449,18 @@ class ClientTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachService')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Service('foo', [80 => 8080], 'TCP'));
-                $callback(new Service('foo', [81 => 8081], 'TCP'));
+                $callback(new Service('foo', 'foo', [80 => 8080], 'TCP', false));
+                $callback(new Service('foo', 'foo', [81 => 8081], 'TCP', true));
+                return $cd;
+            });
+        
+        $cd->expects(self::once())
+            ->method('foreachIngress')
+            ->willReturnCallback(function (callable $callback) use ($cd) {
+                $callback(new Ingress('foo1', 'foo.com', null, 'sr1', 80, [], null));
+                $callback(new Ingress('foo2', 'foo.com', null, null, null, [
+                    new IngressPath('/foo', 'sr2', 90)
+                ], 'cert'));
                 return $cd;
             });
 
@@ -347,26 +469,42 @@ class ClientTest extends TestCase
             ->method('__invoke')
             ->willReturn($kubeClient);
 
-        $repo = $this->createMock(ReplicationControllerRepository::class);
-        $kubeClient->expects(self::any())
-            ->method('__call')
-            ->with('services')
-            ->willReturn($repo);
+        $repoService = $this->createMock(ServiceRepository::class);
 
-        $repo->expects(self::exactly(2))
+        $repoService->expects(self::exactly(2))
             ->method('exists')
             ->willReturnOnConsecutiveCalls(false, true);
 
-        $repo->expects(self::exactly(2))
+        $repoService->expects(self::exactly(2))
             ->method('create')
             ->willReturn(['foo']);
 
-        $repo->expects(self::once())
+        $repoService->expects(self::once())
             ->method('delete')
             ->willReturn(['foo']);
 
+        $repoIngress = $this->createMock(IngressRepository::class);
+        $kubeClient->expects(self::any())
+            ->method('__call')
+            ->willReturnMap([
+                ['services', [], $repoService],
+                ['ingresses', [], $repoIngress],
+            ]);
+
+        $repoIngress->expects(self::exactly(2))
+            ->method('exists')
+            ->willReturnOnConsecutiveCalls(false, true);
+
+        $repoIngress->expects(self::exactly(1))
+            ->method('create')
+            ->willReturn(['foo']);
+
+        $repoIngress->expects(self::exactly(1))
+            ->method('update')
+            ->willReturn(['foo']);
+
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
+        $promise->expects(self::exactly(4))->method('success')->with(['foo']);
         $promise->expects(self::never())->method('fail');
 
         $client = $this->buildClient();
@@ -387,7 +525,7 @@ class ClientTest extends TestCase
         );
     }
 
-    public function testExposeError()
+    public function testExposeErrorInService()
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeployment::class);
@@ -395,8 +533,8 @@ class ClientTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachService')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Service('foo', [80 => 8080], 'TCP'));
-                $callback(new Service('foo', [81 => 8081], 'TCP'));
+                $callback(new Service('foo', 'foo', [80 => 8080], 'TCP', false));
+                $callback(new Service('foo', 'foo', [81 => 8081], 'TCP', true));
                 return $cd;
             });
 
@@ -430,6 +568,70 @@ class ClientTest extends TestCase
         $repo->expects(self::once())
             ->method('delete')
             ->willReturn(['foo']);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success')->with(['foo']);
+        $promise->expects(self::once())->method('fail');
+
+        $client = $this->buildClient();
+        self::assertInstanceOf(
+            Client::class,
+            $client = $client->configure(
+                'kube.teknoo.run',
+                $this->createMock(ClusterCredentials::class)
+            )
+        );
+
+        self::assertInstanceOf(
+            Client::class,
+            $client = $client->expose(
+                $cd,
+                $promise
+            )
+        );
+    }
+
+    public function testExposeErrorInIngress()
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeployment::class);
+
+        $cd->expects(self::once())
+            ->method('foreachIngress')
+            ->willReturnCallback(function (callable $callback) use ($cd) {
+                $callback(new Ingress('foo1', 'foo.com', null, 'sr1', 80, [], null));
+                $callback(new Ingress('foo2', 'foo.com', null, null, null, [
+                    new IngressPath('/foo', 'sr2', 90)
+                ], 'cert'));
+                return $cd;
+            });
+
+        $this->getClientFactory()
+            ->expects(self::any())
+            ->method('__invoke')
+            ->willReturn($kubeClient);
+
+        $repo = $this->createMock(IngressRepository::class);
+        $kubeClient->expects(self::any())
+            ->method('__call')
+            ->with('ingresses')
+            ->willReturn($repo);
+
+        $repo->expects(self::exactly(2))
+            ->method('exists')
+            ->willReturnOnConsecutiveCalls(false, false);
+
+        $counter = 0;
+        $repo->expects(self::exactly(2))
+            ->method('create')
+            ->willReturnCallback(function () use (&$counter) {
+                if (0 === $counter) {
+                    $counter++;
+                    return ['foo'];
+                }
+
+                throw new \Exception('foo');
+            });
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())->method('success')->with(['foo']);

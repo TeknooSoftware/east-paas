@@ -25,10 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
+use Maclof\Kubernetes\Models\Ingress;
+use Maclof\Kubernetes\Models\Secret;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Generator;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Running;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriver\IngressTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriver\ReplicationControllerTrait;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriver\SecretTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriver\ServiceTrait;
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Maclof\Kubernetes\Models\ReplicationController;
@@ -53,12 +57,23 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
 {
     use ReplicationControllerTrait;
     use ServiceTrait;
+    use SecretTrait;
+    use IngressTrait;
     use ProxyTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
+
+    private const BASE64_PREFIX = 'base64:';
+
     private ClientFactoryInterface $clientFactory;
+
+    private ?string $defaultIngressClass = null;
+
+    private ?string $defaultIngressService = null;
+
+    private ?int $defaultIngressPort = null;
 
     private ?string $master = null;
 
@@ -66,9 +81,16 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
 
     private ?KubernetesClient $client = null;
 
-    public function __construct(ClientFactoryInterface $clientFactory)
-    {
+    public function __construct(
+        ClientFactoryInterface $clientFactory,
+        ?string $defaultIngressClass,
+        ?string $defaultIngressService,
+        ?int $defaultIngressPort
+    ) {
         $this->clientFactory = $clientFactory;
+        $this->defaultIngressClass = $defaultIngressClass;
+        $this->defaultIngressService = $defaultIngressService;
+        $this->defaultIngressPort = $defaultIngressPort;
 
         $this->initializeStateProxy();
         $this->updateStates();
@@ -126,6 +148,24 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
     {
         $client = $this->getClient();
 
+        $this->foreachSecret(
+            $compiledDeployment,
+            static function (Secret $secret) use ($client, $promise) {
+                try {
+                    $sRepository = $client->secrets();
+                    if ($sRepository->exists($secret->getMetadata('name'))) {
+                        $result = $sRepository->update($secret);
+                    } else {
+                        $result = $sRepository->create($secret);
+                    }
+
+                    $promise->success($result);
+                } catch (\Throwable $error) {
+                    $promise->fail($error);
+                }
+            }
+        );
+
         $this->foreachReplicationController(
             $compiledDeployment,
             static function (ReplicationController $replicationController) use ($client, $promise) {
@@ -160,6 +200,27 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
                     }
 
                     $result = $serviceRepository->create($service);
+
+                    $promise->success($result);
+                } catch (\Throwable $error) {
+                    $promise->fail($error);
+                }
+            }
+        );
+
+        $this->foreachIngress(
+            $compiledDeployment,
+            $this->defaultIngressClass,
+            $this->defaultIngressService,
+            $this->defaultIngressPort,
+            static function (Ingress $ingress) use ($client, $promise) {
+                try {
+                    $ingressRepository = $client->ingresses();
+                    if ($ingressRepository->exists($ingress->getMetadata('name'))) {
+                        $result = $ingressRepository->update($ingress);
+                    } else {
+                        $result = $ingressRepository->create($ingress);
+                    }
 
                     $promise->success($result);
                 } catch (\Throwable $error) {

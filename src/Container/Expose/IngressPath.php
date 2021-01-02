@@ -23,17 +23,46 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\East\Paas\Container\Expose;
+
+use Teknoo\Immutable\ImmutableInterface;
+use Teknoo\Immutable\ImmutableTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface PopulatedVolumeInterface extends VolumeInterface
+class IngressPath implements ImmutableInterface
 {
-    public function getLocalPath(): string;
+    use ImmutableTrait;
 
-    public function isEmbedded(): bool;
+    private string $path;
 
-    public function import(string $mountPath): PopulatedVolumeInterface;
+    private string $serviceName;
+
+    private int $servicePort;
+
+    public function __construct(string $path, string $serviceName, int $servicePort)
+    {
+        $this->uniqueConstructorCheck();
+
+        $this->path = $path;
+        $this->serviceName = $serviceName;
+        $this->servicePort = $servicePort;
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    public function getServiceName(): string
+    {
+        return $this->serviceName;
+    }
+
+    public function getServicePort(): int
+    {
+        return $this->servicePort;
+    }
 }

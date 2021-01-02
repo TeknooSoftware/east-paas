@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Container;
 
-use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -33,26 +32,29 @@ use Teknoo\Immutable\ImmutableTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
+class Secret implements ImmutableInterface
 {
     use ImmutableTrait;
 
     private string $name;
 
-    private ?string $mountPath = null;
+    private string $provider;
 
-    private ?string $storageIdentifier = null;
+    /**
+     * @var array<string|int, mixed>
+     */
+    private array $options;
 
-    public function __construct(
-        string $name,
-        string $mountPath = null,
-        string $storageIdentifier = null
-    ) {
+    /**
+     * @param array<string|int, mixed> $options
+     */
+    public function __construct(string $name, string $provider, array $options)
+    {
         $this->uniqueConstructorCheck();
 
         $this->name = $name;
-        $this->mountPath = $mountPath;
-        $this->storageIdentifier = $storageIdentifier;
+        $this->provider = $provider;
+        $this->options = $options;
     }
 
     public function getName(): string
@@ -60,13 +62,16 @@ class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
         return $this->name;
     }
 
-    public function getMountPath(): ?string
+    public function getProvider(): string
     {
-        return $this->mountPath;
+        return $this->provider;
     }
 
-    public function getStorageIdentifier(): ?string
+    /**
+     * @return array<string|int, mixed>
+     */
+    public function getOptions(): array
     {
-        return $this->storageIdentifier;
+        return $this->options;
     }
 }
