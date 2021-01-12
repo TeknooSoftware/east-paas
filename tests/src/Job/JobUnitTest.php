@@ -29,6 +29,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Job\JobUnit;
@@ -107,12 +108,13 @@ class JobUnitTest extends TestCase
         return $this->cluster;
     }
 
-    private function buildObject()
+    private function buildObject(?string $namespace = 'foo')
     {
         return (new JobUnit(
             'test',
             ['@class' => Project::class,'id' => 'bar', 'name' => 'hello'],
             new Environment('foo'),
+            $namespace,
             $this->getSourceRepositoryMock(),
             $this->getImagesRepositoryMock(),
             [$this->getClusterMock()],
@@ -212,18 +214,18 @@ class JobUnitTest extends TestCase
     {
         $object = $this->buildObject();
 
-        $client = $this->createMock(ClusterClientInterface::class);
+        $directory = $this->createMock(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())->method('success');
         $promise->expects(self::never())->method('fail');
 
         $this->getClusterMock()
             ->expects(self::once())
-            ->method('configureCluster')
-            ->with($client)
+            ->method('selectCluster')
+            ->with($directory)
             ->willReturnCallback(
-                function ($c, PromiseInterface $p) use ($client) {
-                    $p->success($client);
+                function ($c, PromiseInterface $p) use ($directory) {
+                    $p->success($this->createMock(ClusterClientInterface::class));
 
                     return $this->getClusterMock();
                 }
@@ -231,7 +233,7 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($client, $promise)
+            $object->configureCluster($directory, $promise)
         );
     }
 
@@ -239,20 +241,20 @@ class JobUnitTest extends TestCase
     {
         $object = $this->buildObject();
 
-        $client = $this->createMock(ClusterClientInterface::class);
+        $directory = $this->createMock(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::never())->method('success');
         $promise->expects(self::once())->method('fail');
 
         $this->getClusterMock()
             ->expects(self::once())
-            ->method('configureCluster')
-            ->with($client)
+            ->method('selectCluster')
+            ->with($directory)
             ->willThrowException(new \Exception());
 
         self::assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($client, $promise)
+            $object->configureCluster($directory, $promise)
         );
     }
 
@@ -260,15 +262,15 @@ class JobUnitTest extends TestCase
     {
         $object = $this->buildObject();
 
-        $client = $this->createMock(ClusterClientInterface::class);
+        $directory = $this->createMock(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::never())->method('success');
         $promise->expects(self::once())->method('fail');
 
         $this->getClusterMock()
             ->expects(self::once())
-            ->method('configureCluster')
-            ->with($client)
+            ->method('selectCluster')
+            ->with($directory)
             ->willReturnCallback(
                 function ($c, PromiseInterface $p) {
                     $p->fail(new \Exception());
@@ -279,7 +281,7 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($client, $promise)
+            $object->configureCluster($directory, $promise)
         );
     }
 
@@ -336,6 +338,7 @@ class JobUnitTest extends TestCase
                 'id' => 'test',
                 'project' => ['@class' => Project::class,'id' => 'bar', 'name' => 'hello'],
                 'environment' => new Environment('foo'),
+                'base_namespace' => 'foo',
                 'source_repository' => $this->getSourceRepositoryMock(),
                 'images_repository' => $this->getImagesRepositoryMock(),
                 'clusters' => [$this->getClusterMock()],
@@ -376,10 +379,56 @@ class JobUnitTest extends TestCase
                                     'bar',
                                     'bar text FOO',
                                 ],
-                                '${foo}' => 'text'
+                                '${foo}' => 'text',
+                                'paas' => [
+                                    'namespace' => 'foo/hello'
+                                ]
                             ],
                             $result
                         );
+                    },
+                    function (\Throwable  $error) {
+                        throw $error;
+                    }
+                )
+            )
+        );
+    }
+
+    public function testUpdateVariablesInWithNoNamespave()
+    {
+        $ori = [
+            'foo' => 'foo',
+            'bar' => [
+                '${foo}',
+                '${foo} text ${bar}',
+            ],
+            '${foo}' => 'text'
+        ];
+
+        self::assertInstanceOf(
+            JobUnit::class,
+            $this->buildObject(null)->updateVariablesIn(
+                $ori,
+                new Promise(
+                    function (array $result) {
+                        self::assertEquals(
+                            [
+                                'foo' => 'foo',
+                                'bar' => [
+                                    'bar',
+                                    'bar text FOO',
+                                ],
+                                '${foo}' => 'text',
+                                'paas' => [
+                                    'namespace' => 'hello'
+                                ]
+                            ],
+                            $result
+                        );
+                    },
+                    function (\Throwable  $error) {
+                        throw $error;
                     }
                 )
             )
@@ -392,14 +441,21 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $this->buildObject()->updateVariablesIn(
+            $this->buildObject(null)->updateVariablesIn(
                 $ori,
                 new Promise(
                     function (array $result) {
                         self::assertEquals(
-                            [],
+                            [
+                                'paas' => [
+                                    'namespace' => 'hello'
+                                ]
+                            ],
                             $result
                         );
+                    },
+                    function (\Throwable  $error) {
+                        throw $error;
                     }
                 )
             )

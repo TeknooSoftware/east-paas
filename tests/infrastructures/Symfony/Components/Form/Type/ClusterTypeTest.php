@@ -56,6 +56,7 @@ class ClusterTypeTest extends TestCase
     {
         return [
             'name' => 'fooBar',
+            'type' => 'fooBar',
             'address' => 'fooBar',
             'identity' => new SshIdentity(),
             'environment' => new Environment('foo'),

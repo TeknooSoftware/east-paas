@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\Recipe\Bowl\Bowl;
+use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
 use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
@@ -46,7 +47,7 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class AddHistory implements AddHistoryInterface
 {
-    use CookbookTrait;
+    use BaseCookbookTrait;
 
     private ReceiveHistory $stepReceiveHistory;
 

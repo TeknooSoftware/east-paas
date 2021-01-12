@@ -8,6 +8,7 @@
     <document name="Teknoo\East\Paas\Object\Cluster" collection="clusters" inheritance-type="COLLECTION_PER_CLASS">
         <id type="string" strategy="UUID"/>
         <field field-name="name" type="string" nullable="false"/>
+        <field field-name="type" type="string" nullable="false"/>
         <field field-name="address" type="string" nullable="false"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
         <field field-name="updatedAt" name="updated_at" type="date" />

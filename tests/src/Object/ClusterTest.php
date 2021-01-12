@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Object;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Environment;
@@ -175,6 +176,43 @@ class ClusterTest extends TestCase
         );
     }
 
+    public function testGetType()
+    {
+        $argument = 'fooBar';
+        $object = $this->generateObjectPopulated(['type' => $argument]);
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with($argument);
+
+        self::assertInstanceOf(
+            Cluster::class,
+            $object->injectDataInto(['type' => $form])
+        );
+    }
+
+    public function testSetType()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            \get_class($object),
+            $object->setType('fooBar')
+        );
+
+        $argument = 'fooBar';
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with($argument);
+
+        self::assertInstanceOf(
+            Cluster::class,
+            $object->injectDataInto(['type' => $form])
+        );
+    }
+
     public function testSetEnvironment()
     {
         $object = $this->buildObject();
@@ -269,6 +307,7 @@ class ClusterTest extends TestCase
                 '@class' => Cluster::class,
                 'id' => '123',
                 'name' => 'fooName',
+                'type' => 'fooType',
                 'address' => 'fooAddress',
                 'identity' => ($identity = $this->createMock(IdentityInterface::class)),
                 'environment' => ($environment = $this->createMock(Environment::class)),
@@ -278,6 +317,7 @@ class ClusterTest extends TestCase
             Cluster::class,
             $this->buildObject()->setId('123')
                 ->setName('fooName')
+                ->setType('fooType')
                 ->setAddress('fooAddress')
                 ->setIdentity($identity)
                 ->setEnvironment($environment)
@@ -356,6 +396,50 @@ class ClusterTest extends TestCase
         self::markTestSkipped('Not implemented');
     }
 
+    public function testSelectClusterBadDirectory()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->selectCluster(
+            new \stdClass(),
+            $this->createMock(PromiseInterface::class)
+        );
+    }
+
+    public function testSelectClusterBadPromise()
+    {
+        $this->expectException(\TypeError::class);
+
+        $this->buildObject()->selectCluster(
+            $this->createMock(Directory::class),
+            new \stdClass()
+        );
+    }
+
+    public function testSelectCluster()
+    {
+        $directory = $this->createMock(Directory::class);
+        $promise = $this->createMock(PromiseInterface::class);
+
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        $cluster = $this->generateObjectPopulated(
+            [
+                'address' => $address = 'fooBar',
+                'type' => 'foo',
+                'identity' => $identity = $this->createMock(IdentityInterface::class),
+            ]
+        );
+
+        self::assertInstanceOf(
+            Cluster::class,
+            $cluster->selectCluster(
+                $directory,
+                $promise
+            )
+        );
+    }
+
     public function testConfigureClusterBadClient()
     {
         $this->expectException(\TypeError::class);
@@ -375,7 +459,7 @@ class ClusterTest extends TestCase
         );
     }
 
-    public function testConfigure()
+    public function testConfigureCluster()
     {
         $client = $this->createMock(ClientInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
@@ -404,7 +488,7 @@ class ClusterTest extends TestCase
         );
     }
 
-    public function testConfigureOnError()
+    public function testConfigureClusterOnError()
     {
         $client = $this->createMock(ClientInterface::class);
         $promise = $this->createMock(PromiseInterface::class);

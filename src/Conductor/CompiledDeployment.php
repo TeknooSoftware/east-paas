@@ -25,9 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor;
 
+use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Container\Expose\Ingress;
 use Teknoo\East\Paas\Container\Secret;
 use Teknoo\East\Paas\Container\Expose\Service;
+use Teknoo\East\Paas\Container\Volume\Volume;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
 use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
@@ -38,8 +41,12 @@ use Teknoo\East\Paas\Container\Pod;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class CompiledDeployment
+class CompiledDeployment implements CompiledDeploymentInterface
 {
+    private int $version;
+
+    private string $namespace;
+
     /**
      * @var array<string, Secret>
      */
@@ -75,14 +82,20 @@ class CompiledDeployment
      */
     private array $ingresses = [];
 
-    public function addBuildable(BuildableInterface $buildable): self
+    public function __construct(int $version, string $namespace)
+    {
+        $this->version = $version;
+        $this->namespace = $namespace;
+    }
+
+    public function addBuildable(BuildableInterface $buildable): CompiledDeploymentInterface
     {
         $this->buildables[$buildable->getUrl()][$buildable->getTag()] = $buildable;
 
         return $this;
     }
 
-    public function updateBuildable(BuildableInterface $old, BuildableInterface $new): self
+    public function updateBuildable(BuildableInterface $old, BuildableInterface $new): CompiledDeploymentInterface
     {
         $this->buildables[$old->getUrl()][$old->getTag()] = $new->getUrl();
         $this->addBuildable($new);
@@ -109,21 +122,37 @@ class CompiledDeployment
         return $value;
     }
 
-    public function defineVolume(string $name, VolumeInterface $volume): self
+    public function addVolume(string $name, VolumeInterface $volume): CompiledDeploymentInterface
     {
         $this->volumes[$name] = $volume;
 
         return $this;
     }
 
-    public function defineHook(string $name, HookInterface $hook): self
+    public function importVolume(
+        string $volumeFrom,
+        string $mountPath,
+        PromiseInterface $promise
+    ): CompiledDeploymentInterface {
+        if (!isset($this->volumes[$volumeFrom]) || !$this->volumes[$volumeFrom] instanceof Volume) {
+            $promise->fail(new \DomainException("Volume called $volumeFrom was not found volumes definition"));
+
+            return $this;
+        }
+
+        $promise->success($this->volumes[$volumeFrom]->import($mountPath));
+
+        return $this;
+    }
+
+    public function addHook(string $name, HookInterface $hook): CompiledDeploymentInterface
     {
         $this->hooks[$name] = $hook;
 
         return $this;
     }
 
-    public function addPod(string $name, Pod $pod): self
+    public function addPod(string $name, Pod $pod): CompiledDeploymentInterface
     {
         foreach ($pod as $container) {
             $buildable = $container->getImage();
@@ -140,28 +169,28 @@ class CompiledDeployment
         return $this;
     }
 
-    public function addSecret(string $name, Secret $secret): self
+    public function addSecret(string $name, Secret $secret): CompiledDeploymentInterface
     {
         $this->secrets[$name] = $secret;
 
         return $this;
     }
 
-    public function addService(string $name, Service $service): self
+    public function addService(string $name, Service $service): CompiledDeploymentInterface
     {
         $this->services[$name] = $service;
 
         return $this;
     }
 
-    public function addIngress(string $name, Ingress $ingress): self
+    public function addIngress(string $name, Ingress $ingress): CompiledDeploymentInterface
     {
         $this->ingresses[$name] = $ingress;
 
         return $this;
     }
 
-    public function foreachHook(callable $callback): self
+    public function foreachHook(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->hooks as $hook) {
             $callback($hook);
@@ -170,25 +199,16 @@ class CompiledDeployment
         return $this;
     }
 
-    public function foreachVolume(callable $callback): self
+    public function foreachVolume(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->volumes as $name => $volume) {
-            $callback($name, $volume);
+            $callback($name, $volume, $this->namespace);
         }
 
         return $this;
     }
 
-    public function foreachSecret(callable $callback): self
-    {
-        foreach ($this->secrets as $secret) {
-            $callback($secret);
-        }
-
-        return $this;
-    }
-
-    public function foreachBuildable(callable $callback): self
+    public function foreachBuildable(callable $callback): CompiledDeploymentInterface
     {
         $processedBuildables = [];
         foreach ($this->pods as $pod) {
@@ -203,7 +223,8 @@ class CompiledDeployment
                 $processedBuildables[$buildable][$version] = true;
 
                 $callback(
-                    $this->getBuildable($buildable, $version)
+                    $this->getBuildable($buildable, $version),
+                    $this->namespace
                 );
             }
         }
@@ -211,7 +232,16 @@ class CompiledDeployment
         return $this;
     }
 
-    public function foreachPod(callable $callback): self
+    public function foreachSecret(callable $callback): CompiledDeploymentInterface
+    {
+        foreach ($this->secrets as $secret) {
+            $callback($secret, $this->namespace);
+        }
+
+        return $this;
+    }
+
+    public function foreachPod(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->pods as $pod) {
             $buildables = [];
@@ -229,25 +259,25 @@ class CompiledDeployment
                 }
             }
 
-            $callback($pod, $buildables, $volumes);
+            $callback($pod, $buildables, $volumes, $this->namespace);
         }
 
         return $this;
     }
 
-    public function foreachService(callable $callback): self
+    public function foreachService(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->services as $service) {
-            $callback($service);
+            $callback($service, $this->namespace);
         }
 
         return $this;
     }
 
-    public function foreachIngress(callable $callback): self
+    public function foreachIngress(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->ingresses as $ingress) {
-            $callback($ingress);
+            $callback($ingress, $this->namespace);
         }
 
         return $this;

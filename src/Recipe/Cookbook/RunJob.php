@@ -48,6 +48,7 @@ use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Bowl\BowlInterface;
+use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
 use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
@@ -57,7 +58,7 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class RunJob implements RunJobInterface
 {
-    use CookbookTrait;
+    use BaseCookbookTrait;
 
     private DispatchHistoryInterface $stepDispatchHistory;
 

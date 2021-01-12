@@ -27,10 +27,13 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 
@@ -41,6 +44,19 @@ use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 class ClusterType extends AbstractType
 {
     /**
+     * @var array<string, string>
+     */
+    private array $clustersTypes;
+
+    /**
+     * @param array<string, string> $clustersTypes
+     */
+    public function __construct(array $clustersTypes)
+    {
+        $this->clustersTypes = $clustersTypes;
+    }
+
+    /**
      * @param FormBuilderInterface<Cluster> $builder
      * @param array<string, mixed> $options
      */
@@ -49,7 +65,18 @@ class ClusterType extends AbstractType
         parent::buildForm($builder, $options);
 
         $builder->add('name', TextType::class, ['required' => true]);
-        $builder->add('address', TextType::class, ['required' => true]);
+        $builder->add('type', ChoiceType::class, ['required' => true, 'choices' => $this->clustersTypes]);
+        $builder->add(
+            'address',
+            TextType::class,
+            [
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(),
+                    new Regex('/^https:\/\/[a-zA-Z0-9-_\.]+/iS')
+                ],
+            ]
+        );
         $builder->add('environment', EnvironmentType::class, ['required' => true]);
         $builder->add('identity', ClusterCredentialsType::class, ['required' => true]);
 
@@ -80,6 +107,7 @@ class ClusterType extends AbstractType
 
                 $forms = \iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
+                $data->setType($forms['type']->getData());
                 $data->setAddress($forms['address']->getData());
                 $data->setEnvironment($forms['environment']->getData());
                 $data->setIdentity($forms['identity']->getData());

@@ -1,7 +1,28 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.21] - 2021-01-27
+###Dev release
+- Add namespace support, managed by account, included into the compiled deployment and pass to Kubernetes
+- Add Yaml file validation, thanks to a XSD schema and an internal convertissor Yaml to XML
+- Add type of cluster (`Kubernetes`, `Docker Swarm`, etc...) in project, and a Directory object to manage a set of 
+  `Teknoo\East\Paas\Contracts\Cluster\ClientInterface` to manage several types of cluster in a same installation, 
+  with a same PaaS, able to read a compiled deployment object to perform deployment and exposing.
+- Update compilation to support the validation, the goot client selection and namespace   
+- Update to Teknoo/States 4.1.7, Teknoo/Recipe 2.3, Teknoo/East Foundation 3.3 and Teknoo/Website 4.0 and implement
+  new system of HTTP endpoints and controllers provided by Website to allow customisations in Project PaaS Implementation
+- Update Symfony Routing, and migrate all common steps of Endpoint's recipe to Common namespace in Src  
+- Custom the endpoint dedicated to New Account to allow custom step, to inject in the recipe thanks to the DI's entry 
+  `AdditionalStepsInterface` to perform some custom operations, like create account on kubernetes, or registry.
+- Split huge Conductor/Compilator (To tranform the file `.paas.yml` to a set a independent compiler, called by an 
+  agnostic Conductor). Compiler implement an interface and compilers can be added or replace in the conductor via the DI
+  to allow add resources or services in your PaaS platform.
+- Transform and normalize the CompiledDeployment to an interface, to allow you implement your own CompiledDeployment 
+  object to resume `.paas.yml` to execute them
+- Rework the Kubernetes client to transform transcriber as independents classes, called by the client, allowing you to
+  custom, change or add transcriber to the client.
+
 ##[0.0.20] - 2021-01-01
-###Stable Release
+###Dev release
 - Change definitions of volume in Pod
 - Manage external image from image registry
 - Rename DockerRepository to ImageRegistry
@@ -13,38 +34,38 @@
 - Persistent volume
 
 ##[0.0.19] - 2020-12-06
-###Stable Release
+###Dev release
 - Display result and history in CLI when RunJob recipe is launch in CLI.
 
 ##[0.0.18] - 2020-12-03
-###Stable Release
+###Dev release
 - Official Support of PHP8
 
 ##[0.0.17] - 2020-11-11
-###Stable
+###Dev release
 - Remove composer bin in Composer hook and replace by `teknoo.east.paas.composer.phar.path` parameter
 
 ##[0.0.16] - 2020-11-11
-###Stable
+###Dev release
 - Add Symfony command to run a job (thanks to cookbook) without start a PaaS server.
 
 ##[0.0.16-beta1] - 2020-11-07
-###Beta release
+###Dev release
 - Create Symfony command to run a job (thanks to cookbook) without start a PaaS server.
 
 ##[0.0.15] - 2020-10-30
-###Stable Release
+###Dev release
 - Increase coverage
 - Improve DI
 - Implements Problem+json rfc7807
 - Update composer
 
 ##[0.0.14] - 2020-10-25
-###Stable Release
+###Dev release
 - Fix mistake in ClusterCredentialsType
 
 ##[0.0.13] - 2020-10-25
-###Stable Release
+###Dev release
 - Require Teknoo/States ^4.1.3
 - Remove useless code : BillingInformation, PaymentInformation, DockerRepository's name
 

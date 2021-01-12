@@ -36,7 +36,7 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Cluster\Collection;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\Deploying;
@@ -93,7 +93,7 @@ class DeployingTest extends TestCase
 
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(EastClient::class),
             $this->createMock(ManagerInterface::class)
         );
@@ -117,7 +117,7 @@ class DeployingTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(Collection::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             new \stdClass(),
             $this->createMock(ManagerInterface::class)
         );
@@ -129,7 +129,7 @@ class DeployingTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(Collection::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(EastClient::class),
             new \stdClass()
         );
@@ -137,7 +137,7 @@ class DeployingTest extends TestCase
 
     public function testInvoke()
     {
-        $compileDep = $this->createMock(CompiledDeployment::class);
+        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
         $collection = $this->createMock(Collection::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $eastClient =  $this->createMock(EastClient::class);
@@ -179,7 +179,7 @@ class DeployingTest extends TestCase
 
     public function testInvokeOnError()
     {
-        $compileDep = $this->createMock(CompiledDeployment::class);
+        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
         $collection = $this->createMock(Collection::class);
         $eastClient =  $this->createMock(EastClient::class);
         $manager = $this->createMock(ManagerInterface::class);

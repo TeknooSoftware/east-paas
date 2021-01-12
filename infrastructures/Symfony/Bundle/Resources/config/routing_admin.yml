@@ -1,0 +1,129 @@
+##Account
+_teknoo_paas_admin_account_list:
+    path: '/accounts/'
+    methods:  ['GET']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.list'
+        loader: '@Teknoo\East\Paas\Loader\AccountLoader'
+        defaultOrderDirection: 'ASC'
+        itemsPerPage: 20
+        template: '@@TeknooEastWebsite/AdminAccount/list.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+
+_teknoo_paas_admin_account_edit:
+    path: '/account/edit/{id}'
+    methods:  ['GET', 'POST', 'PUT']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.edit'
+        loader: '@Teknoo\East\Paas\Loader\AccountLoader'
+        writer: '@Teknoo\East\Paas\Writer\AccountWriter'
+        formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
+        template: '@@TeknooEastWebsite/AdminAccount/edit.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        formOptions: { "doctrine_type": "%teknoo.east.website.form_type.doctrine.class%"}
+        isTranslatable: false
+        slugField: 'slug'
+
+_teknoo_paas_admin_account_new:
+    path: '/account/new'
+    methods:  ['GET', 'POST', 'PUT']
+    defaults:
+        _controller: 'teknoo.east.paas.endpoint.admin.new.account'
+        loader: '@Teknoo\East\Paas\Loader\AccountLoader'
+        writer: '@Teknoo\East\Paas\Writer\AccountWriter'
+        objectClass: 'Teknoo\East\Paas\Object\Account'
+        formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
+        template: '@@TeknooEastWebsite/AdminAccount/new.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        formOptions: { "doctrine_type": "%teknoo.east.website.form_type.doctrine.class%"}
+        route: '_teknoo_paas_admin_account_edit'
+        isTranslatable: false
+
+_teknoo_paas_admin_account_delete:
+    path: '/account/delete/{id}'
+    methods:  ['GET']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.delete'
+        loader: '@Teknoo\East\Paas\Loader\AccountLoader'
+        deleter: '@teknoo.east.paas.deleting.account'
+        route: '_teknoo_paas_admin_account_list'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+
+##########
+#Project
+
+_teknoo_paas_admin_project_list:
+    path: '/projects/'
+    methods:  ['GET']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.list'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        defaultOrderDirection: 'ASC'
+        itemsPerPage: 20
+        template: '@@TeknooEastWebsite/AdminProject/list.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+
+_teknoo_paas_admin_project_edit:
+    path: '/project/edit/{id}'
+    methods:  ['GET', 'POST', 'PUT']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.edit'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
+        formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
+        template: '@@TeknooEastWebsite/AdminProject/edit.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        formOptions: { }
+        isTranslatable: true
+        slugField: 'slug'
+
+_teknoo_paas_admin_project_new:
+    path: '/project/new/{accountId}'
+    methods:  ['GET', 'POST', 'PUT']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.new'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
+        objectClass: 'Teknoo\East\Paas\Object\Project'
+        formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
+        template: '@@TeknooEastWebsite/AdminProject/new.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        formOptions: { }
+        route: '_teknoo_paas_admin_project_edit'
+        isTranslatable: true
+        slugField: 'slug'
+
+_teknoo_paas_admin_project_delete:
+    path: '/project/delete/{id}'
+    methods:  ['GET']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.delete'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        deleter: '@teknoo.east.paas.deleting.project'
+        route: '_teknoo_paas_admin_project_list'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+
+########
+#Job
+
+_teknoo_paas_admin_job_list:
+    path: '/jobs'
+    methods: ['GET']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.list'
+        loader: '@Teknoo\East\Paas\Loader\JobLoader'
+        defaultOrderDirection: 'ASC'
+        itemsPerPage: 20
+        template: '@@TeknooEastWebsite/AdminJob/list.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+
+_teknoo_paas_admin_job_delete:
+    path: '/job/delete/{id}'
+    methods:  ['GET']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.admin.delete'
+        nextRoute: 'admin_job_list'
+        loader: '@Teknoo\East\Paas\Loader\JobLoader'
+        deleter: '@teknoo.east.paas.deleting.job'
+        route: '_teknoo_paas_admin_job_list'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'

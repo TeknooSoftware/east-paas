@@ -389,6 +389,7 @@ class JobUnitDenormalizerTest extends TestCase
             "@class" => Job::class,
             "id" => $id,
             "project" => $project,
+            "base_namespace" => 'fooBar',
             "environment" => ['env' => 'bar'],
             "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
             "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
@@ -397,7 +398,7 @@ class JobUnitDenormalizerTest extends TestCase
             "history" => ['history' => 'bar'],
         ];
 
-        $jobUnit = new JobUnit($id, $project, $env, $srepo, $irepo, $clusters, ['foo' => 'bar'], $history);
+        $jobUnit = new JobUnit($id, $project, $env, 'fooBar', $srepo, $irepo, $clusters, ['foo' => 'bar'], $history);
         self::assertEquals(
             $jobUnit,
             $this->buildNormalizer()->setDenormalizer($denormalizer)

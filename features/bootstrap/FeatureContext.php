@@ -21,6 +21,7 @@ use Teknoo\East\Website\Doctrine\Object\Item;
 use Teknoo\East\Website\Doctrine\Object\Media;
 use Teknoo\East\Website\Object\Type;
 use Teknoo\East\Website\Object\User;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
@@ -45,7 +46,7 @@ use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Symfony\Component\DependencyInjection\Container;
 
 /**
@@ -365,10 +366,11 @@ class FeatureContext implements Context
                 return $this;
             }
 
-            public function findOneBy(array $criteria): ?object {
+            public function findOneBy(array $criteria, ?array $sort = null): ?object {
                 $id = $criteria['id'];
                 return ($this->getter)($this->className, $id);
             }
+
             public function getClassName(): string {}
         };
 
@@ -405,6 +407,7 @@ class FeatureContext implements Context
             $id,
             $this->account = (new Account())->setId($this->accountId)
                 ->setName('Consumer Account')
+                ->setNamespace('behat-test')
         );
     }
 
@@ -431,7 +434,7 @@ class FeatureContext implements Context
         $this->envName = $id;
 
         $this->project->setClusters([
-            $this->cluster = (new Cluster())->setId('cluster-id')->setProject($this->project)
+            $this->cluster = (new Cluster())->setId('cluster-id')->setType('behat')->setProject($this->project)
                 ->setName($this->clusterName)->setEnvironment($this->environment = new Environment($this->envName))
         ]);
     }
@@ -546,6 +549,7 @@ class FeatureContext implements Context
       "id": "4f719ead65683a1986339be59bbb03ab",
       "name": "fooBar",
       "address": "fooBar",
+      "type": "behat",
       "identity": {
         "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\ClusterCredentials",
         "id": "f61d411e3f1b33eaa0900d3b17d36f1d",
@@ -606,6 +610,7 @@ EOF;
                 'id' => $this->projectId,
                 'name' => $this->projectName,
             ],
+            'base_namespace' => 'behat-test',
             'environment' => [
                 '@class' => Environment::class,
                 'name' => $this->envName,
@@ -628,6 +633,7 @@ EOF;
                     '@class' => Cluster::class,
                     'id' => 'cluster-id',
                     'name' => $this->clusterName,
+                    'type' => 'behat',
                     'address' => '',
                     'identity' => null,
                     'environment' => [
@@ -770,6 +776,7 @@ EOF;
                 $conf = <<<'EOF'
 paas: #Dedicated to compiler
   version: v1
+  namespace: 'demo'
 
 #Secrets provider
 secrets:
@@ -799,7 +806,7 @@ builds:
 #Volume to build to use with container
 volumes:
   extra: #Name of the volume
-    local_path: "/foo/bar" #optional local path where store data in the volume
+    local-path: "/foo/bar" #optional local path where store data in the volume
     add: #folder or file, from .paas.yml where is located to add to the volume
       - 'extra'
   other_name: #Name of the volume
@@ -1018,7 +1025,7 @@ EOF;
             }
 
             public function buildImages(
-                CompiledDeployment $compiledDeployment,
+                CompiledDeploymentInterface $compiledDeployment,
                 string $workingPath,
                 PromiseInterface $promise
             ): BuilderInterface {
@@ -1028,7 +1035,7 @@ EOF;
             }
 
             public function buildVolumes(
-                CompiledDeployment $compiledDeployment,
+                CompiledDeploymentInterface $compiledDeployment,
                 string $workingPath,
                 PromiseInterface $promise
             ): BuilderInterface {
@@ -1055,23 +1062,20 @@ EOF;
                 return clone $this;
             }
 
-            public function deploy(CompiledDeployment $compiledDeployment, PromiseInterface $promise): ClientInterface
+            public function deploy(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): ClientInterface
             {
                 $promise->success(['foo' => 'bar']);
 
                 return $this;
             }
 
-            public function expose(CompiledDeployment $compiledDeployment, PromiseInterface $promise): ClientInterface
+            public function expose(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): ClientInterface
             {
                 $promise->success(['foo' => 'bar']);
                 return $this;
             }
         };
 
-        $this->sfContainer->set(
-            ClientInterface::class,
-            $client
-        );
+        $this->sfContainer->get(Directory::class)->register('behat', $client);
     }
 }

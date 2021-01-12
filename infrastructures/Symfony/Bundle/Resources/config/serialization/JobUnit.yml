@@ -1,0 +1,4 @@
+Teknoo\East\Paas\Job\JobUnit:
+  attributes:
+    baseNamespace:
+      serialized_name: base_namespace

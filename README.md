@@ -232,7 +232,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
     #Volume to build to use with container
     volumes:
       extra: #Name of the volume
-        local_path: "/foo/bar" #optional local path where store data in the volume
+        local-path: "/foo/bar" #optional local path where store data in the volume
         add: #folder or file, from .paas.yml where is located to add to the volume
           - 'extra'
       other_name: #Name of the volume

@@ -100,6 +100,28 @@ class JobTest extends TestCase
         $this->buildObject()->setProject(new \stdClass());
     }
 
+    public function testSetBaseNamespaceBadArgument()
+    {
+        $this->expectException(\Throwable::class);
+        $this->buildObject()->setBaseNamespace(new \stdClass());
+    }
+
+    public function testSetBaseName()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            \get_class($object),
+            $object->setBaseNamespace('foo')
+        );
+
+        $rP = new \ReflectionProperty($object, 'baseNamespace');
+        $rP->setAccessible(true);
+        self::assertEquals(
+            'foo',
+            $rP->getValue($object)
+        );
+    }
+
     public function testAddToHistory()
     {
         $object = $this->buildObject();
@@ -408,11 +430,12 @@ class JobTest extends TestCase
                 'images_repository' => null,
                 'clusters' => [],
                 'history' => null,
+                'base_namespace' => 'foo',
             ]);
 
         self::assertInstanceOf(
             Job::class,
-            $this->buildObject()->setId('123')->exportToMeData(
+            $this->buildObject()->setId('123')->setBaseNamespace('foo')->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']
             )

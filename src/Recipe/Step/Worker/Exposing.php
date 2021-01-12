@@ -31,7 +31,7 @@ use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Collection;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
@@ -61,7 +61,7 @@ class Exposing
 
     public function __invoke(
         Collection $clustersClients,
-        CompiledDeployment $compiledDeployment,
+        CompiledDeploymentInterface $compiledDeployment,
         EastClient $eastClient,
         ManagerInterface $manager,
         JobUnitInterface $jobUnit

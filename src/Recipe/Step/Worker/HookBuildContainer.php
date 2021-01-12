@@ -30,7 +30,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -62,7 +62,7 @@ class HookBuildContainer
 
     public function __invoke(
         JobWorkspaceInterface $workspace,
-        CompiledDeployment $compiledDeployment,
+        CompiledDeploymentInterface $compiledDeployment,
         JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager

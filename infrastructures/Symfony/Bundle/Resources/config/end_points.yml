@@ -1,4 +1,5 @@
 parameters:
+  teknoo.east.paas.symfony.end_point.new_account.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
   teknoo.east.paas.symfony.end_point.new_job.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
   teknoo.east.paas.symfony.end_point.job_add_history.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
   teknoo.east.paas.symfony.end_point.job_run.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'

@@ -32,7 +32,7 @@ namespace Teknoo\East\Paas\Contracts\Hook;
 interface HooksCollectionInterface extends \IteratorAggregate
 {
     /**
-     * @return \Traversable|HookInterface[]
+     * @return \Traversable<HookInterface>
      */
     public function getIterator(): \Traversable;
 }

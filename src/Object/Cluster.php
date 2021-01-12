@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Object;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Website\Object\ObjectInterface;
 use Teknoo\East\Website\Object\ObjectTrait;
 use Teknoo\East\Website\Object\TimestampableInterface;
@@ -51,6 +52,8 @@ class Cluster implements
     private ?Project $project = null;
 
     private ?string $name = null;
+
+    private ?string $type = null;
 
     private ?string $address = null;
 
@@ -78,6 +81,18 @@ class Cluster implements
     public function setName(string $name): Cluster
     {
         $this->name = $name;
+        return $this;
+    }
+
+    private function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): Cluster
+    {
+        $this->type = $type;
+
         return $this;
     }
 
@@ -122,6 +137,10 @@ class Cluster implements
             $forms['name']->setData($this->getName());
         }
 
+        if (isset($forms['type'])) {
+            $forms['type']->setData($this->getType());
+        }
+
         if (isset($forms['address'])) {
             $forms['address']->setData($this->getAddress());
         }
@@ -157,10 +176,18 @@ class Cluster implements
             '@class' => self::class,
             'id' => $this->getId(),
             'name' => $this->getName(),
+            'type' => $this->getType(),
             'address' => $this->getAddress(),
             'identity' => $this->getIdentity(),
             'environment' => $this->getEnvironment(),
         ]);
+
+        return $this;
+    }
+
+    public function selectCluster(Directory $clientsDirectory, PromiseInterface $promise): self
+    {
+        $clientsDirectory->require((string) $this->getType(), $this, $promise);
 
         return $this;
     }

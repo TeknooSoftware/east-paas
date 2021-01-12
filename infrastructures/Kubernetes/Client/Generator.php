@@ -25,8 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 
+use Maclof\Kubernetes\Client as KubernetesClient;
+use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
-use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
@@ -39,9 +41,14 @@ class Generator implements StateInterface
 {
     use StateTrait;
 
-    private function getMasterUrl(): \Closure
+    private function runTranscriber(): \Closure
     {
-        return function (): string {
+        return function (
+            CompiledDeploymentInterface $compiledDeployment,
+            PromiseInterface $mainPromise,
+            bool $runDeployment,
+            bool $runExposing
+        ): KubernetesClient {
             throw new \RuntimeException('Client is in generator state');
         };
     }

@@ -34,8 +34,8 @@ use Psr\Http\Message\StreamInterface;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Cluster\Collection;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureClusterClient;
 
@@ -49,17 +49,17 @@ use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureClusterClient;
 class ConfigureClusterClientTest extends TestCase
 {
     /**
-     * @var ClientInterface
+     * @var Directory
      */
     private $clients;
 
     /**
-     * @return ClientInterface|MockObject
+     * @return Directory|MockObject
      */
-    public function getClientsMock(): ClientInterface
+    public function getClientsMock(): Directory
     {
-        if (!$this->clients instanceof ClientInterface) {
-            $this->clients = $this->createMock(ClientInterface::class);
+        if (!$this->clients instanceof Directory) {
+            $this->clients = $this->createMock(Directory::class);
         }
 
         return $this->clients;

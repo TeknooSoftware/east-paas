@@ -26,17 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Conductor;
 
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Conductor\Compilation\HookTrait;
-use Teknoo\East\Paas\Conductor\Compilation\ImageTrait;
-use Teknoo\East\Paas\Conductor\Compilation\IngressTrait;
-use Teknoo\East\Paas\Conductor\Compilation\PodTrait;
-use Teknoo\East\Paas\Conductor\Compilation\SecretTrait;
-use Teknoo\East\Paas\Conductor\Compilation\ServiceTrait;
-use Teknoo\East\Paas\Conductor\Compilation\VolumeTrait;
 use Teknoo\East\Paas\Conductor\Conductor\Generator;
 use Teknoo\East\Paas\Conductor\Conductor\Running;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentFactoryInterface;
+use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
-use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -44,6 +38,7 @@ use Teknoo\East\Paas\Parser\ArrayTrait;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Parser\YamlTrait;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\AutomatedInterface;
@@ -59,36 +54,27 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
 {
     use YamlTrait;
     use ArrayTrait;
-    use SecretTrait;
-    use ImageTrait;
-    use VolumeTrait;
-    use HookTrait;
-    use PodTrait;
-    use ServiceTrait;
-    use IngressTrait;
     use ProxyTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
     private const CONFIG_PAAS = '[paas]';
-    private const CONFIG_SECRETS = '[secrets]';
-    private const CONFIG_VOLUMES = '[volumes]';
-    private const CONFIG_IMAGES = '[images]';
-    private const CONFIG_BUILDS = '[builds]';
-    private const CONFIG_PODS = '[pods]';
-    private const CONFIG_SERVICES = '[services]';
-    private const CONFIG_INGRESSES = '[ingresses]';
     private const CONFIG_KEY_VERSION = 'version';
+    private const CONFIG_KEY_NAMESPACE = 'namespace';
 
-    private const DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
-    private const DEFAULT_MOUNT_PATH_IN_VOLUME = '/mnt';
+    private CompiledDeploymentFactoryInterface $factory;
+
+    private YamlValidator $validator;
+
+    /**
+     * @var array<string, CompilerInterface>
+     */
+    private iterable $compilers;
 
     private JobUnitInterface $job;
 
     private JobWorkspaceInterface $workspace;
-
-    private string $path;
 
     /**
      * @var array<string, mixed>
@@ -96,31 +82,20 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
     private array $configuration;
 
     /**
-     * @var array<string, string|array<string, mixed>>
-     */
-    private iterable $imagesLibrary;
-
-    /**
-     * @var iterable<string, HookInterface>
-     */
-    private iterable $hooksLibrary;
-
-    /**
-     * @param iterable<string, string|array<string, mixed>> $imagesLibrary
-     * @param iterable<string, HookInterface> $hooksLibrary
+     * @param array<string, CompilerInterface> $compilers
      */
     public function __construct(
+        CompiledDeploymentFactoryInterface $factory,
         PropertyAccessorInterface $propertyAccessor,
         YamlParserInterface $parser,
-        iterable $imagesLibrary,
-        iterable $hooksLibrary,
-        string $defaultStorageIdentifier
+        YamlValidator $validator,
+        iterable $compilers
     ) {
+        $this->factory = $factory;
         $this->setPropertyAccessor($propertyAccessor);
         $this->setParser($parser);
-        $this->imagesLibrary = $imagesLibrary;
-        $this->hooksLibrary = $hooksLibrary;
-        $this->defaultStorageIdentifier = $defaultStorageIdentifier;
+        $this->validator = $validator;
+        $this->compilers = $compilers;
 
         $this->initializeStateProxy();
         $this->updateStates();
@@ -168,27 +143,30 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
     public function prepare(string $configuration, PromiseInterface $promise): ConductorInterface
     {
         try {
+            $validatorPromise = new Promise(
+                function ($result) use ($promise) {
+                    $this->getJob()->updateVariablesIn(
+                        $result,
+                        new Promise(
+                            function ($result) use ($promise) {
+                                $this->configuration = $result;
+
+                                $promise->success($result);
+                            },
+                            [$promise, 'fail']
+                        )
+                    );
+                },
+                [$promise, 'fail']
+            );
+
             $this->parseYaml(
                 $configuration,
                 new Promise(
-                    function ($result) use ($promise) {
-                        $this->getJob()->updateVariablesIn(
-                            $result,
-                            new Promise(
-                                function ($result) use ($promise) {
-                                    $this->configuration = $result;
-
-                                    $promise->success($result);
-                                },
-                                static function (\Throwable $error) use ($promise) {
-                                    $promise->fail($error);
-                                }
-                            )
-                        );
+                    function ($result) use ($validatorPromise) {
+                        $this->validator->validate($result, $this->factory->getSchema(), $validatorPromise);
                     },
-                    static function (\Throwable $error) use ($promise) {
-                        $promise->fail($error);
-                    }
+                    [$promise, 'fail']
                 )
             );
         } catch (\Throwable $error) {
@@ -207,17 +185,21 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
             $this->configuration,
             static::CONFIG_PAAS,
             [
-                'version' => 'v1',
+                static::CONFIG_KEY_VERSION => 'v1',
+                static::CONFIG_KEY_NAMESPACE => 'default',
             ],
             function ($paas) use ($promise): void {
-                if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
+                if (!isset($paas[static::CONFIG_KEY_VERSION]) || 'v1' !== $paas[static::CONFIG_KEY_VERSION]) {
                     $promise->fail(new \RuntimeException('Paas config file version not supported'));
 
                     return;
                 }
 
+                $version = (int) \str_replace('v', '', $paas[static::CONFIG_KEY_VERSION]);
+                $namespace = $paas[static::CONFIG_KEY_NAMESPACE] ?? 'default';
+
                 try {
-                    $compiledDeployment = new CompiledDeployment();
+                    $compiledDeployment = $this->factory->build($version, $namespace);
 
                     $this->extractAndCompile($compiledDeployment);
 

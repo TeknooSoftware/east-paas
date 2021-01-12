@@ -25,8 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 
+use Maclof\Kubernetes\Client as KubernetesClient;
+use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
-use Teknoo\East\Paas\Object\ClusterCredentials;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
@@ -39,17 +44,50 @@ class Running implements StateInterface
 {
     use StateTrait;
 
-    private function getMasterUrl(): \Closure
+    private function getClient(): \Closure
     {
-        return function (): string {
-            return (string) $this->master;
+        return function (): KubernetesClient {
+            return $this->client ?? ($this->clientFactory)(
+                (string) $this->master,
+                $this->credentials
+            );
         };
     }
 
-    private function getCredentials(): \Closure
+    private function runTranscriber(): \Closure
     {
-        return function (): ?ClusterCredentials {
-            return $this->credentials;
+        return function (
+            CompiledDeploymentInterface $compiledDeployment,
+            PromiseInterface $mainPromise,
+            bool $runDeployment,
+            bool $runExposing
+        ): void {
+            $client = $this->getClient();
+
+            $promise = new Promise(
+                [$mainPromise, 'success'],
+                static function (\Throwable $error) {
+                    //To break the foreach loop
+                    throw $error;
+                }
+            );
+
+            try {
+                foreach ($this->transcribers as $transcriber) {
+                    if (
+                        ($runDeployment && $transcriber instanceof DeploymentInterface)
+                        || ($runExposing && $transcriber instanceof ExposingInterface)
+                    ) {
+                        $transcriber->transcribe(
+                            $compiledDeployment,
+                            $client,
+                            $promise
+                        );
+                    }
+                }
+            } catch (\Throwable $error) {
+                $mainPromise->fail($error);
+            }
         };
     }
 }

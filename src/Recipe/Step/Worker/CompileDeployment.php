@@ -30,7 +30,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
@@ -57,9 +57,9 @@ class CompileDeployment
     ): self {
         $conductor->compileDeployment(
             new Promise(
-                static function (CompiledDeployment $deployment) use ($manager) {
+                static function (CompiledDeploymentInterface $deployment) use ($manager) {
                     $manager->updateWorkPlan([
-                        CompiledDeployment::class => $deployment,
+                        CompiledDeploymentInterface::class => $deployment,
                     ]);
                 },
                 static::buildFailurePromise(

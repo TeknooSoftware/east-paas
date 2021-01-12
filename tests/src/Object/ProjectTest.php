@@ -449,7 +449,7 @@ class ProjectTest extends TestCase
                 ->setSourceRepository($sourceRepository)
                 ->setImagesRepository($imagesRepository)
                 ->setClusters([$cluster1, $cluster2])
-                ->configure($job, new \DateTime('2018-05-01'), $env)
+                ->configure($job, new \DateTime('2018-05-01'), $env, 'default')
         );
     }
 

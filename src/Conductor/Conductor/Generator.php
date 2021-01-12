@@ -27,7 +27,6 @@ namespace Teknoo\East\Paas\Conductor\Conductor;
 
 use Teknoo\East\Paas\Conductor\Conductor;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 

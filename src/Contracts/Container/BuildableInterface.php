@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Container;
 
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
 /**

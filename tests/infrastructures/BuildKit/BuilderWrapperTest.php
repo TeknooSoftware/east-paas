@@ -35,7 +35,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Container\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
@@ -181,7 +181,7 @@ class BuilderWrapperTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildWrapper()->buildImages(
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             new \stdClass(),
             $this->createMock(PromiseInterface::class),
         );
@@ -191,7 +191,7 @@ class BuilderWrapperTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildWrapper()->buildImages(
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             'foo',
             new \stdClass()
         );
@@ -199,7 +199,7 @@ class BuilderWrapperTest extends TestCase
     
     public function testBuildImagesWithError()
     {
-        $cd = $this->createMock(CompiledDeployment::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects(self::once())
             ->method('foreachBuildable')
             ->willReturnCallback(function (callable $callback) use ($cd) {
@@ -261,7 +261,7 @@ class BuilderWrapperTest extends TestCase
 
     public function testBuildImages()
     {
-        $cd = $this->createMock(CompiledDeployment::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects(self::once())
             ->method('foreachBuildable')
             ->willReturnCallback(function (callable $callback) use ($cd) {
@@ -323,7 +323,7 @@ class BuilderWrapperTest extends TestCase
 
     public function testBuildImagesWithoutTimeout()
     {
-        $cd = $this->createMock(CompiledDeployment::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects(self::once())
             ->method('foreachBuildable')
             ->willReturnCallback(function (callable $callback) use ($cd) {
@@ -393,7 +393,7 @@ class BuilderWrapperTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildWrapper()->buildVolumes(
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             new \stdClass(),
             $this->createMock(PromiseInterface::class)
         );
@@ -403,7 +403,7 @@ class BuilderWrapperTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildWrapper()->buildVolumes(
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             'foo',
             new \stdClass()
         );
@@ -411,7 +411,7 @@ class BuilderWrapperTest extends TestCase
 
     public function testBuildVolumesWithError()
     {
-        $cd = $this->createMock(CompiledDeployment::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
@@ -424,7 +424,7 @@ class BuilderWrapperTest extends TestCase
             });
 
         $cd->expects(self::exactly(2))
-            ->method('defineVolume')
+            ->method('addVolume')
             ->withConsecutive(
                 ['foo'],
                 ['bar']
@@ -477,7 +477,7 @@ class BuilderWrapperTest extends TestCase
 
     public function testBuildVolumes()
     {
-        $cd = $this->createMock(CompiledDeployment::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
@@ -490,7 +490,7 @@ class BuilderWrapperTest extends TestCase
             });
 
         $cd->expects(self::exactly(2))
-            ->method('defineVolume')
+            ->method('addVolume')
             ->withConsecutive(
                 ['foo'],
                 ['bar']

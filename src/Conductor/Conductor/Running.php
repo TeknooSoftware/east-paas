@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor\Conductor;
 
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Conductor\Conductor;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -57,56 +57,25 @@ class Running implements StateInterface
 
     private function extractAndCompile(): \Closure
     {
-        return function (CompiledDeployment $compiledDeployment): void {
-            $this->extract(
-                $this->configuration,
-                static::CONFIG_SECRETS,
-                [],
-                $this->compileSecrets($compiledDeployment)
-            );
+        return function (CompiledDeploymentInterface $compiledDeployment): void {
+            $workspace = $this->getWorkspace();
+            $job = $this->getJob();
 
-            $volumes = [];
-            $this->extract(
-                $this->configuration,
-                static::CONFIG_VOLUMES,
-                [],
-                $this->compileVolumes($compiledDeployment, $this->getJob()->getId(), $volumes)
-            );
-
-            $this->extract(
-                $this->configuration,
-                static::CONFIG_IMAGES,
-                [],
-                $this->compileImages($this->imagesLibrary, $compiledDeployment, $this->getWorkspace())
-            );
-
-            $this->extract(
-                $this->configuration,
-                static::CONFIG_BUILDS,
-                [],
-                $this->compileHooks($this->hooksLibrary, $compiledDeployment)
-            );
-
-            $this->extract(
-                $this->configuration,
-                static::CONFIG_PODS,
-                [],
-                $this->compilePods($compiledDeployment, $volumes)
-            );
-
-            $this->extract(
-                $this->configuration,
-                static::CONFIG_SERVICES,
-                [],
-                $this->compileServices($compiledDeployment)
-            );
-
-            $this->extract(
-                $this->configuration,
-                static::CONFIG_INGRESSES,
-                [],
-                $this->compileIngresses($compiledDeployment)
-            );
+            foreach ($this->compilers as $pattern => $compiler) {
+                $this->extract(
+                    $this->configuration,
+                    $pattern,
+                    [],
+                    static function ($configuration) use ($compiledDeployment, $compiler, $workspace, $job) {
+                        $compiler->compile(
+                            $configuration,
+                            $compiledDeployment,
+                            $workspace,
+                            $job
+                        );
+                    }
+                );
+            }
         };
     }
 }

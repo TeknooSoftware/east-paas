@@ -10,6 +10,7 @@ parameters:
 
   teknoo.east.paas.symfony.subscriber.command.class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
 
+  teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
 services:
   teknoo.east.paas.symfony.property_accessor:
     public: true
@@ -36,7 +37,7 @@ services:
     tags:
       - {name: 'serializer.normalizer', priority: 100}
 
-  Infrastructures\Symfony\Normalizer\JobUnitDenormalizer:
+  Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer:
     class: '%teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class%'
     calls:
       - ['setDenormalizer', ['@serializer']]

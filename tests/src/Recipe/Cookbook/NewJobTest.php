@@ -39,16 +39,16 @@ use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\RecipeInterface;
+use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Cookbook\NewJob
- * @covers \Teknoo\East\Paas\Recipe\Cookbook\CookbookTrait
  */
 class NewJobTest extends TestCase
 {
-    use CookbookTestTrait;
+    use BaseCookbookTestTrait;
 
     public function buildCookbook(): CookbookInterface
     {

@@ -26,18 +26,31 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
 use Psr\Container\ContainerInterface;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Maclof\Kubernetes\Client as KubClient;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
+use function DI\decorate;
 use function DI\create;
 use function DI\get;
 
 return [
     ClientFactoryInterface::class => function (ContainerInterface $container): ClientFactoryInterface {
-        $tempDir = $container->get('teknoo.east.paas.worker.tmp_dir');
-        $verify = $container->get('teknoo.east.paas.kubernetes.ssl.verify');
+        $tempDir = \sys_get_temp_dir();
+        if ($container->has('teknoo.east.paas.worker.tmp_dir')) {
+            $tempDir = $container->get('teknoo.east.paas.worker.tmp_dir');
+        }
+
+        $verify = true;
+        if ($container->has('teknoo.east.paas.kubernetes.ssl.verify')) {
+            $verify = (bool) $container->get('teknoo.east.paas.kubernetes.ssl.verify');
+        }
 
         return new class ($tempDir, $verify) implements ClientFactoryInterface {
             /**
@@ -123,8 +136,7 @@ return [
         };
     },
 
-    ClusterClientInterface::class => get(Client::class),
-    Client::class => static function (ContainerInterface $container): Client {
+    IngressTranscriber::class => static function (ContainerInterface $container): IngressTranscriber {
         $defaultIngressClass = null;
         $defaultServiceName = null;
         $defaultServicePort = null;
@@ -141,11 +153,36 @@ return [
             $defaultServicePort = (int) $container->get('teknoo.east.paas.kubernetes.default_service.port');
         }
 
-        return new Client(
-            $container->get(ClientFactoryInterface::class),
+        return new IngressTranscriber(
             $defaultIngressClass,
             $defaultServiceName,
             $defaultServicePort
         );
     },
+    ReplicationControllerTranscriber::class => create(),
+    SecretTranscriber::class => create(),
+    ServiceTranscriber::class => create(),
+
+    TranscriberCollectionInterface::class => get(TranscriberCollection::class),
+    TranscriberCollection::class => static function (ContainerInterface $container): TranscriberCollection {
+        $collection = new TranscriberCollection();
+        $collection->add(10, $container->get(SecretTranscriber::class));
+        $collection->add(20, $container->get(ReplicationControllerTranscriber::class));
+        $collection->add(30, $container->get(ServiceTranscriber::class));
+        $collection->add(40, $container->get(IngressTranscriber::class));
+
+        return $collection;
+    },
+
+    Client::class => create()
+        ->constructor(
+            get(ClientFactoryInterface::class),
+            get(TranscriberCollectionInterface::class)
+        ),
+
+    Directory::class => decorate(static function (Directory $previous, ContainerInterface $container) {
+        $previous->register('kubernetes', $container->get(Client::class));
+
+        return $previous;
+    }),
 ];

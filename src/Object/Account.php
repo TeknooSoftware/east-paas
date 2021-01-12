@@ -62,6 +62,8 @@ class Account implements
 
     protected ?string $name = null;
 
+    protected ?string $namespace = null;
+
     /**
      * @var Project[]
      */
@@ -118,6 +120,18 @@ class Account implements
         return $this;
     }
 
+    private function getNamespace(): ?string
+    {
+        return $this->namespace;
+    }
+
+    public function setNamespace(?string $namespace): Account
+    {
+        $this->namespace = $namespace;
+
+        return $this;
+    }
+
     /**
      * @param iterable<Project> $projects
      */
@@ -144,6 +158,10 @@ class Account implements
     {
         if (isset($forms['name'])) {
             $forms['name']->setData($this->getName());
+        }
+
+        if (isset($forms['namespace'])) {
+            $forms['namespace']->setData($this->getNamespace());
         }
 
         if (isset($forms['owner'])) {

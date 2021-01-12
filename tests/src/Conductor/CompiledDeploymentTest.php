@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Conductor;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Conductor\CompiledDeployment;
 use Teknoo\East\Paas\Container\Container;
 use Teknoo\East\Paas\Container\Image\Image;
@@ -36,6 +37,7 @@ use Teknoo\East\Paas\Container\Secret;
 use Teknoo\East\Paas\Container\Expose\Service;
 use Teknoo\East\Paas\Container\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
+use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 
 /**
@@ -47,7 +49,7 @@ class CompiledDeploymentTest extends TestCase
 {
     private function buildObject(): CompiledDeployment
     {
-        return new CompiledDeployment();
+        return new CompiledDeployment(1, 'default_namespace');
     }
 
     public function testAddBuildableWrongBuildable()
@@ -95,48 +97,143 @@ class CompiledDeploymentTest extends TestCase
         );
     }
 
-    public function testDefineHookWrongHook()
+    public function testAddHookWrongHook()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->defineHook('foo', new \stdClass());
+        $this->buildObject()->addHook('foo', new \stdClass());
     }
 
-    public function testDefineHookWrongHookName()
+    public function testAddHookWrongHookName()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->defineHook(new \stdClass(), $this->createMock(HookInterface::class));
+        $this->buildObject()->addHook(new \stdClass(), $this->createMock(HookInterface::class));
     }
 
-    public function testDefineHook()
+    public function testAddHook()
     {
         self::assertInstanceOf(
             CompiledDeployment::class,
-            $this->buildObject()->defineHook(
+            $this->buildObject()->addHook(
                 'foo',
                 $this->createMock(HookInterface::class)
             )
         );
     }
 
-    public function testDefineVolumeWrongVolume()
+    public function testAddVolumeWrongVolume()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->defineVolume('foo', new \stdClass());
+        $this->buildObject()->addVolume('foo', new \stdClass());
     }
 
-    public function testDefineVolumeWrongVolumeName()
+    public function testAddVolumeWrongVolumeName()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->defineVolume(new \stdClass(), $this->createMock(Volume::class));
+        $this->buildObject()->addVolume(new \stdClass(), $this->createMock(Volume::class));
     }
 
-    public function testDefineVolume()
+    public function testAddVolume()
     {
         self::assertInstanceOf(
             CompiledDeployment::class,
-            $this->buildObject()->defineVolume(
+            $this->buildObject()->addVolume(
                 'foo',
                 $this->createMock(Volume::class)
+            )
+        );
+    }
+
+    public function testImportVolumeWrongVolumeFrom()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->importVolume(
+            new \stdClass(),
+            'foo',
+            $this->createMock(PromiseInterface::class)
+        );
+    }
+
+    public function testImportVolumeWrongMountPath()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->importVolume(
+            'foo',
+            new \stdClass(),
+            $this->createMock(PromiseInterface::class)
+        );
+    }
+
+    public function testImportVolumeWrongProise()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->importVolume(
+            'foo',
+            'bar',
+            new \stdClass()
+        );
+    }
+
+    public function testImportVolume()
+    {
+        $volume = $this->createMock(Volume::class);
+        $volume->expects(self::once())->method('import')->with('/bar')->willReturnSelf();
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success')->with($volume);
+        $promise->expects(self::never())->method('fail');
+
+        $object = $this->buildObject();
+        $object->addVolume('foo', $volume);
+
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $object->importVolume(
+                'foo',
+                '/bar',
+                $promise
+            )
+        );
+    }
+
+    public function testImportVolumeNotFound()
+    {
+        $volume = $this->createMock(Volume::class);
+        $volume->expects(self::never())->method('import');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success')->with($volume);
+        $promise->expects(self::once())->method('fail');
+
+        $object = $this->buildObject();
+        $object->addVolume('bar', $volume);
+
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $object->importVolume(
+                'foo',
+                '/bar',
+                $promise
+            )
+        );
+    }
+
+    public function testImportVolumeBadType()
+    {
+        $volume = $this->createMock(VolumeInterface::class);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success')->with($volume);
+        $promise->expects(self::once())->method('fail');
+
+        $object = $this->buildObject();
+        $object->addVolume('foo', $volume);
+
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $object->importVolume(
+                'foo',
+                '/bar',
+                $promise
             )
         );
     }
@@ -263,12 +360,12 @@ class CompiledDeploymentTest extends TestCase
     {
         $cd = $this->buildObject();
 
-        $cd->defineHook(
+        $cd->addHook(
             'foo1',
             $this->createMock(HookInterface::class)
         );
 
-        $cd->defineHook(
+        $cd->addHook(
             'foo2',
             $this->createMock(HookInterface::class)
         );
@@ -297,12 +394,12 @@ class CompiledDeploymentTest extends TestCase
     {
         $cd = $this->buildObject();
 
-        $cd->defineVolume(
+        $cd->addVolume(
             'foo1',
             new Volume('foo1', [], 'bar', '/mount')
         );
 
-        $cd->defineVolume(
+        $cd->addVolume(
             'foo2',
             new Volume('foo2', [], 'bar', '/mount')
         );
@@ -396,12 +493,12 @@ class CompiledDeploymentTest extends TestCase
             (new Image('hello', 'world', false, '1.2', ['foo' => 'bar']))
         );
 
-        $cd->defineVolume(
+        $cd->addVolume(
             'foo',
             $foo = (new Volume('foo1', [], '/foo', '/mount'))
         );
 
-        $cd->defineVolume(
+        $cd->addVolume(
             'bar',
             $bar = (new Volume('bar1', [], '/bar', '/mount'))
         );

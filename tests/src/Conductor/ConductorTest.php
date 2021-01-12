@@ -30,14 +30,16 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentFactoryInterface;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Conductor\Conductor;
+use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
-use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Parser\YamlValidator;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -45,21 +47,38 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * @covers \Teknoo\East\Paas\Conductor\Conductor
  * @covers \Teknoo\East\Paas\Conductor\Conductor\Generator
  * @covers \Teknoo\East\Paas\Conductor\Conductor\Running
- * @covers \Teknoo\East\Paas\Conductor\Compilation\SecretTrait
- * @covers \Teknoo\East\Paas\Conductor\Compilation\HookTrait
- * @covers \Teknoo\East\Paas\Conductor\Compilation\ImageTrait
- * @covers \Teknoo\East\Paas\Conductor\Compilation\VolumeTrait
- * @covers \Teknoo\East\Paas\Conductor\Compilation\ServiceTrait
- * @covers \Teknoo\East\Paas\Conductor\Compilation\IngressTrait
- * @covers \Teknoo\East\Paas\Conductor\Compilation\PodTrait
  * @covers \Teknoo\East\Paas\Parser\ArrayTrait
  * @covers \Teknoo\East\Paas\Parser\YamlTrait
  */
 class ConductorTest extends TestCase
 {
+    private ?CompiledDeploymentFactoryInterface $factory = null;
+
     private ?PropertyAccessorInterface $propertyAccessor = null;
 
     private ?YamlParserInterface $parser = null;
+
+    private ?YamlValidator $validator = null;
+
+    /**
+     * @return MockObject|CompiledDeploymentFactoryInterface
+     */
+    public function getCompiledDeploymentFactory(): CompiledDeploymentFactoryInterface
+    {
+        if (!$this->factory instanceof CompiledDeploymentFactoryInterface) {
+            $this->factory = $this->createMock(CompiledDeploymentFactoryInterface::class);
+
+            $this->factory->expects(self::any())
+                ->method('build')
+                ->willReturn($this->createMock(CompiledDeploymentInterface::class));
+
+            $this->factory->expects(self::any())
+                ->method('getSchema')
+                ->willReturn('fooBar');
+        }
+
+        return $this->factory;
+    }
 
     /**
      * @return MockObject|PropertyAccessorInterface
@@ -85,27 +104,29 @@ class ConductorTest extends TestCase
         return $this->parser;
     }
 
+    /**
+     * @return MockObject|YamlValidator
+     */
+    public function getYamlValidator(): YamlValidator
+    {
+        if (!$this->validator instanceof YamlValidator) {
+            $this->validator = $this->createMock(YamlValidator::class);
+        }
+
+        return $this->validator;
+    }
+
     public function buildConductor(): Conductor
     {
         return new Conductor(
+            $this->getCompiledDeploymentFactory(),
             $this->getPropertyAccessorMock(),
             $this->getYamlParser(),
+            $this->getYamlValidator(),
             [
-                'php-react-74' => [
-                    'build-name' => 'php-react',
-                    'tag' => '7.4',
-                    'path' => '/library/php-react/7.4/',
-                ],
-                'php-fpm-74' => [
-                    'build-name' => 'php-fpm',
-                    'tag' => '7.4',
-                    'path' => 's/library/php-fpm/7.4/',
-                ],
-            ],
-            [
-                'composer' => $this->createMock(HookInterface::class)
-            ],
-            'foo'
+                '[secrets]' => $this->createMock(CompilerInterface::class),
+                '[volumes]' => $this->createMock(CompilerInterface::class),
+            ]
         );
     }
 
@@ -347,6 +368,17 @@ EOF;
                 }
             );
 
+        $this->getYamlValidator()
+            ->expects(self::any())
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise) {
+                    $promise->success($configuration);
+
+                    return $this->getYamlValidator();
+                }
+            );
+
         $jobUnit->expects(self::never())
             ->method('updateVariablesIn');
 
@@ -386,6 +418,17 @@ EOF;
                     $promise->success($result);
 
                     return $this->getYamlParser();
+                }
+            );
+
+        $this->getYamlValidator()
+            ->expects(self::any())
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise) {
+                    $promise->success($configuration);
+
+                    return $this->getYamlValidator();
                 }
             );
 
@@ -447,6 +490,54 @@ EOF;
         );
     }
 
+    public function testPrepareErrorInYamlValidation()
+    {
+        $yaml = <<<'EOF'
+paas:
+  version: v1
+/*...*/
+EOF;
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+
+        $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
+
+        $this->getYamlParser()
+            ->expects(self::any())
+            ->method('parse')
+            ->willReturnCallback(
+                function (string $configuration, PromiseInterface $promise) {
+                    $promise->success($configuration);
+
+                    return $this->getYamlParser();
+                }
+            );
+
+        $this->getYamlValidator()
+            ->expects(self::any())
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise) {
+                    $promise->fail(new \RuntimeException('error'));
+
+                    return $this->getYamlValidator();
+                }
+            );
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->prepare(
+                $yaml,
+                $promise
+            )
+        );
+    }
+
     public function testPrepareOnErrorInUpdatingVariables()
     {
         $yaml = <<<'EOF'
@@ -474,6 +565,17 @@ EOF;
                     $promise->success($result);
 
                     return $this->getYamlParser();
+                }
+            );
+
+        $this->getYamlValidator()
+            ->expects(self::any())
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise) {
+                    $promise->success($configuration);
+
+                    return $this->getYamlValidator();
                 }
             );
 
@@ -533,6 +635,17 @@ EOF;
                     $promise->success($result);
 
                     return $this->getYamlParser();
+                }
+            );
+
+        $this->getYamlValidator()
+            ->expects(self::any())
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise) use ($result) {
+                    $promise->success($result);
+
+                    return $this->getYamlValidator();
                 }
             );
 
@@ -610,6 +723,17 @@ EOF;
                 }
             );
 
+        $this->getYamlValidator()
+            ->expects(self::any())
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise) use ($result) {
+                    $promise->success($result);
+
+                    return $this->getYamlValidator();
+                }
+            );
+
         $this->getPropertyAccessorMock()
             ->expects(self::any())
             ->method('getValue')
@@ -656,250 +780,45 @@ EOF;
 
         $conductor = $this->prepareTestForCompile($result);
 
-        $out = null;
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
+        $promise->expects(self::never())->method('fail');
+
         self::assertInstanceOf(
             ConductorInterface::class,
-            $conductor->compileDeployment(new Promise(function ($cd) use (&$out) {
-                $out = $cd;
-
-                self::assertInstanceOf(CompiledDeployment::class, $cd);
-            }))
+            $conductor->compileDeployment($promise)
         );
 
-        self::assertNotNull($out);
     }
 
-    public function testCompileDeploymentWithNoVolume()
+    public function testCompileDeploymentErrorIntercepted()
     {
         $result = $this->getResultArray();
-        unset($result['volumes']);
-        unset($result['pods']['php-pod']['containers']['php-composer']);
 
-        $conductor = $this->prepareTestForCompile($result);
-
-        $out = null;
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment(new Promise(function ($cd) use (&$out) {
-                $out = $cd;
-
-                self::assertInstanceOf(CompiledDeployment::class, $cd);
-            }))
-        );
-
-        self::assertNotNull($out);
-    }
-
-    public function testCompileDeploymentWithNoIngresses()
-    {
-        $result = $this->getResultArray();
-        unset($result['ingresses']);
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $out = null;
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment(new Promise(function ($cd) use (&$out) {
-                $out = $cd;
-
-                self::assertInstanceOf(CompiledDeployment::class, $cd);
-            }))
-        );
-
-        self::assertNotNull($out);
-    }
-
-    public function testCompileDeploymentWithNoIngressesTls()
-    {
-        $result = $this->getResultArray();
-        unset($result['ingresses']['demo']['tls']);
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $out = null;
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment(new Promise(function ($cd) use (&$out) {
-                $out = $cd;
-
-                self::assertInstanceOf(CompiledDeployment::class, $cd);
-            }))
-        );
-
-        self::assertNotNull($out);
-    }
-
-    public function testCompileDeploymentWithNoHook()
-    {
-        $result = $this->getResultArray();
-        unset($result['builds']);
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $out = null;
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment(new Promise(function ($cd) use (&$out) {
-                $out = $cd;
-
-                self::assertInstanceOf(CompiledDeployment::class, $cd);
-            }))
-        );
-
-        self::assertNotNull($out);
-    }
-
-    public function testCompileDeploymentWithIteratorHook()
-    {
-        $result = $this->getResultArray();
-        $result['builds'] = new \ArrayIterator($result['builds']);
+        $compiler = $this->createMock(CompilerInterface::class);
+        $compiler->expects(self::any())->method('compile')->willThrowException(new \RuntimeException('error'));
 
         $conductor = new Conductor(
+            $this->getCompiledDeploymentFactory(),
             $this->getPropertyAccessorMock(),
             $this->getYamlParser(),
+            $this->getYamlValidator(),
             [
-                'php-react-74' => [
-                    'build-name' => 'php-react',
-                    'tag' => '7.4',
-                    'path' => '/library/php-react/7.4/',
-                ],
-                'php-fpm-74' => [
-                    'build-name' => 'php-fpm',
-                    'tag' => '7.4',
-                    'path' => '/library/php-fpm/7.4/',
-                ],
-            ],
-            new \ArrayIterator([
-                'composer' => $this->createMock(HookInterface::class)
-            ]),
-            'foo'
+                '[secrets]' => $compiler,
+                '[volumes]' => $compiler,
+            ]
         );
         $conductor = $this->prepareTestForCompile($result, $conductor);
 
-        $out = null;
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment(new Promise(function ($cd) use (&$out) {
-                $out = $cd;
-
-                self::assertInstanceOf(CompiledDeployment::class, $cd);
-            }))
-        );
-
-        self::assertNotNull($out);
-    }
-
-    public function testCompileDeploymentWithHookError()
-    {
-        $result = $this->getResultArray();
-
-        $hook = $this->createMock(HookInterface::class);
-        $hook->expects(self::any())
-            ->method('setOptions')
-            ->willReturnCallback(function (array $options, PromiseInterface $promise) use ($hook) {
-                $promise->fail(new \Exception());
-
-                return $hook;
-            });
-
-        $conductor = new Conductor(
-            $this->getPropertyAccessorMock(),
-            $this->getYamlParser(),
-            [
-                'php-react-74' => [
-                    'build-name' => 'php-react',
-                    'tag' => '7.4',
-                    'path' => '/library/php-react/7.4/',
-                ],
-                'php-fpm-74' => [
-                    'build-name' => 'php-fpm',
-                    'tag' => '7.4',
-                    'path' => '/library/php-fpm/7.4/',
-                ],
-            ],
-            new \ArrayIterator([
-                'composer' => $hook
-            ]),
-            'foo'
-        );
-        $conductor = $this->prepareTestForCompile($result, $conductor);
-
-        $promise2 = $this->createMock(PromiseInterface::class);
-        $promise2->expects(self::never())->method('success');
-        $promise2->expects(self::once())->method('fail');
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
             ConductorInterface::class,
-            $conductor->compileDeployment($promise2)
-        );
-    }
-
-    public function testCompileDeploymentWithUnavailableHook()
-    {
-        $result = $this->getResultArray();
-        $result['builds']['fooo'] = ['bar' => true];
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $promise2 = $this->createMock(PromiseInterface::class);
-        $promise2->expects(self::never())->method('success');
-        $promise2->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise2)
-        );
-    }
-
-    public function testCompileDeploymentWithNoPods()
-    {
-        $result = $this->getResultArray();
-        unset($result['pods']);
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $promise2 = $this->createMock(PromiseInterface::class);
-        $promise2->expects(self::never())->method('success');
-        $promise2->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise2)
-        );
-    }
-
-    public function testCompileDeploymentWithVolumeWithoutMountPath()
-    {
-        $result = $this->getResultArray();
-        unset($result['pods']['php-pod']['containers']['php-composer']['volumes']['other_name2']['mount-path']);
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $promise2 = $this->createMock(PromiseInterface::class);
-        $promise2->expects(self::never())->method('success');
-        $promise2->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise2)
-        );
-    }
-
-    public function testCompileDeploymentWithVolumeNotInDefinition()
-    {
-        $result = $this->getResultArray();
-        unset($result['volumes']);
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $promise2 = $this->createMock(PromiseInterface::class);
-        $promise2->expects(self::never())->method('success');
-        $promise2->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise2)
+            $conductor->compileDeployment($promise)
         );
     }
 }

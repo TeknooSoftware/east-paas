@@ -31,21 +31,45 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
+use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Conductor\Compilation\HookCompiler;
+use Teknoo\East\Paas\Conductor\Compilation\ImageCompiler;
+use Teknoo\East\Paas\Conductor\Compilation\IngressCompiler;
+use Teknoo\East\Paas\Conductor\Compilation\PodCompiler;
+use Teknoo\East\Paas\Conductor\Compilation\SecretCompiler;
+use Teknoo\East\Paas\Conductor\Compilation\ServiceCompiler;
+use Teknoo\East\Paas\Conductor\Compilation\VolumeCompiler;
+use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Conductor\CompiledDeploymentFactory;
 use Teknoo\East\Paas\Conductor\Conductor;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentFactoryInterface;
+use Teknoo\East\Paas\Contracts\Conductor\CompilerCollectionInterface;
+use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Account\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
+use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
+use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP;
 use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
+use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
+use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
+use Teknoo\East\Website\Contracts\Recipe\Step\RedirectClientInterface;
+use Teknoo\East\Website\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Website\DBSource\ManagerInterface;
+use Teknoo\East\Website\Recipe\Step\CreateObject;
+use Teknoo\East\Website\Recipe\Step\RenderError;
+use Teknoo\East\Website\Recipe\Step\SaveObject;
+use Teknoo\East\Website\Recipe\Step\SlugPreparation;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Website\Service\DeletingService;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
@@ -60,7 +84,6 @@ use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ProjectRepositoryInterface;
-use Teknoo\East\Paas\EndPoint\NewProjectEndPoint;
 use Teknoo\East\Paas\Loader\AccountLoader;
 use Teknoo\East\Paas\Loader\ClusterLoader;
 use Teknoo\East\Paas\Loader\JobLoader;
@@ -104,7 +127,7 @@ use Teknoo\Recipe\BaseRecipeInterface;
 use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\Recipe;
-use Teknoo\Recipe\RecipeInterface;
+use Teknoo\Recipe\RecipeInterface as OriginalRecipeInterface;
 
 use function DI\get;
 use function DI\create;
@@ -140,9 +163,14 @@ return [
     'teknoo.east.paas.deleting.cluster' => create(DeletingService::class)
         ->constructor(get(ClusterWriter::class), get(DatesService::class)),
 
-    //Conductor
-    ConductorInterface::class => get(Conductor::class),
-    Conductor::class => static function (ContainerInterface $container): Conductor {
+    //YamlValidator
+    YamlValidator::class => create(YamlValidator::class)
+        ->constructor('root'),
+
+    //Compiler
+    HookCompiler::class => create()
+        ->constructor(get(HooksCollectionInterface::class)),
+    ImageCompiler::class => static function (ContainerInterface $container): ImageCompiler {
         $imagesLibrary = $container->get('teknoo.east.paas.conductor.images_library');
         $rootPath = $container->get('teknoo.east.paas.root_dir');
         foreach ($imagesLibrary as &$image) {
@@ -153,16 +181,63 @@ return [
             $image['path'] = $rootPath . $image['path'];
         }
 
-        return new Conductor(
-            $container->get(PropertyAccessorInterface::class),
-            $container->get(YamlParserInterface::class),
-            $imagesLibrary,
-            $container->get(HooksCollectionInterface::class),
-            $container->get('teknoo.east.paas.default_storage_provider')
-        );
+        return new ImageCompiler($imagesLibrary);
+    },
+    IngressCompiler::class => create(),
+    PodCompiler::class => create()
+        ->constructor(get('teknoo.east.paas.default_storage_provider')),
+    SecretCompiler::class => create(),
+    ServiceCompiler::class => create(),
+    VolumeCompiler::class => create(),
+
+    CompilerCollectionInterface::class => static function (ContainerInterface $container): CompilerCollectionInterface {
+        $collection = new class implements CompilerCollectionInterface {
+            /**
+             * @var array<string, CompilerInterface>
+             */
+            private array $collection = [];
+
+            public function add(string $pattern, CompilerInterface $compiler): void
+            {
+                $this->collection[$pattern] = $compiler;
+            }
+
+            public function getIterator(): \Traversable
+            {
+                yield from $this->collection;
+            }
+        };
+
+        $collection->add('[secrets]', $container->get(SecretCompiler::class));
+        $collection->add('[volumes]', $container->get(VolumeCompiler::class));
+        $collection->add('[images]', $container->get(ImageCompiler::class));
+        $collection->add('[builds]', $container->get(HookCompiler::class));
+        $collection->add('[pods]', $container->get(PodCompiler::class));
+        $collection->add('[services]', $container->get(ServiceCompiler::class));
+        $collection->add('[ingresses]', $container->get(IngressCompiler::class));
+
+        return $collection;
     },
 
-    NewProjectEndPoint::class => create(),
+    //Conductor
+    CompiledDeploymentFactoryInterface::class => get(CompiledDeploymentFactory::class),
+    CompiledDeploymentFactory::class => create()
+        ->constructor(
+            CompiledDeployment::class,
+            (string) \file_get_contents(__DIR__ . '/Contracts/Configuration/paas_validation.xsd'),
+        ),
+
+    ConductorInterface::class => get(Conductor::class),
+    Conductor::class => create()
+        ->constructor(
+            get(CompiledDeploymentFactoryInterface::class),
+            get(PropertyAccessorInterface::class),
+            get(YamlParserInterface::class),
+            get(YamlValidator::class),
+            get(CompilerCollectionInterface::class)
+        ),
+
+    Directory::class => create(),
 
     //Recipes steps
     //History
@@ -285,7 +360,6 @@ return [
             get(StreamFactoryInterface::class)
         ),
 
-
     //Worker
     BuildImages::class => create()
         ->constructor(
@@ -321,7 +395,7 @@ return [
         ),
     ConfigureClusterClient::class => create()
         ->constructor(
-            get(ClusterClientInterface::class),
+            get(Directory::class),
             get(ResponseFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
@@ -352,14 +426,51 @@ return [
         ),
 
     //Base recipe
-    RecipeInterface::class => get(Recipe::class),
+    OriginalRecipeInterface::class => get(Recipe::class),
     Recipe::class => create(),
 
     //Cookbooks
+    AdditionalStepsInterface::class => new class implements \IteratorAggregate, AdditionalStepsInterface {
+        /**
+         * @var array<int, callable>
+         */
+        private array $steps = [];
+
+        public function add(callable $step): self
+        {
+            $this->steps[] = $step;
+
+            return $this;
+        }
+
+        /**
+         * @return \ArrayIterator<callable>
+         */
+        public function getIterator(): \Traversable
+        {
+            return new \ArrayIterator($this->steps);
+        }
+    },
+
+    NewAccountEndPointInterface::class => get(NewAccountEndPoint::class),
+    NewAccountEndPoint::class => create()
+        ->constructor(
+            get(OriginalRecipeInterface::class),
+            get(CreateObject::class),
+            get(FormHandlingInterface::class),
+            get(FormProcessingInterface::class),
+            get(SlugPreparation::class),
+            get(SaveObject::class),
+            get(RedirectClientInterface::class),
+            get(RenderFormInterface::class),
+            get(RenderError::class),
+            get(AdditionalStepsInterface::class)
+        ),
+
     NewJobInterface::class => get(NewJob::class),
     NewJob::class => create()
         ->constructor(
-            get(RecipeInterface::class),
+            get(OriginalRecipeInterface::class),
             get(GetProject::class),
             get(GetEnvironment::class),
             get(GetVariables::class),
@@ -375,7 +486,7 @@ return [
     AddHistoryInterface::class => get(AddHistory::class),
     AddHistory::class => create()
         ->constructor(
-            get(RecipeInterface::class),
+            get(OriginalRecipeInterface::class),
             get(ReceiveHistory::class),
             get(DeserializeHistory::class),
             get(GetProject::class),
@@ -390,7 +501,7 @@ return [
     RunJobInterface::class => get(RunJob::class),
     RunJob::class => create()
         ->constructor(
-            get(RecipeInterface::class),
+            get(OriginalRecipeInterface::class),
             get(DHI::class . ':resolver'),
             get(ReceiveJob::class),
             get(DeserializeJob::class),
@@ -455,7 +566,7 @@ return [
                 return $this;
             }
 
-            public function fill(RecipeInterface $recipe): CookbookInterface
+            public function fill(OriginalRecipeInterface $recipe): CookbookInterface
             {
                 $this->getRunJob()->fill($recipe);
 

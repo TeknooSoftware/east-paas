@@ -103,7 +103,7 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
     {
         try {
             $this->clean();
-        } catch (MethodNotImplemented $error) {
+        } catch (\Throwable $error) {
             /* nothing */
         }
     }

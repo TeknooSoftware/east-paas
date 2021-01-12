@@ -67,9 +67,11 @@ class CommandSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function updateContainer(): void
+    public function updateContainer(): self
     {
         $this->container->set(DispatchHistoryInterface::class, $this->stepDisplayHistory);
         $this->container->set(DispatchResultInterface::class, $this->stepDisplayResult);
+
+        return $this;
     }
 }

@@ -34,7 +34,7 @@ use Psr\Http\Message\StreamInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as VolumeBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
@@ -93,7 +93,7 @@ class BuildVolumesTest extends TestCase
 
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
@@ -121,7 +121,7 @@ class BuildVolumesTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(VolumeBuilder::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             new \stdClass(),
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
@@ -135,7 +135,7 @@ class BuildVolumesTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(VolumeBuilder::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             new \stdClass(),
             $this->createMock(ClientInterface::class),
@@ -149,7 +149,7 @@ class BuildVolumesTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(VolumeBuilder::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             $this->createMock(JobUnitInterface::class),
             new \stdClass(),
@@ -163,7 +163,7 @@ class BuildVolumesTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(VolumeBuilder::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
@@ -174,7 +174,7 @@ class BuildVolumesTest extends TestCase
     public function testInvoke()
     {
         $volumeBuilder = $this->createMock(VolumeBuilder::class);
-        $compileDep = $this->createMock(CompiledDeployment::class);
+        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $client =  $this->createMock(ClientInterface::class);
@@ -221,7 +221,7 @@ class BuildVolumesTest extends TestCase
     public function testInvokeOnError()
     {
         $volumeBuilder = $this->createMock(VolumeBuilder::class);
-        $compileDep = $this->createMock(CompiledDeployment::class);
+        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $client =  $this->createMock(ClientInterface::class);

@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Job;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Cluster\Collection as ClusterCollection;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
@@ -57,6 +58,8 @@ class JobUnit implements JobUnitInterface
 
     private Environment $environment;
 
+    private ?string $baseNamespace = null;
+
     private SourceRepositoryInterface $sourceRepository;
 
     private ImageRegistryInterface $imagesRepository;
@@ -82,6 +85,7 @@ class JobUnit implements JobUnitInterface
         string $id,
         array $projectResume,
         Environment $environment,
+        ?string $baseNamespace,
         SourceRepositoryInterface $sourceRepository,
         ImageRegistryInterface $imagesRepository,
         array $clusters,
@@ -91,6 +95,7 @@ class JobUnit implements JobUnitInterface
         $this->id = $id;
         $this->projectResume = $projectResume;
         $this->environment = $environment;
+        $this->baseNamespace = $baseNamespace;
         $this->sourceRepository = $sourceRepository;
         $this->imagesRepository = $imagesRepository;
         $this->clusters = $clusters;
@@ -142,17 +147,17 @@ class JobUnit implements JobUnitInterface
     }
 
     public function configureCluster(
-        ClusterClientInterface $client,
+        Directory $clientsDirectory,
         PromiseInterface $promise
     ): JobUnitInterface {
         try {
-            $clients = [];
+            $selectedClients = [];
             foreach ($this->clusters as $cluster) {
-                $cluster->configureCluster(
-                    $client,
+                $cluster->selectCluster(
+                    $clientsDirectory,
                     new Promise(
-                        static function (ClusterClientInterface $client) use (&$clients) {
-                            $clients[] = $client;
+                        static function (ClusterClientInterface $client) use (&$selectedClients) {
+                            $selectedClients[] = $client;
                         },
                         static function (\Throwable $error) {
                             throw $error;
@@ -161,7 +166,7 @@ class JobUnit implements JobUnitInterface
                 );
             }
 
-            $promise->success(new ClusterCollection($clients));
+            $promise->success(new ClusterCollection($selectedClients));
         } catch (\Throwable $error) {
             $promise->fail($error);
         }
@@ -188,6 +193,7 @@ class JobUnit implements JobUnitInterface
             '@class' => Job::class,
             'id' => $this->getId(),
             'project' => $this->projectResume,
+            'base_namespace' => $this->baseNamespace,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
             'images_repository' => $this->imagesRepository,
@@ -199,10 +205,27 @@ class JobUnit implements JobUnitInterface
         return $this;
     }
 
-    public function updateVariablesIn(
-        array $values,
-        PromiseInterface $promise
-    ): JobUnitInterface {
+    /**
+     * @param array<string, mixed> $values
+     */
+    private function updateNamespace(array &$values): void
+    {
+        $namespace = ($values['paas']['namespace'] ?? $this->projectResume['name']);
+
+        if (!empty($this->baseNamespace)) {
+            $namespace = $this->baseNamespace . '/' . $namespace;
+        }
+
+        if (!empty($namespace)) {
+            $values['paas']['namespace'] = $namespace;
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     */
+    private function updateVariables(array &$values, PromiseInterface $promise): void
+    {
         $pattern = '#(\$\{[A-Za-z][A-Za-z0-9_]*\})#iS';
 
         $updateClosure = function (&$values, callable $recursive) use ($pattern) {
@@ -234,6 +257,15 @@ class JobUnit implements JobUnitInterface
         } catch (\Throwable $error) {
             $promise->fail($error);
         }
+    }
+
+    public function updateVariablesIn(
+        array $values,
+        PromiseInterface $promise
+    ): JobUnitInterface {
+        $this->updateNamespace($values);
+
+        $this->updateVariables($values, $promise);
 
         return $this;
     }

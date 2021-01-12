@@ -31,6 +31,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 use Teknoo\East\Paas\Object\ImageRegistry;
 
 /**
@@ -47,7 +49,18 @@ class ImageRegistryType extends AbstractType
     {
         parent::buildForm($builder, $options);
 
-        $builder->add('apiUrl', TextType::class, ['required' => true]);
+        $builder->add(
+            'apiUrl',
+            TextType::class,
+            [
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(),
+                    new Regex('/^[a-zA-Z0-9-_\.]+$/iS')
+                ],
+            ]
+        );
+
         $builder->add('identity', XRegistryAuthType::class, ['required' => true]);
 
         $builder->setDataMapper(new class implements DataMapperInterface {

@@ -61,6 +61,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
 
         $jobId = $data['id'];
         $projectResume = $data['project'];
+        $baseNamespace = $data['base_namespace'] ?? null;
         $denormalizer = $this->denormalizer;
         $sourceRepository = $denormalizer->denormalize(
             $data['source_repository'],
@@ -119,6 +120,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
             $jobId,
             $projectResume,
             $environment,
+            $baseNamespace,
             $sourceRepository,
             $imagesRepository,
             $clusters,

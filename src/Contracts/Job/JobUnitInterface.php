@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Job;
 
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -52,7 +52,7 @@ interface JobUnitInterface extends NormalizableInterface
     ): JobUnitInterface;
 
     public function configureCluster(
-        ClusterClientInterface $builder,
+        Directory $clientsDirectory,
         PromiseInterface $promise
     ): JobUnitInterface;
 

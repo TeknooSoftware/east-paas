@@ -43,3 +43,7 @@ services:
 
   GuzzleHttp\Client:
     class: 'GuzzleHttp\Client'
+
+  twig:
+    synthetic: true
+    public: true

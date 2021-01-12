@@ -28,10 +28,14 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 use DI\Container;
 use DI\ContainerBuilder;
 use Maclof\Kubernetes\Client as KubClient;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
 /**
@@ -70,22 +74,19 @@ class ContainerTest extends TestCase
 
         self::assertInstanceOf(
             KubClient::class,
-            $factory('foo', new ClusterCredentials('certBar', 'barFoo', 'fooBar', 'barFoo2', 'barBar'))
+            $factory(
+                'foo',
+                new ClusterCredentials(
+                'certBar',
+                'barFoo',
+                'fooBar',
+                'barFoo2',
+                'barBar'
+                )
+            )
         );
 
         unset($factory);
-    }
-
-    public function testClusterClientInterface()
-    {
-        $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
-        $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
-
-        self::assertInstanceOf(
-            ClusterClientInterface::class,
-            $container->get(ClusterClientInterface::class)
-        );
     }
 
     public function testClient()
@@ -97,6 +98,58 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             Client::class,
             $container->get(Client::class)
+        );
+    }
+
+    public function testDirectory()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
+
+        self::assertInstanceOf(
+            Directory::class,
+            $container->get(Directory::class)
+        );
+    }
+
+    public function testIngressTranscriber()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.default_ingress_class', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.default_service.name', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.default_service.port', 80);
+
+        self::assertInstanceOf(
+            IngressTranscriber::class,
+            $container->get(IngressTranscriber::class)
+        );
+    }
+
+    public function testReplicationControllerTranscriber()
+    {
+        $container = $this->buildContainer();
+        self::assertInstanceOf(
+            ReplicationControllerTranscriber::class,
+            $container->get(ReplicationControllerTranscriber::class)
+        );
+    }
+
+    public function testSecretTranscriber()
+    {
+        $container = $this->buildContainer();
+        self::assertInstanceOf(
+            SecretTranscriber::class,
+            $container->get(SecretTranscriber::class)
+        );
+    }
+
+    public function testServiceTranscriber()
+    {
+        $container = $this->buildContainer();
+        self::assertInstanceOf(
+            ServiceTranscriber::class,
+            $container->get(ServiceTranscriber::class)
         );
     }
 }

@@ -48,16 +48,16 @@ use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
 use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\RecipeInterface;
+use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Cookbook\RunJob
- * @covers \Teknoo\East\Paas\Recipe\Cookbook\CookbookTrait
  */
 class RunJobTest extends TestCase
 {
-    use CookbookTestTrait;
+    use BaseCookbookTestTrait;
 
     public function buildCookbook(): CookbookInterface
     {

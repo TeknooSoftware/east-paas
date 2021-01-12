@@ -30,7 +30,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
@@ -61,7 +61,7 @@ class BuildImages
 
     public function __invoke(
         ImageBuilder $builder,
-        CompiledDeployment $compiledDeployment,
+        CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
         JobUnitInterface $jobUnit,
         ClientInterface $client,

@@ -51,11 +51,12 @@ class Executable implements StateInterface
 
     public function configure(): \Closure
     {
-        return function (Job $job, \DateTimeInterface $date, Environment $environment): Project {
+        return function (Job $job, \DateTimeInterface $date, Environment $environment, ?string $namespace): Project {
             $job->setProject($this);
             $job->setEnvironment($environment);
             $job->setSourceRepository($this->getSourceRepository());
             $job->setImagesRepository($this->getImagesRepository());
+            $job->setBaseNamespace($namespace);
 
             foreach ($this->clusters as $cluster) {
                 $cluster->prepareJobForEnvironment($job, $environment);

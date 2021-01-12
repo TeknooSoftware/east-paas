@@ -6,9 +6,6 @@ parameters:
             message: '#Method [a-zA-Z0-9\\_]+::denormalize|normalize\(\) return type has no value type specified in iterable type array.#'
             path: infrastructures/Symfony/Components/Normalizer
         -
-            message: '#Parameter \#1 \$imagesLibrary of method [a-zA-Z0-9\\_]+::compileImages\(\) expects#'
-            path: src/Conductor/Conductor/Running.php
-        -
             message: '#Cannot access an offset on iterable#'
             path: src/Object/Job/Pending.php
         -
@@ -20,6 +17,9 @@ parameters:
         -
             message: '#Parameter \#1 \$repository of method [a-zA-Z0-9\\_]+::[a-zA-Z0-9\\_]+\(\) expects [a-zA-Z0-9\\_]+, [a-zA-Z0-9\\_]+\|null given#'
             path: src/Object/Project/Executable.php
+        -
+            message: '#Cannot access property \$message on LibXMLError\|false.#'
+            path: src/Parser/YamlValidator.php
         -
             message: '#Anonymous function should return [a-zA-Z0-9\\_]+ but returns [a-zA-Z0-9\\_]+\|null#'
             path: infrastructures/Flysystem/Workspace/Running.php

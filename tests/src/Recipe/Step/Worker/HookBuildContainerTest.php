@@ -34,7 +34,7 @@ use Psr\Http\Message\StreamInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -92,7 +92,7 @@ class HookBuildContainerTest extends TestCase
 
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(CompiledDeployment::class)
+            $this->createMock(CompiledDeploymentInterface::class)
         );
     }
 
@@ -109,7 +109,7 @@ class HookBuildContainerTest extends TestCase
     public function testInvoke()
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $compiled = $this->createMock(CompiledDeployment::class);
+        $compiled = $this->createMock(CompiledDeploymentInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $client =  $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
@@ -182,7 +182,7 @@ class HookBuildContainerTest extends TestCase
     public function testInvokeOnError()
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $compiled = $this->createMock(CompiledDeployment::class);
+        $compiled = $this->createMock(CompiledDeploymentInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $client =  $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
@@ -250,7 +250,7 @@ class HookBuildContainerTest extends TestCase
     public function testInvokeOnErrorForSecondHook()
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $compiled = $this->createMock(CompiledDeployment::class);
+        $compiled = $this->createMock(CompiledDeploymentInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $client =  $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);

@@ -102,7 +102,35 @@ class AccountTest extends TestCase
     public function testSetNameExceptionOnBadArgument()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->setName(new \stdClass());
+        $this->buildObject()->setNamespace(new \stdClass());
+    }
+
+    /**
+     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     */
+    public function testSetNamespace()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            \get_class($object),
+            $object->setNamespace('fooBar')
+        );
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with('fooBar');
+
+        self::assertInstanceOf(
+            Account::class,
+            $object->injectDataInto(['namespace' => $form])
+        );
+    }
+
+    public function testSetNamespaceExceptionOnBadArgument()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->setNamespace(new \stdClass());
     }
 
     /**
@@ -228,13 +256,14 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env]);
+        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, 'bar']);
         $project->expects(self::never())->method('refuseExecution');
 
         self::assertInstanceOf(
             Account::class,
             $this->buildObject()
                 ->setName('foo')
+                ->setNamespace('bar')
                 ->canIPrepareNewJob($project, $job, $date, $env)
         );
     }

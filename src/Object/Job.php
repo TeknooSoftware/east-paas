@@ -71,6 +71,8 @@ class Job implements
 
     protected ?Environment $environment = null;
 
+    protected ?string $baseNamespace = null;
+
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
     protected ?ImageRegistryInterface $imagesRepository = null;
@@ -150,6 +152,13 @@ class Job implements
         ];
     }
 
+    public function setBaseNamespace(?string $baseNamespace): Job
+    {
+        $this->baseNamespace = $baseNamespace;
+
+        return $this;
+    }
+
     public function addFromHistory(History $history, ?callable $callback = null): Job
     {
         $history = $history->clone($this->history);
@@ -197,6 +206,7 @@ class Job implements
             '@class' => self::class,
             'id' => $this->getId(),
             'project' => $this->project,
+            'base_namespace' => $this->baseNamespace,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
             'images_repository' => $this->imagesRepository,

@@ -30,8 +30,8 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Cluster\Collection;
+use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
@@ -45,14 +45,14 @@ class ConfigureClusterClient
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private ClientInterface $client;
+    private Directory $clientsDirectory;
 
     public function __construct(
-        ClientInterface $client,
+        Directory $clientsDirectory,
         ResponseFactoryInterface $responseFactory,
         StreamFactoryInterface $streamFactory
     ) {
-        $this->client = $client;
+        $this->clientsDirectory = $clientsDirectory;
         $this->setResponseFactory($responseFactory);
         $this->setStreamFactory($streamFactory);
     }
@@ -63,7 +63,7 @@ class ConfigureClusterClient
         ManagerInterface $manager
     ): self {
         $job->configureCluster(
-            $this->client,
+            $this->clientsDirectory,
             new Promise(
                 static function (Collection $clients) use ($manager) {
                     $manager->updateWorkPlan(

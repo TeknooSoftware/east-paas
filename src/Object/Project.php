@@ -176,7 +176,7 @@ class Project implements
     /**
      * @return iterable<Cluster>
      */
-    public function getClusters()
+    private function getClusters()
     {
         return $this->clusters;
     }

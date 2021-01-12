@@ -34,7 +34,7 @@ use Psr\Http\Message\StreamInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Conductor\CompiledDeployment;
+use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
@@ -93,7 +93,7 @@ class BuildImagesTest extends TestCase
 
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
@@ -121,7 +121,7 @@ class BuildImagesTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             new \stdClass(),
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
@@ -136,7 +136,7 @@ class BuildImagesTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             new \stdClass(),
             $this->createMock(ClientInterface::class),
@@ -150,7 +150,7 @@ class BuildImagesTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             $this->createMock(JobUnitInterface::class),
             new \stdClass(),
@@ -164,7 +164,7 @@ class BuildImagesTest extends TestCase
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
-            $this->createMock(CompiledDeployment::class),
+            $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
@@ -175,7 +175,7 @@ class BuildImagesTest extends TestCase
     public function testInvoke()
     {
         $imageBuilder = $this->createMock(ImageBuilder::class);
-        $compileDep = $this->createMock(CompiledDeployment::class);
+        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
         $jobWorkspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $client =  $this->createMock(ClientInterface::class);
@@ -222,7 +222,7 @@ class BuildImagesTest extends TestCase
     public function testInvokeOnError()
     {
         $imageBuilder = $this->createMock(ImageBuilder::class);
-        $compileDep = $this->createMock(CompiledDeployment::class);
+        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
         $jobWorkspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $client =  $this->createMock(ClientInterface::class);
