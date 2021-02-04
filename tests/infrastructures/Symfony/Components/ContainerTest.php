@@ -74,27 +74,13 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(
-            'messenger.default_bus',
-            $this->createMock(MessageBusInterface::class)
+            DispatchJob::class,
+            $this->createMock(DispatchJob::class)
         );
 
         self::assertInstanceOf(
             DispatchJobInterface::class,
             $container->get(DispatchJobInterface::class)
-        );
-    }
-
-    public function testDispatchJob()
-    {
-        $container = $this->buildContainer();
-        $container->set(
-            'messenger.default_bus',
-            $this->createMock(MessageBusInterface::class)
-        );
-
-        self::assertInstanceOf(
-            DispatchJob::class,
-            $container->get(DispatchJob::class)
         );
     }
 
@@ -159,7 +145,7 @@ class ContainerTest extends TestCase
     public function testDeserializerInterface()
     {
         $container = $this->buildContainer();
-        $container->set('serializer', $this->createMock(SymfonySerializerInterface::class));
+        $container->set(Deserializer::class, $this->createMock(Deserializer::class));
 
         self::assertInstanceOf(
             DeserializerInterface::class,
@@ -167,21 +153,10 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testDeserializer()
-    {
-        $container = $this->buildContainer();
-        $container->set('serializer', $this->createMock(SymfonySerializerInterface::class));
-
-        self::assertInstanceOf(
-            Deserializer::class,
-            $container->get(Deserializer::class)
-        );
-    }
-
     public function testNormalizerInterface()
     {
         $container = $this->buildContainer();
-        $container->set('serializer', $this->createMock(SymfonyNormalizerInterface::class));
+        $container->set(Normalizer::class, $this->createMock(Normalizer::class));
 
         self::assertInstanceOf(
             NormalizerInterface::class,
@@ -189,36 +164,14 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testNormalizer()
-    {
-        $container = $this->buildContainer();
-        $container->set('serializer', $this->createMock(SymfonyNormalizerInterface::class));
-
-        self::assertInstanceOf(
-            Normalizer::class,
-            $container->get(Normalizer::class)
-        );
-    }
-
     public function testSerializerInterface()
     {
         $container = $this->buildContainer();
-        $container->set('serializer', $this->createMock(SymfonySerializerInterface::class));
+        $container->set(Serializer::class, $this->createMock(Serializer::class));
 
         self::assertInstanceOf(
             SerializerInterface::class,
             $container->get(SerializerInterface::class)
-        );
-    }
-
-    public function testSerializer()
-    {
-        $container = $this->buildContainer();
-        $container->set('serializer', $this->createMock(SymfonySerializerInterface::class));
-
-        self::assertInstanceOf(
-            Serializer::class,
-            $container->get(Serializer::class)
         );
     }
 

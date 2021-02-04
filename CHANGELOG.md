@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.22] - 2021-02-04
+###Dev release
+- Update to last Teknoo libraries, including Website 4.1
+- Fix deprecated in Symfony DI
+
 ##[0.0.21] - 2021-01-27
 ###Dev release
 - Add namespace support, managed by account, included into the compiled deployment and pass to Kubernetes

@@ -11,10 +11,12 @@ parameters:
   teknoo.east.paas.symfony.subscriber.command.class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
 
   teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
+
+
 services:
   teknoo.east.paas.symfony.property_accessor:
-    public: true
     class: 'Symfony\Component\PropertyAccess\PropertyAccessor'
+    public: true
     arguments:
       - false
       - false
@@ -71,3 +73,28 @@ services:
     parent: 'Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand'
     tags:
       - {name: 'console.command' }
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob:
+    class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob'
+    public: true
+    arguments:
+      - '@messenger.default_bus'
+
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:
+    class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer'
+    public: true
+    arguments:
+      - '@serializer'
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer:
+    class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer'
+    public: true
+    arguments:
+      - '@serializer'
+
+  Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer:
+    class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer'
+    public: true
+    arguments:
+      - '@serializer'

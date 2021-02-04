@@ -71,8 +71,6 @@ return [
         ),
 
     DispatchJobInterface::class => get(DispatchJob::class),
-    DispatchJob::class => create()
-        ->constructor(get('messenger.default_bus')),
 
     SymfonyPropertyAccessor::class => get('teknoo.east.paas.symfony.property_accessor'),
     PropertyAccessorInterface::class => get(PropertyAccessor::class),
@@ -85,16 +83,8 @@ return [
         ->constructor(get(Parser::class)),
 
     DeserializerInterface::class => get(Deserializer::class),
-    Deserializer::class => create()
-        ->constructor(get('serializer')),
-
     NormalizerInterface::class => get(Normalizer::class),
-    Normalizer::class => create()
-        ->constructor(get('serializer')),
-
     SerializerInterface::class => get(Serializer::class),
-    Serializer::class => create()
-        ->constructor(get('serializer')),
 
     DisplayHistory::class => create()
         ->constructor(
