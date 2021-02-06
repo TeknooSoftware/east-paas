@@ -151,19 +151,13 @@ class AccountTest extends TestCase
         $this->buildObject()->setProjects(new \stdClass());
     }
 
-    public function testSetUsersExceptionOnBadArgument()
-    {
-        $this->expectException(\Exception::class);
-        $this->buildObject()->setUsers(new \stdClass());
-    }
-
     /**
      * @throws \Teknoo\States\Proxy\Exception\StateNotFound
      */
-    public function testGetOwner()
+    public function testGetUsers()
     {
-        $argument = new BaseUser();
-        $object = $this->generateObjectPopulated(['owner' => $argument]);
+        $argument = [new BaseUser()];
+        $object = $this->generateObjectPopulated(['users' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
         $form->expects(self::once())
@@ -172,21 +166,21 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['owner' => $form])
+            $object->injectDataInto(['users' => $form])
         );
     }
 
     /**
      * @throws \Teknoo\States\Proxy\Exception\StateNotFound
      */
-    public function testSetOwner()
+    public function testSetUsers()
     {
-        $argument = new BaseUser();
+        $argument = [new BaseUser()];
 
         $object = $this->buildObject();
         self::assertInstanceOf(
             \get_class($object),
-            $object->setOwner($argument)
+            $object->setUsers($argument)
         );
 
         $form = $this->createMock(FormInterface::class);
@@ -196,14 +190,14 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['owner' => $form])
+            $object->injectDataInto(['users' => $form])
         );
     }
 
-    public function testSetOwnerExceptionOnBadArgument()
+    public function testSetUsersExceptionOnBadArgument()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->setOwner(new \stdClass());
+        $this->buildObject()->setUsers(new \stdClass());
     }
 
     public function testCanIPrepareNewJobInactive()

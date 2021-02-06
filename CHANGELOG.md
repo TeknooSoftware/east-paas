@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.23] - 2021-02-06
+###Dev release
+- Update to last Teknoo libraries, including Website 4.1.4
+- Replace Account's property `owner` to `users` to allow several users on account
+
 ##[0.0.22] - 2021-02-04
 ###Dev release
 - Update to last Teknoo libraries, including Website 4.1

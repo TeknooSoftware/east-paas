@@ -52,7 +52,15 @@ class AccountType extends AbstractType
 
         $builder->add('name', TextType::class, ['required' => true]);
         $builder->add('namespace', TextType::class, ['required' => false]);
-        $builder->add('owner', $options['doctrine_type'], ['class' => User::class, 'required' => true]);
+        $builder->add(
+            'users',
+            $options['doctrine_type'],
+            [
+                'class' => User::class,
+                'required' => true,
+                'multiple' => true,
+            ]
+        );
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
@@ -82,7 +90,7 @@ class AccountType extends AbstractType
                 $forms = \iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
                 $data->setNamespace($forms['namespace']->getData());
-                $data->setOwner($forms['owner']->getData());
+                $data->setUsers($forms['users']->getData());
             }
         });
 

@@ -69,7 +69,10 @@ class Account implements
      */
     protected iterable $projects = [];
 
-    protected ?BaseUser $owner = null;
+    /**
+     * @var BaseUser[]
+     */
+    protected ?iterable $users = [];
 
     public function __construct()
     {
@@ -142,14 +145,20 @@ class Account implements
         return $this;
     }
 
-    private function getOwner(): ?BaseUser
+    /**
+     * @return BaseUser[]
+     */
+    private function getUsers(): ?iterable
     {
-        return $this->owner;
+        return $this->users;
     }
 
-    public function setOwner(BaseUser $owner): Account
+    /**
+     * @param iterable<BaseUser> $users
+     */
+    public function setUsers(?iterable $users): Account
     {
-        $this->owner = $owner;
+        $this->users = $users;
 
         return $this;
     }
@@ -164,8 +173,8 @@ class Account implements
             $forms['namespace']->setData($this->getNamespace());
         }
 
-        if (isset($forms['owner'])) {
-            $forms['owner']->setData($this->getOwner());
+        if (isset($forms['users'])) {
+            $forms['users']->setData($this->getUsers());
         }
 
         return $this;

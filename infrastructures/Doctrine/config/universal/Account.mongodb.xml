@@ -12,12 +12,12 @@
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
         <field field-name="updatedAt" name="updated_at" type="date" />
         <field field-name="deletedAt" name="deleted_at" type="date" nullable="true" index="true" />
-        <reference-one field="owner" target-document="Teknoo\East\Website\Object\User">
+        <reference-many field="projects" target-document="Teknoo\East\Paas\Object\Project" mapped-by="account">
             <cascade>
                 <all/>
             </cascade>
-        </reference-one>
-        <reference-many field="projects" target-document="Teknoo\East\Paas\Object\Project" mapped-by="account">
+        </reference-many>
+        <reference-many field="users" target-document="Teknoo\East\Website\Object\User">
             <cascade>
                 <all/>
             </cascade>

@@ -29,9 +29,9 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Teknoo\East\Website\Object\User as BaseUser;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType;
 use Teknoo\East\Paas\Object\Account;
+use Teknoo\East\Website\Object\User as BaseUser;
 use Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type\FormTestTrait;
 
 /**
@@ -65,7 +65,7 @@ class AccountTypeTest extends TestCase
         return [
             'name' => 'fooBar',
             'namespace' => 'barFoo',
-            'owner' => new BaseUser(),
+            'users' => [new BaseUser()],
         ];
     }
 
