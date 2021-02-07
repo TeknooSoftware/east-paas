@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
 use Maclof\Kubernetes\Client as KubClient;
+use Maclof\Kubernetes\RepositoryRegistry;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
@@ -46,8 +47,11 @@ class Factory implements ClientFactoryInterface
         $this->verify = $verify;
     }
 
-    public function __invoke(string $master, ?ClusterCredentials $credentials): KubClient
-    {
+    public function __invoke(
+        string $master,
+        ?ClusterCredentials $credentials,
+        ?RepositoryRegistry $repositoryRegistry = null
+    ): KubClient {
         $options = [
             'master' => $master,
             'verify' => $this->verify,
@@ -75,7 +79,7 @@ class Factory implements ClientFactoryInterface
             }
         }
 
-        return new KubClient($options);
+        return new KubClient($options, null, $repositoryRegistry);
     }
 
     private function write(string $value): string

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts;
 
 use Maclof\Kubernetes\Client;
+use Maclof\Kubernetes\RepositoryRegistry;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
 /**
@@ -34,5 +35,9 @@ use Teknoo\East\Paas\Object\ClusterCredentials;
  */
 interface ClientFactoryInterface
 {
-    public function __invoke(string $master, ?ClusterCredentials $credentials): Client;
+    public function __invoke(
+        string $master,
+        ?ClusterCredentials $credentials,
+        ?RepositoryRegistry $repositoryRegistry = null
+    ): Client;
 }

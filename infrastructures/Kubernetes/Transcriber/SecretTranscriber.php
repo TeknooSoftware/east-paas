@@ -101,6 +101,10 @@ class SecretTranscriber implements DeploymentInterface
                 }
 
                 try {
+                    if (!empty($namespace)) {
+                        $client->setNamespace($namespace);
+                    }
+
                     $sRepository = $client->secrets();
                     if ($sRepository->exists($kubeSecret->getMetadata('name'))) {
                         $result = $sRepository->update($kubeSecret);

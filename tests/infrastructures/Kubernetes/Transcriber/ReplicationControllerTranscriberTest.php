@@ -104,6 +104,11 @@ class ReplicationControllerTranscriberTest extends TestCase
             });
 
         $srRepo = $this->createMock(ReplicationControllerRepository::class);
+
+        $kubeClient->expects(self::atLeastOnce())
+            ->method('setNamespace')
+            ->with('default_namespace');
+
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([

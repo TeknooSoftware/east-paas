@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
 use Maclof\Kubernetes\Client as KubClient;
 use Maclof\Kubernetes\Client as KubernetesClient;
+use Maclof\Kubernetes\RepositoryRegistry;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Factory;
 use Teknoo\East\Paas\Object\ClusterCredentials;
@@ -87,6 +88,42 @@ class FactoryTest extends TestCase
         );
 
         $client = $factory('foo', $credential);
+
+        self::assertInstanceOf(KubClient::class, $client);
+
+        unset($factory);
+    }
+
+    public function testInvokeWithServerCertificateWithRegistry()
+    {
+        $factory = $this->buildFactory();
+
+        $credential = new ClusterCredentials(
+            'foo',
+            'privateBar',
+            'publicBar'
+        );
+
+        $client = $factory('foo', $credential, $this->createMock(RepositoryRegistry::class));
+
+        self::assertInstanceOf(KubClient::class, $client);
+
+        unset($factory);
+    }
+
+    public function testInvokeWithUserCredentialsWithRegistry()
+    {
+        $factory = $this->buildFactory();
+
+        $credential = new ClusterCredentials(
+            '',
+            '',
+            '',
+            'foo',
+            'bar'
+        );
+
+        $client = $factory('foo', $credential, $this->createMock(RepositoryRegistry::class));
 
         self::assertInstanceOf(KubClient::class, $client);
 

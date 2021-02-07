@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.25] - 2021-02-07
+###Dev release
+- Kubernetes client factory supports injection of Maclof repositories registry during
+  client creation
+
 ##[0.0.24] - 2021-02-07
 ###Dev release
 - Extract Kubernetes Client factory to independent class from DI

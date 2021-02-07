@@ -206,6 +206,10 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                 $kubeController = static::convertToReplicationController($pod, $images, $volumes, $namespace);
 
                 try {
+                    if (!empty($namespace)) {
+                        $client->setNamespace($namespace);
+                    }
+
                     $rcRepository = $client->replicationControllers();
                     if ($rcRepository->exists($kubeController->getMetadata('name'))) {
                         $result = $rcRepository->update($kubeController);

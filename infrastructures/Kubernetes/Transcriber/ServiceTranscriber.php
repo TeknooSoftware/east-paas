@@ -85,6 +85,10 @@ class ServiceTranscriber implements ExposingInterface
                 $kubeService = static::convertToService($service, $namespace);
 
                 try {
+                    if (!empty($namespace)) {
+                        $client->setNamespace($namespace);
+                    }
+
                     $serviceRepository = $client->services();
                     if ($serviceRepository->exists($kubeService->getMetadata('name'))) {
                         $serviceRepository->delete($kubeService);

@@ -80,6 +80,10 @@ class ServiceTranscriberTest extends TestCase
             ->method('delete')
             ->willReturn(['foo']);
 
+        $kubeClient->expects(self::atLeastOnce())
+            ->method('setNamespace')
+            ->with('default_namespace');
+
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([

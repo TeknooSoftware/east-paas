@@ -126,6 +126,10 @@ class IngressTranscriber implements ExposingInterface
                 $kubIngress = $this->convertToIngress($ingress, $namespace);
 
                 try {
+                    if (!empty($namespace)) {
+                        $client->setNamespace($namespace);
+                    }
+
                     $ingressRepository = $client->ingresses();
                     if ($ingressRepository->exists($kubIngress->getMetadata('name'))) {
                         $result = $ingressRepository->update($kubIngress);

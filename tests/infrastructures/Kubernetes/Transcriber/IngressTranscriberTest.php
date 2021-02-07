@@ -85,6 +85,11 @@ class IngressTranscriberTest extends TestCase
             });
 
         $repoIngress = $this->createMock(IngressRepository::class);
+
+        $kubeClient->expects(self::atLeastOnce())
+            ->method('setNamespace')
+            ->with('default_namespace');
+
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
