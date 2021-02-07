@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.24] - 2021-02-07
+###Dev release
+- Extract Kubernetes Client factory to independent class from DI
+
 ##[0.0.23] - 2021-02-06
 ###Dev release
 - Update to last Teknoo libraries, including Website 4.1.4

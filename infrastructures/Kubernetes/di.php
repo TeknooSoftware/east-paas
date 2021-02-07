@@ -28,13 +28,11 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 use Psr\Container\ContainerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
-use Maclof\Kubernetes\Client as KubClient;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
-use Teknoo\East\Paas\Object\ClusterCredentials;
 
 use function DI\decorate;
 use function DI\create;
@@ -52,88 +50,7 @@ return [
             $verify = (bool) $container->get('teknoo.east.paas.kubernetes.ssl.verify');
         }
 
-        return new class ($tempDir, $verify) implements ClientFactoryInterface {
-            /**
-             * @var string[]
-             */
-            private array $files = [];
-
-            private string $tmpDir;
-
-            private bool $verify;
-
-            public function __construct(string $tmpDir, bool $verify)
-            {
-                $this->tmpDir = $tmpDir;
-                $this->verify = $verify;
-            }
-
-            public function __invoke(string $master, ?ClusterCredentials $credentials): KubClient
-            {
-                $options = [
-                    'master' => $master,
-                    'verify' => $this->verify,
-                ];
-
-                if (null !== $credentials) {
-                    if (!empty($content = $credentials->getServerCertificate())) {
-                        $options['ca_cert'] = $this->write($content);
-                    }
-
-                    if (!empty($content = $credentials->getPublicKey())) {
-                        $options['client_cert'] = $this->write($content);
-                    }
-
-                    if (!empty($content = $credentials->getPrivateKey())) {
-                        $options['client_key'] = $this->write($content);
-                    }
-
-                    if (!empty($content = $credentials->getUsername())) {
-                        $options['username'] = $content;
-                    }
-
-                    if (!empty($content = $credentials->getPassword())) {
-                        $options['password'] = $content;
-                    }
-                }
-
-                return new KubClient($options);
-            }
-
-            private function write(string $value): string
-            {
-                $fileName = \tempnam($this->tmpDir, 'east-paas-kube-') . '.paas';
-
-                if (empty($fileName)) {
-                    throw new \RuntimeException('Bad file temp name');
-                }
-
-                \file_put_contents($fileName, $value);
-                \chmod($fileName, 0500);
-
-                $this->files[] = $fileName;
-
-                return $fileName;
-            }
-
-            private function delete(): void
-            {
-                foreach ($this->files as $file) {
-                    if (!\file_exists($file)) {
-                        continue;
-                    }
-
-                    \unlink($file);
-                }
-
-                $this->files = [];
-            }
-
-            public function __destruct()
-            {
-                $this->delete();
-            }
-        };
+        return new Factory($tempDir, $verify);
     },
 
     IngressTranscriber::class => static function (ContainerInterface $container): IngressTranscriber {
