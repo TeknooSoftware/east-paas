@@ -55,7 +55,6 @@ class SshIdentityTypeTest extends TestCase
         return [
             'name' => 'fooBar',
             'privateKey' => 'barFoo',
-            'publicKey' => 'bar',
         ];
     }
 

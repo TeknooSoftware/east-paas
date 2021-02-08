@@ -54,20 +54,23 @@ class Factory implements ClientFactoryInterface
     ): KubClient {
         $options = [
             'master' => $master,
-            'verify' => $this->verify,
         ];
+
+        if (null !== $this->verify) {
+            $options['verify'] = $this->verify;
+        }
 
         if (null !== $credentials) {
             if (!empty($content = $credentials->getServerCertificate())) {
                 $options['ca_cert'] = $this->write($content);
+
+                if (!empty($options['verify'])) {
+                    unset($options['verify']);
+                }
             }
 
-            if (!empty($content = $credentials->getPublicKey())) {
-                $options['client_cert'] = $this->write($content);
-            }
-
-            if (!empty($content = $credentials->getPrivateKey())) {
-                $options['client_key'] = $this->write($content);
+            if (!empty($content = $credentials->getToken())) {
+                $options['token'] = $this->write($content);
             }
 
             if (!empty($content = $credentials->getUsername())) {

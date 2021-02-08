@@ -554,8 +554,7 @@ class FeatureContext implements Context
         "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\ClusterCredentials",
         "id": "f61d411e3f1b33eaa0900d3b17d36f1d",
         "server_certificate": "fooBar",
-        "private_key": "fooBar",
-        "public_key": "fooBar"
+        "token": "fooBar"
       },
       "environment": {
         "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\Environment",

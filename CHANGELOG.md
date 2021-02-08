@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.26] - 2021-02-08
+###Dev release
+- Update ClusterCredentials to support only HTTP auth or Bearer auth.
+  
 ##[0.0.25] - 2021-02-07
 ###Dev release
 - Kubernetes client factory supports injection of Maclof repositories registry during
