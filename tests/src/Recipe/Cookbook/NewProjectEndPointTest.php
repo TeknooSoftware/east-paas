@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
+use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RedirectClientInterface;
@@ -42,10 +42,10 @@ use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint
+ * @covers \Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint
  * @covers \Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait
  */
-class NewAccountEndPointTest extends TestCase
+class NewProjectEndPointTest extends TestCase
 {
     use BaseCookbookTestTrait;
 
@@ -175,9 +175,9 @@ class NewAccountEndPointTest extends TestCase
         return $this->renderError;
     }
 
-    public function buildCookbook(): NewAccountEndPoint
+    public function buildCookbook(): NewProjectEndPoint
     {
-        return new NewAccountEndPoint(
+        return new NewProjectEndPoint(
             $this->getRecipe(),
             $this->getCreateObject(),
             $this->getFormHandling(),

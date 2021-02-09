@@ -81,7 +81,7 @@ _teknoo_paas_admin_project_new:
     path: '/project/new/{accountId}'
     methods:  ['GET', 'POST', 'PUT']
     defaults:
-        _controller: 'teknoo.east.website.endpoint.crud.new'
+        _controller: 'teknoo.east.paas.endpoint.admin.new.project'
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
         objectClass: 'Teknoo\East\Paas\Object\Project'

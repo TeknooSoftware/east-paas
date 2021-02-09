@@ -1,5 +1,12 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.27] - 2021-02-09
+###Dev release
+- Add NewProjectEndPointInterface and NewProjectEndPoint to allow custom project creation
+- AdditionalStepsList need priority for each step added and, they will be iterated on its order
+- Trait to manage AdditionalStepsList for NewAccountEndPoint and NewProjectEndPoint
+- Create `@teknoo.east.paas.endpoint.admin.new.project` and update project create route
+
 ##[0.0.26] - 2021-02-08
 ###Dev release
 - Update ClusterCredentials to support only HTTP auth or Bearer auth.

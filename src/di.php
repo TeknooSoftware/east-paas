@@ -49,14 +49,17 @@ use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Account\AdditionalStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Parser\YamlValidator;
+use Teknoo\East\Paas\Recipe\AdditionalStepsList;
 use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
+use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP;
@@ -430,27 +433,8 @@ return [
     Recipe::class => create(),
 
     //Cookbooks
-    AdditionalStepsInterface::class => new class implements \IteratorAggregate, AdditionalStepsInterface {
-        /**
-         * @var array<int, callable>
-         */
-        private array $steps = [];
-
-        public function add(callable $step): self
-        {
-            $this->steps[] = $step;
-
-            return $this;
-        }
-
-        /**
-         * @return \ArrayIterator<callable>
-         */
-        public function getIterator(): \Traversable
-        {
-            return new \ArrayIterator($this->steps);
-        }
-    },
+    AdditionalStepsInterface::class . ':NewAccountEndPoint' => create(AdditionalStepsList::class),
+    AdditionalStepsInterface::class . ':NewProjectEndPoint' => create(AdditionalStepsList::class),
 
     NewAccountEndPointInterface::class => get(NewAccountEndPoint::class),
     NewAccountEndPoint::class => create()
@@ -464,7 +448,22 @@ return [
             get(RedirectClientInterface::class),
             get(RenderFormInterface::class),
             get(RenderError::class),
-            get(AdditionalStepsInterface::class)
+            get(AdditionalStepsInterface::class . ':NewAccountEndPoint')
+        ),
+
+    NewProjectEndPointInterface::class => get(NewProjectEndPoint::class),
+    NewProjectEndPoint::class => create()
+        ->constructor(
+            get(OriginalRecipeInterface::class),
+            get(CreateObject::class),
+            get(FormHandlingInterface::class),
+            get(FormProcessingInterface::class),
+            get(SlugPreparation::class),
+            get(SaveObject::class),
+            get(RedirectClientInterface::class),
+            get(RenderFormInterface::class),
+            get(RenderError::class),
+            get(AdditionalStepsInterface::class . ':NewProjectEndPoint')
         ),
 
     NewJobInterface::class => get(NewJob::class),

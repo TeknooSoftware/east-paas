@@ -16,3 +16,10 @@ services:
     arguments:
       - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface'
       - '@service_container'
+
+  teknoo.east.paas.endpoint.admin.new.project:
+    class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+    public: true
+    arguments:
+      - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface'
+      - '@service_container'

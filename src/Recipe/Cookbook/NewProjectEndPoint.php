@@ -42,7 +42,7 @@ use Teknoo\Recipe\RecipeInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class NewAccountEndPoint extends CreateContentEndPoint implements NewAccountEndPointInterface
+class NewProjectEndPoint extends CreateContentEndPoint implements NewAccountEndPointInterface
 {
     use AdditionalStepsTrait;
 

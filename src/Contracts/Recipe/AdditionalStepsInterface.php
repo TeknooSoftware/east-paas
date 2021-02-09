@@ -23,12 +23,16 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Recipe\Step\Account;
+namespace Teknoo\East\Paas\Contracts\Recipe;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface AdditionalStepsInterface
+interface AdditionalStepsInterface extends \IteratorAggregate
 {
+    /**
+     * @return \ArrayIterator<callable>
+     */
+    public function getIterator(): \Traversable;
 }

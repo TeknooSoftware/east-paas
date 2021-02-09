@@ -48,10 +48,11 @@ use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Account\AdditionalStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
+use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
 use Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP;
 use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
@@ -728,10 +729,38 @@ class ContainerTest extends TestCase
         $container->set(RedirectClientInterface::class, $this->createMock(RedirectClientInterface::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
         $container->set(RenderError::class, $this->createMock(RenderError::class));
+        $container->set(
+            AdditionalStepsInterface::class . ':NewAccountEndPoint',
+            $this->createMock(AdditionalStepsInterface::class)
+        );
 
         self::assertInstanceOf(
             CookbookInterface::class,
             $container->get(NewAccountEndPoint::class)
+        );
+    }
+
+    public function testNewProjectEndPoint()
+    {
+        $container = $this->buildContainer();
+
+        $container->set(OriginalRecipeInterface::class, $this->createMock(OriginalRecipeInterface::class));
+        $container->set(CreateObject::class, $this->createMock(CreateObject::class));
+        $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
+        $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
+        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
+        $container->set(SaveObject::class, $this->createMock(SaveObject::class));
+        $container->set(RedirectClientInterface::class, $this->createMock(RedirectClientInterface::class));
+        $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
+        $container->set(RenderError::class, $this->createMock(RenderError::class));
+        $container->set(
+            AdditionalStepsInterface::class . ':NewProjectEndPoint',
+            $this->createMock(AdditionalStepsInterface::class)
+        );
+
+        self::assertInstanceOf(
+            CookbookInterface::class,
+            $container->get(NewProjectEndPoint::class)
         );
     }
 
@@ -1053,18 +1082,38 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testAdditionalStepsInterface()
+    public function testAdditionalStepsInterfaceForNewAccountEndPoint()
     {
         $container = $this->buildContainer();
 
         self::assertInstanceOf(
             AdditionalStepsInterface::class,
-            $steps = $container->get(AdditionalStepsInterface::class)
+            $steps = $container->get(AdditionalStepsInterface::class . ':NewAccountEndPoint')
         );
 
         self::assertInstanceOf(
             AdditionalStepsInterface::class,
-            $steps->add(function () {})
+            $steps->add(1, function () {})
+        );
+
+        self::assertInstanceOf(
+            \Traversable::class,
+            $steps->getIterator()
+        );
+    }
+
+    public function testAdditionalStepsInterfaceForNewProjectEndPoint()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            AdditionalStepsInterface::class,
+            $steps = $container->get(AdditionalStepsInterface::class . ':NewProjectEndPoint')
+        );
+
+        self::assertInstanceOf(
+            AdditionalStepsInterface::class,
+            $steps->add(1, function () {})
         );
 
         self::assertInstanceOf(
