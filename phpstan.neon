@@ -1,6 +1,7 @@
 parameters:
     scopeClass: Teknoo\States\PHPStan\Analyser\Scope
     checkGenericClassInNonGenericObjectType: false
+    treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
             message: '#Method [a-zA-Z0-9\\_]+::denormalize|normalize\(\) return type has no value type specified in iterable type array.#'

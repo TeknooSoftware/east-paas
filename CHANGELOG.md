@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.28] - 2021-02-09
+###Dev release
+- Update AdditionalStepsList to accept also BowlInterface instances
+
 ##[0.0.27] - 2021-02-09
 ###Dev release
 - Add NewProjectEndPointInterface and NewProjectEndPoint to allow custom project creation

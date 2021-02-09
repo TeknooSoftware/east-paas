@@ -41,6 +41,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Recipe\AdditionalStepsList;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
+use Teknoo\Recipe\Bowl\BowlInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -65,12 +66,21 @@ class AdditionalStepsListTest extends TestCase
         $object->add(1, new \stdClass());
     }
 
-    public function testAdd()
+    public function testAddWithFunction()
     {
         $object = new AdditionalStepsList();
         self::assertInstanceOf(
             AdditionalStepsList::class,
             $object->add(1, function() {})
+        );
+    }
+
+    public function testAddWithBowl()
+    {
+        $object = new AdditionalStepsList();
+        self::assertInstanceOf(
+            AdditionalStepsList::class,
+            $object->add(1, $this->createMock(BowlInterface::class))
         );
     }
 

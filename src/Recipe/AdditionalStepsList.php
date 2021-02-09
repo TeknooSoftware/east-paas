@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe;
 
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
+use Teknoo\Recipe\Bowl\BowlInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -34,19 +35,28 @@ use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 class AdditionalStepsList implements AdditionalStepsInterface
 {
     /**
-     * @var array<int, array<int,callable>>
+     * @var array<int, array<int,BowlInterface|callable>>
      */
     private array $steps = [];
 
-    public function add(int $priority, callable $step): self
+    /**
+     * @param int $priority
+     * @param BowlInterface|callable $step
+     * @return $this
+     */
+    public function add(int $priority, $step): self
     {
+        if (!\is_callable($step) && !$step instanceof BowlInterface) {
+            throw new \TypeError('$step accepts only callable or BowlInterface instance');
+        }
+
         $this->steps[$priority][] = $step;
 
         return $this;
     }
 
     /**
-     * @return \ArrayIterator<callable>
+     * @return \ArrayIterator<BowlInterface|callable>
      */
     public function getIterator(): \Traversable
     {
