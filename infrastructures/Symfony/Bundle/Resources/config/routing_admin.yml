@@ -21,8 +21,6 @@ _teknoo_paas_admin_account_edit:
         template: '@@TeknooEastWebsite/AdminAccount/edit.html.twig'
         errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
         formOptions: { "doctrine_type": "%teknoo.east.website.form_type.doctrine.class%"}
-        isTranslatable: false
-        slugField: 'slug'
 
 _teknoo_paas_admin_account_new:
     path: '/account/new'
@@ -37,7 +35,6 @@ _teknoo_paas_admin_account_new:
         errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
         formOptions: { "doctrine_type": "%teknoo.east.website.form_type.doctrine.class%"}
         route: '_teknoo_paas_admin_account_edit'
-        isTranslatable: false
 
 _teknoo_paas_admin_account_delete:
     path: '/account/delete/{id}'
@@ -74,8 +71,6 @@ _teknoo_paas_admin_project_edit:
         template: '@@TeknooEastWebsite/AdminProject/edit.html.twig'
         errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
         formOptions: { }
-        isTranslatable: true
-        slugField: 'slug'
 
 _teknoo_paas_admin_project_new:
     path: '/project/new/{accountId}'
@@ -83,6 +78,7 @@ _teknoo_paas_admin_project_new:
     defaults:
         _controller: 'teknoo.east.paas.endpoint.admin.new.project'
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        accountLoader: '@Teknoo\East\Paas\Loader\AccountLoader'
         writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
         objectClass: 'Teknoo\East\Paas\Object\Project'
         formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
@@ -90,8 +86,7 @@ _teknoo_paas_admin_project_new:
         errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
         formOptions: { }
         route: '_teknoo_paas_admin_project_edit'
-        isTranslatable: true
-        slugField: 'slug'
+        accountKey: 'constructorArguments'
 
 _teknoo_paas_admin_project_delete:
     path: '/project/delete/{id}'

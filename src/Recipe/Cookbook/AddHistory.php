@@ -96,14 +96,14 @@ class AddHistory implements AddHistoryInterface
     {
         $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
 
-        $recipe = $recipe->cook($this->stepReceiveHistory, ReceiveHistory::class, [], 0);
-        $recipe = $recipe->cook($this->stepDeserializeHistory, DeserializeHistory::class, [], 1);
-        $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 2);
-        $recipe = $recipe->cook($this->stepGetJob, GetJob::class, [], 3);
-        $recipe = $recipe->cook($this->stepAddHistory, StepAddHistory::class, [], 4);
-        $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 5);
-        $recipe = $recipe->cook($this->stepSerializeHistory, SerializeHistory::class, [], 6);
-        $recipe = $recipe->cook($this->stepDisplayHistory, DisplayHistory::class, [], 7);
+        $recipe = $recipe->cook($this->stepReceiveHistory, ReceiveHistory::class, [], 10);
+        $recipe = $recipe->cook($this->stepDeserializeHistory, DeserializeHistory::class, [], 20);
+        $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 30);
+        $recipe = $recipe->cook($this->stepGetJob, GetJob::class, [], 40);
+        $recipe = $recipe->cook($this->stepAddHistory, StepAddHistory::class, [], 50);
+        $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
+        $recipe = $recipe->cook($this->stepSerializeHistory, SerializeHistory::class, [], 70);
+        $recipe = $recipe->cook($this->stepDisplayHistory, DisplayHistory::class, [], 80);
 
         $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 

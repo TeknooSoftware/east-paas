@@ -1,5 +1,11 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.29] - 2021-02-10
+###Dev release
+- Fixing NewProjectEndPoint coobook
+- Fix coobooks priorities
+- Require East Website 4.1.7+
+
 ##[0.0.28] - 2021-02-09
 ###Dev release
 - Update AdditionalStepsList to accept also BowlInterface instances

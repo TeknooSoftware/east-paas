@@ -70,6 +70,7 @@ use Teknoo\East\Website\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Website\DBSource\ManagerInterface;
 use Teknoo\East\Website\Recipe\Step\CreateObject;
+use Teknoo\East\Website\Recipe\Step\LoadObject;
 use Teknoo\East\Website\Recipe\Step\RenderError;
 use Teknoo\East\Website\Recipe\Step\SaveObject;
 use Teknoo\East\Website\Recipe\Step\SlugPreparation;
@@ -455,6 +456,7 @@ return [
     NewProjectEndPoint::class => create()
         ->constructor(
             get(OriginalRecipeInterface::class),
+            get(LoadObject::class),
             get(CreateObject::class),
             get(FormHandlingInterface::class),
             get(FormProcessingInterface::class),

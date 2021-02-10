@@ -33,9 +33,11 @@ use Teknoo\East\Website\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Website\Recipe\Cookbook\CreateContentEndPoint;
 use Teknoo\East\Website\Recipe\Step\CreateObject;
+use Teknoo\East\Website\Recipe\Step\LoadObject;
 use Teknoo\East\Website\Recipe\Step\RenderError;
 use Teknoo\East\Website\Recipe\Step\SaveObject;
 use Teknoo\East\Website\Recipe\Step\SlugPreparation;
+use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
@@ -44,13 +46,18 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class NewProjectEndPoint extends CreateContentEndPoint implements NewAccountEndPointInterface
 {
-    use AdditionalStepsTrait;
+    use AdditionalStepsTrait {
+        populateRecipe as traitPopulateRecipe;
+    }
+
+    private LoadObject $loadObject;
 
     /**
      * @param iterable<callable> $additionalSteps
      */
     public function __construct(
         RecipeInterface $recipe,
+        LoadObject $loadObject,
         CreateObject $createObject,
         FormHandlingInterface $formHandling,
         FormProcessingInterface $formProcessing,
@@ -73,6 +80,26 @@ class NewProjectEndPoint extends CreateContentEndPoint implements NewAccountEndP
             $renderError
         );
 
+        $this->loadObject = $loadObject;
+
         $this->additionalSteps = $additionalSteps;
+    }
+
+    protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
+    {
+        $recipe = $recipe->require(new Ingredient('string', 'accountId'));
+
+        $recipe = $recipe->cook(
+            $this->loadObject,
+            LoadObject::class . ':Account',
+            [
+                'loader' => 'accountLoader',
+                'id' => 'accountId',
+                'workPlanKey' => 'accountKey'
+            ],
+            05
+        );
+
+        return $this->traitPopulateRecipe($recipe);
     }
 }

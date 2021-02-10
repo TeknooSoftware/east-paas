@@ -101,20 +101,20 @@ class NewJob implements NewJobInterface
     {
         $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
 
-        $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 0);
-        $recipe = $recipe->cook($this->stepGetEnvironment, GetEnvironment::class, [], 1);
-        $recipe = $recipe->cook($this->stepGetVariables, GetVariables::class, [], 1);
-        $recipe = $recipe->cook($this->stepCreateNewJob, CreateNewJob::class, [], 2);
-        $recipe = $recipe->cook($this->stepPrepareJob, PrepareJob::class, [], 3);
-        $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 4);
-        $recipe = $recipe->cook($this->stepSerializeJob, SerializeJob::class, [], 5);
+        $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 10);
+        $recipe = $recipe->cook($this->stepGetEnvironment, GetEnvironment::class, [], 20);
+        $recipe = $recipe->cook($this->stepGetVariables, GetVariables::class, [], 30);
+        $recipe = $recipe->cook($this->stepCreateNewJob, CreateNewJob::class, [], 40);
+        $recipe = $recipe->cook($this->stepPrepareJob, PrepareJob::class, [], 50);
+        $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
+        $recipe = $recipe->cook($this->stepSerializeJob, SerializeJob::class, [], 70);
         $recipe = $recipe->cook(
             $this->stepDispatchJobInterface,
             DispatchJobInterface::class,
             [],
-            6
+            80
         );
-        $recipe = $recipe->cook($this->stepDisplayJob, DisplayJob::class, [], 7);
+        $recipe = $recipe->cook($this->stepDisplayJob, DisplayJob::class, [], 90);
 
         $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 
