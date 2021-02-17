@@ -53,7 +53,8 @@ class CompileDeployment
     public function __invoke(
         ManagerInterface $manager,
         ClientInterface $client,
-        ConductorInterface $conductor
+        ConductorInterface $conductor,
+        ?string $storageIdentifier = null
     ): self {
         $conductor->compileDeployment(
             new Promise(
@@ -70,7 +71,8 @@ class CompileDeployment
                     $this->responseFactory,
                     $this->streamFactory
                 )
-            )
+            ),
+            $storageIdentifier
         );
 
         return $this;

@@ -61,6 +61,10 @@ class AddHistoryTest extends TestCase
             $this->createMock(SaveJob::class),
             $this->createMock(SerializeHistory::class),
             $this->createMock(DisplayHistory::class),
+            [
+                24 => static function () {},
+                12 => static function () {},
+            ],
             $this->createMock(DisplayError::class)
         );
     }

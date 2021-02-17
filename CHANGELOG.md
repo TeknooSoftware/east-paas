@@ -1,8 +1,13 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.30] - 2021-02-17
+###Dev release
+- Storage identifier (PVC name) can be passed in RunJob recipe.
+- Recipes RunJob, NewJob and AddHistory can be completed thanks to `AdditionalStepsInterface`
+
 ##[0.0.29] - 2021-02-10
 ###Dev release
-- Fixing NewProjectEndPoint coobook
+- Fixing NewProjectEndPoint cookbook
 - Fix coobooks priorities
 - Require East Website 4.1.7+
 

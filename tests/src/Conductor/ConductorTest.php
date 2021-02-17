@@ -116,7 +116,7 @@ class ConductorTest extends TestCase
         return $this->validator;
     }
 
-    public function buildConductor(): Conductor
+    public function buildConductor(?string $storageProvider = null): Conductor
     {
         return new Conductor(
             $this->getCompiledDeploymentFactory(),
@@ -126,7 +126,8 @@ class ConductorTest extends TestCase
             [
                 '[secrets]' => $this->createMock(CompilerInterface::class),
                 '[volumes]' => $this->createMock(CompilerInterface::class),
-            ]
+            ],
+            $storageProvider
         );
     }
 
@@ -696,7 +697,7 @@ EOF;
         );
     }
 
-    private function prepareTestForCompile(array $result, ?Conductor $conductor = null): Conductor
+    private function prepareTestForCompile(array $result, ?Conductor $conductor = null, $storage = null): Conductor
     {
         $yaml = <<<'EOF'
 paas:
@@ -711,7 +712,7 @@ EOF;
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
-        $conductor = ($conductor ?? $this->buildConductor())->configure($jobUnit, $workspace);
+        $conductor = ($conductor ?? $this->buildConductor($storage))->configure($jobUnit, $workspace);
         $this->getYamlParser()
             ->expects(self::any())
             ->method('parse')
@@ -790,7 +791,42 @@ EOF;
             ConductorInterface::class,
             $conductor->compileDeployment($promise)
         );
+    }
 
+    public function testCompileDeploymentWithDefaultStorage()
+    {
+        $result = $this->getResultArray();
+
+        $conductor = $this->prepareTestForCompile($result, null, 'bar');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment($promise)
+        );
+    }
+
+    public function testCompileDeploymentWithStorage()
+    {
+        $result = $this->getResultArray();
+
+        $conductor = $this->prepareTestForCompile($result);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment($promise, 'foo')
+        );
     }
 
     public function testCompileDeploymentErrorIntercepted()
@@ -808,7 +844,8 @@ EOF;
             [
                 '[secrets]' => $compiler,
                 '[volumes]' => $compiler,
-            ]
+            ],
+            'fooBar'
         );
         $conductor = $this->prepareTestForCompile($result, $conductor);
 

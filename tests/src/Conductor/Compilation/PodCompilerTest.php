@@ -41,7 +41,7 @@ class PodCompilerTest extends TestCase
 {
     public function buildCompiler(): PodCompiler
     {
-        return new PodCompiler('foo');
+        return new PodCompiler();
     }
 
     private function getDefinitionsArray(): array
@@ -128,7 +128,8 @@ class PodCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $workspace,
-                $jobUnit
+                $jobUnit,
+                'fooBar'
             )
         );
     }
@@ -161,6 +162,40 @@ class PodCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $workspace,
+                $jobUnit,
+                'fooBar'
+            )
+        );
+    }
+
+    public function testCompileWithoutStorageIdentifierInVolume()
+    {
+        $definitions = $this->getDefinitionsArray();
+        $builder = $this->buildCompiler();
+
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects(self::never())->method('addPod');
+        $compiledDeployment->expects(self::any())
+            ->method('importVolume')
+            ->willReturnCallback(
+                function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment) {
+                    $promise->fail(new \DomainException('foo'));
+
+                    return $compiledDeployment;
+                }
+            );
+
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $jobUnit = $this->createMock(JobUnitInterface::class );
+
+        $this->expectException(\RuntimeException::class);
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $builder->compile(
+                $definitions,
+                $compiledDeployment,
+                $workspace,
                 $jobUnit
             )
         );
@@ -171,6 +206,8 @@ class PodCompilerTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $definitions = $this->getDefinitionsArray();
+        unset($definitions['php-pod']['containers']['php-composer']['volumes']['embedded']['mount-path']);
+        unset($definitions['php-pod']['containers']['php-composer']['volumes']['persistent_volume']['mount-path']);
         unset($definitions['php-pod']['containers']['php-composer']['volumes']['other_name2']['mount-path']);
         $builder = $this->buildCompiler();
 

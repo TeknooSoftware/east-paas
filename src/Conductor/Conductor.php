@@ -76,6 +76,8 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
 
     private JobWorkspaceInterface $workspace;
 
+    private ?string $storageIdentifier;
+
     /**
      * @var array<string, mixed>
      */
@@ -89,13 +91,15 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
         PropertyAccessorInterface $propertyAccessor,
         YamlParserInterface $parser,
         YamlValidator $validator,
-        iterable $compilers
+        iterable $compilers,
+        ?string $storageIdentifier
     ) {
         $this->factory = $factory;
         $this->setPropertyAccessor($propertyAccessor);
         $this->setParser($parser);
         $this->validator = $validator;
         $this->compilers = $compilers;
+        $this->storageIdentifier = $storageIdentifier;
 
         $this->initializeStateProxy();
         $this->updateStates();
@@ -179,7 +183,7 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
     /**
      * @throws \Throwable
      */
-    public function compileDeployment(PromiseInterface $promise): ConductorInterface
+    public function compileDeployment(PromiseInterface $promise, ?string $storageIdentifier = null): ConductorInterface
     {
         $this->extract(
             $this->configuration,
@@ -188,7 +192,7 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
                 static::CONFIG_KEY_VERSION => 'v1',
                 static::CONFIG_KEY_NAMESPACE => 'default',
             ],
-            function ($paas) use ($promise): void {
+            function ($paas) use ($promise, $storageIdentifier): void {
                 if (!isset($paas[static::CONFIG_KEY_VERSION]) || 'v1' !== $paas[static::CONFIG_KEY_VERSION]) {
                     $promise->fail(new \RuntimeException('Paas config file version not supported'));
 
@@ -201,7 +205,7 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
                 try {
                     $compiledDeployment = $this->factory->build($version, $namespace);
 
-                    $this->extractAndCompile($compiledDeployment);
+                    $this->extractAndCompile($compiledDeployment, $storageIdentifier ?? $this->storageIdentifier);
 
                     $promise->success($compiledDeployment);
                 } catch (\Throwable $error) {

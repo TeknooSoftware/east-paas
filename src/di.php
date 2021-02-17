@@ -188,8 +188,7 @@ return [
         return new ImageCompiler($imagesLibrary);
     },
     IngressCompiler::class => create(),
-    PodCompiler::class => create()
-        ->constructor(get('teknoo.east.paas.default_storage_provider')),
+    PodCompiler::class => create(),
     SecretCompiler::class => create(),
     ServiceCompiler::class => create(),
     VolumeCompiler::class => create(),
@@ -232,14 +231,21 @@ return [
         ),
 
     ConductorInterface::class => get(Conductor::class),
-    Conductor::class => create()
-        ->constructor(
-            get(CompiledDeploymentFactoryInterface::class),
-            get(PropertyAccessorInterface::class),
-            get(YamlParserInterface::class),
-            get(YamlValidator::class),
-            get(CompilerCollectionInterface::class)
-        ),
+    Conductor::class => static function (ContainerInterface $container): Conductor {
+        $storageProvider = null;
+        if ($container->has('teknoo.east.paas.default_storage_provider')) {
+            $storageProvider = $container->get('teknoo.east.paas.default_storage_provider');
+        }
+
+        return new Conductor(
+            $container->get(CompiledDeploymentFactoryInterface::class),
+            $container->get(PropertyAccessorInterface::class),
+            $container->get(YamlParserInterface::class),
+            $container->get(YamlValidator::class),
+            $container->get(CompilerCollectionInterface::class),
+            $storageProvider
+        );
+    },
 
     Directory::class => create(),
 
@@ -436,6 +442,9 @@ return [
     //Cookbooks
     AdditionalStepsInterface::class . ':NewAccountEndPoint' => create(AdditionalStepsList::class),
     AdditionalStepsInterface::class . ':NewProjectEndPoint' => create(AdditionalStepsList::class),
+    AdditionalStepsInterface::class . ':AddHistory' => create(AdditionalStepsList::class),
+    AdditionalStepsInterface::class . ':NewJob' => create(AdditionalStepsList::class),
+    AdditionalStepsInterface::class . ':RunJob' => create(AdditionalStepsList::class),
 
     NewAccountEndPointInterface::class => get(NewAccountEndPoint::class),
     NewAccountEndPoint::class => create()
@@ -481,7 +490,8 @@ return [
             get(SerializeJob::class),
             get(DispatchJobInterface::class),
             get(DisplayJob::class),
-            get(DisplayError::class),
+            get(AdditionalStepsInterface::class . ':NewJob'),
+            get(DisplayError::class)
         ),
 
     AddHistoryInterface::class => get(AddHistory::class),
@@ -496,7 +506,8 @@ return [
             get(SaveJob::class),
             get(SerializeHistory::class),
             get(DisplayHistory::class),
-            get(DisplayError::class),
+            get(AdditionalStepsInterface::class . ':AddHistory'),
+            get(DisplayError::class)
         ),
 
     RunJobInterface::class => get(RunJob::class),
@@ -521,7 +532,8 @@ return [
             get(Exposing::class),
             get(DRI::class . ':resolver'),
             get(DisplayHistory::class),
-            get(DisplayError::class),
+            get(AdditionalStepsInterface::class . ':RunJob'),
+            get(DisplayError::class)
         ),
 
 

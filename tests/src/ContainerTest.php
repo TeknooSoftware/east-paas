@@ -952,8 +952,6 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
 
-        $container->set('teknoo.east.paas.default_storage_provider', 'foo');
-
         self::assertInstanceOf(
             PodCompiler::class,
             $container->get(PodCompiler::class)
@@ -1011,7 +1009,6 @@ class ContainerTest extends TestCase
 
         $container->set(HooksCollectionInterface::class, $this->createMock(HooksCollectionInterface::class));
         $container->set('teknoo.east.paas.root_dir', '/foo');
-        $container->set('teknoo.east.paas.default_storage_provider', 'foo');
 
         $container->set(
             'teknoo.east.paas.conductor.images_library',
@@ -1045,6 +1042,43 @@ class ContainerTest extends TestCase
     }
 
     public function testConductor()
+    {
+        $container = $this->buildContainer();
+
+        $container->set(CompiledDeploymentFactoryInterface::class, $this->createMock(CompiledDeploymentFactoryInterface::class));
+        $container->set(PropertyAccessorInterface::class, $this->createMock(PropertyAccessorInterface::class));
+        $container->set(YamlParserInterface::class, $this->createMock(YamlParserInterface::class));
+        $container->set(HooksCollectionInterface::class, $this->createMock(HooksCollectionInterface::class));
+        $container->set('teknoo.east.paas.root_dir', '/foo');
+
+        $container->set(
+            'teknoo.east.paas.conductor.images_library',
+            [
+                'php-react-74' => [
+                    'build-name' => 'php-react',
+                    'tag' => '7.4',
+                    'path' => '/library/php-react/7.4/',
+                ],
+                'php-fpm-74' => [
+                    'build-name' => 'php-fpm',
+                    'tag' => '7.4',
+                    'path' => '/library/php-fpm/7.4/',
+                ],
+            ]
+        );
+
+        self::assertInstanceOf(
+            Conductor::class,
+            $container->get(Conductor::class)
+        );
+
+        self::assertInstanceOf(
+            Conductor::class,
+            $container->get(ConductorInterface::class)
+        );
+    }
+
+    public function testConductorWithStorage()
     {
         $container = $this->buildContainer();
 

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
@@ -65,8 +66,16 @@ class AddHistory implements AddHistoryInterface
 
     private DisplayHistory $stepDisplayHistory;
 
+    /**
+     * @var iterable<callable>
+     */
+    private iterable $additionalSteps;
+
     private DisplayError $stepDisplayError;
 
+    /**
+     * @param iterable<callable> $additionalSteps
+     */
     public function __construct(
         RecipeInterface $recipe,
         ReceiveHistory $stepReceiveHistory,
@@ -77,6 +86,7 @@ class AddHistory implements AddHistoryInterface
         SaveJob $stepSaveJob,
         SerializeHistory $stepSerializeHistory,
         DisplayHistory $stepDisplayHistory,
+        iterable $additionalSteps,
         DisplayError $stepDisplayError
     ) {
         $this->stepReceiveHistory = $stepReceiveHistory;
@@ -88,6 +98,8 @@ class AddHistory implements AddHistoryInterface
         $this->stepSerializeHistory = $stepSerializeHistory;
         $this->stepDisplayHistory = $stepDisplayHistory;
         $this->stepDisplayError = $stepDisplayError;
+
+        $this->additionalSteps = $additionalSteps;
 
         $this->fill($recipe);
     }
@@ -104,6 +116,10 @@ class AddHistory implements AddHistoryInterface
         $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
         $recipe = $recipe->cook($this->stepSerializeHistory, SerializeHistory::class, [], 70);
         $recipe = $recipe->cook($this->stepDisplayHistory, DisplayHistory::class, [], 80);
+
+        foreach ($this->additionalSteps as $position => $step) {
+            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
+        }
 
         $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 

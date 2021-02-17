@@ -44,7 +44,8 @@ class SecretCompiler implements CompilerInterface
         array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
-        JobUnitInterface $job
+        JobUnitInterface $job,
+        ?string $storageIdentifier = null
     ): CompilerInterface {
         foreach ($definitions as $name => &$config) {
             $compiledDeployment->addSecret(

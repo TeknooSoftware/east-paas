@@ -62,25 +62,25 @@ class PodCompiler implements CompilerInterface
     private const VALUE_LATEST = 'latest';
     private const VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
 
-    private string $defaultStorageIdentifier;
-
-    public function __construct(string $defaultStorageIdentifier)
-    {
-        $this->defaultStorageIdentifier = $defaultStorageIdentifier;
-    }
-
     /**
      * @param array<string, mixed> $volumeDefinition
      */
-    private function buildPersitentVolume(
+    private function buildPersistentVolume(
         string $volumeName,
         string $mountPath,
-        array &$volumeDefinition
+        array &$volumeDefinition,
+        ?string $storageIdentifier
     ): PersistentVolume {
+        $identifier = $volumeDefinition[static::KEY_STORAGE_IDENTIFIER] ?? $storageIdentifier;
+
+        if (empty($identifier)) {
+            throw new \RuntimeException("Missing 'storage-provider' in $volumeName pod volume definition");
+        }
+
         return new PersistentVolume(
             $volumeName,
             $mountPath,
-            $volumeDefinition[static::KEY_STORAGE_IDENTIFIER] ?? $this->defaultStorageIdentifier
+            $identifier
         );
     }
 
@@ -125,7 +125,8 @@ class PodCompiler implements CompilerInterface
         array $volumes,
         array &$embeddedVolumes,
         array &$containerVolumes,
-        CompiledDeploymentInterface $compiledDeployment
+        CompiledDeploymentInterface $compiledDeployment,
+        ?string $storageIdentifier
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
             if (empty($volumeDefinition[static::KEY_MOUNT_PATH])) {
@@ -135,10 +136,11 @@ class PodCompiler implements CompilerInterface
             $mountPath = $volumeDefinition[static::KEY_MOUNT_PATH];
 
             if (isset($volumeDefinition[static::KEY_PERSISTENT])) {
-                $containerVolumes[(string) $volumeName] = $this->buildPersitentVolume(
+                $containerVolumes[(string) $volumeName] = $this->buildPersistentVolume(
                     $volumeName,
                     $mountPath,
-                    $volumeDefinition
+                    $volumeDefinition,
+                    $storageIdentifier
                 );
 
                 continue;
@@ -226,7 +228,8 @@ class PodCompiler implements CompilerInterface
         array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
-        JobUnitInterface $job
+        JobUnitInterface $job,
+        ?string $storageIdentifier = null
     ): CompilerInterface {
         foreach ($definitions as $nameSet => &$podsList) {
             $containers = [];
@@ -238,7 +241,8 @@ class PodCompiler implements CompilerInterface
                     $config[static::KEY_VOLUMES] ?? [],
                     $embeddedVolumes,
                     $containerVolumes,
-                    $compiledDeployment
+                    $compiledDeployment,
+                    $storageIdentifier
                 );
 
 

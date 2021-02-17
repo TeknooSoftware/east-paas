@@ -63,6 +63,10 @@ class NewJobTest extends TestCase
             $this->createMock(SerializeJob::class),
             $this->createMock(DispatchJobInterface::class),
             $this->createMock(DisplayJob::class),
+            [
+                24 => static function () {},
+                12 => static function () {},
+            ],
             $this->createMock(DisplayError::class)
         );
     }

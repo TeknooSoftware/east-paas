@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
@@ -96,8 +97,16 @@ class RunJob implements RunJobInterface
 
     private DisplayHistory $stepDisplayHistory;
 
+    /**
+     * @var iterable<callable>
+     */
+    private iterable $additionalSteps;
+
     private DisplayError $stepDisplayError;
 
+    /**
+     * @param iterable<callable> $additionalSteps
+     */
     public function __construct(
         RecipeInterface $recipe,
         DispatchHistoryInterface $stepDispatchHistory,
@@ -118,6 +127,7 @@ class RunJob implements RunJobInterface
         Exposing $stepExposing,
         DispatchResultInterface $stepDispatchResult,
         DisplayHistory $stepDisplayHistory,
+        iterable $additionalSteps,
         DisplayError $stepDisplayError
     ) {
         $this->stepDispatchHistory = $stepDispatchHistory;
@@ -139,6 +149,8 @@ class RunJob implements RunJobInterface
         $this->stepDispatchResult = $stepDispatchResult;
         $this->stepDisplayHistory = $stepDisplayHistory;
         $this->stepDisplayError = $stepDisplayError;
+
+        $this->additionalSteps = $additionalSteps;
 
         $this->fill($recipe);
     }
@@ -355,6 +367,10 @@ class RunJob implements RunJobInterface
             [],
             RunJobInterface::STEP_FINAL
         );
+
+        foreach ($this->additionalSteps as $position => $step) {
+            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
+        }
 
         $recipe = $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
         $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));

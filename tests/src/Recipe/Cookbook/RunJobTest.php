@@ -81,6 +81,10 @@ class RunJobTest extends TestCase
             $this->createMock(Exposing::class),
             $this->createMock(DispatchResultInterface::class),
             $this->createMock(DisplayHistory::class),
+            [
+                24 => static function () {},
+                12 => static function () {},
+            ],
             $this->createMock(DisplayError::class)
         );
     }

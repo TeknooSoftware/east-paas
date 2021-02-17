@@ -59,7 +59,8 @@ class HookCompiler implements CompilerInterface
         array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
-        JobUnitInterface $job
+        JobUnitInterface $job,
+        ?string $storageIdentifier = null
     ): CompilerInterface {
         foreach ($definitions as $name => &$hooksList) {
             foreach ($hooksList as $hookName => &$configuration) {

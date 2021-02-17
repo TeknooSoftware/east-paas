@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\CreateNewJob;
@@ -68,8 +69,16 @@ class NewJob implements NewJobInterface
 
     private DisplayJob $stepDisplayJob;
 
+    /**
+     * @var iterable<callable>
+     */
+    private iterable $additionalSteps;
+
     private DisplayError $stepDisplayError;
 
+    /**
+     * @param iterable<callable> $additionalSteps
+     */
     public function __construct(
         RecipeInterface $recipe,
         GetProject $stepGetProject,
@@ -81,6 +90,7 @@ class NewJob implements NewJobInterface
         SerializeJob $stepSerializeJob,
         DispatchJobInterface $stepDispatchJobInterface,
         DisplayJob $stepDisplayJob,
+        iterable $additionalSteps,
         DisplayError $stepDisplayError
     ) {
         $this->stepGetProject = $stepGetProject;
@@ -93,6 +103,8 @@ class NewJob implements NewJobInterface
         $this->stepDispatchJobInterface = $stepDispatchJobInterface;
         $this->stepDisplayJob = $stepDisplayJob;
         $this->stepDisplayError = $stepDisplayError;
+
+        $this->additionalSteps = $additionalSteps;
 
         $this->fill($recipe);
     }
@@ -115,6 +127,10 @@ class NewJob implements NewJobInterface
             80
         );
         $recipe = $recipe->cook($this->stepDisplayJob, DisplayJob::class, [], 90);
+
+        foreach ($this->additionalSteps as $position => $step) {
+            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
+        }
 
         $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 
