@@ -60,7 +60,7 @@ class JobUnitTest extends TestCase
     /**
      * @var ImageRegistryInterface
      */
-    private $imagesRepository;
+    private $imagesRegistry;
 
     /**
      * @var Cluster
@@ -82,18 +82,18 @@ class JobUnitTest extends TestCase
     /**
      * @return ImageRegistryInterface
      */
-    public function getImagesRepositoryMock(): ImageRegistryInterface
+    public function getImagesRegistryMock(): ImageRegistryInterface
     {
-        if (!$this->imagesRepository instanceof ImageRegistryInterface) {
-            $this->imagesRepository = $this->createMock(ImageRegistryInterface::class);
+        if (!$this->imagesRegistry instanceof ImageRegistryInterface) {
+            $this->imagesRegistry = $this->createMock(ImageRegistryInterface::class);
 
-            $this->imagesRepository->expects(self::any())->method('getApiUrl')->willReturn('foo');
-            $this->imagesRepository->expects(self::any())->method('getIdentity')->willReturn(
+            $this->imagesRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
+            $this->imagesRegistry->expects(self::any())->method('getIdentity')->willReturn(
                 $this->createMock(IdentityInterface::class)
             );
         }
 
-        return $this->imagesRepository;
+        return $this->imagesRegistry;
     }
 
     /**
@@ -116,7 +116,7 @@ class JobUnitTest extends TestCase
             new Environment('foo'),
             $namespace,
             $this->getSourceRepositoryMock(),
-            $this->getImagesRepositoryMock(),
+            $this->getImagesRegistryMock(),
             [$this->getClusterMock()],
             [
                 'foo' => 'bar',
@@ -340,7 +340,7 @@ class JobUnitTest extends TestCase
                 'environment' => new Environment('foo'),
                 'base_namespace' => 'foo',
                 'source_repository' => $this->getSourceRepositoryMock(),
-                'images_repository' => $this->getImagesRepositoryMock(),
+                'images_repository' => $this->getImagesRegistryMock(),
                 'clusters' => [$this->getClusterMock()],
                 'variables' => ['foo' => 'bar', 'bar' => 'FOO'],
                 'history' => new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),

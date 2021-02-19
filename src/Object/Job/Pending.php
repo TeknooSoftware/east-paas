@@ -77,10 +77,10 @@ class Pending implements StateInterface
         };
     }
 
-    private function settingImagesRepository(): \Closure
+    private function settingImagesRegistry(): \Closure
     {
         return function (ImageRegistryInterface $repository): Job {
-            $this->imagesRepository = $repository;
+            $this->imagesRegistry = $repository;
 
             $this->updateStates();
 

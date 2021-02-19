@@ -51,7 +51,7 @@ class ProjectType extends AbstractType
 
         $builder->add('name', TextType::class, ['required' => true]);
         $builder->add('sourceRepository', GitRepositoryType::class, ['required' => true]);
-        $builder->add('imagesRepository', ImageRegistryType::class, ['required' => true]);
+        $builder->add('imagesRegistry', ImageRegistryType::class, ['required' => true]);
 
         $builder->add(
             'clusters',
@@ -92,7 +92,7 @@ class ProjectType extends AbstractType
                 $forms = \iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
                 $data->setSourceRepository($forms['sourceRepository']->getData());
-                $data->setImagesRepository($forms['imagesRepository']->getData());
+                $data->setImagesRegistry($forms['imagesRegistry']->getData());
                 $data->setClusters($forms['clusters']->getData());
             }
         });

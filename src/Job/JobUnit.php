@@ -62,7 +62,7 @@ class JobUnit implements JobUnitInterface
 
     private SourceRepositoryInterface $sourceRepository;
 
-    private ImageRegistryInterface $imagesRepository;
+    private ImageRegistryInterface $imagesRegistry;
 
     /**
      * @var Cluster[]
@@ -87,7 +87,7 @@ class JobUnit implements JobUnitInterface
         Environment $environment,
         ?string $baseNamespace,
         SourceRepositoryInterface $sourceRepository,
-        ImageRegistryInterface $imagesRepository,
+        ImageRegistryInterface $imagesRegistry,
         array $clusters,
         array $variables,
         History $history
@@ -97,7 +97,7 @@ class JobUnit implements JobUnitInterface
         $this->environment = $environment;
         $this->baseNamespace = $baseNamespace;
         $this->sourceRepository = $sourceRepository;
-        $this->imagesRepository = $imagesRepository;
+        $this->imagesRegistry = $imagesRegistry;
         $this->clusters = $clusters;
         $this->variables = $variables;
         $this->history = $history;
@@ -134,8 +134,8 @@ class JobUnit implements JobUnitInterface
         try {
             $builder = $builder->configure(
                 $this->projectResume['id'],
-                $this->imagesRepository->getApiUrl(),
-                $this->imagesRepository->getIdentity()
+                $this->imagesRegistry->getApiUrl(),
+                $this->imagesRegistry->getIdentity()
             );
 
             $promise->success($builder);
@@ -196,7 +196,7 @@ class JobUnit implements JobUnitInterface
             'base_namespace' => $this->baseNamespace,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
-            'images_repository' => $this->imagesRepository,
+            'images_repository' => $this->imagesRegistry,
             'clusters' => $this->clusters,
             'variables' => $this->variables,
             'history' => $this->history,

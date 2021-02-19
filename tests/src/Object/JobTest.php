@@ -389,7 +389,7 @@ class JobTest extends TestCase
                 ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
                 ->setEnvironment(new Environment('foo'))
                 ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-                ->setImagesRepository($this->createMock(ImageRegistryInterface::class))
+                ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
                 ->addCluster($this->createMock(Cluster::class))
                 ->addToHistory('foo', new \DateTimeImmutable('2018-05-01'), true)
         );
@@ -462,7 +462,7 @@ class JobTest extends TestCase
             ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
             ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRepository($repo = $this->createMock(ImageRegistryInterface::class))
+            ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
             ->addCluster($this->createMock(Cluster::class))
             ->addToHistory('foo', new \DateTimeImmutable('2018-05-01'), true);
 
@@ -480,7 +480,7 @@ class JobTest extends TestCase
             ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
             ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRepository($repo = $this->createMock(ImageRegistryInterface::class))
+            ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
             ->addCluster($this->createMock(Cluster::class))
             ->addToHistory('foo', new \DateTimeImmutable('2018-05-01'), true);
 
@@ -498,7 +498,7 @@ class JobTest extends TestCase
             ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
             ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRepository($repo = $this->createMock(ImageRegistryInterface::class))
+            ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
             ->addCluster($this->createMock(Cluster::class))
             ->addToHistory('foo', new \DateTimeImmutable('2018-05-01'));
 
@@ -531,7 +531,7 @@ class JobTest extends TestCase
             ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
             ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRepository($repo = $this->createMock(ImageRegistryInterface::class))
+            ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
             ->addCluster($this->createMock(Cluster::class));
 
         self::assertInstanceOf(Job::class, $object->validate($date));

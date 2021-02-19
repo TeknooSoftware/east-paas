@@ -74,13 +74,13 @@ class JobUnitDenormalizer implements DenormalizerInterface
             throw new \RuntimeException('Bad denormalized source repository');
         }
 
-        $imagesRepository = $denormalizer->denormalize(
+        $imagesRegistry = $denormalizer->denormalize(
             $data['images_repository'],
             $data['images_repository']['@class'],
             $format,
             $context
         );
-        if (!$imagesRepository instanceof ImageRegistryInterface) {
+        if (!$imagesRegistry instanceof ImageRegistryInterface) {
             throw new \RuntimeException('Bad denormalized image repository');
         }
 
@@ -122,7 +122,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
             $environment,
             $baseNamespace,
             $sourceRepository,
-            $imagesRepository,
+            $imagesRegistry,
             $clusters,
             $variables,
             $history

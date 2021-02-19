@@ -69,7 +69,7 @@ class Project implements
 
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
-    protected ?ImageRegistryInterface $imagesRepository = null;
+    protected ?ImageRegistryInterface $imagesRegistry = null;
 
     private ?ImageRegistry $identity = null;
 
@@ -109,7 +109,7 @@ class Project implements
         return [
             (new Property(Executable::class))
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
-                ->with('imagesRepository', new IsInstanceOf(ImageRegistryInterface::class))
+                ->with('imagesRegistry', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0)),
             (new Callback(Draft::class))
                 ->call(function (Project $project, AssertionInterface $assertion) {
@@ -159,14 +159,14 @@ class Project implements
         return $this;
     }
 
-    private function getImagesRepository(): ?ImageRegistryInterface
+    private function getImagesRegistry(): ?ImageRegistryInterface
     {
-        return $this->imagesRepository;
+        return $this->imagesRegistry;
     }
 
-    public function setImagesRepository(ImageRegistryInterface $repository): Project
+    public function setImagesRegistry(ImageRegistryInterface $repository): Project
     {
-        $this->imagesRepository = $repository;
+        $this->imagesRegistry = $repository;
 
         $this->updateStates();
 
@@ -216,8 +216,8 @@ class Project implements
             $forms['sourceRepository']->setData($this->getSourceRepository());
         }
 
-        if (isset($forms['imagesRepository'])) {
-            $forms['imagesRepository']->setData($this->getImagesRepository());
+        if (isset($forms['imagesRegistry'])) {
+            $forms['imagesRegistry']->setData($this->getImagesRegistry());
         }
 
         if (isset($forms['clusters'])) {

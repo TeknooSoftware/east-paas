@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.31] - 2021-02-19
+###Dev release
+- Rename ImagesRepository to ImagesRegistry
+
 ##[0.0.30] - 2021-02-17
 ###Dev release
 - Storage identifier (PVC name) can be passed in RunJob recipe.

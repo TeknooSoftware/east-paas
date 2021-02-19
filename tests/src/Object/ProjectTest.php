@@ -190,10 +190,10 @@ class ProjectTest extends TestCase
         $this->buildObject()->setSourceRepository(new \stdClass());
     }
 
-    public function testGetImagesRepository()
+    public function testGetImagesRegistry()
     {
         $argument = $this->createMock(ImageRegistryInterface::class);
-        $object = $this->generateObjectPopulated(['imagesRepository' => $argument]);
+        $object = $this->generateObjectPopulated(['imagesRegistry' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
         $form->expects(self::once())
@@ -202,21 +202,21 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['imagesRepository' => $form])
+            $object->injectDataInto(['imagesRegistry' => $form])
         );
     }
 
     /**
      * @throws \Teknoo\States\Proxy\Exception\StateNotFound
      */
-    public function testSetImagesRepository()
+    public function testSetImagesRegistry()
     {
         $argument = $this->createMock(ImageRegistryInterface::class);
 
         $object = $this->buildObject();
         self::assertInstanceOf(
             \get_class($object),
-            $object->setImagesRepository($argument)
+            $object->setImagesRegistry($argument)
         );
 
         $form = $this->createMock(FormInterface::class);
@@ -226,14 +226,14 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['imagesRepository' => $form])
+            $object->injectDataInto(['imagesRegistry' => $form])
         );
     }
 
-    public function testSetImagesRepositoryExceptionOnBadArgument()
+    public function testSetImagesRegistryExceptionOnBadArgument()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->setImagesRepository(new \stdClass());
+        $this->buildObject()->setImagesRegistry(new \stdClass());
     }
 
     public function testGetClusters()
@@ -366,7 +366,7 @@ class ProjectTest extends TestCase
             Project::class,
             $project
                 ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-                ->setImagesRepository($this->createMock(ImageRegistryInterface::class))
+                ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
                 ->setClusters([$this->createMock(Cluster::class)])
                 ->prepareJob($job, $date, $env)
         );
@@ -386,7 +386,7 @@ class ProjectTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRepository($this->createMock(ImageRegistryInterface::class))
+            ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
             ->prepareJob($this->createMock(Job::class), new \DateTime('2018-05-01'), new \stdClass());
     }
@@ -413,7 +413,7 @@ class ProjectTest extends TestCase
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
         $sourceRepository = $this->createMock(SourceRepositoryInterface::class);
-        $imagesRepository = $this->createMock(ImageRegistryInterface::class);
+        $imagesRegistry = $this->createMock(ImageRegistryInterface::class);
         $cluster1 = $this->createMock(Cluster::class);
         $cluster2 = $this->createMock(Cluster::class);
 
@@ -439,15 +439,15 @@ class ProjectTest extends TestCase
             ->willReturnSelf();
 
         $job->expects(self::atLeastOnce())
-            ->method('setImagesRepository')
-            ->with($imagesRepository)
+            ->method('setImagesRegistry')
+            ->with($imagesRegistry)
             ->willReturnSelf();
 
         self::assertInstanceOf(
             Project::class,
             $project
                 ->setSourceRepository($sourceRepository)
-                ->setImagesRepository($imagesRepository)
+                ->setImagesRegistry($imagesRegistry)
                 ->setClusters([$cluster1, $cluster2])
                 ->configure($job, new \DateTime('2018-05-01'), $env, 'default')
         );
@@ -458,7 +458,7 @@ class ProjectTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRepository($this->createMock(ImageRegistryInterface::class))
+            ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
             ->configure(new \stdClass(), new \DateTime('2018-05-01'), $this->createMock(Environment::class));
     }
@@ -468,7 +468,7 @@ class ProjectTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRepository($this->createMock(ImageRegistryInterface::class))
+            ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
             ->configure($this->createMock(Job::class), new \DateTime('2018-05-01'), new \stdClass());
     }
@@ -478,7 +478,7 @@ class ProjectTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRepository($this->createMock(ImageRegistryInterface::class))
+            ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
             ->configure($this->createMock(Job::class), new \stdClass(), $this->createMock(Environment::class));
     }

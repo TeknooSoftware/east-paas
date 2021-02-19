@@ -75,7 +75,7 @@ class Job implements
 
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
-    protected ?ImageRegistryInterface $imagesRepository = null;
+    protected ?ImageRegistryInterface $imagesRegistry = null;
 
     /**
      * @var array<int, Cluster>
@@ -108,7 +108,7 @@ class Job implements
                 ->with('project', new IsInstanceOf(Project::class))
                 ->with('environment', new IsInstanceOf(Environment::class))
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
-                ->with('imagesRepository', new IsInstanceOf(ImageRegistryInterface::class))
+                ->with('imagesRegistry', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0))
                 ->with('history', new IsInstanceOf(History::class))
                 ->with('history', new Property\Callback(function (History $history, Property\Callback $assertion) {
@@ -121,7 +121,7 @@ class Job implements
                 ->with('project', new IsInstanceOf(Project::class))
                 ->with('environment', new IsInstanceOf(Environment::class))
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
-                ->with('imagesRepository', new IsInstanceOf(ImageRegistryInterface::class))
+                ->with('imagesRegistry', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0))
                 ->with('history', new IsEmpty()),
 
@@ -209,7 +209,7 @@ class Job implements
             'base_namespace' => $this->baseNamespace,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
-            'images_repository' => $this->imagesRepository,
+            'images_repository' => $this->imagesRegistry,
             'clusters' => $this->clusters,
             'history' => $this->history,
         ]);
@@ -237,9 +237,9 @@ class Job implements
         return $this->settingSourceRepository($repository);
     }
 
-    public function setImagesRepository(ImageRegistryInterface $repository): Job
+    public function setImagesRegistry(ImageRegistryInterface $repository): Job
     {
-        return $this->settingImagesRepository($repository);
+        return $this->settingImagesRegistry($repository);
     }
 
     public function addCluster(Cluster $cluster): Job

@@ -159,7 +159,7 @@ class FeatureContext implements Context
     /**
      * @var ImageRegistry
      */
-    private $imagesRepository;
+    private $imagesRegistry;
 
     /**
      * @var string
@@ -456,8 +456,8 @@ class FeatureContext implements Context
      */
     public function aDoctrineRepository()
     {
-        $this->project->setImagesRepository(
-            $this->imagesRepository = (new ImageRegistry(
+        $this->project->setImagesRegistry(
+            $this->imagesRegistry = (new ImageRegistry(
                 'https://foo.bar'
             ))
         );
