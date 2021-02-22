@@ -96,7 +96,8 @@ class IngressTranscriber implements ExposingInterface
         ];
 
         if (null !== $this->defaultIngressClass || null !== $ingress->getProvider()) {
-            $specs['spec']['ingressClassName'] = $ingress->getProvider() ?? $this->defaultIngressClass;
+            $provider = $ingress->getProvider() ?? $this->defaultIngressClass;
+            $specs['annotations']['kubernetes.io/ingress.class'] = $provider;
         }
 
         if (null !== $this->defaultIngressService && null !== $this->defaultIngressPort) {
