@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
 use Teknoo\Recipe\ChefInterface;
 
@@ -55,14 +55,14 @@ class ReceiveJobTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
-            $this->createMock(ServerRequestInterface::class),
+            $this->createMock(MessageInterface::class),
             new \stdClass()
         );
     }
 
     public function testInvoke()
     {
-        $message = $this->createMock(ServerRequestInterface::class);
+        $message = $this->createMock(MessageInterface::class);
         $chef = $this->createMock(ChefInterface::class);
 
         $message->expects(self::once())

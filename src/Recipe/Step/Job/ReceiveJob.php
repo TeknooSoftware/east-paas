@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\MessageInterface;
 use Teknoo\Recipe\ChefInterface;
 
 /**
@@ -34,9 +34,9 @@ use Teknoo\Recipe\ChefInterface;
  */
 class ReceiveJob
 {
-    public function __invoke(ServerRequestInterface $request, ChefInterface $chef): self
+    public function __invoke(MessageInterface $message, ChefInterface $chef): self
     {
-        $chef->updateWorkPlan(['serializedJob' => (string) $request->getBody()]);
+        $chef->updateWorkPlan(['serializedJob' => (string) $message->getBody()]);
 
         return $this;
     }

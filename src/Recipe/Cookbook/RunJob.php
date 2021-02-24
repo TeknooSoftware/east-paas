@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
-use Psr\Http\Message\ServerRequestInterface;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
@@ -50,7 +49,6 @@ use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Bowl\BowlInterface;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
-use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
@@ -158,10 +156,6 @@ class RunJob implements RunJobInterface
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
-        $recipe = $recipe->require(
-            new Ingredient(ServerRequestInterface::class, 'request')
-        );
-
         $notification = $this->stepDispatchHistory;
         $notificationMapping = ['step' => BowlInterface::METHOD_NAME];
 

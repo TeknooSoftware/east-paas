@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
-use Psr\Http\Message\ServerRequestInterface;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
@@ -40,7 +39,6 @@ use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
-use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
@@ -111,8 +109,6 @@ class NewJob implements NewJobInterface
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
-        $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
-
         $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 10);
         $recipe = $recipe->cook($this->stepGetEnvironment, GetEnvironment::class, [], 20);
         $recipe = $recipe->cook($this->stepGetVariables, GetVariables::class, [], 30);

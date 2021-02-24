@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
@@ -47,10 +47,10 @@ class GetVariablesTest extends TestCase
     public function testInvokeNotJson()
     {
         $chef = $this->createMock(ManagerInterface::class);
-        $request = $this->createMock(ServerRequestInterface::class);
+        $message = $this->createMock(MessageInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
-        $request->expects(self::any())->method('getHeader')->willReturn(['html']);
+        $message->expects(self::any())->method('getHeader')->willReturn(['html']);
 
         $chef->expects(self::once())
             ->method('updateWorkPlan')
@@ -58,18 +58,18 @@ class GetVariablesTest extends TestCase
 
         self::assertInstanceOf(
             GetVariables::class,
-            $this->buildStep()($chef, $request, $client)
+            $this->buildStep()($chef, $message, $client)
         );
     }
 
     public function testInvokeJson()
     {
         $chef = $this->createMock(ManagerInterface::class);
-        $request = $this->createMock(ServerRequestInterface::class);
+        $message = $this->createMock(MessageInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
-        $request->expects(self::any())->method('getHeader')->willReturn(['application/json']);
-        $request->expects(self::any())->method('getBody')->willReturn(
+        $message->expects(self::any())->method('getHeader')->willReturn(['application/json']);
+        $message->expects(self::any())->method('getBody')->willReturn(
             \json_encode($data = ['foo' => 'bar'])
         );
 
@@ -79,7 +79,7 @@ class GetVariablesTest extends TestCase
 
         self::assertInstanceOf(
             GetVariables::class,
-            $this->buildStep()($chef, $request, $client)
+            $this->buildStep()($chef, $message, $client)
         );
     }
 }

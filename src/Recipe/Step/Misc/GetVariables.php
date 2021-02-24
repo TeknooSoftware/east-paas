@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Misc;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 
@@ -44,10 +44,10 @@ class GetVariables
 
     public function __invoke(
         ManagerInterface $manager,
-        ServerRequestInterface $request,
+        MessageInterface $message,
         ClientInterface $client
     ): self {
-        $contentType = $request->getHeader('Content-Type');
+        $contentType = $message->getHeader('Content-Type');
         if ($this->jsonContentType !== \current($contentType)) {
             $manager->updateWorkPlan(['envVars' => []]);
 
@@ -56,7 +56,7 @@ class GetVariables
 
         $manager->updateWorkPlan(
             [
-                'envVars' => \json_decode((string) $request->getBody(), true)
+                'envVars' => \json_decode((string) $message->getBody(), true)
             ]
         );
 

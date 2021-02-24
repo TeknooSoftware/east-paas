@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
@@ -106,8 +106,6 @@ class AddHistory implements AddHistoryInterface
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
-        $recipe = $recipe->require(new Ingredient(ServerRequestInterface::class, 'request'));
-
         $recipe = $recipe->cook($this->stepReceiveHistory, ReceiveHistory::class, [], 10);
         $recipe = $recipe->cook($this->stepDeserializeHistory, DeserializeHistory::class, [], 20);
         $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 30);

@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.32] - 2021-02-24
+###Dev release
+- Replace ServerRequestInterface requirement by MessageInterface requirement
+
 ##[0.0.31] - 2021-02-19
 ###Dev release
 - Rename ImagesRepository to ImagesRegistry
