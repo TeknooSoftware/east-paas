@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.33] - 2021-02-25
+###Dev release
+- Switch to East Foundation 4.0
+
 ##[0.0.32] - 2021-02-24
 ###Dev release
 - Replace ServerRequestInterface requirement by MessageInterface requirement

@@ -33,11 +33,11 @@
         "ext-dom": "*",
         "php-di/php-di": "~6.3",
         "psr/http-client": "~1.0",
-        "teknoo/east-foundation": "^3.3.3",
-        "teknoo/east-website": "^4.1.7",
+        "teknoo/east-foundation": "^4.0.0",
+        "teknoo/east-website": "^4.3.0",
         "teknoo/immutable": "^2.0.6",
-        "teknoo/recipe": "^2.3.3",
-        "teknoo/states": "^4.1.8"
+        "teknoo/recipe": "^2.4.0",
+        "teknoo/states": "^4.1.9"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -46,7 +46,7 @@
         "pdepend/pdepend": "~2.8",
         "sebastian/phpcpd": "^6.0.3",
         "phploc/phploc": "^7.0.2",
-        "phpstan/phpstan": "^0.12.69",
+        "phpstan/phpstan": "^0.12.79",
         "behat/behat": "~3.8",
         "cpliakas/git-wrapper": "~3.1",
         "doctrine/common": "~2.13",
