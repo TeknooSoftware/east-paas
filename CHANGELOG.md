@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.34] - 2021-02-27
+###Dev release
+- Update libs
+
 ##[0.0.33] - 2021-02-25
 ###Dev release
 - Switch to East Foundation 4.0
