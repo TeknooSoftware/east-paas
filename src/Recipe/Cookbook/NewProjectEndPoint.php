@@ -29,6 +29,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface;
 use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
+use Teknoo\East\Website\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Website\Recipe\Cookbook\CreateContentEndPoint;
@@ -58,6 +59,7 @@ class NewProjectEndPoint extends CreateContentEndPoint implements NewAccountEndP
     public function __construct(
         RecipeInterface $recipe,
         LoadObject $loadObject,
+        ?ObjectAccessControlInterface $objectAccessControl,
         CreateObject $createObject,
         FormHandlingInterface $formHandling,
         FormProcessingInterface $formProcessing,
@@ -77,7 +79,8 @@ class NewProjectEndPoint extends CreateContentEndPoint implements NewAccountEndP
             $saveObject,
             $redirectClient,
             $renderForm,
-            $renderError
+            $renderError,
+            $objectAccessControl
         );
 
         $this->loadObject = $loadObject;

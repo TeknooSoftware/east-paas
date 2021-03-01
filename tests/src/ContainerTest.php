@@ -57,6 +57,7 @@ use Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP;
 use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
+use Teknoo\East\Website\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Website\DBSource\ManagerInterface;
@@ -746,6 +747,31 @@ class ContainerTest extends TestCase
 
         $container->set(OriginalRecipeInterface::class, $this->createMock(OriginalRecipeInterface::class));
         $container->set(CreateObject::class, $this->createMock(CreateObject::class));
+        $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
+        $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
+        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
+        $container->set(SaveObject::class, $this->createMock(SaveObject::class));
+        $container->set(RedirectClientInterface::class, $this->createMock(RedirectClientInterface::class));
+        $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
+        $container->set(RenderError::class, $this->createMock(RenderError::class));
+        $container->set(
+            AdditionalStepsInterface::class . ':NewProjectEndPoint',
+            $this->createMock(AdditionalStepsInterface::class)
+        );
+
+        self::assertInstanceOf(
+            CookbookInterface::class,
+            $container->get(NewProjectEndPoint::class)
+        );
+    }
+
+    public function testNewProjectEndPointWithAccessControl()
+    {
+        $container = $this->buildContainer();
+
+        $container->set(OriginalRecipeInterface::class, $this->createMock(OriginalRecipeInterface::class));
+        $container->set(CreateObject::class, $this->createMock(CreateObject::class));
+        $container->set(ObjectAccessControlInterface::class, $this->createMock(ObjectAccessControlInterface::class));
         $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
         $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
         $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));

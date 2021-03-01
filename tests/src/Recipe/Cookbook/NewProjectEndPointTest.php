@@ -30,6 +30,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
+use Teknoo\East\Website\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Website\Recipe\Step\CreateObject;
@@ -53,6 +54,8 @@ class NewProjectEndPointTest extends TestCase
     private ?RecipeInterface $recipe = null;
 
     private ?LoadObject $loadObject = null;
+
+    private ?ObjectAccessControlInterface $objectAccessControl = null;
 
     private ?FormHandlingInterface $formHandling = null;
 
@@ -92,6 +95,18 @@ class NewProjectEndPointTest extends TestCase
         }
 
         return $this->loadObject;
+    }
+
+    /**
+     * @return ObjectAccessControlInterface|MockObject
+     */
+    public function getObjectAccessControl(): ObjectAccessControlInterface
+    {
+        if (null === $this->objectAccessControl) {
+            $this->objectAccessControl = $this->createMock(ObjectAccessControlInterface::class);
+        }
+
+        return $this->objectAccessControl;
     }
 
     /**
@@ -195,6 +210,7 @@ class NewProjectEndPointTest extends TestCase
         return new NewProjectEndPoint(
             $this->getRecipe(),
             $this->getLoadObject(),
+            $this->getObjectAccessControl(),
             $this->getCreateObject(),
             $this->getFormHandling(),
             $this->getFormProcessing(),

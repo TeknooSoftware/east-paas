@@ -66,6 +66,7 @@ use Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP;
 use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
+use Teknoo\East\Website\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Website\DBSource\ManagerInterface;
@@ -462,20 +463,27 @@ return [
         ),
 
     NewProjectEndPointInterface::class => get(NewProjectEndPoint::class),
-    NewProjectEndPoint::class => create()
-        ->constructor(
-            get(OriginalRecipeInterface::class),
-            get(LoadObject::class),
-            get(CreateObject::class),
-            get(FormHandlingInterface::class),
-            get(FormProcessingInterface::class),
-            get(SlugPreparation::class),
-            get(SaveObject::class),
-            get(RedirectClientInterface::class),
-            get(RenderFormInterface::class),
-            get(RenderError::class),
-            get(AdditionalStepsInterface::class . ':NewProjectEndPoint')
-        ),
+    NewProjectEndPoint::class => static function (ContainerInterface $container): NewProjectEndPoint {
+        $accessControl = null;
+        if ($container->has(ObjectAccessControlInterface::class)) {
+            $accessControl = $container->get(ObjectAccessControlInterface::class);
+        }
+
+        return new NewProjectEndPoint(
+            $container->get(OriginalRecipeInterface::class),
+            $container->get(LoadObject::class),
+            $accessControl,
+            $container->get(CreateObject::class),
+            $container->get(FormHandlingInterface::class),
+            $container->get(FormProcessingInterface::class),
+            $container->get(SlugPreparation::class),
+            $container->get(SaveObject::class),
+            $container->get(RedirectClientInterface::class),
+            $container->get(RenderFormInterface::class),
+            $container->get(RenderError::class),
+            $container->get(AdditionalStepsInterface::class . ':NewProjectEndPoint')
+        );
+    },
 
     NewJobInterface::class => get(NewJob::class),
     NewJob::class => create()
