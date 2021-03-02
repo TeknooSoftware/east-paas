@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.35] - 2021-03-02
+###Dev release
+- Add ObjectAccessControlInterface to NewProjectEndpoint
+
 ##[0.0.34] - 2021-02-27
 ###Dev release
 - Update libs
