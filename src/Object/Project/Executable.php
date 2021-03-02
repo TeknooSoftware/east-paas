@@ -67,4 +67,16 @@ class Executable implements StateInterface
             return $this;
         };
     }
+
+    public function listMeYourEnvironments(): \Closure
+    {
+        return function (callable $me): Project {
+            $environments = [];
+            foreach ($this->clusters as $cluster) {
+                $cluster->tellMeYourEnvironment($me);
+            }
+
+            return $this;
+        };
+    }
 }

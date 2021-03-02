@@ -156,6 +156,13 @@ class Cluster implements
         return $this;
     }
 
+    public function tellMeYourEnvironment(callable $me): self
+    {
+        $me($this->environment);
+
+        return $this;
+    }
+
     public function prepareJobForEnvironment(Job $job, Environment $environment): self
     {
         $embeddedEnv = $this->getEnvironment();

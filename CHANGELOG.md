@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.36] - 2021-03-02
+###Dev release
+- Add Cluster::tellMeYourEnvironment to fetch cluster's env
+- Add Project::listMeYourEnvironments to fetch all envs of a project
+
 ##[0.0.35] - 2021-03-02
 ###Dev release
 - Add ObjectAccessControlInterface to NewProjectEndpoint

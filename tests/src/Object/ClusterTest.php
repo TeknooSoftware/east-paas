@@ -516,4 +516,19 @@ class ClusterTest extends TestCase
             )
         );
     }
+
+    public function testTellMeYourEnvironment()
+    {
+        self::assertInstanceOf(
+            Cluster::class,
+            $this->buildObject()->tellMeYourEnvironment(static function() {})
+        );
+    }
+
+
+    public function testTellMeYourEnvironmentBallCallback()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->tellMeYourEnvironment(new \stdClass());
+    }
 }

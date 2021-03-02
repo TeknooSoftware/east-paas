@@ -498,6 +498,32 @@ class ProjectTest extends TestCase
         );
     }
 
+    public function testListMeYourEnvironments()
+    {
+        self::assertInstanceOf(
+            Project::class,
+            $this->buildObject()
+                ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
+                ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
+                ->setClusters([$this->createMock(Cluster::class)])
+                ->listMeYourEnvironments(
+                static function() { }
+            )
+        );
+    }
+
+    public function testListMeYourEnvironmentsBadCallable()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()
+            ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
+            ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
+            ->setClusters([$this->createMock(Cluster::class)])
+            ->listMeYourEnvironments(
+            new \stdClass()
+        );
+    }
+
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
