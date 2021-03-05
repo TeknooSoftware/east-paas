@@ -47,6 +47,7 @@ use Teknoo\East\Paas\Contracts\Conductor\CompilerCollectionInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditPaaSObjectEndPointInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface;
@@ -57,6 +58,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\East\Paas\Recipe\AdditionalStepsList;
 use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
+use Teknoo\East\Paas\Recipe\Cookbook\EditPaaSObjectEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
@@ -443,6 +445,8 @@ return [
     //Cookbooks
     AdditionalStepsInterface::class . ':NewAccountEndPoint' => create(AdditionalStepsList::class),
     AdditionalStepsInterface::class . ':NewProjectEndPoint' => create(AdditionalStepsList::class),
+    AdditionalStepsInterface::class . ':EditAccountEndPoint' => create(AdditionalStepsList::class),
+    AdditionalStepsInterface::class . ':EditProjectEndPoint' => create(AdditionalStepsList::class),
     AdditionalStepsInterface::class . ':AddHistory' => create(AdditionalStepsList::class),
     AdditionalStepsInterface::class . ':NewJob' => create(AdditionalStepsList::class),
     AdditionalStepsInterface::class . ':RunJob' => create(AdditionalStepsList::class),
@@ -461,6 +465,50 @@ return [
             get(RenderError::class),
             get(AdditionalStepsInterface::class . ':NewAccountEndPoint')
         ),
+
+    EditPaaSObjectEndPoint::class . ':EditAccountEndPoint' => static function (
+        ContainerInterface $container
+    ): EditPaaSObjectEndPoint {
+        $accessControl = null;
+        if ($container->has(ObjectAccessControlInterface::class)) {
+            $accessControl = $container->get(ObjectAccessControlInterface::class);
+        }
+
+        return new EditPaaSObjectEndPoint(
+            $container->get(OriginalRecipeInterface::class),
+            $container->get(LoadObject::class),
+            $container->get(FormHandlingInterface::class),
+            $container->get(FormProcessingInterface::class),
+            $container->get(SlugPreparation::class),
+            $container->get(SaveObject::class),
+            $container->get(RenderFormInterface::class),
+            $container->get(RenderError::class),
+            $accessControl,
+            $container->get(AdditionalStepsInterface::class . ':EditAccountEndPoint')
+        );
+    },
+
+    EditPaaSObjectEndPoint::class . ':EditProjectEndPoint' => static function (
+        ContainerInterface $container
+    ): EditPaaSObjectEndPoint {
+        $accessControl = null;
+        if ($container->has(ObjectAccessControlInterface::class)) {
+            $accessControl = $container->get(ObjectAccessControlInterface::class);
+        }
+
+        return new EditPaaSObjectEndPoint(
+            $container->get(OriginalRecipeInterface::class),
+            $container->get(LoadObject::class),
+            $container->get(FormHandlingInterface::class),
+            $container->get(FormProcessingInterface::class),
+            $container->get(SlugPreparation::class),
+            $container->get(SaveObject::class),
+            $container->get(RenderFormInterface::class),
+            $container->get(RenderError::class),
+            $accessControl,
+            $container->get(AdditionalStepsInterface::class . ':EditProjectEndPoint')
+        );
+    },
 
     NewProjectEndPointInterface::class => get(NewProjectEndPoint::class),
     NewProjectEndPoint::class => static function (ContainerInterface $container): NewProjectEndPoint {
