@@ -14,7 +14,7 @@ _teknoo_paas_admin_account_edit:
     path: '/account/edit/{id}'
     methods:  ['GET', 'POST', 'PUT']
     defaults:
-        _controller: 'teknoo.east.website.endpoint.crud.edit'
+        _controller: 'teknoo.east.paas.endpoint.admin.edit.account'
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         writer: '@Teknoo\East\Paas\Writer\AccountWriter'
         formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
@@ -64,7 +64,7 @@ _teknoo_paas_admin_project_edit:
     path: '/project/edit/{id}'
     methods:  ['GET', 'POST', 'PUT']
     defaults:
-        _controller: 'teknoo.east.website.endpoint.crud.edit'
+        _controller: 'teknoo.east.paas.endpoint.admin.edit.project'
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
         formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'

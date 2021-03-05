@@ -23,14 +23,15 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Recipe\Cookbook;
+namespace Teknoo\East\Paas\Contracts\Recipe\Step\Additional;
 
-use Teknoo\Recipe\CookbookInterface;
+use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface EditPaaSObjectEndPointInterface extends CookbookInterface
+interface RunJobStepsInterface extends AdditionalStepsInterface
 {
+
 }

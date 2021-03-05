@@ -1,5 +1,14 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.37] - 2021-03-05
+###Dev release
+- Add Cookbook interface `EditAccountEndPointInterface` and `EditProjectEndPointInterface`
+- Add abstract cookbook from EditContent Cookbook to implement previous interfaces `AbstractEditObjectEndPoint`   
+- Add Symfony service `teknoo.east.paas.endpoint.admin.edit.account`
+- Add Symfony service `teknoo.east.paas.endpoint.admin.edit.project`
+- Switch admin routes to use these new cookbook  
+- Replace `AdditionalStepsInterface:*` entries in DI by dedicated interfaces
+
 ##[0.0.36] - 2021-03-02
 ###Dev release
 - Add Cluster::tellMeYourEnvironment to fetch cluster's env

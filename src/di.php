@@ -47,18 +47,25 @@ use Teknoo\East\Paas\Contracts\Conductor\CompilerCollectionInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditPaaSObjectEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditAccountEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditProjectEndPointInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\AddHistoryStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditAccountEndPointStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditProjectEndPointStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewAccountEndPointStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\East\Paas\Recipe\AdditionalStepsList;
+use Teknoo\East\Paas\Recipe\Cookbook\AbstractEditObjectEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
-use Teknoo\East\Paas\Recipe\Cookbook\EditPaaSObjectEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
@@ -443,13 +450,13 @@ return [
     Recipe::class => create(),
 
     //Cookbooks
-    AdditionalStepsInterface::class . ':NewAccountEndPoint' => create(AdditionalStepsList::class),
-    AdditionalStepsInterface::class . ':NewProjectEndPoint' => create(AdditionalStepsList::class),
-    AdditionalStepsInterface::class . ':EditAccountEndPoint' => create(AdditionalStepsList::class),
-    AdditionalStepsInterface::class . ':EditProjectEndPoint' => create(AdditionalStepsList::class),
-    AdditionalStepsInterface::class . ':AddHistory' => create(AdditionalStepsList::class),
-    AdditionalStepsInterface::class . ':NewJob' => create(AdditionalStepsList::class),
-    AdditionalStepsInterface::class . ':RunJob' => create(AdditionalStepsList::class),
+    NewAccountEndPointStepsInterface::class => create(AdditionalStepsList::class),
+    NewProjectEndPointStepsInterface::class => create(AdditionalStepsList::class),
+    EditAccountEndPointStepsInterface::class => create(AdditionalStepsList::class),
+    EditProjectEndPointStepsInterface::class => create(AdditionalStepsList::class),
+    AddHistoryStepsInterface::class => create(AdditionalStepsList::class),
+    NewJobStepsInterface::class => create(AdditionalStepsList::class),
+    RunJobStepsInterface::class => create(AdditionalStepsList::class),
 
     NewAccountEndPointInterface::class => get(NewAccountEndPoint::class),
     NewAccountEndPoint::class => create()
@@ -463,18 +470,18 @@ return [
             get(RedirectClientInterface::class),
             get(RenderFormInterface::class),
             get(RenderError::class),
-            get(AdditionalStepsInterface::class . ':NewAccountEndPoint')
+            get(NewAccountEndPointStepsInterface::class)
         ),
 
-    EditPaaSObjectEndPoint::class . ':EditAccountEndPoint' => static function (
+    EditAccountEndPointInterface::class => static function (
         ContainerInterface $container
-    ): EditPaaSObjectEndPoint {
+    ): EditAccountEndPointInterface {
         $accessControl = null;
         if ($container->has(ObjectAccessControlInterface::class)) {
             $accessControl = $container->get(ObjectAccessControlInterface::class);
         }
 
-        return new EditPaaSObjectEndPoint(
+        return new class (
             $container->get(OriginalRecipeInterface::class),
             $container->get(LoadObject::class),
             $container->get(FormHandlingInterface::class),
@@ -484,19 +491,21 @@ return [
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
             $accessControl,
-            $container->get(AdditionalStepsInterface::class . ':EditAccountEndPoint')
-        );
+            $container->get(EditAccountEndPointStepsInterface::class)
+        ) extends AbstractEditObjectEndPoint implements EditAccountEndPointInterface {
+
+        };
     },
 
-    EditPaaSObjectEndPoint::class . ':EditProjectEndPoint' => static function (
+    EditProjectEndPointInterface::class => static function (
         ContainerInterface $container
-    ): EditPaaSObjectEndPoint {
+    ): EditProjectEndPointInterface {
         $accessControl = null;
         if ($container->has(ObjectAccessControlInterface::class)) {
             $accessControl = $container->get(ObjectAccessControlInterface::class);
         }
 
-        return new EditPaaSObjectEndPoint(
+        return new class (
             $container->get(OriginalRecipeInterface::class),
             $container->get(LoadObject::class),
             $container->get(FormHandlingInterface::class),
@@ -506,8 +515,10 @@ return [
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
             $accessControl,
-            $container->get(AdditionalStepsInterface::class . ':EditProjectEndPoint')
-        );
+            $container->get(EditProjectEndPointStepsInterface::class)
+        ) extends AbstractEditObjectEndPoint implements EditProjectEndPointInterface {
+
+        };
     },
 
     NewProjectEndPointInterface::class => get(NewProjectEndPoint::class),
@@ -529,7 +540,7 @@ return [
             $container->get(RedirectClientInterface::class),
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
-            $container->get(AdditionalStepsInterface::class . ':NewProjectEndPoint')
+            $container->get(NewProjectEndPointStepsInterface::class)
         );
     },
 
@@ -546,7 +557,7 @@ return [
             get(SerializeJob::class),
             get(DispatchJobInterface::class),
             get(DisplayJob::class),
-            get(AdditionalStepsInterface::class . ':NewJob'),
+            get(NewJobStepsInterface::class),
             get(DisplayError::class)
         ),
 
@@ -562,7 +573,7 @@ return [
             get(SaveJob::class),
             get(SerializeHistory::class),
             get(DisplayHistory::class),
-            get(AdditionalStepsInterface::class . ':AddHistory'),
+            get(AddHistoryStepsInterface::class),
             get(DisplayError::class)
         ),
 
@@ -588,7 +599,7 @@ return [
             get(Exposing::class),
             get(DRI::class . ':resolver'),
             get(DisplayHistory::class),
-            get(AdditionalStepsInterface::class . ':RunJob'),
+            get(RunJobStepsInterface::class),
             get(DisplayError::class)
         ),
 
@@ -607,11 +618,7 @@ return [
 
             private function getRunJob(): RunJobInterface
             {
-                if (null !== $this->runJob) {
-                    return $this->runJob;
-                }
-
-                return $this->runJob = $this->container->get(RunJobInterface::class);
+                return $this->runJob ?? ($this->runJob = $this->container->get(RunJobInterface::class));
             }
 
             public function train(ChefInterface $chef): BaseRecipeInterface

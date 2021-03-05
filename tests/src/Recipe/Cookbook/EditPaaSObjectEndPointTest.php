@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Recipe\Cookbook\EditPaaSObjectEndPoint;
+use Teknoo\East\Paas\Recipe\Cookbook\AbstractEditObjectEndPoint;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\ObjectAccessControlInterface;
@@ -42,7 +42,7 @@ use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Recipe\Cookbook\EditPaaSObjectEndPoint
+ * @covers \Teknoo\East\Paas\Recipe\Cookbook\AbstractEditObjectEndPoint
  * @covers \Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait
  */
 class EditPaaSObjectEndPointTest extends TestCase
@@ -175,9 +175,9 @@ class EditPaaSObjectEndPointTest extends TestCase
         return $this->objectAccessControl;
     }
 
-    public function buildCookbook(): EditPaaSObjectEndPoint
+    public function buildCookbook(): AbstractEditObjectEndPoint
     {
-        return new EditPaaSObjectEndPoint(
+        return new class(
             $this->getRecipe(),
             $this->getLoadObject(),
             $this->getFormHandling(),
@@ -191,6 +191,8 @@ class EditPaaSObjectEndPointTest extends TestCase
                 static function () {},
                 static function () {},
             ]
-        );
+        ) extends AbstractEditObjectEndPoint {
+
+        };
     }
 }

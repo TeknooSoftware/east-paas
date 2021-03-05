@@ -38,7 +38,7 @@ phpcs:
 	vendor/bin/phpcs --standard=PSR12 --extensions=php infrastructures/
 
 phpcpd:
-	vendor/bin/phpcpd src/
+	vendor/bin/phpcpd --exclude */di.php src/
 	vendor/bin/phpcpd infrastructures/
 
 .PHONY: qa lint phploc phpstan phpcs phpcpd

@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditPaaSObjectEndPointInterface;
 use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
@@ -42,7 +41,7 @@ use Teknoo\Recipe\RecipeInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class EditPaaSObjectEndPoint extends EditContentEndPoint implements EditPaaSObjectEndPointInterface
+abstract class AbstractEditObjectEndPoint extends EditContentEndPoint
 {
     use AdditionalStepsTrait;
 
