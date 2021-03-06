@@ -450,31 +450,31 @@ return [
     Recipe::class => create(),
 
     //Cookbooks
-    NewAccountEndPointStepsInterface::class => static function(): NewAccountEndPointStepsInterface {
+    NewAccountEndPointStepsInterface::class => static function (): NewAccountEndPointStepsInterface {
         return new class extends AbstractAdditionalStepsList implements NewAccountEndPointStepsInterface {
         };
     },
-    NewProjectEndPointStepsInterface::class => static function(): NewProjectEndPointStepsInterface {
+    NewProjectEndPointStepsInterface::class => static function (): NewProjectEndPointStepsInterface {
         return new class extends AbstractAdditionalStepsList implements NewProjectEndPointStepsInterface {
         };
     },
-    EditAccountEndPointStepsInterface::class => static function(): EditAccountEndPointStepsInterface {
+    EditAccountEndPointStepsInterface::class => static function (): EditAccountEndPointStepsInterface {
         return new class extends AbstractAdditionalStepsList implements EditAccountEndPointStepsInterface {
         };
     },
-    EditProjectEndPointStepsInterface::class => static function(): EditProjectEndPointStepsInterface {
+    EditProjectEndPointStepsInterface::class => static function (): EditProjectEndPointStepsInterface {
         return new class extends AbstractAdditionalStepsList implements EditProjectEndPointStepsInterface {
         };
     },
-    AddHistoryStepsInterface::class => static function(): AddHistoryStepsInterface {
+    AddHistoryStepsInterface::class => static function (): AddHistoryStepsInterface {
         return new class extends AbstractAdditionalStepsList implements AddHistoryStepsInterface {
         };
     },
-    NewJobStepsInterface::class => static function(): NewJobStepsInterface {
+    NewJobStepsInterface::class => static function (): NewJobStepsInterface {
         return new class extends AbstractAdditionalStepsList implements NewJobStepsInterface {
         };
     },
-    RunJobStepsInterface::class => static function(): RunJobStepsInterface {
+    RunJobStepsInterface::class => static function (): RunJobStepsInterface {
         return new class extends AbstractAdditionalStepsList implements RunJobStepsInterface {
         };
     },
