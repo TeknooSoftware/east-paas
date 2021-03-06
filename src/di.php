@@ -63,7 +63,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Parser\YamlValidator;
-use Teknoo\East\Paas\Recipe\AdditionalStepsList;
+use Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList;
 use Teknoo\East\Paas\Recipe\Cookbook\AbstractEditObjectEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
@@ -450,13 +450,34 @@ return [
     Recipe::class => create(),
 
     //Cookbooks
-    NewAccountEndPointStepsInterface::class => create(AdditionalStepsList::class),
-    NewProjectEndPointStepsInterface::class => create(AdditionalStepsList::class),
-    EditAccountEndPointStepsInterface::class => create(AdditionalStepsList::class),
-    EditProjectEndPointStepsInterface::class => create(AdditionalStepsList::class),
-    AddHistoryStepsInterface::class => create(AdditionalStepsList::class),
-    NewJobStepsInterface::class => create(AdditionalStepsList::class),
-    RunJobStepsInterface::class => create(AdditionalStepsList::class),
+    NewAccountEndPointStepsInterface::class => static function(): NewAccountEndPointStepsInterface {
+        return new class extends AbstractAdditionalStepsList implements NewAccountEndPointStepsInterface {
+        };
+    },
+    NewProjectEndPointStepsInterface::class => static function(): NewProjectEndPointStepsInterface {
+        return new class extends AbstractAdditionalStepsList implements NewProjectEndPointStepsInterface {
+        };
+    },
+    EditAccountEndPointStepsInterface::class => static function(): EditAccountEndPointStepsInterface {
+        return new class extends AbstractAdditionalStepsList implements EditAccountEndPointStepsInterface {
+        };
+    },
+    EditProjectEndPointStepsInterface::class => static function(): EditProjectEndPointStepsInterface {
+        return new class extends AbstractAdditionalStepsList implements EditProjectEndPointStepsInterface {
+        };
+    },
+    AddHistoryStepsInterface::class => static function(): AddHistoryStepsInterface {
+        return new class extends AbstractAdditionalStepsList implements AddHistoryStepsInterface {
+        };
+    },
+    NewJobStepsInterface::class => static function(): NewJobStepsInterface {
+        return new class extends AbstractAdditionalStepsList implements NewJobStepsInterface {
+        };
+    },
+    RunJobStepsInterface::class => static function(): RunJobStepsInterface {
+        return new class extends AbstractAdditionalStepsList implements RunJobStepsInterface {
+        };
+    },
 
     NewAccountEndPointInterface::class => get(NewAccountEndPoint::class),
     NewAccountEndPoint::class => create()

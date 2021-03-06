@@ -39,6 +39,7 @@ use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList;
 use Teknoo\East\Paas\Recipe\AdditionalStepsList;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\Recipe\Bowl\BowlInterface;
@@ -46,15 +47,15 @@ use Teknoo\Recipe\Bowl\BowlInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Recipe\AdditionalStepsList
+ * @covers \Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList
  */
-class AdditionalStepsListTest extends TestCase
+class AbstractAdditionalStepsListTest extends TestCase
 {
     public function testAddBadPriority()
     {
         $this->expectException(\TypeError::class);
 
-        $object = new AdditionalStepsList();
+        $object = new class extends AbstractAdditionalStepsList {};
         $object->add(new \stdClass(), function() {});
     }
 
@@ -62,38 +63,38 @@ class AdditionalStepsListTest extends TestCase
     {
         $this->expectException(\TypeError::class);
 
-        $object = new AdditionalStepsList();
+        $object = new class extends AbstractAdditionalStepsList {};
         $object->add(1, new \stdClass());
     }
 
     public function testAddWithFunction()
     {
-        $object = new AdditionalStepsList();
+        $object = new class extends AbstractAdditionalStepsList {};
         self::assertInstanceOf(
-            AdditionalStepsList::class,
+            AbstractAdditionalStepsList::class,
             $object->add(1, function() {})
         );
     }
 
     public function testAddWithBowl()
     {
-        $object = new AdditionalStepsList();
+        $object = new class extends AbstractAdditionalStepsList {};
         self::assertInstanceOf(
-            AdditionalStepsList::class,
+            AbstractAdditionalStepsList::class,
             $object->add(1, $this->createMock(BowlInterface::class))
         );
     }
 
     public function testGetIterator()
     {
-        $object = new AdditionalStepsList();
+        $object = new class extends AbstractAdditionalStepsList {};
         self::assertInstanceOf(
-            AdditionalStepsList::class,
+            AbstractAdditionalStepsList::class,
             $object->add(1, function() {})
         );
 
         self::assertInstanceOf(
-            AdditionalStepsList::class,
+            AbstractAdditionalStepsList::class,
             $object->add(2, function() {})
         );
 

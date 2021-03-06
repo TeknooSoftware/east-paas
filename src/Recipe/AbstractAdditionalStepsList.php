@@ -32,7 +32,7 @@ use Teknoo\Recipe\Bowl\BowlInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class AdditionalStepsList implements AdditionalStepsInterface
+abstract class AbstractAdditionalStepsList implements AdditionalStepsInterface
 {
     /**
      * @var array<int, array<int,BowlInterface|callable>>

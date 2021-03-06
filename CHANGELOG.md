@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.38] - 2021-03-06
+###Dev release
+- Replace `*AdditionalStepsInterface` entries to return an instance of the required interface instead of generic
+ `AdditionalStepsInterface`.
+
 ##[0.0.37] - 2021-03-05
 ###Dev release
 - Add Cookbook interface `EditAccountEndPointInterface` and `EditProjectEndPointInterface`
