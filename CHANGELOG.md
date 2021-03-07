@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.39] - 2021-03-07
+###Dev release
+- Fix deprecated in Doctrine ODM Mapping
+- Account Type can set namespace to readonly
+  
 ##[0.0.38] - 2021-03-06
 ###Dev release
 - Replace `*AdditionalStepsInterface` entries to return an instance of the required interface instead of generic

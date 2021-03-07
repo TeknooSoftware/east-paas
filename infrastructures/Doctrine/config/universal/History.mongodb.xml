@@ -10,7 +10,7 @@
         <field field-name="message" type="string" nullable="false"/>
         <field field-name="extra" type="raw" />
         <field field-name="date" type="date" index="true" nullable="false"/>
-        <field field-name="isFinal" name="is_final" type="boolean" index="true" nullable="false"/>
+        <field field-name="isFinal" name="is_final" type="bool" index="true" nullable="false"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
         <field field-name="updatedAt" name="updated_at" type="date" />
         <embed-one field="previous" target-document="Teknoo\East\Paas\Object\History" />

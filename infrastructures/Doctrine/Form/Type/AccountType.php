@@ -51,7 +51,18 @@ class AccountType extends AbstractType
         parent::buildForm($builder, $options);
 
         $builder->add('name', TextType::class, ['required' => true]);
-        $builder->add('namespace', TextType::class, ['required' => false]);
+
+        $builder->add(
+            'namespace',
+            TextType::class,
+            [
+                'required' => false,
+                'attr' => [
+                    'readonly' => !empty($options['namespace_in_readonly']),
+                ],
+            ]
+        );
+
         $builder->add(
             'users',
             $options['doctrine_type'],
@@ -104,6 +115,7 @@ class AccountType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Account::class,
             'doctrine_type' => '',
+            'namespace_in_readonly' => false,
         ]);
 
         return $this;

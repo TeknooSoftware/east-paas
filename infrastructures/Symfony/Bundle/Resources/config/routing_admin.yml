@@ -20,7 +20,9 @@ _teknoo_paas_admin_account_edit:
         formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
         template: '@@TeknooEastWebsite/AdminAccount/edit.html.twig'
         errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
-        formOptions: { "doctrine_type": "%teknoo.east.website.form_type.doctrine.class%"}
+        formOptions:
+            "doctrine_type": "%teknoo.east.website.form_type.doctrine.class%"
+            namespace_in_readonly: true
 
 _teknoo_paas_admin_account_new:
     path: '/account/new'
