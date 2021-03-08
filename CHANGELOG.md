@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.41] - 2021-03-08
+###Dev release
+- Remove also Guzzle component
+
 ##[0.0.40] - 2021-03-08
 ###Dev release
 - Remove `GuzzleTransport` and `TransportFactory` for Symfony Messenger, must be implemented into the final project

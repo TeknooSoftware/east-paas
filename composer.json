@@ -53,7 +53,6 @@
         "doctrine/mongodb-odm": "~2.2",
         "doctrine/mongodb-odm-bundle": "~4.2",
         "guzzlehttp/guzzle": "^6.5.5||~7.0",
-        "guzzlehttp/promises": "~1.0",
         "league/flysystem": "~1.1",
         "maclof/kubernetes-client": "^0.21.0",
         "psr/http-message":"^1.0.1",
@@ -84,7 +83,6 @@
             "Teknoo\\East\\Paas\\Infrastructures\\Doctrine\\": "infrastructures/Doctrine/",
             "Teknoo\\East\\Paas\\Infrastructures\\Flysystem\\": "infrastructures/Flysystem/",
             "Teknoo\\East\\Paas\\Infrastructures\\Git\\": "infrastructures/Git/",
-            "Teknoo\\East\\Paas\\Infrastructures\\Guzzle\\": "infrastructures/Guzzle/",
             "Teknoo\\East\\Paas\\Infrastructures\\Kubernetes\\": "infrastructures/Kubernetes/",
             "Teknoo\\East\\Paas\\Infrastructures\\Symfony\\": "infrastructures/Symfony/Components/",
             "Teknoo\\East\\Paas\\Infrastructures\\EastPaasBundle\\": "infrastructures/Symfony/Bundle/"
@@ -99,7 +97,6 @@
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Doctrine\\\\": "tests/infrastructures/Doctrine/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Flysystem\\": "tests/infrastructures/Flysystem/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Git\\": "tests/infrastructures/Git/",
-            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Guzzle\\": "tests/infrastructures/Guzzle/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Kubernetes\\": "tests/infrastructures/Kubernetes/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Symfony\\": "tests/infrastructures/Symfony/Components/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\EastPaasBundle\\": "tests/infrastructures/Symfony/Bundle/"
