@@ -92,6 +92,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Teknoo\\Tests\\Behat\\Transport\\": "features/bootstrap/Transport",
             "Teknoo\\Tests\\East\\Paas\\": "tests/src/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Composer\\": "tests/infrastructures/Composer/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\BuildKit\\": "tests/infrastructures/BuildKit/",

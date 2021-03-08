@@ -44,6 +44,20 @@ services:
   GuzzleHttp\Client:
     class: 'GuzzleHttp\Client'
 
+  Teknoo\Tests\Behat\Transport\TransportFactory:
+    class: 'Teknoo\Tests\Behat\Transport\TransportFactory'
+    arguments:
+      - '@Teknoo\Tests\Behat\Transport\GuzzleTransport'
+      - 'tkpaas://'
+    tags:
+      - 'messenger.transport_factory'
+
+  Teknoo\Tests\Behat\Transport\GuzzleTransport:
+    class: 'Teknoo\Tests\Behat\Transport\GuzzleTransport'
+    arguments:
+      - '@GuzzleHttp\Client'
+      - '@logger'
+
   twig:
     synthetic: true
     public: true

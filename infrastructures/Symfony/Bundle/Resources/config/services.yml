@@ -5,8 +5,6 @@ parameters:
   teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer'
   teknoo.east.paas.symfony.normalizer.history_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer'
   teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer'
-  teknoo.east.paas.symfony.messenger.transport.factory.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\TransportFactory'
-  teknoo.east.paas.symfony.messenger.transport.guzzle.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\GuzzleTransport'
 
   teknoo.east.paas.symfony.subscriber.command.class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
 
@@ -45,20 +43,6 @@ services:
       - ['setDenormalizer', ['@serializer']]
     tags:
       - {name: 'serializer.normalizer', priority: 100}
-
-  Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\TransportFactory:
-    class: '%teknoo.east.paas.symfony.messenger.transport.factory.class%'
-    arguments:
-      - '@Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\GuzzleTransport'
-      - 'tkpaas://'
-    tags:
-      - 'messenger.transport_factory'
-
-  Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport\GuzzleTransport:
-    class: '%teknoo.east.paas.symfony.messenger.transport.guzzle.class%'
-    arguments:
-      - '@GuzzleHttp\Client'
-      - '@logger'
 
   Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber:
     class: '%teknoo.east.paas.symfony.subscriber.command.class%'

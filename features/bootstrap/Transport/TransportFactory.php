@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Transport;
+namespace Teknoo\Tests\Behat\Transport;
 
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;

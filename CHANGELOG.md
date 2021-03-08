@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.40] - 2021-03-08
+###Dev release
+- Remove `GuzzleTransport` and `TransportFactory` for Symfony Messenger, must be implemented into the final project
+  and not provided here.
+
 ##[0.0.39] - 2021-03-07
 ###Dev release
 - Fix deprecated in Doctrine ODM Mapping

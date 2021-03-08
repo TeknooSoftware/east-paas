@@ -88,15 +88,6 @@ Example with Symfony
               is_bundle: false
               prefix: 'Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM'
 
-    //In messenger.yml
-    framework:
-      messenger:
-        transports:
-          app_message_job: '%env(MESSENGER_JOB_TRANSPORT_DSN)%'
-    
-        routing:
-          Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Job: 'app_message_job'
-
     //In security.yml
     security:
       //..
