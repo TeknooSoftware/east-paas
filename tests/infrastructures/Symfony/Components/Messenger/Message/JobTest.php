@@ -25,13 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Job;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Job
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageTrait
  */
 class JobTest extends TestCase
@@ -43,6 +43,6 @@ class JobTest extends TestCase
      */
     public function buildMessage()
     {
-        return new Job('fooBar');
+        return new DispatchJob('fooBar');
     }
 }

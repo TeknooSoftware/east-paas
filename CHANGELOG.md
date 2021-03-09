@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.42] - 2021-03-09
+###Dev release
+- Rename `Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob` to `DispatchJob`
+
 ##[0.0.41] - 2021-03-08
 ###Dev release
 - Remove also Guzzle component

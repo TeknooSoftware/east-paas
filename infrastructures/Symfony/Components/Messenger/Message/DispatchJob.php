@@ -31,7 +31,7 @@ use Teknoo\Immutable\ImmutableInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Job implements ImmutableInterface
+class DispatchJob implements ImmutableInterface
 {
     use MessageTrait;
 }
