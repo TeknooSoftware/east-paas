@@ -1,40 +1,40 @@
 parameters:
-  teknoo.east.paas.symfony.form_type.cluster.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType'
+    teknoo.east.paas.symfony.form_type.cluster.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType'
 
-  teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
+    teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
 
 services:
-  teknoo.east.paas.symfony.form_type.cluster:
-    class: '%teknoo.east.paas.symfony.form_type.cluster.class%'
-    arguments:
-      - '%teknoo.east.paas.symfony.form_type.cluster.types%'
-    tags: ['form.type']
+    teknoo.east.paas.symfony.form_type.cluster:
+        class: '%teknoo.east.paas.symfony.form_type.cluster.class%'
+        arguments:
+            - '%teknoo.east.paas.symfony.form_type.cluster.types%'
+        tags: ['form.type']
 
-  teknoo.east.paas.endpoint.admin.new.account:
-    class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
-    public: true
-    arguments:
-      - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface'
-      - '@service_container'
+    teknoo.east.paas.endpoint.admin.new.account:
+        class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+        public: true
+        arguments:
+            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface'
+            - '@service_container'
 
-  teknoo.east.paas.endpoint.admin.new.project:
-    class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
-    public: true
-    arguments:
-      - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface'
-      - '@service_container'
+    teknoo.east.paas.endpoint.admin.new.project:
+        class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+        public: true
+        arguments:
+            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface'
+            - '@service_container'
 
 
-  teknoo.east.paas.endpoint.admin.edit.account:
-    class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
-    public: true
-    arguments:
-      - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditAccountEndPointInterface'
-      - '@service_container'
+    teknoo.east.paas.endpoint.admin.edit.account:
+        class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+        public: true
+        arguments:
+            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditAccountEndPointInterface'
+            - '@service_container'
 
-  teknoo.east.paas.endpoint.admin.edit.project:
-    class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
-    public: true
-    arguments:
-      - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditProjectEndPointInterface'
-      - '@service_container'
+    teknoo.east.paas.endpoint.admin.edit.project:
+        class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+        public: true
+        arguments:
+            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditProjectEndPointInterface'
+            - '@service_container'

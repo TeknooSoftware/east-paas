@@ -1,4 +1,4 @@
 Teknoo\East\Paas\Object\ImageRegistry:
-  attributes:
-    apiUrl:
-      serialized_name: api_url
+    attributes:
+        apiUrl:
+            serialized_name: api_url

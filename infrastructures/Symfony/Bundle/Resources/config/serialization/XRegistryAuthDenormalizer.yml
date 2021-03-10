@@ -1,4 +1,4 @@
 Teknoo\East\Paas\Object\XRegistryAuth:
-  attributes:
-    serverAddress:
-      serialized_name: server_address
+    attributes:
+        serverAddress:
+            serialized_name: server_address

@@ -1,24 +1,24 @@
 parameters:
-  teknoo.east.paas.symfony.end_point.new_account.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
-  teknoo.east.paas.symfony.end_point.new_job.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
-  teknoo.east.paas.symfony.end_point.job_add_history.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
-  teknoo.east.paas.symfony.end_point.job_run.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+    teknoo.east.paas.symfony.end_point.new_account.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+    teknoo.east.paas.symfony.end_point.new_job.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+    teknoo.east.paas.symfony.end_point.job_add_history.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
+    teknoo.east.paas.symfony.end_point.job_run.class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
 
 services:
-  teknoo.east.paas.symfony.end_point.new_job:
-    class: '%teknoo.east.paas.symfony.end_point.new_job.class%'
-    public: true
-    arguments:
-      - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface'
+    teknoo.east.paas.symfony.end_point.new_job:
+        class: '%teknoo.east.paas.symfony.end_point.new_job.class%'
+        public: true
+        arguments:
+            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface'
 
-  teknoo.east.paas.symfony.end_point.job_add_history:
-    class: '%teknoo.east.paas.symfony.end_point.job_add_history.class%'
-    public: true
-    arguments:
-      - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface'
+    teknoo.east.paas.symfony.end_point.job_add_history:
+        class: '%teknoo.east.paas.symfony.end_point.job_add_history.class%'
+        public: true
+        arguments:
+            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface'
 
-  teknoo.east.paas.symfony.end_point.job_run:
-    class: '%teknoo.east.paas.symfony.end_point.job_run.class%'
-    public: true
-    arguments:
-      - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface'
+    teknoo.east.paas.symfony.end_point.job_run:
+        class: '%teknoo.east.paas.symfony.end_point.job_run.class%'
+        public: true
+        arguments:
+            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface'

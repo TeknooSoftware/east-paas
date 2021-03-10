@@ -1,84 +1,84 @@
 parameters:
-  teknoo.east.symfony.normalizer.east_normalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer'
+    teknoo.east.symfony.normalizer.east_normalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer'
 
-  teknoo.east.paas.symfony.normalizer.exception.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer'
-  teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer'
-  teknoo.east.paas.symfony.normalizer.history_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer'
-  teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer'
+    teknoo.east.paas.symfony.normalizer.exception.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer'
+    teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer'
+    teknoo.east.paas.symfony.normalizer.history_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer'
+    teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer'
 
-  teknoo.east.paas.symfony.subscriber.command.class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
+    teknoo.east.paas.symfony.subscriber.command.class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
 
-  teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
+    teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
 
 
 services:
-  teknoo.east.paas.symfony.property_accessor:
-    class: 'Symfony\Component\PropertyAccess\PropertyAccessor'
-    public: true
-    arguments:
-      - false
-      - false
-      - '@?cache.property_access'
+    teknoo.east.paas.symfony.property_accessor:
+        class: 'Symfony\Component\PropertyAccess\PropertyAccessor'
+        public: true
+        arguments:
+            - false
+            - false
+            - '@?cache.property_access'
 
-  Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer:
-    class: '%teknoo.east.paas.symfony.normalizer.exception.class%'
-    tags:
-      - {name: 'serializer.normalizer', priority: 100}
+    Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer:
+        class: '%teknoo.east.paas.symfony.normalizer.exception.class%'
+        tags:
+            - {name: 'serializer.normalizer', priority: 100}
 
-  Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer:
-    class: '%teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class%'
-    calls:
-      - ['setDenormalizer', ['@serializer']]
-    tags:
-      - {name: 'serializer.normalizer', priority: 10}
+    Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer:
+        class: '%teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class%'
+        calls:
+            - ['setDenormalizer', ['@serializer']]
+        tags:
+            - {name: 'serializer.normalizer', priority: 10}
 
-  Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer:
-    class: '%teknoo.east.paas.symfony.normalizer.history_denormalizer.class%'
-    tags:
-      - {name: 'serializer.normalizer', priority: 100}
+    Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer:
+        class: '%teknoo.east.paas.symfony.normalizer.history_denormalizer.class%'
+        tags:
+            - {name: 'serializer.normalizer', priority: 100}
 
-  Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer:
-    class: '%teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class%'
-    calls:
-      - ['setDenormalizer', ['@serializer']]
-    tags:
-      - {name: 'serializer.normalizer', priority: 100}
+    Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer:
+        class: '%teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class%'
+        calls:
+            - ['setDenormalizer', ['@serializer']]
+        tags:
+            - {name: 'serializer.normalizer', priority: 100}
 
-  Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber:
-    class: '%teknoo.east.paas.symfony.subscriber.command.class%'
-    arguments:
-      - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory'
-      - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult'
-      - '@service_container'
-    tags:
-      - { name: 'kernel.event_subscriber' }
+    Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber:
+        class: '%teknoo.east.paas.symfony.subscriber.command.class%'
+        arguments:
+            - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory'
+            - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult'
+            - '@service_container'
+        tags:
+            - { name: 'kernel.event_subscriber' }
 
-  teknoo.east.paas.symfony.command.run_job:
-    parent: 'Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand'
-    tags:
-      - {name: 'console.command' }
+    teknoo.east.paas.symfony.command.run_job:
+        parent: 'Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand'
+        tags:
+            - {name: 'console.command' }
 
-  Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob:
-    class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob'
-    public: true
-    arguments:
-      - '@messenger.default_bus'
+    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob'
+        public: true
+        arguments:
+            - '@messenger.default_bus'
 
 
-  Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:
-    class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer'
-    public: true
-    arguments:
-      - '@serializer'
+    Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer'
+        public: true
+        arguments:
+            - '@serializer'
 
-  Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer:
-    class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer'
-    public: true
-    arguments:
-      - '@serializer'
+    Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer'
+        public: true
+        arguments:
+            - '@serializer'
 
-  Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer:
-    class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer'
-    public: true
-    arguments:
-      - '@serializer'
+    Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer'
+        public: true
+        arguments:
+            - '@serializer'
