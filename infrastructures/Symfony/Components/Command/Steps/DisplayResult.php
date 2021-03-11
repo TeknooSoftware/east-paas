@@ -32,7 +32,9 @@ use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
+use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
 
 /**
@@ -59,6 +61,8 @@ class DisplayResult implements DispatchResultInterface
     public function __invoke(
         ManagerInterface $manager,
         EastClient $client,
+        Project $project,
+        Environment $environment,
         JobUnitInterface $job,
         $result = null,
         ?\Throwable $exception = null,

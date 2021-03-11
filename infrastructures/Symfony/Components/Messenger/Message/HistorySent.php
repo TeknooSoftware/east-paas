@@ -23,10 +23,9 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Traits;
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
+use Teknoo\Immutable\ImmutableInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -37,19 +36,7 @@ use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-trait PsrFactoryTrait
+class HistorySent implements ImmutableInterface
 {
-    private MessageFactoryInterface $messageFactory;
-
-    private StreamFactoryInterface $streamFactory;
-
-    public function setMessageFactory(MessageFactoryInterface $messageFactory): void
-    {
-        $this->messageFactory = $messageFactory;
-    }
-
-    public function setStreamFactory(StreamFactoryInterface $streamFactory): void
-    {
-        $this->streamFactory = $streamFactory;
-    }
+    use MessageTrait;
 }

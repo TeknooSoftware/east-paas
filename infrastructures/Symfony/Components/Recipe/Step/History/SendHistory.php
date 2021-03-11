@@ -23,15 +23,18 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps;
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History;
 
-use Symfony\Component\Console\Output\OutputInterface;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -42,29 +45,32 @@ use Teknoo\East\Website\Service\DatesService;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class DisplayHistory implements DispatchHistoryInterface
+class SendHistory implements DispatchHistoryInterface
 {
     private DatesService $dateTimeService;
 
-    public function __construct(DatesService $dateTimeService)
-    {
+    private MessageBusInterface $bus;
+
+    public function __construct(
+        DatesService $dateTimeService,
+        MessageBusInterface $bus
+    ) {
         $this->dateTimeService = $dateTimeService;
+        $this->bus = $bus;
     }
 
-    public function __invoke(
+    /**
+     * @param array<string, mixed> $extra
+     */
+    private function sendStep(
         Project $project,
         Environment $environment,
         JobUnitInterface $job,
         string $step,
-        array $extra = [],
-        ?OutputInterface $output = null
-    ): DispatchHistoryInterface {
-        if (!$output) {
-            return $this;
-        }
-
+        array $extra
+    ): void {
         $this->dateTimeService->passMeTheDate(
-            function (\DateTimeInterface $now) use ($step, $extra, $output) {
+            function (\DateTimeInterface $now) use ($project, $environment, $job, $step, $extra) {
                 $history = new History(
                     null,
                     $step,
@@ -73,9 +79,31 @@ class DisplayHistory implements DispatchHistoryInterface
                     $extra
                 );
 
-                $output->writeln((string) \json_encode($history));
+                $this->bus->dispatch(
+                    new Envelope(
+                        new HistorySent((string) \json_encode($history)),
+                        [
+                            new Parameter('projectId', $project->getId()),
+                            new Parameter('envName', (string) $environment),
+                            new Parameter('jobId', $job->getId())
+                        ]
+                    )
+                );
             }
         );
+    }
+
+    /**
+     * @param array<string, mixed> $extra
+     */
+    public function __invoke(
+        Project $project,
+        Environment $environment,
+        JobUnitInterface $job,
+        string $step,
+        array $extra = []
+    ): DispatchHistoryInterface {
+        $this->sendStep($project, $environment, $job, $step, $extra);
 
         return $this;
     }

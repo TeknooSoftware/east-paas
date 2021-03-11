@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Contracts\Recipe\Step\Misc;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -47,6 +49,8 @@ interface DispatchResultInterface
     public function __invoke(
         ManagerInterface $manager,
         EastClient $client,
+        Project $project,
+        Environment $environment,
         JobUnitInterface $job,
         $result = null,
         ?\Throwable $exception = null

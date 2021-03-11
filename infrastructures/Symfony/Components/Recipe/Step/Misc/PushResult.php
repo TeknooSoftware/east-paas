@@ -23,16 +23,19 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Step\Misc;
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc;
 
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -40,7 +43,6 @@ use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
-use Teknoo\East\Paas\Recipe\Traits\RequestTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -51,78 +53,76 @@ use Teknoo\East\Paas\Recipe\Traits\RequestTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class PushResultOverHTTP implements DispatchResultInterface
+class PushResult implements DispatchResultInterface
 {
     use ErrorTrait;
     use PsrFactoryTrait;
-    use RequestTrait;
 
     private DatesService $dateTimeService;
 
-    private string $historyEndPoint;
+    private MessageBusInterface $bus;
 
     private NormalizerInterface $normalizer;
 
     public function __construct(
         DatesService $dateTimeService,
-        string $historyEndPoint,
+        MessageBusInterface $bus,
         NormalizerInterface $normalizer,
-        UriFactoryInterface $uriFactory,
-        RequestFactoryInterface $requestFactory,
         StreamFactoryInterface $streamFactory,
-        ClientInterface $client,
-        ResponseFactoryInterface $responseFactory
+        MessageFactoryInterface $messageFactory
     ) {
         $this->dateTimeService = $dateTimeService;
-        $this->historyEndPoint = $historyEndPoint;
+        $this->bus = $bus;
         $this->normalizer = $normalizer;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
-        $this->uriFactory = $uriFactory;
-        $this->requestFactory = $requestFactory;
-        $this->client = $client;
     }
 
     /**
      * @param mixed $result
      */
-    private function sendResult(ManagerInterface $manager, JobUnitInterface $job, $result): void
-    {
-        $job->prepareUrl($this->historyEndPoint, new Promise(
-            function ($url) use ($manager, $result) {
-                $this->dateTimeService->passMeTheDate(
-                    function (\DateTimeInterface $now) use ($result, $manager, $url) {
-                        $this->normalizer->normalize(
-                            $result,
-                            new Promise(
-                                function ($extra) use ($manager, $now, &$url) {
-                                    $history = new History(
-                                        null,
-                                        DispatchResultInterface::class,
-                                        $now,
-                                        true,
-                                        $extra
-                                    );
+    private function sendResult(
+        ManagerInterface $manager,
+        Project $project,
+        Environment $environment,
+        JobUnitInterface $job,
+        $result
+    ): void {
+        $this->dateTimeService->passMeTheDate(
+            function (\DateTimeInterface $now) use ($project, $environment, $job, $result, $manager) {
+                $this->normalizer->normalize(
+                    $result,
+                    new Promise(
+                        function ($extra) use ($project, $environment, $job, $manager, $now, &$url) {
+                            $history = new History(
+                                null,
+                                DispatchResultInterface::class,
+                                $now,
+                                true,
+                                $extra
+                            );
 
-                                    $manager->updateWorkPlan([
-                                        History::class => $history,
-                                        'historySerialized' => \json_encode($history),
-                                    ]);
+                            $manager->updateWorkPlan([
+                                History::class => $history,
+                                'historySerialized' => \json_encode($history),
+                            ]);
 
-                                    $this->sendRequest(
-                                        'PUT',
-                                        $url,
-                                        'application/json',
-                                        (string) \json_encode($history)
-                                    );
-                                }
-                            ),
-                            'json'
-                        );
-                    }
+                            $this->bus->dispatch(
+                                new Envelope(
+                                    new JobDone((string) \json_encode($history)),
+                                    [
+                                        new Parameter('projectId', $project->getId()),
+                                        new Parameter('envName', (string) $environment),
+                                        new Parameter('jobId', $job->getId())
+                                    ]
+                                )
+                            );
+                        }
+                    ),
+                    'json'
                 );
             }
-        ));
+        );
     }
 
     /**
@@ -132,6 +132,8 @@ class PushResultOverHTTP implements DispatchResultInterface
     public function __invoke(
         ManagerInterface $manager,
         EastClient $client,
+        Project $project,
+        Environment $environment,
         JobUnitInterface $job,
         $result = null,
         ?\Throwable $exception = null
@@ -141,7 +143,7 @@ class PushResultOverHTTP implements DispatchResultInterface
         }
 
         try {
-            $this->sendResult($manager, $job, $result);
+            $this->sendResult($manager, $project, $environment, $job, $result);
         } catch (\Throwable $error) {
             $errorCode = $error->getCode();
             if ($errorCode < 400 || $errorCode > 600) {
@@ -159,7 +161,7 @@ class PushResultOverHTTP implements DispatchResultInterface
                     ),
                     $errorCode,
                     'application/problem+json',
-                    $this->responseFactory,
+                    $this->messageFactory,
                     $this->streamFactory
                 )
             );
