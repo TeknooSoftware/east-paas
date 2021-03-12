@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
@@ -39,6 +39,8 @@ use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
@@ -69,8 +71,8 @@ class HookBuildContainerTest extends TestCase
         $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $response->expects(self::any())->method('withBody')->willReturnSelf();
 
-        $responseFactory = $this->createMock(ResponseFactoryInterface::class);
-        $responseFactory->expects(self::any())->method('createResponse')->willReturn(
+        $messageFactory = $this->createMock(MessageFactoryInterface::class);
+        $messageFactory->expects(self::any())->method('createMessage')->willReturn(
             $response
         );
 
@@ -81,28 +83,8 @@ class HookBuildContainerTest extends TestCase
 
         return new HookBuildContainer(
             $this->getDispatchHistoryMock(),
-            $responseFactory,
+            $messageFactory,
             $streamFactory
-        );
-    }
-
-    public function testInvokeBadJobWorkspace()
-    {
-        $this->expectException(\TypeError::class);
-
-        ($this->buildStep())(
-            new \stdClass(),
-            $this->createMock(CompiledDeploymentInterface::class)
-        );
-    }
-
-    public function testInvokeBadCompiledDeployment()
-    {
-        $this->expectException(\TypeError::class);
-
-        ($this->buildStep())(
-            $this->createMock(JobWorkspaceInterface::class),
-            new \stdClass()
         );
     }
 
@@ -162,9 +144,12 @@ class HookBuildContainerTest extends TestCase
                 }
             );
 
+        $project = $this->createMock(Project::class);
+        $env = $this->createMock(Environment::class);
+
         $this->getDispatchHistoryMock()->expects(self::exactly(2))
             ->method('__invoke')
-            ->with($jobUnit, HookBuildContainer::class . ':Result')
+            ->with($project, $env, $jobUnit, HookBuildContainer::class . ':Result')
             ->willReturnSelf();
 
         self::assertInstanceOf(
@@ -172,6 +157,8 @@ class HookBuildContainerTest extends TestCase
             ($this->buildStep())(
                 $workspace,
                 $compiled,
+                $project,
+                $env,
                 $jobUnit,
                 $client,
                 $manager
@@ -240,6 +227,8 @@ class HookBuildContainerTest extends TestCase
             ($this->buildStep())(
                 $workspace,
                 $compiled,
+                $this->createMock(Project::class),
+                $this->createMock(Environment::class),
                 $jobUnit,
                 $client,
                 $manager
@@ -254,6 +243,9 @@ class HookBuildContainerTest extends TestCase
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $client =  $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
+
+        $project = $this->createMock(Project::class);
+        $env = $this->createMock(Environment::class);
 
         $hook1 = $this->createMock(HookInterface::class);
         $hook1->expects(self::once())->method('setPath')->with('foo/bar');
@@ -297,7 +289,7 @@ class HookBuildContainerTest extends TestCase
 
         $this->getDispatchHistoryMock()->expects(self::exactly(1))
             ->method('__invoke')
-            ->with($jobUnit, HookBuildContainer::class . ':Result')
+            ->with($project, $env, $jobUnit, HookBuildContainer::class . ':Result')
             ->willReturnSelf();
 
         $manager->expects(self::never())
@@ -316,6 +308,8 @@ class HookBuildContainerTest extends TestCase
             ($this->buildStep())(
                 $workspace,
                 $compiled,
+                $project,
+                $env,
                 $jobUnit,
                 $client,
                 $manager

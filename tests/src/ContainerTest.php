@@ -30,7 +30,7 @@ use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Teknoo\East\Foundation\Recipe\RecipeInterface;
@@ -300,7 +300,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
@@ -316,7 +316,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
@@ -340,7 +340,7 @@ class ContainerTest extends TestCase
     public function testCompileDeployment()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -352,7 +352,7 @@ class ContainerTest extends TestCase
     public function testConfigureCloningAgent()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         $container->set(CloningAgentInterface::class, $this->createMock(CloningAgentInterface::class));
@@ -387,7 +387,7 @@ class ContainerTest extends TestCase
     public function testDeserializeHistory()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         $container->set(DeserializerInterface::class, $this->createMock(DeserializerInterface::class));
@@ -404,7 +404,7 @@ class ContainerTest extends TestCase
 
         $container->set(DeserializerInterface::class, $this->createMock(DeserializerInterface::class));
         $container->set('teknoo.east.paas.worker.global_variables', ['foo' => 'bar']);
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -417,7 +417,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(BuilderInterface::class, $this->createMock(BuilderInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -430,7 +430,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(Directory::class, $this->createMock(Directory::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -444,7 +444,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
@@ -460,7 +460,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
 
         $container->set(SerializerInterface::class, $this->createMock(SerializerInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -472,7 +472,7 @@ class ContainerTest extends TestCase
     public function testDisplayHistory()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -484,7 +484,7 @@ class ContainerTest extends TestCase
     public function testDisplayJob()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -506,7 +506,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(JobRepositoryInterface::class, $this->createMock(JobRepositoryInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -523,7 +523,7 @@ class ContainerTest extends TestCase
 
         $container->set(ManagerInterface::class, $manager);
         $container->set(ProjectRepositoryInterface::class, $this->createMock(ProjectRepositoryInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -537,7 +537,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
@@ -553,7 +553,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
@@ -567,7 +567,7 @@ class ContainerTest extends TestCase
     public function testPrepareJob()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -591,7 +591,7 @@ class ContainerTest extends TestCase
     public function testPushResultOverHTTP()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
@@ -632,7 +632,7 @@ class ContainerTest extends TestCase
     public function testReceiveJob()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -644,7 +644,7 @@ class ContainerTest extends TestCase
     public function testReadDeploymentConfiguration()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -669,7 +669,7 @@ class ContainerTest extends TestCase
     public function testSendHistoryOverHTTP()
     {
         $container = $this->buildContainer();
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
@@ -704,7 +704,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
 
         $container->set(SerializerInterface::class, $this->createMock(SerializerInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -718,7 +718,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
 
         $container->set(SerializerInterface::class, $this->createMock(SerializerInterface::class));
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -913,7 +913,7 @@ class ContainerTest extends TestCase
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
         $container->set(DispatchJobInterface::class, $this->createMock(DispatchJobInterface::class));
 
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -936,7 +936,7 @@ class ContainerTest extends TestCase
         $container->set(DeserializerInterface::class, $this->createMock(DeserializerInterface::class));
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
 
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -962,7 +962,7 @@ class ContainerTest extends TestCase
         $container->set(BuilderInterface::class, $this->createMock(BuilderInterface::class));
         $container->set(Directory::class, $this->createMock(Directory::class));
         $container->set('teknoo.east.paas.worker.global_variables', ['foo' => 'bar']);
-        $container->set(ResponseFactoryInterface::class, $this->createMock(ResponseFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));

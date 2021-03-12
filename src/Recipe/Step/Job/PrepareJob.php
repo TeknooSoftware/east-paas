@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -55,11 +55,11 @@ class PrepareJob
 
     public function __construct(
         DatesService $dateTimeService,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->dateTimeService = $dateTimeService;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -70,7 +70,7 @@ class PrepareJob
         ManagerInterface $manager,
         ClientInterface $client
     ): self {
-        $responseFactory = $this->responseFactory;
+        $messageFactory = $this->messageFactory;
         $streamFactory = $this->streamFactory;
 
         $this->dateTimeService->passMeTheDate(
@@ -80,7 +80,7 @@ class PrepareJob
                 $job,
                 $manager,
                 $client,
-                $responseFactory,
+                $messageFactory,
                 $streamFactory
             ) {
                 $project->prepareJob($job, $now, $environment);
@@ -93,7 +93,7 @@ class PrepareJob
                             $manager,
                             null,
                             500,
-                            $responseFactory,
+                            $messageFactory,
                             $streamFactory
                         )
                     )

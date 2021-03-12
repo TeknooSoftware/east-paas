@@ -26,9 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Command\Steps;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UriInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +33,9 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
+use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
 
 /**
@@ -83,13 +81,25 @@ class DisplayResultTest extends TestCase
     public function testInvokeBadManager()
     {
         $this->expectException(\TypeError::class);
-        ($this->buildStep())(new \stdClass(), $this->createMock(JobUnitInterface::class), 'foo');
+        ($this->buildStep())(
+            new \stdClass(),
+            $this->createMock(Project::class),
+            $this->createMock(Environment::class),
+            $this->createMock(JobUnitInterface::class),
+            'foo'
+        );
     }
 
     public function testInvokeBadJob()
     {
         $this->expectException(\TypeError::class);
-        ($this->buildStep())($this->createMock(ManagerInterface::class), new \stdClass(), 'foo');
+        ($this->buildStep())(
+            $this->createMock(ManagerInterface::class),
+            $this->createMock(Project::class),
+            $this->createMock(Environment::class),
+            new \stdClass(),
+            'foo'
+        );
     }
 
     public function testInvoke()
@@ -139,7 +149,16 @@ class DisplayResultTest extends TestCase
 
         self::assertInstanceOf(
             DisplayResult::class,
-            ($this->buildStep())($manager, $client, $job, $result, null, $output)
+            ($this->buildStep())(
+                $manager,
+                $client,
+                $this->createMock(Project::class),
+                $this->createMock(Environment::class),
+                $job,
+                $result,
+                null,
+                $output
+            )
         );
     }
 
@@ -154,7 +173,13 @@ class DisplayResultTest extends TestCase
 
         self::assertInstanceOf(
             DisplayResult::class,
-            ($this->buildStep())($manager, $client, $job)
+            ($this->buildStep())(
+                $manager,
+                $client,
+                $this->createMock(Project::class),
+                $this->createMock(Environment::class),
+                $job
+            )
         );
     }
 
@@ -205,7 +230,16 @@ class DisplayResultTest extends TestCase
 
         self::assertInstanceOf(
             DisplayResult::class,
-            ($this->buildStep())($manager, $client, $job, null, null, $output)
+            ($this->buildStep())(
+                $manager,
+                $client,
+                $this->createMock(Project::class),
+                $this->createMock(Environment::class),
+                $job,
+                null,
+                null,
+                $output
+            )
         );
     }
 }

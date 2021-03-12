@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -53,11 +53,11 @@ class GetJob
 
     public function __construct(
         JobLoader $jobLoader,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->jobLoader = $jobLoader;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -74,7 +74,7 @@ class GetJob
                     $manager,
                     'teknoo.east.paas.error.recipe.job.not_found',
                     404,
-                    $this->responseFactory,
+                    $this->messageFactory,
                     $this->streamFactory
                 )
             )

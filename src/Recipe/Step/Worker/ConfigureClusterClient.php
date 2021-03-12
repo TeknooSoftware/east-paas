@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -54,11 +54,11 @@ class ConfigureClusterClient
 
     public function __construct(
         Directory $clientsDirectory,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->clientsDirectory = $clientsDirectory;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -82,7 +82,7 @@ class ConfigureClusterClient
                     $manager,
                     'teknoo.east.paas.error.recipe.cluster.configuration_error',
                     500,
-                    $this->responseFactory,
+                    $this->messageFactory,
                     $this->streamFactory
                 )
             )

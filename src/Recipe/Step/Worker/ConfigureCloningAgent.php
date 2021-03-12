@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -54,11 +54,11 @@ class ConfigureCloningAgent
 
     public function __construct(
         CloningAgentInterface $agent,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->agent = $agent;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -80,7 +80,7 @@ class ConfigureCloningAgent
                     $manager,
                     'teknoo.east.paas.error.recipe.agent.configuration_error',
                     500,
-                    $this->responseFactory,
+                    $this->messageFactory,
                     $this->streamFactory
                 )
             )

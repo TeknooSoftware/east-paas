@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
@@ -50,8 +50,8 @@ class DisplayJobTest extends TestCase
         $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $response->expects(self::any())->method('withBody')->willReturnSelf();
 
-        $responseFactory = $this->createMock(ResponseFactoryInterface::class);
-        $responseFactory->expects(self::any())->method('createResponse')->willReturn(
+        $messageFactory = $this->createMock(MessageFactoryInterface::class);
+        $messageFactory->expects(self::any())->method('createMessage')->willReturn(
             $response
         );
 
@@ -61,7 +61,7 @@ class DisplayJobTest extends TestCase
         );
 
         return new DisplayJob(
-            $responseFactory,
+            $messageFactory,
             $streamFactory
         );
     }

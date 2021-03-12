@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -53,11 +53,11 @@ class ConfigureImagesBuilder
 
     public function __construct(
         ImageBuilder $builder,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->builder = $builder;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -77,7 +77,7 @@ class ConfigureImagesBuilder
                     $manager,
                     'teknoo.east.paas.error.recipe.images.configuration_error',
                     500,
-                    $this->responseFactory,
+                    $this->messageFactory,
                     $this->streamFactory
                 )
             )

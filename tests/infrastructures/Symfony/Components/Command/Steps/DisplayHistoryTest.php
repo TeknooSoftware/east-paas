@@ -29,6 +29,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
 
 /**
@@ -60,7 +62,12 @@ class DisplayHistoryTest extends TestCase
     public function testInvokeBadJob()
     {
         $this->expectException(\TypeError::class);
-        ($this->buildStep())(new \stdClass(), 'foo');
+        ($this->buildStep())(
+            $this->createMock(Project::class),
+            $this->createMock(Environment::class),
+            new \stdClass(),
+            'foo'
+        );
     }
 
     public function testInvokeWithoutOutput()
@@ -78,7 +85,12 @@ class DisplayHistoryTest extends TestCase
 
         self::assertInstanceOf(
             DisplayHistory::class,
-            ($this->buildStep())($job, 'foo')
+            ($this->buildStep())(
+                $this->createMock(Project::class),
+                $this->createMock(Environment::class),
+                $job,
+                'foo'
+            )
         );
     }
 
@@ -102,7 +114,14 @@ class DisplayHistoryTest extends TestCase
 
         self::assertInstanceOf(
             DisplayHistory::class,
-            ($this->buildStep())($job, 'foo', [], $output)
+            ($this->buildStep())(
+                $this->createMock(Project::class),
+                $this->createMock(Environment::class),
+                $job,
+                'foo',
+                [],
+                $output
+            )
         );
     }
 }

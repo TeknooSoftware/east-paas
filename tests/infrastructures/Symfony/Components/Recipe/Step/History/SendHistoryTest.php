@@ -1,0 +1,123 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * East Paas.
+ *
+ * LICENSE
+ *
+ * This source file is subject to the MIT license and the version 3 of the GPL3
+ * license that are bundled with this package in the folder licences
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to richarddeloge@gmail.com so we can send you a copy immediately.
+ *
+ *
+ * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/east/paas Project website
+ *
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
+
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\History;
+
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Message\UriInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
+use Teknoo\East\Website\Service\DatesService;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Foundation\Promise\PromiseInterface;
+
+/**
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory
+ * @covers \Teknoo\East\Paas\Recipe\Traits\RequestTrait
+ */
+class SendHistoryTest extends TestCase
+{
+    /**
+     * @var DatesService
+     */
+    private $dateTimeService;
+
+    private ?MessageBusInterface $bus = null;
+
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject|DatesService
+     */
+    public function getDateTimeServiceMock(): DatesService
+    {
+        if (!$this->dateTimeService instanceof DatesService) {
+            $this->dateTimeService = $this->createMock(DatesService::class);
+        }
+
+        return $this->dateTimeService;
+    }
+
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject|MessageBusInterface
+     */
+    public function getMessageBusMock(): MessageBusInterface
+    {
+        if (!$this->bus instanceof MessageBusInterface) {
+            $this->bus = $this->createMock(MessageBusInterface::class);
+        }
+
+        return $this->bus;
+    }
+
+    public function buildStep(): SendHistory
+    {
+        return new SendHistory(
+            $this->getDateTimeServiceMock(),
+            $this->getMessageBusMock()
+        );
+    }
+
+    public function testInvokeBadJob()
+    {
+        $this->expectException(\TypeError::class);
+        ($this->buildStep())(new \stdClass(), 'foo');
+    }
+
+    public function testInvoke()
+    {
+        $project = $this->createMock(Project::class);
+        $env = $this->createMock(Environment::class);
+        $job = $this->createMock(JobUnitInterface::class);
+
+        $this->getDateTimeServiceMock()
+            ->expects(self::any())
+            ->method('passMeTheDate')
+            ->willReturnCallback(function (callable $callback) {
+                $callback(new \DateTime('2018-08-01'));
+
+                return $this->getDateTimeServiceMock();
+            });
+
+        $this->getMessageBusMock()
+            ->expects(self::once())
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass()));
+
+        self::assertInstanceOf(
+            SendHistory::class,
+            ($this->buildStep())($project, $env, $job, 'foo')
+        );
+    }
+}

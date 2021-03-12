@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Misc;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
@@ -52,11 +52,11 @@ class DisplayError
 
     public function __construct(
         SerializerInterface $serializer,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->serializer = $serializer;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -75,7 +75,7 @@ class DisplayError
                             $error,
                             200,
                             'application/json',
-                            $this->responseFactory,
+                            $this->messageFactory,
                             $this->streamFactory
                         )
                     );
