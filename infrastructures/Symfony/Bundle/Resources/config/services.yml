@@ -64,6 +64,22 @@ services:
         arguments:
             - '@messenger.default_bus'
 
+    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory'
+        public: true
+        arguments:
+            - '@Teknoo\East\Website\Service\DatesService'
+            - '@messenger.default_bus'
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult'
+        public: true
+        arguments:
+            - '@Teknoo\East\Website\Service\DatesService'
+            - '@messenger.default_bus'
+            - '@Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface'
+            - '@Psr\Http\Message\StreamFactoryInterface'
+            - '@Teknoo\East\Foundation\Http\Message\MessageFactoryInterface'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer'
@@ -82,3 +98,4 @@ services:
         public: true
         arguments:
             - '@serializer'
+
