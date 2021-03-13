@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -272,6 +273,13 @@ class PushResultTest extends TestCase
 
     public function testInvokeError()
     {
+        $message = $this->createMock(MessageInterface::class);
+        $message->expects(self::any())->method('withAddedHeader')->willReturnSelf();
+        $message->expects(self::any())->method('withBody')->willReturnSelf();
+        $this->getMessageFactoryMock()->expects(self::any())->method('createMessage')->willReturn(
+            $message
+        );
+
         $this->getStreamFactoryMock()->expects(self::any())->method('createStream')->willReturn(
             $this->createMock(StreamInterface::class)
         );

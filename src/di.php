@@ -327,14 +327,6 @@ return [
         );
     },
 
-    DRI::class => static function (ContainerInterface $container): DRI {
-        if ($container->has(DRI::class)) {
-            return $container->get(DRI::class);
-        }
-
-        return $container->get(PushResultOverHTTP::class);
-    },
-
     GetVariables::class => create(),
 
     //Project
@@ -589,8 +581,6 @@ return [
             get(RunJobStepsInterface::class),
             get(DisplayError::class)
         ),
-
-
 
     RunJobInterface::class . ':proxy' => static function (ContainerInterface $container): RunJobInterface {
         return new class ($container) implements RunJobInterface {

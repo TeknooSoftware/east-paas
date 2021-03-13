@@ -46,7 +46,6 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory
- * @covers \Teknoo\East\Paas\Recipe\Traits\RequestTrait
  */
 class SendHistoryTest extends TestCase
 {
