@@ -33,6 +33,8 @@ use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
+use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory;
+use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory;
@@ -50,6 +52,7 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 
+use Teknoo\East\Website\Service\DatesService;
 use function DI\create;
 use function DI\get;
 use function DI\value;
@@ -89,4 +92,15 @@ return [
 
     DispatchResultInterface::class => get(PushResult::class),
     DispatchHistoryInterface::class => get(SendHistory::class),
+
+    DisplayHistory::class => create()
+        ->constructor(
+            get(DatesService::class)
+        ),
+
+    DisplayResult::class => create()
+        ->constructor(
+            get(DatesService::class),
+            get(NormalizerInterface::class)
+        )
 ];
