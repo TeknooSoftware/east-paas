@@ -53,7 +53,7 @@ trait ResponseTrait
         $message = $messageFactory->createMessage('1.1');
 
         if ($message instanceof ResponseInterface) {
-            $message->withStatus($httpCode);
+            $message = $message->withStatus($httpCode);
         }
 
         $message = $message->withAddedHeader('paas-http-code', $httpCode);

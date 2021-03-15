@@ -49,9 +49,9 @@ interface DispatchResultInterface
     public function __invoke(
         ManagerInterface $manager,
         EastClient $client,
-        Project $project,
-        Environment $environment,
-        JobUnitInterface $job,
+        string $projectId,
+        string $envName,
+        string $jobId,
         $result = null,
         ?\Throwable $exception = null
     ): DispatchResultInterface;

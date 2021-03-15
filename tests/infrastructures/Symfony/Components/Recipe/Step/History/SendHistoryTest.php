@@ -116,7 +116,7 @@ class SendHistoryTest extends TestCase
 
         self::assertInstanceOf(
             SendHistory::class,
-            ($this->buildStep())($project, $env, $job, 'foo')
+            ($this->buildStep())('foo', 'bar', 'babar', 'foo')
         );
     }
 }

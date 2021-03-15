@@ -43,6 +43,6 @@ class JobTest extends TestCase
      */
     public function buildMessage()
     {
-        return new DispatchJob('fooBar');
+        return new DispatchJob('foo', 'bar', 'hello', 'world');
     }
 }

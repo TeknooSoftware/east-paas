@@ -83,9 +83,9 @@ class DisplayResultTest extends TestCase
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
-            $this->createMock(JobUnitInterface::class),
+            'foo',
+            'bar',
+            'bar',
             'foo'
         );
     }
@@ -95,8 +95,8 @@ class DisplayResultTest extends TestCase
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
             $this->createMock(ManagerInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             new \stdClass(),
             'foo'
         );
@@ -107,7 +107,6 @@ class DisplayResultTest extends TestCase
         $client = $this->createMock(EastClient::class);
 
         $manager = $this->createMock(ManagerInterface::class);
-        $job = $this->createMock(JobUnitInterface::class);
 
         $this->getDateTimeServiceMock()
             ->expects(self::any())
@@ -152,9 +151,9 @@ class DisplayResultTest extends TestCase
             ($this->buildStep())(
                 $manager,
                 $client,
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
-                $job,
+                'foo',
+                'bar',
+                'babr',
                 $result,
                 null,
                 $output
@@ -167,18 +166,15 @@ class DisplayResultTest extends TestCase
         $client = $this->createMock(EastClient::class);
 
         $manager = $this->createMock(ManagerInterface::class);
-        $job = $this->createMock(JobUnitInterface::class);
-
-        $output = $this->createMock(OutputInterface::class);
 
         self::assertInstanceOf(
             DisplayResult::class,
             ($this->buildStep())(
                 $manager,
                 $client,
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
-                $job
+                'foo',
+                'bar',
+                'babr'
             )
         );
     }
@@ -188,7 +184,6 @@ class DisplayResultTest extends TestCase
         $client = $this->createMock(EastClient::class);
 
         $manager = $this->createMock(ManagerInterface::class);
-        $job = $this->createMock(JobUnitInterface::class);
 
         $this->getDateTimeServiceMock()
             ->expects(self::any())
@@ -233,9 +228,9 @@ class DisplayResultTest extends TestCase
             ($this->buildStep())(
                 $manager,
                 $client,
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
-                $job,
+                'foo',
+                'bar',
+                'babar',
                 null,
                 null,
                 $output

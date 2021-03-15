@@ -42,13 +42,13 @@ trait MessageTestTrait
     public function testContructorUnique()
     {
         $this->expectException(ImmutableException::class);
-        $this->buildMessage()->__construct('foo');
+        $this->buildMessage()->__construct('foo', 'bar', 'hello', 'world');
     }
 
     public function testGetMessage()
     {
         self::assertEquals(
-            'fooBar',
+            'world',
             $this->buildMessage()->getMessage()
         );
     }
@@ -56,7 +56,7 @@ trait MessageTestTrait
     public function testToString()
     {
         self::assertEquals(
-            'fooBar',
+            'world',
             (string) $this->buildMessage()
         );
     }

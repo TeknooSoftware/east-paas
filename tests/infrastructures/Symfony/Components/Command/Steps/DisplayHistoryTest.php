@@ -63,8 +63,8 @@ class DisplayHistoryTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             new \stdClass(),
             'foo'
         );
@@ -81,14 +81,12 @@ class DisplayHistoryTest extends TestCase
                 return $this->getDateTimeServiceMock();
             });
 
-        $job = $this->createMock(JobUnitInterface::class);
-
         self::assertInstanceOf(
             DisplayHistory::class,
             ($this->buildStep())(
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
-                $job,
+                'foo',
+                'bar',
+                'babar',
                 'foo'
             )
         );
@@ -105,8 +103,6 @@ class DisplayHistoryTest extends TestCase
                 return $this->getDateTimeServiceMock();
             });
 
-        $job = $this->createMock(JobUnitInterface::class);
-
         $output = $this->createMock(OutputInterface::class);
 
         $output->expects(self::once())
@@ -115,9 +111,9 @@ class DisplayHistoryTest extends TestCase
         self::assertInstanceOf(
             DisplayHistory::class,
             ($this->buildStep())(
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
-                $job,
+                'foo',
+                'bar',
+                'babar',
                 'foo',
                 [],
                 $output

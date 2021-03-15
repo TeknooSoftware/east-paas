@@ -17,5 +17,4 @@ di_bridge:
     - '%kernel.project_dir%/infrastructures/Composer/di.php'
     - '%kernel.project_dir%/infrastructures/Symfony/Components/di.php'
     - '%kernel.project_dir%/features/bootstrap/config/di.php'
-  import:
-    Teknoo\East\Foundation\Http\Message\MessageFactoryInterface: 'Teknoo\East\Diactoros\MessageFactory'
+

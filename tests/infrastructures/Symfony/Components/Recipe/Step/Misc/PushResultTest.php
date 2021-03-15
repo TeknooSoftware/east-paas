@@ -166,9 +166,8 @@ class PushResultTest extends TestCase
         );
 
         $manager = $this->createMock(ManagerInterface::class);
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
-        $job = $this->createMock(JobUnitInterface::class);
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDateTimeServiceMock()
             ->expects(self::any())
@@ -210,7 +209,7 @@ class PushResultTest extends TestCase
 
         self::assertInstanceOf(
             PushResult::class,
-            ($this->buildStep())($manager, $client, $project, $env, $job, $result)
+            ($this->buildStep())($manager, $client, $project, $env, 'babar', $result)
         );
     }
 
@@ -223,9 +222,8 @@ class PushResultTest extends TestCase
         );
 
         $manager = $this->createMock(ManagerInterface::class);
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
-        $job = $this->createMock(JobUnitInterface::class);
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDateTimeServiceMock()
             ->expects(self::any())
@@ -267,7 +265,7 @@ class PushResultTest extends TestCase
 
         self::assertInstanceOf(
             PushResult::class,
-            ($this->buildStep())($manager, $client, $project, $env, $job)
+            ($this->buildStep())($manager, $client, $project, $env, 'babar')
         );
     }
 
@@ -287,9 +285,8 @@ class PushResultTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(EastClient::class);
 
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
-        $job = $this->createMock(JobUnitInterface::class);
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDateTimeServiceMock()
             ->expects(self::any())
@@ -339,7 +336,7 @@ class PushResultTest extends TestCase
 
         self::assertInstanceOf(
             PushResult::class,
-            ($this->buildStep())($manager, $client, $project, $env, $job, $result)
+            ($this->buildStep())($manager, $client, $project, $env, 'babarz', $result)
         );
     }
 }

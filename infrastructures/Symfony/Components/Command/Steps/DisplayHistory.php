@@ -52,9 +52,9 @@ class DisplayHistory implements DispatchHistoryInterface
     }
 
     public function __invoke(
-        Project $project,
-        Environment $environment,
-        JobUnitInterface $job,
+        string $projectId,
+        string $envName,
+        string $jobId,
         string $step,
         array $extra = [],
         ?OutputInterface $output = null

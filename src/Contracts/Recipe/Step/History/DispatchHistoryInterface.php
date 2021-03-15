@@ -44,9 +44,9 @@ interface DispatchHistoryInterface
      * @param array<string, mixed> $extra
      */
     public function __invoke(
-        Project $project,
-        Environment $environment,
-        JobUnitInterface $job,
+        string $projectId,
+        string $envName,
+        string $jobId,
         string $step,
         array $extra = []
     ): DispatchHistoryInterface;

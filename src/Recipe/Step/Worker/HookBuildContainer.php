@@ -70,8 +70,8 @@ class HookBuildContainer
     public function __invoke(
         JobWorkspaceInterface $workspace,
         CompiledDeploymentInterface $compiledDeployment,
-        Project $project,
-        Environment $environment,
+        string $projectId,
+        string $envName,
         JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager
@@ -81,8 +81,8 @@ class HookBuildContainer
                 $path
             ) use (
                 $compiledDeployment,
-                $project,
-                $environment,
+                $projectId,
+                $envName,
                 $jobUnit,
                 $workspace,
                 $client,
@@ -90,11 +90,11 @@ class HookBuildContainer
             ) {
                 $inError = false;
                 $promise = new Promise(
-                    function (string $buildSuccess) use ($project, $environment, $jobUnit) {
+                    function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
                         ($this->dispatchHistory)(
-                            $project,
-                            $environment,
-                            $jobUnit,
+                            $projectId,
+                            $envName,
+                            $jobUnit->getId(),
                             static::class . ':Result',
                             ['hook_output' => $buildSuccess]
                         );

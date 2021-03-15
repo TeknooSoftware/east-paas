@@ -70,8 +70,8 @@ class BuildImages
         ImageBuilder $builder,
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
-        Project $project,
-        Environment $environment,
+        string $projectId,
+        string $envName,
         JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager
@@ -82,8 +82,8 @@ class BuildImages
             ) use (
                 $builder,
                 $compiledDeployment,
-                $project,
-                $environment,
+                $projectId,
+                $envName,
                 $jobUnit,
                 $client,
                 $manager
@@ -92,11 +92,11 @@ class BuildImages
                     $compiledDeployment,
                     $root,
                     new Promise(
-                        function (string $buildSuccess) use ($project, $environment, $jobUnit) {
+                        function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
                             ($this->dispatchHistory)(
-                                $project,
-                                $environment,
-                                $jobUnit,
+                                $projectId,
+                                $envName,
+                                $jobUnit->getId(),
                                 static::class . ':Result',
                                 ['build_output' => $buildSuccess]
                             );

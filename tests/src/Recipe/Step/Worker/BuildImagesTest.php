@@ -71,6 +71,7 @@ class BuildImagesTest extends TestCase
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $response->expects(self::any())->method('withBody')->willReturnSelf();
+        $response->expects(self::any())->method('withStatus')->willReturnSelf();
 
         $messageFactory = $this->createMock(MessageFactoryInterface::class);
         $messageFactory->expects(self::any())->method('createMessage')->willReturn(
@@ -97,8 +98,8 @@ class BuildImagesTest extends TestCase
             new \stdClass(),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
@@ -113,8 +114,8 @@ class BuildImagesTest extends TestCase
             $this->createMock(ImageBuilder::class),
             new \stdClass(),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
@@ -129,8 +130,8 @@ class BuildImagesTest extends TestCase
             $this->createMock(ImageBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
             new \stdClass(),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
@@ -146,8 +147,8 @@ class BuildImagesTest extends TestCase
             $this->createMock(ImageBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             new \stdClass(),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
@@ -162,8 +163,8 @@ class BuildImagesTest extends TestCase
             $this->createMock(ImageBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             new \stdClass(),
             $this->createMock(ManagerInterface::class)
@@ -178,8 +179,8 @@ class BuildImagesTest extends TestCase
             $this->createMock(ImageBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
             new \stdClass()
@@ -215,12 +216,12 @@ class BuildImagesTest extends TestCase
                 }
             );
 
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDispatchHistoryMock()->expects(self::once())
             ->method('__invoke')
-            ->with($project, $env, $jobUnit, BuildImages::class . ':Result')
+            ->with($project, $env, $jobUnit->getId(), BuildImages::class . ':Result')
             ->willReturnSelf();
 
         self::assertInstanceOf(
@@ -287,8 +288,8 @@ class BuildImagesTest extends TestCase
                 $imageBuilder,
                 $compileDep,
                 $jobWorkspace,
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
+                'foo',
+                'bar',
                 $jobUnit,
                 $client,
                 $manager

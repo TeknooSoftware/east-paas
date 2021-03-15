@@ -71,6 +71,7 @@ class DeployingTest extends TestCase
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $response->expects(self::any())->method('withBody')->willReturnSelf();
+        $response->expects(self::any())->method('withStatus')->willReturnSelf();
 
         $messageFactory = $this->createMock(MessageFactoryInterface::class);
         $messageFactory->expects(self::any())->method('createMessage')->willReturn(
@@ -114,13 +115,12 @@ class DeployingTest extends TestCase
                 }
             );
 
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
-
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDispatchHistoryMock()->expects(self::once())
             ->method('__invoke')
-            ->with($project, $env, $jobUnit, Deploying::class . ':Result')
+            ->with($project, $env, $jobUnit->getId(), Deploying::class . ':Result')
             ->willReturnSelf();
 
         self::assertInstanceOf(
@@ -183,8 +183,8 @@ class DeployingTest extends TestCase
                 $compileDep,
                 $eastClient,
                 $manager,
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
+                'foo',
+                'bar',
                 $jobUnit
             )
         );

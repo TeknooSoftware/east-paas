@@ -71,8 +71,8 @@ class Exposing
         CompiledDeploymentInterface $compiledDeployment,
         EastClient $eastClient,
         ManagerInterface $manager,
-        Project $project,
-        Environment $environment,
+        string $projectId,
+        string $envName,
         JobUnitInterface $jobUnit
     ): self {
         /** @var ClientInterface $client */
@@ -80,11 +80,11 @@ class Exposing
             $client->expose(
                 $compiledDeployment,
                 new Promise(
-                    function (array $result) use ($project, $environment, $jobUnit) {
+                    function (array $result) use ($projectId, $envName, $jobUnit) {
                         ($this->dispatchHistory)(
-                            $project,
-                            $environment,
-                            $jobUnit,
+                            $projectId,
+                            $envName,
+                            $jobUnit->getId(),
                             static::class . ':Result',
                             $result
                         );

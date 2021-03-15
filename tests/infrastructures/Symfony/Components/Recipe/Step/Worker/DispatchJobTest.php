@@ -78,7 +78,7 @@ class DispatchJobTest extends TestCase
             ->expects(self::once())
             ->method('dispatch')
             ->with($envelope = new Envelope(
-                new JobMessage($sJob), [
+                new JobMessage('foo', 'prod', 'bar', $sJob), [
                 new Parameter('projectId', 'foo'),
                 new Parameter('envName', 'prod'),
                 new Parameter('jobId', 'bar')

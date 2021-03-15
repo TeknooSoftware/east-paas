@@ -83,17 +83,17 @@ class PushResult implements DispatchResultInterface
      */
     private function sendResult(
         ManagerInterface $manager,
-        Project $project,
-        Environment $environment,
-        JobUnitInterface $job,
+        string $projectId,
+        string $envName,
+        string $jobId,
         $result
     ): void {
         $this->dateTimeService->passMeTheDate(
-            function (\DateTimeInterface $now) use ($project, $environment, $job, $result, $manager) {
+            function (\DateTimeInterface $now) use ($projectId, $envName, $jobId, $result, $manager) {
                 $this->normalizer->normalize(
                     $result,
                     new Promise(
-                        function ($extra) use ($project, $environment, $job, $manager, $now, &$url) {
+                        function ($extra) use ($projectId, $envName, $jobId, $manager, $now, &$url) {
                             $history = new History(
                                 null,
                                 DispatchResultInterface::class,
@@ -110,15 +110,15 @@ class PushResult implements DispatchResultInterface
                             $this->bus->dispatch(
                                 new Envelope(
                                     new JobDone(
-                                        $project->getId(),
-                                        (string) $environment,
-                                        $job->getId(),
+                                        $projectId,
+                                        $envName,
+                                        $jobId,
                                         (string) \json_encode($history)
                                     ),
                                     [
-                                        new Parameter('projectId', $project->getId()),
-                                        new Parameter('envName', (string) $environment),
-                                        new Parameter('jobId', $job->getId())
+                                        new Parameter('projectId', $projectId),
+                                        new Parameter('envName', $envName),
+                                        new Parameter('jobId', $jobId)
                                     ]
                                 )
                             );
@@ -137,9 +137,9 @@ class PushResult implements DispatchResultInterface
     public function __invoke(
         ManagerInterface $manager,
         EastClient $client,
-        Project $project,
-        Environment $environment,
-        JobUnitInterface $job,
+        string $projectId,
+        string $envName,
+        string $jobId,
         $result = null,
         ?\Throwable $exception = null
     ): DispatchResultInterface {
@@ -148,7 +148,7 @@ class PushResult implements DispatchResultInterface
         }
 
         try {
-            $this->sendResult($manager, $project, $environment, $job, $result);
+            $this->sendResult($manager, $projectId, $envName, $jobId, $result);
         } catch (\Throwable $error) {
             $errorCode = $error->getCode();
             if ($errorCode < 400 || $errorCode > 600) {

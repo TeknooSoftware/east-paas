@@ -68,6 +68,7 @@ class DeserializeJobTest extends TestCase
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $response->expects(self::any())->method('withBody')->willReturnSelf();
+        $response->expects(self::any())->method('withStatus')->willReturnSelf();
 
         $messageFactory = $this->createMock(MessageFactoryInterface::class);
         $messageFactory->expects(self::any())->method('createMessage')->willReturn(

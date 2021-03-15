@@ -71,6 +71,7 @@ class BuildVolumesTest extends TestCase
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $response->expects(self::any())->method('withBody')->willReturnSelf();
+        $response->expects(self::any())->method('withStatus')->willReturnSelf();
 
         $messageFactory = $this->createMock(MessageFactoryInterface::class);
         $messageFactory->expects(self::any())->method('createMessage')->willReturn(
@@ -97,8 +98,8 @@ class BuildVolumesTest extends TestCase
             new \stdClass(),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
@@ -113,8 +114,8 @@ class BuildVolumesTest extends TestCase
             $this->createMock(VolumeBuilder::class),
             new \stdClass(),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
@@ -129,8 +130,8 @@ class BuildVolumesTest extends TestCase
             $this->createMock(VolumeBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
             new \stdClass(),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
@@ -145,8 +146,8 @@ class BuildVolumesTest extends TestCase
             $this->createMock(VolumeBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             new \stdClass(),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
@@ -161,8 +162,8 @@ class BuildVolumesTest extends TestCase
             $this->createMock(VolumeBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             new \stdClass(),
             $this->createMock(ManagerInterface::class)
@@ -177,8 +178,8 @@ class BuildVolumesTest extends TestCase
             $this->createMock(VolumeBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(Project::class),
-            $this->createMock(Environment::class),
+            'foo',
+            'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
             new \stdClass()
@@ -214,12 +215,12 @@ class BuildVolumesTest extends TestCase
                 }
             );
 
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDispatchHistoryMock()->expects(self::once())
             ->method('__invoke')
-            ->with($project, $env, $jobUnit, BuildVolumes::class . ':Result')
+            ->with($project, $env, $jobUnit->getId(), BuildVolumes::class . ':Result')
             ->willReturnSelf();
 
         self::assertInstanceOf(
@@ -286,8 +287,8 @@ class BuildVolumesTest extends TestCase
                 $volumeBuilder,
                 $compileDep,
                 $workspace,
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
+                'foo',
+                'bar',
                 $jobUnit,
                 $client,
                 $manager

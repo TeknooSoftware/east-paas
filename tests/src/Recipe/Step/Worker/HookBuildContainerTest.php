@@ -70,6 +70,7 @@ class HookBuildContainerTest extends TestCase
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $response->expects(self::any())->method('withBody')->willReturnSelf();
+        $response->expects(self::any())->method('withStatus')->willReturnSelf();
 
         $messageFactory = $this->createMock(MessageFactoryInterface::class);
         $messageFactory->expects(self::any())->method('createMessage')->willReturn(
@@ -144,12 +145,12 @@ class HookBuildContainerTest extends TestCase
                 }
             );
 
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDispatchHistoryMock()->expects(self::exactly(2))
             ->method('__invoke')
-            ->with($project, $env, $jobUnit, HookBuildContainer::class . ':Result')
+            ->with($project, $env, $jobUnit->getId(), HookBuildContainer::class . ':Result')
             ->willReturnSelf();
 
         self::assertInstanceOf(
@@ -227,8 +228,8 @@ class HookBuildContainerTest extends TestCase
             ($this->buildStep())(
                 $workspace,
                 $compiled,
-                $this->createMock(Project::class),
-                $this->createMock(Environment::class),
+                'foo',
+                'bar',
                 $jobUnit,
                 $client,
                 $manager
@@ -244,8 +245,8 @@ class HookBuildContainerTest extends TestCase
         $client =  $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
+        $project = 'foo';
+        $env = 'bar';
 
         $hook1 = $this->createMock(HookInterface::class);
         $hook1->expects(self::once())->method('setPath')->with('foo/bar');
@@ -289,7 +290,7 @@ class HookBuildContainerTest extends TestCase
 
         $this->getDispatchHistoryMock()->expects(self::exactly(1))
             ->method('__invoke')
-            ->with($project, $env, $jobUnit, HookBuildContainer::class . ':Result')
+            ->with($project, $env, $jobUnit->getId(), HookBuildContainer::class . ':Result')
             ->willReturnSelf();
 
         $manager->expects(self::never())

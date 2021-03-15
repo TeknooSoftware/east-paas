@@ -63,14 +63,14 @@ class SendHistory implements DispatchHistoryInterface
      * @param array<string, mixed> $extra
      */
     private function sendStep(
-        Project $project,
-        Environment $environment,
-        JobUnitInterface $job,
+        string $projectId,
+        string $envName,
+        string $jobId,
         string $step,
         array $extra
     ): void {
         $this->dateTimeService->passMeTheDate(
-            function (\DateTimeInterface $now) use ($project, $environment, $job, $step, $extra) {
+            function (\DateTimeInterface $now) use ($projectId, $envName, $jobId, $step, $extra) {
                 $history = new History(
                     null,
                     $step,
@@ -82,15 +82,15 @@ class SendHistory implements DispatchHistoryInterface
                 $this->bus->dispatch(
                     new Envelope(
                         new HistorySent(
-                            $project->getId(),
-                            (string) $environment,
-                            $job->getId(),
+                            $projectId,
+                            $envName,
+                            $jobId,
                             (string) \json_encode($history)
                         ),
                         [
-                            new Parameter('projectId', $project->getId()),
-                            new Parameter('envName', (string) $environment),
-                            new Parameter('jobId', $job->getId())
+                            new Parameter('projectId', $projectId),
+                            new Parameter('envName', $envName),
+                            new Parameter('jobId', $jobId)
                         ]
                     )
                 );
@@ -102,13 +102,13 @@ class SendHistory implements DispatchHistoryInterface
      * @param array<string, mixed> $extra
      */
     public function __invoke(
-        Project $project,
-        Environment $environment,
-        JobUnitInterface $job,
+        string $projectId,
+        string $envName,
+        string $jobId,
         string $step,
         array $extra = []
     ): DispatchHistoryInterface {
-        $this->sendStep($project, $environment, $job, $step, $extra);
+        $this->sendStep($projectId, $envName, $jobId, $step, $extra);
 
         return $this;
     }
