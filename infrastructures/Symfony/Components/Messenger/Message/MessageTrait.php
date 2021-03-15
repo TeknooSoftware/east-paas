@@ -40,13 +40,41 @@ trait MessageTrait
 {
     use ImmutableTrait;
 
+    private string $projectId;
+
+    private string $environment;
+
+    private string $jobId;
+
     private string $message;
 
-    public function __construct(string $message)
-    {
+    public function __construct(
+        string $projectId,
+        string $environment,
+        string $jobId,
+        string $message
+    ) {
         $this->uniqueConstructorCheck();
 
+        $this->projectId = $projectId;
+        $this->environment = $environment;
+        $this->jobId = $jobId;
         $this->message = $message;
+    }
+
+    public function getProjectId(): string
+    {
+        return $this->projectId;
+    }
+
+    public function getEnvironment(): string
+    {
+        return $this->environment;
+    }
+
+    public function getJobId(): string
+    {
+        return $this->jobId;
     }
 
     public function getMessage(): string

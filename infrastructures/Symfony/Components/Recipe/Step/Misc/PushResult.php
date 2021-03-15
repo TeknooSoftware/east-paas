@@ -109,7 +109,12 @@ class PushResult implements DispatchResultInterface
 
                             $this->bus->dispatch(
                                 new Envelope(
-                                    new JobDone((string) \json_encode($history)),
+                                    new JobDone(
+                                        $project->getId(),
+                                        (string) $environment,
+                                        $job->getId(),
+                                        (string) \json_encode($history)
+                                    ),
                                     [
                                         new Parameter('projectId', $project->getId()),
                                         new Parameter('envName', (string) $environment),

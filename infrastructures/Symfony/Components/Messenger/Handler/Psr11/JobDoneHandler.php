@@ -23,8 +23,12 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler;
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
 
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 
@@ -39,14 +43,43 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
  */
 class JobDoneHandler implements MessageHandlerInterface
 {
-  use RequestTrait;
+    use RequestTrait;
 
-  private string $urlPattern;
+    private string $urlPattern;
 
-  private string $method;
+    private string $method;
 
-  public function __invoke(JobDone $jobDone): self
-  {
-    return $this;
-  }
+    public function __construct(
+        string $urlPattern,
+        string $method,
+        UriFactoryInterface $uriFactory,
+        RequestFactoryInterface $requestFactory,
+        StreamFactoryInterface $streamFactory,
+        ClientInterface $client
+    ) {
+        $this->urlPattern = $urlPattern;
+        $this->method = $method;
+        $this->uriFactory = $uriFactory;
+        $this->requestFactory = $requestFactory;
+        $this->streamFactory = $streamFactory;
+        $this->client = $client;
+    }
+
+    public function __invoke(JobDone $jobDone): self
+    {
+        $url = \str_replace(
+            ['{projectId}','{envName}','{jobId}'],
+            [$historySent->getProjectId(), $historySent->getEnvironment(), $historySent->getJobId()],
+            $this->urlPattern
+        );
+
+        $this->sendRequest(
+            $this->method,
+            $url,
+            'application/json',
+            $historySent->getMessage()
+        );
+
+        return $this;
+    }
 }

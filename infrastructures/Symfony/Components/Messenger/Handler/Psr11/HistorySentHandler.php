@@ -23,12 +23,14 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler;
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
 
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -39,34 +41,45 @@ use Psr\Http\Message\UriFactoryInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-trait RequestTrait
+class HistorySentHandler implements MessageHandlerInterface
 {
-  private UriFactoryInterface $uriFactory;
+    use RequestTrait;
 
-  private RequestFactoryInterface $requestFactory;
+    private string $urlPattern;
 
-  private StreamFactoryInterface $streamFactory;
+    private string $method;
 
-  private ClientInterface $client;
+    public function __construct(
+        string $urlPattern,
+        string $method,
+        UriFactoryInterface $uriFactory,
+        RequestFactoryInterface $requestFactory,
+        StreamFactoryInterface $streamFactory,
+        ClientInterface $client
+    ) {
+        $this->urlPattern = $urlPattern;
+        $this->method = $method;
+        $this->uriFactory = $uriFactory;
+        $this->requestFactory = $requestFactory;
+        $this->streamFactory = $streamFactory;
+        $this->client = $client;
+    }
 
-  private function sendRequest(
-    string $method,
-    string $url,
-    string $contentType,
-    string $body
-  ): void {
-    $uri = $this->uriFactory->createUri($url);
+    public function __invoke(HistorySent $historySent): self
+    {
+        $url = \str_replace(
+            ['{projectId}','{envName}','{jobId}'],
+            [$historySent->getProjectId(), $historySent->getEnvironment(), $historySent->getJobId()],
+            $this->urlPattern
+        );
 
-    $request = $this->requestFactory->createRequest(
-      $method,
-      $uri
-    );
+        $this->sendRequest(
+            $this->method,
+            $url,
+            'application/json',
+            $historySent->getMessage()
+        );
 
-    $stream = $this->streamFactory->createStream($body);
-
-    $request = $request->withAddedHeader('content-type', $contentType);
-    $request = $request->withBody($stream);
-
-    $this->client->sendRequest($request);
-  }
+        return $this;
+    }
 }
