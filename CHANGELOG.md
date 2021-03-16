@@ -1,5 +1,11 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.43] - 2021-03-xx
+###Stable Release
+- Migrate SendHistory/PushResult to Messenger 
+- Remove JobUnit prepare URL
+- Clean Main DI, remove resolvers
+
 ##[0.0.43] - 2021-03-09
 ###Stable Release
 - Clean symfony yaml indentations
