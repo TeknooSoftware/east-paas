@@ -56,7 +56,7 @@ trait ResponseTrait
             $message = $message->withStatus($httpCode);
         }
 
-        $message = $message->withAddedHeader('paas-http-code', $httpCode);
+        $message = $message->withAddedHeader('paas-http-code', (string) $httpCode);
         $message = $message->withAddedHeader('content-type', $contentType);
         $message = $message->withBody($stream);
 

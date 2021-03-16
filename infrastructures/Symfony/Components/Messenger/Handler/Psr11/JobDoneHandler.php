@@ -69,7 +69,7 @@ class JobDoneHandler implements MessageHandlerInterface
     {
         $url = \str_replace(
             ['{projectId}','{envName}','{jobId}'],
-            [$historySent->getProjectId(), $historySent->getEnvironment(), $historySent->getJobId()],
+            [$jobDone->getProjectId(), $jobDone->getEnvironment(), $jobDone->getJobId()],
             $this->urlPattern
         );
 
@@ -77,7 +77,7 @@ class JobDoneHandler implements MessageHandlerInterface
             $this->method,
             $url,
             'application/json',
-            $historySent->getMessage()
+            $jobDone->getMessage()
         );
 
         return $this;

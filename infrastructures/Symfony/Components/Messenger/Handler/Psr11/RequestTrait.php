@@ -50,10 +50,10 @@ trait RequestTrait
     private ClientInterface $client;
 
     private function sendRequest(
-    string $method,
-    string $url,
-    string $contentType,
-    string $body
+        string $method,
+        string $url,
+        string $contentType,
+        string $body
     ): void {
         $uri = $this->uriFactory->createUri($url);
 

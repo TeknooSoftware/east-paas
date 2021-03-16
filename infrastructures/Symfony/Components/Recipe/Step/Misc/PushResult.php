@@ -93,7 +93,7 @@ class PushResult implements DispatchResultInterface
                 $this->normalizer->normalize(
                     $result,
                     new Promise(
-                        function ($extra) use ($projectId, $envName, $jobId, $manager, $now, &$url) {
+                        function ($extra) use ($projectId, $envName, $jobId, $manager, $now) {
                             $history = new History(
                                 null,
                                 DispatchResultInterface::class,

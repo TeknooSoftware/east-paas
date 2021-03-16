@@ -45,6 +45,30 @@ trait MessageTestTrait
         $this->buildMessage()->__construct('foo', 'bar', 'hello', 'world');
     }
 
+    public function testGetProjectId()
+    {
+        self::assertEquals(
+            'foo',
+            $this->buildMessage()->getProjectId()
+        );
+    }
+
+    public function testGetEnvironment()
+    {
+        self::assertEquals(
+            'bar',
+            $this->buildMessage()->getEnvironment()
+        );
+    }
+
+    public function testGetJobId()
+    {
+        self::assertEquals(
+            'hello',
+            $this->buildMessage()->getJobId()
+        );
+    }
+
     public function testGetMessage()
     {
         self::assertEquals(
