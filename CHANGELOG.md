@@ -2,9 +2,11 @@
 
 ##[0.0.43] - 2021-03-xx
 ###Stable Release
-- Migrate SendHistory/PushResult to Messenger 
+- Migrate ResponseInterface type hitting to MessageInterface, complete message object to pass job's ids
 - Remove JobUnit prepare URL
+- Migrate SendHistory/PushResult to Messenger
 - Clean Main DI, remove resolvers
+- Add Handler for Meessenger to call a HTTP reaquest on message (not enable by default)
 
 ##[0.0.43] - 2021-03-09
 ###Stable Release
