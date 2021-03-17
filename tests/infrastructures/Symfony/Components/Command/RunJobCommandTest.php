@@ -27,16 +27,18 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Command;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestFactoryInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -51,9 +53,13 @@ class RunJobCommandTest extends TestCase
 
     private ?RunJobInterface $runJob = null;
 
-    private ?ServerRequestFactoryInterface $serverRequestFactory = null;
+    private ?MessageFactoryInterface $messageFactory = null;
 
     private ?StreamFactoryInterface $streamFactory = null;
+
+    private ?DisplayHistoryHandler $stepDisplayHistory = null;
+
+    private ?DisplayResultHandler $stepDisplayResult = null;
 
     /**
      * @return ManagerInterface|MockObject
@@ -92,15 +98,15 @@ class RunJobCommandTest extends TestCase
     }
 
     /**
-     * @return ServerRequestFactoryInterface|MockObject
+     * @return MessageFactoryInterface|MockObject
      */
-    private function getServerRequestFactoryMock(): ServerRequestFactoryInterface
+    private function getMessageFactoryMock(): MessageFactoryInterface
     {
-        if (!$this->serverRequestFactory instanceof ServerRequestFactoryInterface) {
-            $this->serverRequestFactory = $this->createMock(ServerRequestFactoryInterface::class);
+        if (!$this->messageFactory instanceof MessageFactoryInterface) {
+            $this->messageFactory = $this->createMock(MessageFactoryInterface::class);
         }
 
-        return $this->serverRequestFactory;
+        return $this->messageFactory;
     }
 
     /**
@@ -115,6 +121,30 @@ class RunJobCommandTest extends TestCase
         return $this->streamFactory;
     }
 
+    /**
+     * @return DisplayHistoryHandler|MockObject
+     */
+    public function getStepDisplayHistory(): ?DisplayHistoryHandler
+    {
+        if (!$this->stepDisplayHistory instanceof DisplayHistoryHandler) {
+            $this->stepDisplayHistory = $this->createMock(DisplayHistoryHandler::class);
+        }
+
+        return $this->stepDisplayHistory;
+    }
+
+    /**
+     * @return DisplayResultHandler|MockObject
+     */
+    public function getStepDisplayResult(): ?DisplayResultHandler
+    {
+        if (!$this->stepDisplayResult instanceof DisplayResultHandler) {
+            $this->stepDisplayResult = $this->createMock(DisplayResultHandler::class);
+        }
+
+        return $this->stepDisplayResult;
+    }
+
     public function buildCommand(): RunJobCommand
     {
         return new RunJobCommand(
@@ -123,8 +153,10 @@ class RunJobCommandTest extends TestCase
             $this->getManagerMock(),
             $this->getClientMock(),
             $this->getRunJobMock(),
-            $this->getServerRequestFactoryMock(),
-            $this->getStreamFactoryMock()
+            $this->getMessageFactoryMock(),
+            $this->getStreamFactoryMock(),
+            $this->getStepDisplayHistory(),
+            $this->getStepDisplayResult()
         );
     }
 
@@ -138,7 +170,7 @@ class RunJobCommandTest extends TestCase
             ->method('getArgument')
             ->willReturn($fileName);
 
-        $request = $this->createMock(ServerRequestInterface::class);
+        $request = $this->createMock(MessageInterface::class);
         $request->expects(self::any())
             ->method('withBody')
             ->willReturnSelf();
@@ -149,9 +181,9 @@ class RunJobCommandTest extends TestCase
             ->with('fooBar')
             ->willReturn($this->createMock(StreamInterface::class));
 
-        $this->getServerRequestFactoryMock()
+        $this->getMessageFactoryMock()
             ->expects(self::any())
-            ->method('createServerRequest')
+            ->method('createMessage')
             ->willReturn($request);
 
         $output = $this->createMock(OutputInterface::class);
@@ -174,7 +206,7 @@ class RunJobCommandTest extends TestCase
             ->method('getArgument')
             ->willReturn('fooBar');
 
-        $request = $this->createMock(ServerRequestInterface::class);
+        $request = $this->createMock(MessageInterface::class);
         $request->expects(self::any())
             ->method('withBody')
             ->willReturnSelf();
@@ -185,9 +217,9 @@ class RunJobCommandTest extends TestCase
             ->with('fooBar')
             ->willReturn($this->createMock(StreamInterface::class));
 
-        $this->getServerRequestFactoryMock()
+        $this->getMessageFactoryMock()
             ->expects(self::any())
-            ->method('createServerRequest')
+            ->method('createMessage')
             ->willReturn($request);
 
         $output = $this->createMock(OutputInterface::class);

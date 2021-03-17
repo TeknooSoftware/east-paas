@@ -25,15 +25,21 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Command;
 
-use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
+
+use function file_exists;
+use function file_get_contents;
+use function is_string;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -54,9 +60,13 @@ class RunJobCommand extends Command
 
     private RunJobInterface $runJob;
 
-    private ServerRequestFactoryInterface $serverRequestFactory;
+    private MessageFactoryInterface $messageFactory;
 
     private StreamFactoryInterface $streamFactory;
+
+    private DisplayHistoryHandler $displayHistoryHandler;
+
+    private DisplayResultHandler $displayResultHandler;
 
     public function __construct(
         string $name,
@@ -64,15 +74,19 @@ class RunJobCommand extends Command
         ManagerInterface $manager,
         Client $client,
         RunJobInterface $runJob,
-        ServerRequestFactoryInterface $serverRequestFactory,
-        StreamFactoryInterface $streamFactory
+        MessageFactoryInterface $messageFactory,
+        StreamFactoryInterface $streamFactory,
+        DisplayHistoryHandler $displayHistoryHandler,
+        DisplayResultHandler $displayResultHandler
     ) {
         $this->setDescription($description);
         $this->manager = $manager;
         $this->client = $client;
         $this->runJob = $runJob;
-        $this->serverRequestFactory = $serverRequestFactory;
+        $this->messageFactory = $messageFactory;
         $this->streamFactory = $streamFactory;
+        $this->displayResultHandler = $displayResultHandler;
+        $this->displayHistoryHandler = $displayHistoryHandler;
 
         parent::__construct($name);
     }
@@ -85,20 +99,20 @@ class RunJobCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $file = $input->getArgument(static::FILE_ARGUMENT_NAME);
-        if (!\is_string($file)) {
-            $output->writeln('Wrong filename'); //todo
+        if (!is_string($file)) {
+            $output->writeln('Wrong filename');
             return 1;
         }
 
-        if (\file_exists($file)) {
-            $file = \file_get_contents($file);
+        $this->displayHistoryHandler->setOutput($output);
+        $this->displayResultHandler->setOutput($output);
+
+        if (file_exists($file)) {
+            $file = file_get_contents($file);
         }
 
         $stream = $this->streamFactory->createStream((string) $file);
-        $request = $this->serverRequestFactory->createServerRequest(
-            'PUT',
-            \str_replace(':', '.', (string) $this->getName())
-        );
+        $request = $this->messageFactory->createMessage('1.1');
         $request = $request->withBody($stream);
 
         $client = clone $this->client;

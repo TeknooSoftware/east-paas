@@ -23,12 +23,8 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward;
 
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
@@ -42,44 +38,22 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class HistorySentHandler implements HistorySentHandlerInterface, MessageHandlerInterface
+class HistorySentHandler implements MessageHandlerInterface
 {
-    use RequestTrait;
+    private ?HistorySentHandlerInterface $handler = null;
 
-    private string $urlPattern;
+    public function setHandler(?HistorySentHandlerInterface $handler): self
+    {
+        $this->handler = $handler;
 
-    private string $method;
-
-    public function __construct(
-        string $urlPattern,
-        string $method,
-        UriFactoryInterface $uriFactory,
-        RequestFactoryInterface $requestFactory,
-        StreamFactoryInterface $streamFactory,
-        ClientInterface $client
-    ) {
-        $this->urlPattern = $urlPattern;
-        $this->method = $method;
-        $this->uriFactory = $uriFactory;
-        $this->requestFactory = $requestFactory;
-        $this->streamFactory = $streamFactory;
-        $this->client = $client;
+        return $this;
     }
 
-    public function __invoke(HistorySent $historySent): HistorySentHandlerInterface
+    public function __invoke(HistorySent $historySent): self
     {
-        $url = \str_replace(
-            ['{projectId}','{envName}','{jobId}'],
-            [$historySent->getProjectId(), $historySent->getEnvironment(), $historySent->getJobId()],
-            $this->urlPattern
-        );
-
-        $this->sendRequest(
-            $this->method,
-            $url,
-            'application/json',
-            $historySent->getMessage()
-        );
+        if (null !== $this->handler) {
+            ($this->handler)($historySent);
+        }
 
         return $this;
     }
