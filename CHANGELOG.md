@@ -1,5 +1,16 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.44] - 2021-03-17
+###Stable Release
+- Migrate ResponseInterface type hitting to MessageInterface, complete message object to pass job's ids
+- Remove JobUnit prepare URL
+- Migrate SendHistory/PushResult to Messenger, and 
+- Migrate PSR18 SendHistory/PushResult to Messenger
+- Clean Main DI, remove resolvers
+- Add Handler for Messenger to send a HTTP message via a PSR 18 Client (not enable by default)
+- Add Handler for Messenger to dedicated to Symfony Console, replace Console dedicated steps
+- Add Handler forwarder to enable this previous handlers only on console context.
+
 ##[0.0.43] - 2021-03-09
 ###Stable Release
 - Clean symfony yaml indentations

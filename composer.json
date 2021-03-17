@@ -33,7 +33,7 @@
         "ext-dom": "*",
         "php-di/php-di": "~6.3",
         "psr/http-client": "~1.0",
-        "teknoo/east-foundation": "^4.1.0",
+        "teknoo/east-foundation": "^4.1.2",
         "teknoo/east-website": "^4.3.4",
         "teknoo/immutable": "^2.0.6",
         "teknoo/recipe": "^2.4.0",

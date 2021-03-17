@@ -26,12 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber;
 
 use Symfony\Component\Console\ConsoleEvents;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
-use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory;
-use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -44,21 +43,26 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
  */
 class CommandSubscriber implements EventSubscriberInterface
 {
-    private DisplayHistory $stepDisplayHistory;
+    private DisplayHistoryHandler $historyHandler;
 
-    private DisplayResult $stepDisplayResult;
+    private DisplayResultHandler $resultHandler;
 
-    private ContainerInterface $container;
+    private HistorySentHandler $historyForwarder;
+
+    private JobDoneHandler $jobForwarder;
 
     public function __construct(
-        DisplayHistory $stepDisplayHistory,
-        DisplayResult $stepDisplayResult,
-        ContainerInterface $container
+        DisplayHistoryHandler $historyHandler,
+        DisplayResultHandler $resultHandler,
+        HistorySentHandler $historyForwarder,
+        JobDoneHandler $jobForwarder
     ) {
-        $this->stepDisplayHistory = $stepDisplayHistory;
-        $this->stepDisplayResult = $stepDisplayResult;
-        $this->container = $container;
+        $this->historyHandler = $historyHandler;
+        $this->resultHandler = $resultHandler;
+        $this->historyForwarder = $historyForwarder;
+        $this->jobForwarder = $jobForwarder;
     }
+
 
     /**
      * @return  array<string, array<int, array<int, string>>>
@@ -67,15 +71,15 @@ class CommandSubscriber implements EventSubscriberInterface
     {
         return [
             ConsoleEvents::COMMAND => [
-                ['updateContainer']
+                ['updateForwarders']
             ]
         ];
     }
 
-    public function updateContainer(): self
+    public function updateForwarders(): self
     {
-        $this->container->set(DispatchHistoryInterface::class, $this->stepDisplayHistory);
-        $this->container->set(DispatchResultInterface::class, $this->stepDisplayResult);
+        $this->historyForwarder->setHandler($this->historyHandler);
+        $this->jobForwarder->setHandler($this->resultHandler);
 
         return $this;
     }

@@ -26,11 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas;
 
 use Psr\Container\ContainerInterface;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Conductor\Compilation\HookCompiler;
 use Teknoo\East\Paas\Conductor\Compilation\ImageCompiler;
@@ -71,8 +68,6 @@ use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
-use Teknoo\East\Paas\Recipe\Step\History\SendHistoryOverHTTP;
-use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\ObjectAccessControlInterface;
@@ -92,7 +87,6 @@ use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
-use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
@@ -264,38 +258,21 @@ return [
     StepAddHistory::class => create(),
     DisplayHistory::class => create()
         ->constructor(
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     DeserializeHistory::class => create()
         ->constructor(
             get(DeserializerInterface::class),
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     ReceiveHistory::class => create(),
 
-    DHI::class . ':resolver' => static function (ContainerInterface $container): DHI {
-        if ($container->has(DHI::class)) {
-            return $container->get(DHI::class);
-        }
-
-        return $container->get(SendHistoryOverHTTP::class);
-    },
-
-    SendHistoryOverHTTP::class => create()
-        ->constructor(
-            get(DatesService::class),
-            get('teknoo.east.paas.worker.add_history_pattern'),
-            get(UriFactoryInterface::class),
-            get(RequestFactoryInterface::class),
-            get(StreamFactoryInterface::class),
-            get(ClientInterface::class)
-        ),
     SerializeHistory::class => static function (ContainerInterface $container): SerializeHistory {
         return new SerializeHistory(
             $container->get(SerializerInterface::class),
-            $container->get(ResponseFactoryInterface::class),
+            $container->get(MessageFactoryInterface::class),
             $container->get(StreamFactoryInterface::class)
         );
     },
@@ -305,7 +282,7 @@ return [
     DeserializeJob::class => static function (ContainerInterface $container): DeserializeJob {
         return new DeserializeJob(
             $container->get(DeserializerInterface::class),
-            $container->get(ResponseFactoryInterface::class),
+            $container->get(MessageFactoryInterface::class),
             $container->get(StreamFactoryInterface::class),
             \array_merge(
                 $container->get('teknoo.east.paas.worker.global_variables'),
@@ -315,19 +292,19 @@ return [
     },
     DisplayJob::class => create()
         ->constructor(
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     GetJob::class => create()
         ->constructor(
             get(JobLoader::class),
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     PrepareJob::class => create()
         ->constructor(
             get(DatesService::class),
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     ReceiveJob::class => create(),
@@ -336,7 +313,7 @@ return [
     SerializeJob::class => static function (ContainerInterface $container): SerializeJob {
         return new SerializeJob(
             $container->get(SerializerInterface::class),
-            $container->get(ResponseFactoryInterface::class),
+            $container->get(MessageFactoryInterface::class),
             $container->get(StreamFactoryInterface::class),
         );
     },
@@ -345,30 +322,11 @@ return [
     DisplayError::class => static function (ContainerInterface $container): DisplayError {
         return new DisplayError(
             $container->get(SerializerInterface::class),
-            $container->get(ResponseFactoryInterface::class),
+            $container->get(MessageFactoryInterface::class),
             $container->get(StreamFactoryInterface::class)
         );
     },
 
-    DRI::class . ':resolver' => static function (ContainerInterface $container): DRI {
-        if ($container->has(DRI::class)) {
-            return $container->get(DRI::class);
-        }
-
-        return $container->get(PushResultOverHTTP::class);
-    },
-
-    PushResultOverHTTP::class => create()
-        ->constructor(
-            get(DatesService::class),
-            get('teknoo.east.paas.worker.add_history_pattern'),
-            get(NormalizerInterface::class),
-            get(UriFactoryInterface::class),
-            get(RequestFactoryInterface::class),
-            get(StreamFactoryInterface::class),
-            get(ClientInterface::class),
-            get(ResponseFactoryInterface::class)
-        ),
     GetVariables::class => create(),
 
     //Project
@@ -376,33 +334,33 @@ return [
     GetProject::class => create()
         ->constructor(
             get(ProjectLoader::class),
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
 
     //Worker
     BuildImages::class => create()
         ->constructor(
-            get(DHI::class . ':resolver'),
-            get(ResponseFactoryInterface::class),
+            get(DHI::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     BuildVolumes::class => create()
         ->constructor(
-            get(DHI::class . ':resolver'),
-            get(ResponseFactoryInterface::class),
+            get(DHI::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     CloneRepository::class => create(),
     CompileDeployment::class => create()
         ->constructor(
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     ConfigureCloningAgent::class => create()
         ->constructor(
             get(CloningAgentInterface::class),
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     ConfigureConductor::class => create()
@@ -410,38 +368,38 @@ return [
     ConfigureImagesBuilder::class => create()
         ->constructor(
             get(BuilderInterface::class),
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     ConfigureClusterClient::class => create()
         ->constructor(
             get(Directory::class),
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     Deploying::class => create()
         ->constructor(
-            get(DHI::class . ':resolver'),
-            get(ResponseFactoryInterface::class),
+            get(DHI::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     Exposing::class => create()
         ->constructor(
-            get(DHI::class . ':resolver'),
-            get(ResponseFactoryInterface::class),
+            get(DHI::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     HookBuildContainer::class => create()
         ->constructor(
-            get(DHI::class . ':resolver'),
-            get(ResponseFactoryInterface::class),
+            get(DHI::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
     PrepareWorkspace::class => create()
         ->constructor(get(JobWorkspaceInterface::class)),
     ReadDeploymentConfiguration::class => create()
         ->constructor(
-            get(ResponseFactoryInterface::class),
+            get(MessageFactoryInterface::class),
             get(StreamFactoryInterface::class)
         ),
 
@@ -602,7 +560,7 @@ return [
     RunJob::class => create()
         ->constructor(
             get(OriginalRecipeInterface::class),
-            get(DHI::class . ':resolver'),
+            get(DHI::class),
             get(ReceiveJob::class),
             get(DeserializeJob::class),
             get(PrepareWorkspace::class),
@@ -618,13 +576,11 @@ return [
             get(ConfigureClusterClient::class),
             get(Deploying::class),
             get(Exposing::class),
-            get(DRI::class . ':resolver'),
+            get(DRI::class),
             get(DisplayHistory::class),
             get(RunJobStepsInterface::class),
             get(DisplayError::class)
         ),
-
-
 
     RunJobInterface::class . ':proxy' => static function (ContainerInterface $container): RunJobInterface {
         return new class ($container) implements RunJobInterface {

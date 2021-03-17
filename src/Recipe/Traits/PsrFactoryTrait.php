@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Traits;
 
-use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -39,13 +39,13 @@ use Psr\Http\Message\StreamFactoryInterface;
  */
 trait PsrFactoryTrait
 {
-    private ResponseFactoryInterface $responseFactory;
+    private MessageFactoryInterface $messageFactory;
 
     private StreamFactoryInterface $streamFactory;
 
-    public function setResponseFactory(ResponseFactoryInterface $responseFactory): void
+    public function setMessageFactory(MessageFactoryInterface $messageFactory): void
     {
-        $this->responseFactory = $responseFactory;
+        $this->messageFactory = $messageFactory;
     }
 
     public function setStreamFactory(StreamFactoryInterface $streamFactory): void

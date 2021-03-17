@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,6 +36,8 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
@@ -57,28 +59,42 @@ class HookBuildContainer
 
     public function __construct(
         DispatchHistoryInterface $dispatchHistory,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->dispatchHistory = $dispatchHistory;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
     public function __invoke(
         JobWorkspaceInterface $workspace,
         CompiledDeploymentInterface $compiledDeployment,
+        string $projectId,
+        string $envName,
         JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
         $workspace->runInRoot(
-            function ($path) use ($compiledDeployment, $jobUnit, $workspace, $client, $manager) {
+            function (
+                $path
+            ) use (
+                $compiledDeployment,
+                $projectId,
+                $envName,
+                $jobUnit,
+                $workspace,
+                $client,
+                $manager
+            ) {
                 $inError = false;
                 $promise = new Promise(
-                    function (string $buildSuccess) use ($jobUnit) {
+                    function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
                         ($this->dispatchHistory)(
-                            $jobUnit,
+                            $projectId,
+                            $envName,
+                            $jobUnit->getId(),
                             static::class . ':Result',
                             ['hook_output' => $buildSuccess]
                         );
@@ -91,7 +107,7 @@ class HookBuildContainer
                             $manager,
                             'teknoo.east.paas.error.recipe.hook.building_error',
                             500,
-                            $this->responseFactory,
+                            $this->messageFactory,
                             $this->streamFactory
                         )($error);
                     }

@@ -23,26 +23,35 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Message;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
 
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\HistorySentHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\HistorySentHandler
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\RequestTrait
  */
-class JobTest extends TestCase
+class HistorySentHandlerTest extends TestCase
 {
-    use MessageTestTrait;
+    use RequestTestTrait;
 
-    /**
-     * @inheritDoc
-     */
-    public function buildMessage()
+    public function testInvoke()
     {
-        return new DispatchJob('fooBar');
+        $this->doTest(
+            (new HistorySentHandler(
+                'foo',
+                'bar',
+                $this->getUriFactoryInterfaceMock(),
+                $this->getRequestFactoryInterfaceMock(),
+                $this->getStreamFactoryInterfaceMock(),
+                $this->getClientInterfaceMock()
+            )),
+            HistorySentHandler::class,
+            new HistorySent('foo', 'bar', 'foo', 'bar')
+        );
     }
 }

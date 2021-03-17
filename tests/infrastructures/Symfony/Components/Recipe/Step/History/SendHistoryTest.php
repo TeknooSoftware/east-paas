@@ -23,22 +23,38 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Command\Steps;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\History;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Output\OutputInterface;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Message\UriInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory
  */
-class DisplayHistoryTest extends TestCase
+class SendHistoryTest extends TestCase
 {
-    private ?DatesService $dateTimeService = null;
+    /**
+     * @var DatesService
+     */
+    private $dateTimeService;
+
+    private ?MessageBusInterface $bus = null;
 
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject|DatesService
@@ -52,9 +68,24 @@ class DisplayHistoryTest extends TestCase
         return $this->dateTimeService;
     }
 
-    public function buildStep(): DisplayHistory
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject|MessageBusInterface
+     */
+    public function getMessageBusMock(): MessageBusInterface
     {
-        return new DisplayHistory($this->getDateTimeServiceMock());
+        if (!$this->bus instanceof MessageBusInterface) {
+            $this->bus = $this->createMock(MessageBusInterface::class);
+        }
+
+        return $this->bus;
+    }
+
+    public function buildStep(): SendHistory
+    {
+        return new SendHistory(
+            $this->getDateTimeServiceMock(),
+            $this->getMessageBusMock()
+        );
     }
 
     public function testInvokeBadJob()
@@ -63,27 +94,12 @@ class DisplayHistoryTest extends TestCase
         ($this->buildStep())(new \stdClass(), 'foo');
     }
 
-    public function testInvokeWithoutOutput()
-    {
-        $this->getDateTimeServiceMock()
-            ->expects(self::any())
-            ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback) {
-                $callback(new \DateTime('2018-08-01'));
-
-                return $this->getDateTimeServiceMock();
-            });
-
-        $job = $this->createMock(JobUnitInterface::class);
-
-        self::assertInstanceOf(
-            DisplayHistory::class,
-            ($this->buildStep())($job, 'foo')
-        );
-    }
-
     public function testInvoke()
     {
+        $project = $this->createMock(Project::class);
+        $env = $this->createMock(Environment::class);
+        $job = $this->createMock(JobUnitInterface::class);
+
         $this->getDateTimeServiceMock()
             ->expects(self::any())
             ->method('passMeTheDate')
@@ -93,16 +109,14 @@ class DisplayHistoryTest extends TestCase
                 return $this->getDateTimeServiceMock();
             });
 
-        $job = $this->createMock(JobUnitInterface::class);
-
-        $output = $this->createMock(OutputInterface::class);
-
-        $output->expects(self::once())
-            ->method('writeln');
+        $this->getMessageBusMock()
+            ->expects(self::once())
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass()));
 
         self::assertInstanceOf(
-            DisplayHistory::class,
-            ($this->buildStep())($job, 'foo', [], $output)
+            SendHistory::class,
+            ($this->buildStep())('foo', 'bar', 'babar', 'foo')
         );
     }
 }

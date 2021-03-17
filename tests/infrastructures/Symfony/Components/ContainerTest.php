@@ -27,10 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony;
 
 use DI\Container;
 use DI\ContainerBuilder;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface as SymfonyNormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Symfony\Component\Yaml\Parser;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
@@ -38,14 +35,11 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
-use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory;
-use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer;
@@ -181,8 +175,8 @@ class ContainerTest extends TestCase
         $container->set(DatesService::class, $this->createMock(DatesService::class));
 
         self::assertInstanceOf(
-            DisplayHistory::class,
-            $container->get(DisplayHistory::class)
+            DisplayHistoryHandler::class,
+            $container->get(DisplayHistoryHandler::class)
         );
     }
 
@@ -193,8 +187,8 @@ class ContainerTest extends TestCase
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
 
         self::assertInstanceOf(
-            DisplayResult::class,
-            $container->get(DisplayResult::class)
+            DisplayResultHandler::class,
+            $container->get(DisplayResultHandler::class)
         );
     }
 }

@@ -25,9 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Traits;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -44,15 +45,21 @@ trait ResponseTrait
         string $body,
         int $httpCode,
         string $contentType,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
-    ): ResponseInterface {
+    ): MessageInterface {
         $stream = $streamFactory->createStream($body);
 
-        $response = $responseFactory->createResponse($httpCode);
-        $response = $response->withAddedHeader('content-type', $contentType);
-        $response = $response->withBody($stream);
+        $message = $messageFactory->createMessage('1.1');
 
-        return $response;
+        if ($message instanceof ResponseInterface) {
+            $message = $message->withStatus($httpCode);
+        }
+
+        $message = $message->withAddedHeader('paas-http-code', (string) $httpCode);
+        $message = $message->withAddedHeader('content-type', $contentType);
+        $message = $message->withBody($stream);
+
+        return $message;
     }
 }

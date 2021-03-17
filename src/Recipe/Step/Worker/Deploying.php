@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -35,6 +35,8 @@ use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
@@ -56,11 +58,11 @@ class Deploying
 
     public function __construct(
         DispatchHistoryInterface $dispatchHistory,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->dispatchHistory = $dispatchHistory;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -69,6 +71,8 @@ class Deploying
         CompiledDeploymentInterface $compiledDeployment,
         EastClient $eastClient,
         ManagerInterface $manager,
+        string $projectId,
+        string $envName,
         JobUnitInterface $jobUnit
     ): self {
         /** @var ClientInterface $client */
@@ -76,9 +80,11 @@ class Deploying
             $client->deploy(
                 $compiledDeployment,
                 new Promise(
-                    function (array $result) use ($jobUnit) {
+                    function (array $result) use ($projectId, $envName, $jobUnit) {
                         ($this->dispatchHistory)(
-                            $jobUnit,
+                            $projectId,
+                            $envName,
+                            $jobUnit->getId(),
                             static::class . ':Result',
                             $result
                         );
@@ -88,7 +94,7 @@ class Deploying
                         $manager,
                         'teknoo.east.paas.error.recipe.cluster.deployment_error',
                         500,
-                        $this->responseFactory,
+                        $this->messageFactory,
                         $this->streamFactory
                     )
                 )

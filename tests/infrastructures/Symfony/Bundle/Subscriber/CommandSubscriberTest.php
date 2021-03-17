@@ -28,12 +28,11 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\EastPaasBundle\Subscriber;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Teknoo\East\Paas\Infrastructures\EastPaasBundle\DependencyInjection\Configuration;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber;
-use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory;
-use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -42,46 +41,60 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult;
  */
 class CommandSubscriberTest extends TestCase
 {
-    private ?DisplayHistory $stepDisplayHistory = null;
+    private ?DisplayHistoryHandler $stepDisplayHistory = null;
 
-    private ?DisplayResult $stepDisplayResult = null;
+    private ?DisplayResultHandler $stepDisplayResult = null;
 
-    private ?ContainerInterface $container = null;
+    private ?HistorySentHandler $historyForwarder = null;
+
+    private ?JobDoneHandler $jobForwarder = null;
 
     /**
-     * @return DisplayHistory|MockObject
+     * @return DisplayHistoryHandler|MockObject
      */
-    public function getStepDisplayHistory(): ?DisplayHistory
+    public function getStepDisplayHistory(): ?DisplayHistoryHandler
     {
-        if (!$this->stepDisplayHistory instanceof DisplayHistory) {
-            $this->stepDisplayHistory = $this->createMock(DisplayHistory::class);
+        if (!$this->stepDisplayHistory instanceof DisplayHistoryHandler) {
+            $this->stepDisplayHistory = $this->createMock(DisplayHistoryHandler::class);
         }
 
         return $this->stepDisplayHistory;
     }
 
     /**
-     * @return DisplayResult|MockObject
+     * @return DisplayResultHandler|MockObject
      */
-    public function getStepDisplayResult(): ?DisplayResult
+    public function getStepDisplayResult(): ?DisplayResultHandler
     {
-        if (!$this->stepDisplayResult instanceof DisplayResult) {
-            $this->stepDisplayResult = $this->createMock(DisplayResult::class);
+        if (!$this->stepDisplayResult instanceof DisplayResultHandler) {
+            $this->stepDisplayResult = $this->createMock(DisplayResultHandler::class);
         }
 
         return $this->stepDisplayResult;
     }
 
     /**
-     * @return ContainerInterface|MockObject
+     * @return HistorySentHandler|MockObject
      */
-    public function getContainer(): ?ContainerInterface
+    public function getHistoryForwarder(): ?HistorySentHandler
     {
-        if (!$this->container instanceof ContainerInterface) {
-            $this->container = $this->createMock(ContainerInterface::class);
+        if (!$this->historyForwarder instanceof HistorySentHandler) {
+            $this->historyForwarder = $this->createMock(HistorySentHandler::class);
         }
 
-        return $this->container;
+        return $this->historyForwarder;
+    }
+
+    /**
+     * @return JobDoneHandler|MockObject
+     */
+    public function getJobForwarder(): ?JobDoneHandler
+    {
+        if (!$this->jobForwarder instanceof JobDoneHandler) {
+            $this->jobForwarder = $this->createMock(JobDoneHandler::class);
+        }
+
+        return $this->jobForwarder;
     }
 
     /**
@@ -92,7 +105,8 @@ class CommandSubscriberTest extends TestCase
         return new CommandSubscriber(
             $this->getStepDisplayHistory(),
             $this->getStepDisplayResult(),
-            $this->getContainer()
+            $this->getHistoryForwarder(),
+            $this->getJobForwarder()
         );
     }
 
@@ -103,11 +117,11 @@ class CommandSubscriberTest extends TestCase
         );
     }
 
-    public function testUpdateContainer()
+    public function testUpdateForwarders()
     {
         self::assertInstanceOf(
             CommandSubscriber::class,
-            $this->buildConfiguration()->updateContainer()
+            $this->buildConfiguration()->updateForwarders()
         );
     }
 }

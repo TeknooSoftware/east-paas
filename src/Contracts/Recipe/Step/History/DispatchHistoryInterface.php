@@ -26,6 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Recipe\Step\History;
 
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -42,7 +44,9 @@ interface DispatchHistoryInterface
      * @param array<string, mixed> $extra
      */
     public function __invoke(
-        JobUnitInterface $job,
+        string $projectId,
+        string $envName,
+        string $jobId,
         string $step,
         array $extra = []
     ): DispatchHistoryInterface;

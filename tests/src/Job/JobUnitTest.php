@@ -285,34 +285,6 @@ class JobUnitTest extends TestCase
         );
     }
 
-    public function testPrepareUrlBadUrl()
-    {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->prepareUrl(new \stdClass(), $this->createMock(PromiseInterface::class));
-    }
-
-    public function testPrepareUrlBadPromise()
-    {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->prepareUrl('url', new \stdClass());
-    }
-
-    public function testPrepareUrl()
-    {
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
-            ->method('success')
-            ->with('https://foo.bar/project/bar/environment/foo/job/test/addHistory')
-            ->willReturnSelf();
-
-        $object = $this->buildObject();
-
-        self::assertInstanceOf(
-            JobUnit::class,
-            $object->prepareUrl('https://foo.bar/project/{projectId}/environment/{envName}/job/{jobId}/addHistory', $promise)
-        );
-    }
-
     public function testExportToMeDataBadNormalizer()
     {
         $this->expectException(\TypeError::class);
