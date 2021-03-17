@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
@@ -52,9 +52,10 @@ class ReadDeploymentConfigurationTest extends TestCase
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $response->expects(self::any())->method('withBody')->willReturnSelf();
+        $response->expects(self::any())->method('withStatus')->willReturnSelf();
 
-        $responseFactory = $this->createMock(ResponseFactoryInterface::class);
-        $responseFactory->expects(self::any())->method('createResponse')->willReturn(
+        $messageFactory = $this->createMock(MessageFactoryInterface::class);
+        $messageFactory->expects(self::any())->method('createMessage')->willReturn(
             $response
         );
 
@@ -64,57 +65,8 @@ class ReadDeploymentConfigurationTest extends TestCase
         );
 
         return new ReadDeploymentConfiguration(
-            $responseFactory,
+            $messageFactory,
             $streamFactory
-        );
-    }
-
-    public function testInvokeBadJobWorkspace()
-    {
-        $this->expectException(\TypeError::class);
-
-        ($this->buildStep())(
-            new \stdClass(),
-            $this->createMock(ConductorInterface::class),
-            $this->createMock(EastClient::class),
-            $this->createMock(ManagerInterface::class),
-            $this->createMock(ResponseFactoryInterface::class),
-            $this->createMock(StreamFactoryInterface::class),
-        );
-    }
-
-    public function testInvokeBadConductor()
-    {
-        $this->expectException(\TypeError::class);
-
-        ($this->buildStep())(
-            $this->createMock(JobWorkspaceInterface::class),
-            new \stdClass(),
-            $this->createMock(EastClient::class),
-            $this->createMock(ManagerInterface::class)
-        );
-    }
-
-
-    public function testInvokeBadClient()
-    {
-        $this->expectException(\TypeError::class);
-        ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ConductorInterface::class),
-            new \stdClass(),
-            $this->createMock(ManagerInterface::class)
-        );
-    }
-
-    public function testInvokeBadManager()
-    {
-        $this->expectException(\TypeError::class);
-        ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ConductorInterface::class),
-            $this->createMock(EastClient::class),
-            new \stdClass()
         );
     }
 

@@ -56,7 +56,12 @@ class DispatchJob implements DispatchJobInterface
     {
         $this->bus->dispatch(
             new Envelope(
-                new MessageJob($jobSerialized),
+                new MessageJob(
+                    $project->getId(),
+                    (string) $environment,
+                    $job->getId(),
+                    $jobSerialized
+                ),
                 [
                     new Parameter('projectId', $project->getId()),
                     new Parameter('envName', (string) $environment),

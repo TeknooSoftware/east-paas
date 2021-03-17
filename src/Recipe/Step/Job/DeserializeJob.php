@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -61,13 +61,13 @@ class DeserializeJob
      */
     public function __construct(
         DeserializerInterface $deserializer,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory,
         array $variables
     ) {
         $this->deserializer = $deserializer;
         $this->variables = $variables;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -86,7 +86,7 @@ class DeserializeJob
                     $manager,
                     'teknoo.east.paas.error.recipe.job.mal_formed',
                     400,
-                    $this->responseFactory,
+                    $this->messageFactory,
                     $this->streamFactory
                 )
             ),

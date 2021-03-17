@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -35,6 +35,8 @@ use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
@@ -56,11 +58,11 @@ class BuildImages
 
     public function __construct(
         DispatchHistoryInterface $dispatchHistory,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->dispatchHistory = $dispatchHistory;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -68,19 +70,33 @@ class BuildImages
         ImageBuilder $builder,
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
+        string $projectId,
+        string $envName,
         JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
         $workspace->runInRoot(
-            function (string $root) use ($builder, $compiledDeployment, $jobUnit, $client, $manager) {
+            function (
+                string $root
+            ) use (
+                $builder,
+                $compiledDeployment,
+                $projectId,
+                $envName,
+                $jobUnit,
+                $client,
+                $manager
+            ) {
                 $builder->buildImages(
                     $compiledDeployment,
                     $root,
                     new Promise(
-                        function (string $buildSuccess) use ($jobUnit) {
+                        function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
                             ($this->dispatchHistory)(
-                                $jobUnit,
+                                $projectId,
+                                $envName,
+                                $jobUnit->getId(),
                                 static::class . ':Result',
                                 ['build_output' => $buildSuccess]
                             );
@@ -90,7 +106,7 @@ class BuildImages
                             $manager,
                             'teknoo.east.paas.error.recipe.images.building_error',
                             500,
-                            $this->responseFactory,
+                            $this->messageFactory,
                             $this->streamFactory
                         )
                     )

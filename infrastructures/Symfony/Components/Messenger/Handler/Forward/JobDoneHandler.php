@@ -23,12 +23,11 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Traits;
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward;
 
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDoneHandlerInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -39,34 +38,23 @@ use Psr\Http\Message\UriFactoryInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-trait RequestTrait
+class JobDoneHandler implements MessageHandlerInterface
 {
-    private UriFactoryInterface $uriFactory;
+    private ?JobDoneHandlerInterface $handler = null;
 
-    private RequestFactoryInterface $requestFactory;
+    public function setHandler(?JobDoneHandlerInterface $handler): self
+    {
+        $this->handler = $handler;
 
-    private StreamFactoryInterface $streamFactory;
+        return $this;
+    }
 
-    private ClientInterface $client;
+    public function __invoke(JobDone $jobDone): self
+    {
+        if (null !== $this->handler) {
+            ($this->handler)($jobDone);
+        }
 
-    private function sendRequest(
-        string $method,
-        string $url,
-        string $contentType,
-        string $body
-    ): void {
-        $uri = $this->uriFactory->createUri($url);
-
-        $request = $this->requestFactory->createRequest(
-            $method,
-            $uri
-        );
-
-        $stream = $this->streamFactory->createStream($body);
-
-        $request = $request->withAddedHeader('content-type', $contentType);
-        $request = $request->withBody($stream);
-
-        $this->client->sendRequest($request);
+        return $this;
     }
 }

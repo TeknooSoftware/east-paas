@@ -61,8 +61,6 @@ interface JobUnitInterface extends NormalizableInterface
         PromiseInterface $promise
     ): JobUnitInterface;
 
-    public function prepareUrl(string $url, PromiseInterface $promise): JobUnitInterface;
-
     /**
      * @param array<string, mixed> $values
      */

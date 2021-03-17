@@ -23,13 +23,16 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
@@ -37,22 +40,23 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Recipe\Step\Misc\PushResultOverHTTP
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult
  * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
  * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\RequestTrait
  */
-class PushResultOverHTTPTest extends TestCase
+class PushResultTest extends TestCase
 {
     /**
      * @var DatesService
@@ -64,15 +68,11 @@ class PushResultOverHTTPTest extends TestCase
      */
     private $normalizer;
 
-    private ?UriFactoryInterface $uriFactory = null;
+    private ?MessageBusInterface $bus = null;
 
-    private ?RequestFactoryInterface $requestFactory = null;
-
-    private ?ResponseFactoryInterface $responseFactory = null;
+    private ?MessageFactoryInterface $messageFactory = null;
 
     private ?StreamFactoryInterface $streamFactory = null;
-
-    private ?ClientInterface $client = null;
 
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject|DatesService
@@ -84,6 +84,18 @@ class PushResultOverHTTPTest extends TestCase
         }
 
         return $this->dateTimeService;
+    }
+
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject|MessageBusInterface
+     */
+    public function getMessageBusMock(): MessageBusInterface
+    {
+        if (!$this->bus instanceof MessageBusInterface) {
+            $this->bus = $this->createMock(MessageBusInterface::class);
+        }
+
+        return $this->bus;
     }
 
     /**
@@ -99,51 +111,15 @@ class PushResultOverHTTPTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|\Psr\Http\Client\ClientInterface
+     * @return \PHPUnit\Framework\MockObject\MockObject|MessageFactoryInterface
      */
-    public function getClientMock(): ClientInterface
+    public function getMessageFactoryMock(): MessageFactoryInterface
     {
-        if (!$this->client instanceof ClientInterface) {
-            $this->client = $this->createMock(ClientInterface::class);
+        if (!$this->messageFactory instanceof MessageFactoryInterface) {
+            $this->messageFactory = $this->createMock(MessageFactoryInterface::class);
         }
 
-        return $this->client;
-    }
-
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|UriFactoryInterface
-     */
-    public function getUriFactoryMock(): UriFactoryInterface
-    {
-        if (!$this->uriFactory instanceof UriFactoryInterface) {
-            $this->uriFactory = $this->createMock(UriFactoryInterface::class);
-        }
-
-        return $this->uriFactory;
-    }
-
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|RequestFactoryInterface
-     */
-    public function getRequestFactoryMock(): RequestFactoryInterface
-    {
-        if (!$this->requestFactory instanceof RequestFactoryInterface) {
-            $this->requestFactory = $this->createMock(RequestFactoryInterface::class);
-        }
-
-        return $this->requestFactory;
-    }
-
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|ResponseFactoryInterface
-     */
-    public function getResponseFactoryMock(): ResponseFactoryInterface
-    {
-        if (!$this->responseFactory instanceof ResponseFactoryInterface) {
-            $this->responseFactory = $this->createMock(ResponseFactoryInterface::class);
-        }
-
-        return $this->responseFactory;
+        return $this->messageFactory;
     }
 
     /**
@@ -158,17 +134,14 @@ class PushResultOverHTTPTest extends TestCase
         return $this->streamFactory;
     }
 
-    public function buildStep(): PushResultOverHTTP
+    public function buildStep(): PushResult
     {
-        return new PushResultOverHTTP(
+        return new PushResult(
             $this->getDateTimeServiceMock(),
-            'https://foo.bar',
+            $this->getMessageBusMock(),
             $this->getNormalizer(),
-            $this->getUriFactoryMock(),
-            $this->getRequestFactoryMock(),
             $this->getStreamFactoryMock(),
-            $this->getClientMock(),
-            $this->getResponseFactoryMock()
+            $this->getMessageFactoryMock()
         );
     }
 
@@ -186,29 +159,15 @@ class PushResultOverHTTPTest extends TestCase
 
     public function testInvoke()
     {
-        $request = $this->createMock(RequestInterface::class);
         $client = $this->createMock(EastClient::class);
-
-        $request->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $request->expects(self::any())->method('withBody')->willReturnSelf();
-
-        $this->getRequestFactoryMock()->expects(self::any())->method('createRequest')->willReturn(
-            $request
-        );
 
         $this->getStreamFactoryMock()->expects(self::any())->method('createStream')->willReturn(
             $this->createMock(StreamInterface::class)
         );
 
         $manager = $this->createMock(ManagerInterface::class);
-        $job = $this->createMock(JobUnitInterface::class);
-        $job->expects(self::once())
-            ->method('prepareUrl')
-            ->willReturnCallback(function ($url, PromiseInterface $promise) use ($job) {
-                $promise->success('https://foo.bar');
-
-                return $job;
-            });
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDateTimeServiceMock()
             ->expects(self::any())
@@ -243,47 +202,28 @@ class PushResultOverHTTPTest extends TestCase
                return $manager;
             });
 
-        $this->getUriFactoryMock()
+        $this->getMessageBusMock()
             ->expects(self::once())
-            ->method('createUri')
-            ->with('https://foo.bar')
-            ->willReturn($this->createMock(UriInterface::class));
-
-        $this->getClientMock()
-            ->expects(self::once())
-            ->method('sendRequest');
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass()));
 
         self::assertInstanceOf(
-            PushResultOverHTTP::class,
-            ($this->buildStep())($manager, $client, $job, $result)
+            PushResult::class,
+            ($this->buildStep())($manager, $client, $project, $env, 'babar', $result)
         );
     }
 
     public function testInvokeWithNoResult()
     {
-        $request = $this->createMock(RequestInterface::class);
         $client = $this->createMock(EastClient::class);
-
-        $request->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $request->expects(self::any())->method('withBody')->willReturnSelf();
-
-        $this->getRequestFactoryMock()->expects(self::any())->method('createRequest')->willReturn(
-            $request
-        );
 
         $this->getStreamFactoryMock()->expects(self::any())->method('createStream')->willReturn(
             $this->createMock(StreamInterface::class)
         );
 
         $manager = $this->createMock(ManagerInterface::class);
-        $job = $this->createMock(JobUnitInterface::class);
-        $job->expects(self::once())
-            ->method('prepareUrl')
-            ->willReturnCallback(function ($url, PromiseInterface $promise) use ($job) {
-                $promise->success('https://foo.bar');
-
-                return $job;
-            });
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDateTimeServiceMock()
             ->expects(self::any())
@@ -318,36 +258,24 @@ class PushResultOverHTTPTest extends TestCase
                return $manager;
             });
 
-        $this->getUriFactoryMock()
+        $this->getMessageBusMock()
             ->expects(self::once())
-            ->method('createUri')
-            ->with('https://foo.bar')
-            ->willReturn($this->createMock(UriInterface::class));
-
-        $this->getClientMock()
-            ->expects(self::once())
-            ->method('sendRequest');
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass()));
 
         self::assertInstanceOf(
-            PushResultOverHTTP::class,
-            ($this->buildStep())($manager, $client, $job)
+            PushResult::class,
+            ($this->buildStep())($manager, $client, $project, $env, 'babar')
         );
     }
 
     public function testInvokeError()
     {
-        $request = $this->createMock(RequestInterface::class);
-        $request->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $request->expects(self::any())->method('withBody')->willReturnSelf();
-        $this->getRequestFactoryMock()->expects(self::any())->method('createRequest')->willReturn(
-            $request
-        );
-        
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $response->expects(self::any())->method('withBody')->willReturnSelf();
-        $this->getResponseFactoryMock()->expects(self::any())->method('createResponse')->willReturn(
-            $response
+        $message = $this->createMock(MessageInterface::class);
+        $message->expects(self::any())->method('withAddedHeader')->willReturnSelf();
+        $message->expects(self::any())->method('withBody')->willReturnSelf();
+        $this->getMessageFactoryMock()->expects(self::any())->method('createMessage')->willReturn(
+            $message
         );
 
         $this->getStreamFactoryMock()->expects(self::any())->method('createStream')->willReturn(
@@ -356,15 +284,9 @@ class PushResultOverHTTPTest extends TestCase
 
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(EastClient::class);
-        
-        $job = $this->createMock(JobUnitInterface::class);
-        $job->expects(self::once())
-            ->method('prepareUrl')
-            ->willReturnCallback(function ($url, PromiseInterface $promise) use ($job) {
-                $promise->success('https://foo.bar');
 
-                return $job;
-            });
+        $project = 'foo';
+        $env = 'bar';
 
         $this->getDateTimeServiceMock()
             ->expects(self::any())
@@ -399,15 +321,10 @@ class PushResultOverHTTPTest extends TestCase
                 return $manager;
             });
 
-        $this->getUriFactoryMock()
-            ->expects(self::once())
-            ->method('createUri')
-            ->with('https://foo.bar')
-            ->willReturn($this->createMock(UriInterface::class));
 
-        $this->getClientMock()
+        $this->getMessageBusMock()
             ->expects(self::once())
-            ->method('sendRequest')
+            ->method('dispatch')
             ->willThrowException(new \Exception('foo'));
 
         $client->expects(self::once())
@@ -418,8 +335,8 @@ class PushResultOverHTTPTest extends TestCase
             ->with(new \Exception('foo'));
 
         self::assertInstanceOf(
-            PushResultOverHTTP::class,
-            ($this->buildStep())($manager, $client, $job, $result)
+            PushResult::class,
+            ($this->buildStep())($manager, $client, $project, $env, 'babarz', $result)
         );
     }
 }

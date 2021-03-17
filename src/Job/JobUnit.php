@@ -179,19 +179,6 @@ class JobUnit implements JobUnitInterface
         return $this;
     }
 
-    public function prepareUrl(string $url, PromiseInterface $promise): JobUnitInterface
-    {
-        $url = \str_replace(
-            ['{projectId}','{envName}','{jobId}'],
-            [$this->projectResume['id'], $this->environment->getName(), $this->getId()],
-            $url
-        );
-
-        $promise->success($url);
-
-        return $this;
-    }
-
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
     {
         $normalizer->injectData([

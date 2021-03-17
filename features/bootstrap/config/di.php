@@ -11,14 +11,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Client\ClientInterface as PsrClient;
+use Teknoo\East\Diactoros\ResponseMessageFactory;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 
 use function DI\create;
 use function DI\get;
 
 return [
-    'teknoo.east.paas.worker.add_history_pattern' => function (): string {
-        return 'https://localhost/project/{projectId}/environment/{envName}/job/{jobId}/log';
-    },
     'teknoo.east.paas.worker.global_variables' => [
         'ROOT' => \dirname(__DIR__)
     ],
@@ -52,4 +51,6 @@ return [
             }
         };
     },
+
+    MessageFactoryInterface::class => get(ResponseMessageFactory::class),
 ];

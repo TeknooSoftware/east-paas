@@ -1,15 +1,6 @@
 parameters:
     teknoo.east.symfony.normalizer.east_normalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer'
-
-    teknoo.east.paas.symfony.normalizer.exception.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer'
-    teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer'
-    teknoo.east.paas.symfony.normalizer.history_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer'
-    teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer'
-
-    teknoo.east.paas.symfony.subscriber.command.class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
-
     teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
-
 
 services:
     teknoo.east.paas.symfony.property_accessor:
@@ -21,35 +12,52 @@ services:
             - '@?cache.property_access'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer:
-        class: '%teknoo.east.paas.symfony.normalizer.exception.class%'
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer'
         tags:
             - {name: 'serializer.normalizer', priority: 100}
 
     Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer:
-        class: '%teknoo.east.paas.symfony.normalizer.class_finder_denormalizer.class%'
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer'
         calls:
             - ['setDenormalizer', ['@serializer']]
         tags:
             - {name: 'serializer.normalizer', priority: 10}
 
     Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer:
-        class: '%teknoo.east.paas.symfony.normalizer.history_denormalizer.class%'
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer'
         tags:
             - {name: 'serializer.normalizer', priority: 100}
 
     Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer:
-        class: '%teknoo.east.paas.symfony.normalizer.job_unit_denormalizer.class%'
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer'
         calls:
             - ['setDenormalizer', ['@serializer']]
         tags:
             - {name: 'serializer.normalizer', priority: 100}
 
+    Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler'
+        tags:
+            - 'messenger.message_handler'
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler'
+        tags:
+            - 'messenger.message_handler'
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler'
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler'
+
     Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber:
-        class: '%teknoo.east.paas.symfony.subscriber.command.class%'
+        class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
         arguments:
-            - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayHistory'
-            - '@Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps\DisplayResult'
-            - '@service_container'
+            - '@Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler'
+            - '@Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler'
+            - '@Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler'
+            - '@Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler'
         tags:
             - { name: 'kernel.event_subscriber' }
 
@@ -64,6 +72,22 @@ services:
         arguments:
             - '@messenger.default_bus'
 
+    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory'
+        public: true
+        arguments:
+            - '@Teknoo\East\Website\Service\DatesService'
+            - '@messenger.default_bus'
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult'
+        public: true
+        arguments:
+            - '@Teknoo\East\Website\Service\DatesService'
+            - '@messenger.default_bus'
+            - '@Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface'
+            - '@Psr\Http\Message\StreamFactoryInterface'
+            - '@Teknoo\East\Foundation\Http\Message\MessageFactoryInterface'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer'
@@ -82,3 +106,4 @@ services:
         public: true
         arguments:
             - '@serializer'
+

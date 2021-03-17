@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Paas\Object\Job;
@@ -47,9 +47,9 @@ class DisplayJob
     use ResponseTrait;
     use PsrFactoryTrait;
 
-    public function __construct(ResponseFactoryInterface $responseFactory, StreamFactoryInterface $streamFactory)
+    public function __construct(MessageFactoryInterface $messageFactory, StreamFactoryInterface $streamFactory)
     {
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -60,7 +60,7 @@ class DisplayJob
                 $jobSerialized,
                 200,
                 'application/json',
-                $this->responseFactory,
+                $this->messageFactory,
                 $this->streamFactory
             )
         );

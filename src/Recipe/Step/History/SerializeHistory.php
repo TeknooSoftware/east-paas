@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\History;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -53,11 +53,11 @@ class SerializeHistory
 
     public function __construct(
         SerializerInterface $serializer,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
         $this->serializer = $serializer;
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -75,7 +75,7 @@ class SerializeHistory
                     $manager,
                     'teknoo.east.paas.error.recipe.history.serialization_error',
                     400,
-                    $this->responseFactory,
+                    $this->messageFactory,
                     $this->streamFactory
                 )
             )

@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingRecipe\Step\Worker;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob as JobMessage;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
@@ -78,7 +78,7 @@ class DispatchJobTest extends TestCase
             ->expects(self::once())
             ->method('dispatch')
             ->with($envelope = new Envelope(
-                new JobMessage($sJob), [
+                new JobMessage('foo', 'prod', 'bar', $sJob), [
                 new Parameter('projectId', 'foo'),
                 new Parameter('envName', 'prod'),
                 new Parameter('jobId', 'bar')

@@ -23,13 +23,11 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Command\Steps;
+namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Website\Service\DatesService;
+use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -40,38 +38,22 @@ use Teknoo\East\Website\Service\DatesService;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class DisplayHistory implements DispatchHistoryInterface
+class DisplayHistoryHandler implements HistorySentHandlerInterface
 {
-    private DatesService $dateTimeService;
+    private ?OutputInterface $output = null;
 
-    public function __construct(DatesService $dateTimeService)
+    public function setOutput(?OutputInterface $output): self
     {
-        $this->dateTimeService = $dateTimeService;
+        $this->output = $output;
+
+        return $this;
     }
 
-    public function __invoke(
-        JobUnitInterface $job,
-        string $step,
-        array $extra = [],
-        ?OutputInterface $output = null
-    ): DispatchHistoryInterface {
-        if (!$output) {
-            return $this;
+    public function __invoke(HistorySent $historySent): HistorySentHandlerInterface
+    {
+        if (null !== $this->output) {
+            $this->output->writeln($historySent->getMessage());
         }
-
-        $this->dateTimeService->passMeTheDate(
-            function (\DateTimeInterface $now) use ($step, $extra, $output) {
-                $history = new History(
-                    null,
-                    $step,
-                    $now,
-                    false,
-                    $extra
-                );
-
-                $output->writeln((string) \json_encode($history));
-            }
-        );
 
         return $this;
     }

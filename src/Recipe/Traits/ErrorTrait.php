@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Traits;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -48,7 +48,7 @@ trait ErrorTrait
         ManagerInterface $manager,
         ?string $message,
         int $httpCode,
-        ResponseFactoryInterface $responseFactory,
+        MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ): callable {
         return static function (\Throwable $error) use (
@@ -56,7 +56,7 @@ trait ErrorTrait
             $manager,
             $message,
             $httpCode,
-            $responseFactory,
+            $messageFactory,
             $streamFactory
         ) {
             if (null === $message) {
@@ -76,7 +76,7 @@ trait ErrorTrait
                     ),
                     $httpCode,
                     'application/problem+json',
-                    $responseFactory,
+                    $messageFactory,
                     $streamFactory
                 )
             );

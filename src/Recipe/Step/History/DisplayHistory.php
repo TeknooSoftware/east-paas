@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\History;
 
-use Psr\Http\Message\ResponseFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Paas\Object\History;
@@ -47,9 +47,9 @@ class DisplayHistory
     use ResponseTrait;
     use PsrFactoryTrait;
 
-    public function __construct(ResponseFactoryInterface $responseFactory, StreamFactoryInterface $streamFactory)
+    public function __construct(MessageFactoryInterface $messageFactory, StreamFactoryInterface $streamFactory)
     {
-        $this->setResponseFactory($responseFactory);
+        $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }
 
@@ -64,7 +64,7 @@ class DisplayHistory
                 $historySerialized,
                 200,
                 'application/json',
-                $this->responseFactory,
+                $this->messageFactory,
                 $this->streamFactory
             )
         );
