@@ -47,7 +47,7 @@ class HistoryDenormalizer implements DenormalizerInterface
     /**
      * @param array<string, mixed> $context
      */
-    public function denormalize($data, $class, $format = null, array $context = array())
+    public function denormalize($data, $class, $format = null, array $context = array()): History
     {
         if (!is_array($data) || History::class !== $class) {
             throw new RuntimeException('Error, this object is not managed by this denormalizer');
