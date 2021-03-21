@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -30,6 +30,10 @@ use Teknoo\East\Paas\Container\Image\Image;
 use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+
+use function array_pop;
+use function explode;
+use function is_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -69,7 +73,7 @@ class ImageCompiler implements CompilerInterface
     private function mergeConfigurations(array $original, iterable $new, bool $isFirstLevel = true): array
     {
         foreach ($new as $key => &$value) {
-            if (isset($original[$key]) && \is_array($value)) {
+            if (isset($original[$key]) && is_array($value)) {
                 $original[$key] = static::mergeConfigurations($original[$key], $value, false);
             } elseif (false === $isFirstLevel || isset($original[$key])) {
                 $original[$key] = $value;
@@ -101,8 +105,8 @@ class ImageCompiler implements CompilerInterface
                 $tag,
                 $variables
             ) {
-                $parts = \explode('/', $buildName);
-                $imageName = \array_pop($parts);
+                $parts = explode('/', $buildName);
+                $imageName = array_pop($parts);
 
                 $image = new Image(
                     $imageName,

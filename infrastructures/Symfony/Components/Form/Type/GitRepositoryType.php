@@ -32,6 +32,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Object\GitRepository;
+use Traversable;
+
+use function iterator_to_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -58,7 +61,7 @@ class GitRepositoryType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?GitRepository $data
              */
             public function mapDataToForms($data, $forms): void
@@ -67,19 +70,19 @@ class GitRepositoryType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $forms['pullUrl']->setData($data->getPullUrl());
                 $forms['defaultBranch']->setData($data->getDefaultBranch());
                 $forms['identity']->setData($data->getIdentity());
             }
 
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?GitRepository $data
              */
             public function mapFormsToData($forms, &$data): void
             {
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data = new GitRepository(
                     (string) $forms['pullUrl']->getData(),
                     (string) $forms['defaultBranch']->getData(),

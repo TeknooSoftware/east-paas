@@ -35,6 +35,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Website\Object\User;
 use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 use Teknoo\East\Paas\Object\Account;
+use Traversable;
+
+use function iterator_to_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -80,7 +83,7 @@ class AccountType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param \Traversable<string, PaasFormInterface> $forms
+             * @param Traversable<string, PaasFormInterface> $forms
              * @param ?Account $data
              */
             public function mapDataToForms($data, $forms): void
@@ -89,12 +92,12 @@ class AccountType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data->injectDataInto($forms);
             }
 
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?Account $data
              */
             public function mapFormsToData($forms, &$data): void
@@ -103,7 +106,7 @@ class AccountType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
                 $data->setNamespace($forms['namespace']->getData());
                 $data->setUsers($forms['users']->getData());

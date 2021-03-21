@@ -36,6 +36,9 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
+use Traversable;
+
+use function iterator_to_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -87,7 +90,7 @@ class ClusterType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param \Traversable<string, PaasFormInterface> $forms
+             * @param Traversable<string, PaasFormInterface> $forms
              * @param ?Cluster $data
              */
             public function mapDataToForms($data, $forms): void
@@ -96,12 +99,12 @@ class ClusterType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data->injectDataInto($forms);
             }
 
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?Cluster $data
              */
             public function mapFormsToData($forms, &$data): void
@@ -110,7 +113,7 @@ class ClusterType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
                 $data->setType($forms['type']->getData());
                 $data->setAddress($forms['address']->getData());

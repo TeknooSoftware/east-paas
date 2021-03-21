@@ -27,8 +27,15 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
 use Maclof\Kubernetes\Client as KubClient;
 use Maclof\Kubernetes\RepositoryRegistry;
+use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
+
+use function chmod;
+use function file_exists;
+use function file_put_contents;
+use function tempnam;
+use function unlink;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -96,14 +103,14 @@ class Factory implements ClientFactoryInterface
 
     private function write(string $value): string
     {
-        $fileName = \tempnam($this->tmpDir, 'east-paas-kube-') . '.paas';
+        $fileName = tempnam($this->tmpDir, 'east-paas-kube-') . '.paas';
 
         if (empty($fileName)) {
-            throw new \RuntimeException('Bad file temp name');
+            throw new RuntimeException('Bad file temp name');
         }
 
-        \file_put_contents($fileName, $value);
-        \chmod($fileName, 0500);
+        file_put_contents($fileName, $value);
+        chmod($fileName, 0500);
 
         $this->files[] = $fileName;
 
@@ -113,11 +120,11 @@ class Factory implements ClientFactoryInterface
     private function delete(): void
     {
         foreach ($this->files as $file) {
-            if (!\file_exists($file)) {
+            if (!file_exists($file)) {
                 continue;
             }
 
-            \unlink($file);
+            unlink($file);
         }
 
         $this->files = [];

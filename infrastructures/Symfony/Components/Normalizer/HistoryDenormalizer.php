@@ -25,8 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
+use DateTime;
+use DateTimeInterface;
+use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Teknoo\East\Paas\Object\History;
+
+use function is_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -41,12 +46,11 @@ class HistoryDenormalizer implements DenormalizerInterface
 {
     /**
      * @param array<string, mixed> $context
-     * @return History
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        if (!\is_array($data) || History::class !== $class) {
-            throw new \RuntimeException('Error, this object is not managed by this denormalizer');
+        if (!is_array($data) || History::class !== $class) {
+            throw new RuntimeException('Error, this object is not managed by this denormalizer');
         }
 
         $previous = null;
@@ -59,13 +63,13 @@ class HistoryDenormalizer implements DenormalizerInterface
             $message = $data['message'];
         }
 
-        $date = new \DateTime();
+        $date = new DateTime();
         if (isset($data['date'])) {
-            $date = \DateTime::createFromFormat(History::DATE_FORMAT, $data['date']);
+            $date = DateTime::createFromFormat(History::DATE_FORMAT, $data['date']);
         }
 
-        if (!$date instanceof \DateTimeInterface) {
-            throw new \RuntimeException('Bad denormalized date');
+        if (!$date instanceof DateTimeInterface) {
+            throw new RuntimeException('Bad denormalized date');
         }
 
         $isFinal = !empty($data['is_final']);
@@ -80,6 +84,6 @@ class HistoryDenormalizer implements DenormalizerInterface
 
     public function supportsDenormalization($data, $type, $format = null): bool
     {
-        return \is_array($data) && History::class === $type;
+        return is_array($data) && History::class === $type;
     }
 }

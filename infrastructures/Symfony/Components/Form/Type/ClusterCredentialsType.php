@@ -33,6 +33,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Object\ClusterCredentials;
+use Traversable;
+
+use function iterator_to_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -60,7 +63,7 @@ class ClusterCredentialsType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?ClusterCredentials $data
              */
             public function mapDataToForms($data, $forms): void
@@ -69,7 +72,7 @@ class ClusterCredentialsType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $forms['serverCertificate']->setData($data->getServerCertificate());
                 $forms['token']->setData($data->getToken());
                 $forms['username']->setData($data->getUsername());
@@ -77,12 +80,12 @@ class ClusterCredentialsType extends AbstractType
             }
 
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?ClusterCredentials $data
              */
             public function mapFormsToData($forms, &$data): void
             {
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data = new ClusterCredentials(
                     (string) $forms['serverCertificate']->getData(),
                     (string) $forms['token']->getData(),

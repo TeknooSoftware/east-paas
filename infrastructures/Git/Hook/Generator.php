@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git\Hook;
 
+use Closure;
 use Teknoo\East\Paas\Infrastructures\Git\Hook;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
@@ -43,7 +44,7 @@ class Generator implements StateInterface
 {
     use StateTrait;
 
-    private function update(): \Closure
+    private function update(): Closure
     {
         return function ($key, $value): Hook {
             $this->{$key} = $value;

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Conductor\Conductor\Generator;
 use Teknoo\East\Paas\Conductor\Conductor\Running;
@@ -45,6 +46,9 @@ use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
+use Throwable;
+
+use function str_replace;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -178,7 +182,7 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
                     [$promise, 'fail']
                 )
             );
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
 
@@ -186,7 +190,7 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
     }
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function compileDeployment(PromiseInterface $promise, ?string $storageIdentifier = null): ConductorInterface
     {
@@ -199,12 +203,12 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
             ],
             function ($paas) use ($promise, $storageIdentifier): void {
                 if (!isset($paas[static::CONFIG_KEY_VERSION]) || 'v1' !== $paas[static::CONFIG_KEY_VERSION]) {
-                    $promise->fail(new \RuntimeException('Paas config file version not supported'));
+                    $promise->fail(new RuntimeException('Paas config file version not supported'));
 
                     return;
                 }
 
-                $version = (int) \str_replace('v', '', $paas[static::CONFIG_KEY_VERSION]);
+                $version = (int) str_replace('v', '', $paas[static::CONFIG_KEY_VERSION]);
                 $namespace = $paas[static::CONFIG_KEY_NAMESPACE] ?? 'default';
 
                 try {
@@ -213,7 +217,7 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
                     $this->extractAndCompile($compiledDeployment, $storageIdentifier ?? $this->storageIdentifier);
 
                     $promise->success($compiledDeployment);
-                } catch (\Throwable $error) {
+                } catch (Throwable $error) {
                     $promise->fail($error);
                 }
             }

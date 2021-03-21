@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Cluster;
 
+use DomainException;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Object\Cluster;
@@ -55,7 +56,7 @@ class Directory
     public function require(string $type, Cluster $cluster, PromiseInterface $promise): self
     {
         if (!isset($this->clients[$type])) {
-            $promise->fail(new \DomainException("No available client for $type"));
+            $promise->fail(new DomainException("No available client for $type"));
 
             return $this;
         }

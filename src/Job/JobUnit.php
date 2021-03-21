@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Job;
 
+use DomainException;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Foundation\Promise\Promise;
@@ -42,6 +43,11 @@ use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Throwable;
+
+use function is_array;
+use function preg_replace_callback;
+use function substr;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -125,7 +131,7 @@ class JobUnit implements JobUnitInterface
             );
 
             $promise->success($agent);
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
 
@@ -144,7 +150,7 @@ class JobUnit implements JobUnitInterface
             );
 
             $promise->success($builder);
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
 
@@ -164,7 +170,7 @@ class JobUnit implements JobUnitInterface
                         static function (ClusterClientInterface $client) use (&$selectedClients) {
                             $selectedClients[] = $client;
                         },
-                        static function (\Throwable $error) {
+                        static function (Throwable $error) {
                             throw $error;
                         }
                     )
@@ -172,7 +178,7 @@ class JobUnit implements JobUnitInterface
             }
 
             $promise->success(new ClusterCollection($selectedClients));
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
 
@@ -222,18 +228,18 @@ class JobUnit implements JobUnitInterface
 
         $updateClosure = function (&$values, callable $recursive) use ($pattern) {
             foreach ($values as $name => &$value) {
-                if (\is_array($value)) {
+                if (is_array($value)) {
                     $recursive($value, $recursive);
 
                     continue;
                 }
 
-                $value = \preg_replace_callback(
+                $value = preg_replace_callback(
                     $pattern,
                     function ($matches) {
-                        $key = \substr($matches[1], 2, -1);
+                        $key = substr($matches[1], 2, -1);
                         if (!isset($this->variables[$key])) {
-                            throw new \DomainException("$key is not available into variables pass to job");
+                            throw new DomainException("$key is not available into variables pass to job");
                         }
 
                         return $this->variables[$key];
@@ -246,7 +252,7 @@ class JobUnit implements JobUnitInterface
         try {
             $updateClosure($values, $updateClosure);
             $promise->success($values);
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
     }

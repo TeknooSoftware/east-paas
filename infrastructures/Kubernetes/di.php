@@ -37,10 +37,11 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use function DI\decorate;
 use function DI\create;
 use function DI\get;
+use function sys_get_temp_dir;
 
 return [
     ClientFactoryInterface::class => function (ContainerInterface $container): ClientFactoryInterface {
-        $tempDir = \sys_get_temp_dir();
+        $tempDir = sys_get_temp_dir();
         if ($container->has('teknoo.east.paas.worker.tmp_dir')) {
             $tempDir = $container->get('teknoo.east.paas.worker.tmp_dir');
         }

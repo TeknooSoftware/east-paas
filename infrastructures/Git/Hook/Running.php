@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git\Hook;
 
+use Closure;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -47,14 +48,14 @@ class Running implements StateInterface
 {
     use StateTrait;
 
-    private function getWorkspace(): \Closure
+    private function getWorkspace(): Closure
     {
         return function (): JobWorkspaceInterface {
             return $this->workspace;
         };
     }
 
-    private function clone(): \Closure
+    private function clone(): Closure
     {
         return function (PromiseInterface $promise): Hook {
             $options = $this->options;
@@ -76,7 +77,7 @@ class Running implements StateInterface
         };
     }
 
-    private function prepareThenClone(): \Closure
+    private function prepareThenClone(): Closure
     {
         return function (PromiseInterface $promise): Hook {
             $workspace = $this->getWorkspace();

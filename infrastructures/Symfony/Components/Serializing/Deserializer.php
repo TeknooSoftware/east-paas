@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Serializing;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Throwable;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -56,7 +57,7 @@ class Deserializer implements DeserializerInterface
     ): DeserializerInterface {
         try {
             $promise->success($this->serializer->deserialize($data, $type, $format, $context));
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
 

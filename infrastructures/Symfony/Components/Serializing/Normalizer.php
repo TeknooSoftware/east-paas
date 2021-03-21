@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Serializing;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface as SymfonyNormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Throwable;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -47,18 +48,15 @@ class Normalizer implements NormalizerInterface
         $this->normalizer = $normalizer;
     }
 
-    /**
-     * @param mixed $object
-     */
     public function normalize(
-        $object,
+        mixed $object,
         PromiseInterface $promise,
         string $format = null,
         array $context = []
     ): NormalizerInterface {
         try {
             $promise->success($this->normalizer->normalize($object, $format, $context));
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
 

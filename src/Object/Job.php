@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
+use DateTimeInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Website\Object\ObjectInterface;
@@ -48,6 +49,8 @@ use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
+
+use function is_callable;
 
 /**
  * @method Job configureCloningAgent(CloningAgentInterface $agent, JobWorkspaceInterface $workspace)
@@ -165,7 +168,7 @@ class Job implements
 
         $this->setHistory($history);
 
-        if (\is_callable($callback)) {
+        if (is_callable($callback)) {
             $callback($history);
         }
 
@@ -177,7 +180,7 @@ class Job implements
      */
     public function addToHistory(
         string $message,
-        \DateTimeInterface $date,
+        DateTimeInterface $date,
         bool $isFinal = false,
         array $extra = []
     ): Job {

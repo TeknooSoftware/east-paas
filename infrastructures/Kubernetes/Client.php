@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
+use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Generator;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Running;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
@@ -106,7 +107,7 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
     public function configure(string $url, ?IdentityInterface $identity): ClientInterface
     {
         if (null !== $identity && !$identity instanceof ClusterCredentials) {
-            throw new \RuntimeException('Not Supported');
+            throw new RuntimeException('Not Supported');
         }
 
         $that = clone $this;

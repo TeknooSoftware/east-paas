@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 
+use Closure;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\States\State\StateInterface;
@@ -44,14 +45,14 @@ class Running implements StateInterface
 {
     use StateTrait;
 
-    private function getJob(): \Closure
+    private function getJob(): Closure
     {
         return function (): JobUnitInterface {
             return $this->job;
         };
     }
 
-    private function doClean(): \Closure
+    private function doClean(): Closure
     {
         return function (): void {
             $workspacePath = $this->getWorkspacePath();
@@ -65,7 +66,7 @@ class Running implements StateInterface
         };
     }
 
-    private function initFileSystem(): \Closure
+    private function initFileSystem(): Closure
     {
         return function (): void {
             $workspacePath = $this->getWorkspacePath();
@@ -74,7 +75,7 @@ class Running implements StateInterface
         };
     }
 
-    private function getWorkspacePath(): \Closure
+    private function getWorkspacePath(): Closure
     {
         return function (): string {
             $jobId = $this->getJob()->getId() . $this->getRand();
@@ -83,7 +84,7 @@ class Running implements StateInterface
         };
     }
 
-    private function getRepositoryPath(): \Closure
+    private function getRepositoryPath(): Closure
     {
         return function (): string {
             return $this->getWorkspacePath() . 'repository/';

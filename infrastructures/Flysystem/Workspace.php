@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Flysystem;
 
+use DomainException;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Generator;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Running;
 use League\Flysystem\Filesystem;
@@ -39,9 +40,12 @@ use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Proxy\Exception\MethodNotImplemented;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
+use Throwable;
+
+use function is_callable;
+use function random_int;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -108,7 +112,7 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
     {
         try {
             $this->clean();
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             /* nothing */
         }
     }
@@ -155,7 +159,7 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
             ]
         );
 
-        if (\is_callable($return)) {
+        if (is_callable($return)) {
             $return($this->rootPath . $name, $file);
         }
 
@@ -165,7 +169,7 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
     private function getRand(): int
     {
         if (null === $this->rand) {
-            $this->rand = \random_int(1000000, 9999999);
+            $this->rand = random_int(1000000, 9999999);
         }
 
         return $this->rand;
@@ -199,7 +203,7 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
         if (!empty($this->filesystem->listContents($path))) {
             $promise->success();
         } else {
-            $promise->fail(new \DomainException());
+            $promise->fail(new DomainException());
         }
 
         return $this;

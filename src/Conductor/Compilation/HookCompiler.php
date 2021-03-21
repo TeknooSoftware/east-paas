@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,12 +25,17 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor\Compilation;
 
+use DomainException;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Throwable;
+
+use function is_array;
+use function iterator_to_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -53,10 +58,10 @@ class HookCompiler implements CompilerInterface
      */
     public function __construct(iterable $hooksLibrary)
     {
-        if (\is_array($hooksLibrary)) {
+        if (is_array($hooksLibrary)) {
             $this->hooksLibrary = $hooksLibrary;
         } else {
-            $this->hooksLibrary = \iterator_to_array($hooksLibrary);
+            $this->hooksLibrary = iterator_to_array($hooksLibrary);
         }
     }
 
@@ -70,7 +75,7 @@ class HookCompiler implements CompilerInterface
         foreach ($definitions as $name => &$hooksList) {
             foreach ($hooksList as $hookName => &$configuration) {
                 if (!isset($this->hooksLibrary[$hookName])) {
-                    throw new \DomainException("Hook $hookName not available");
+                    throw new DomainException("Hook $hookName not available");
                 }
 
                 $hook = clone $this->hooksLibrary[$hookName];
@@ -78,7 +83,7 @@ class HookCompiler implements CompilerInterface
                     (array) $configuration,
                     new Promise(
                         null,
-                        static function (\Throwable $error) {
+                        static function (Throwable $error) {
                             throw $error;
                         }
                     )

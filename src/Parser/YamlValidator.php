@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,7 +25,16 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Parser;
 
+use DOMDocument;
+use DOMElement;
+use RuntimeException;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Throwable;
+
+use function in_array;
+use function is_array;
+use function is_string;
+use function libxml_get_last_error;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -100,18 +109,18 @@ class YamlValidator
      */
     private function parse(
         array &$values,
-        \DOMDocument $document,
-        \DOMElement $parent,
+        DOMDocument $document,
+        DOMElement $parent,
         bool $isPod = false,
         bool $isVolume = false
     ): void {
         foreach ($values as $index => $mixedElement) {
             $name = $index;
-            if (!\is_string($name)) {
+            if (!is_string($name)) {
                 $name = 'row';
             }
 
-            $isStatic = \in_array($name, static::$staticNodesNames);
+            $isStatic = in_array($name, static::$staticNodesNames);
             $nodeName = $name;
             if (false === $isStatic) {
                 $nodeName = 'node';
@@ -127,7 +136,7 @@ class YamlValidator
                 }
             }
 
-            if (!\is_array($mixedElement)) {
+            if (!is_array($mixedElement)) {
                 $newNode = $document->createElementNS(static::$xsdUrl, $nodeName, (string) $mixedElement);
             } else {
                 $newNode = $document->createElementNS(static::$xsdUrl, $nodeName);
@@ -151,9 +160,9 @@ class YamlValidator
     /**
      * @param array<mixed, mixed> $values
      */
-    private function convert(array $values): \DOMDocument
+    private function convert(array $values): DOMDocument
     {
-        $document = new \DOMDocument('1.0', 'UTF-8');
+        $document = new DOMDocument('1.0', 'UTF-8');
         $root = $document->createElementNS(static::$xsdUrl, $this->rootName);
         $root->setAttributeNS(
             'http://www.w3.org/2001/XMLSchema-instance',
@@ -178,13 +187,13 @@ class YamlValidator
             $document = $this->convert($values);
 
             $document->schemaValidateSource($schema);
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $xmlError = $error;
         } finally {
-            $libError = \libxml_get_last_error();
+            $libError = libxml_get_last_error();
 
             if ($xmlError || $libError) {
-                $exception = new \RuntimeException((string) ($xmlError ?? $libError->message));
+                $exception = new RuntimeException((string) ($xmlError ?? $libError->message));
                 $promise->fail($exception);
 
                 return $this;

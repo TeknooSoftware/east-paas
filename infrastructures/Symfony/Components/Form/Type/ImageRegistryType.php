@@ -34,6 +34,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Teknoo\East\Paas\Object\ImageRegistry;
+use Traversable;
+
+use function iterator_to_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -70,7 +73,7 @@ class ImageRegistryType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?ImageRegistry $data
              */
             public function mapDataToForms($data, $forms): void
@@ -79,18 +82,18 @@ class ImageRegistryType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $forms['apiUrl']->setData($data->getApiUrl());
                 $forms['identity']->setData($data->getIdentity());
             }
 
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?ImageRegistry $data
              */
             public function mapFormsToData($forms, &$data): void
             {
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data = new ImageRegistry(
                     (string) $forms['apiUrl']->getData(),
                     $forms['identity']->getData()

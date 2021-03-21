@@ -25,16 +25,16 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History;
 
+use DateTimeInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
-use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+
+use function json_encode;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -70,7 +70,7 @@ class SendHistory implements DispatchHistoryInterface
         array $extra
     ): void {
         $this->dateTimeService->passMeTheDate(
-            function (\DateTimeInterface $now) use ($projectId, $envName, $jobId, $step, $extra) {
+            function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $step, $extra) {
                 $history = new History(
                     null,
                     $step,
@@ -85,7 +85,7 @@ class SendHistory implements DispatchHistoryInterface
                             $projectId,
                             $envName,
                             $jobId,
-                            (string) \json_encode($history)
+                            (string) json_encode($history)
                         ),
                         [
                             new Parameter('projectId', $projectId),

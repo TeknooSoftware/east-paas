@@ -32,6 +32,7 @@ use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
 
 use function DI\get;
+use function file_get_contents;
 
 return [
     ProcessFactoryInterface::class => new class implements ProcessFactoryInterface {
@@ -57,11 +58,11 @@ return [
         return new BuilderWrapper(
             'docker',
             [
-                'image' => (string) \file_get_contents(__DIR__ . '/templates/buildx/image.template'),
-                'embedded-volume-image' => (string) \file_get_contents(
+                'image' => (string) file_get_contents(__DIR__ . '/templates/buildx/image.template'),
+                'embedded-volume-image' => (string) file_get_contents(
                     __DIR__ . '/templates/buildx/embedded-volume-image.template'
                 ),
-                'volume' => (string) \file_get_contents(__DIR__ . '/templates/buildx/volume.template'),
+                'volume' => (string) file_get_contents(__DIR__ . '/templates/buildx/volume.template'),
             ],
             $container->get(ProcessFactoryInterface::class),
             (string) $container->get('teknoo.east.paas.buildkit.builder.name'),

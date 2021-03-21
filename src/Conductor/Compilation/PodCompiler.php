@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor\Compilation;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Container\Container;
@@ -38,6 +39,11 @@ use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Throwable;
+
+use function array_map;
+use function array_pop;
+use function explode;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -79,7 +85,7 @@ class PodCompiler implements CompilerInterface
         $identifier = $volumeDefinition[static::KEY_STORAGE_IDENTIFIER] ?? $storageIdentifier;
 
         if (empty($identifier)) {
-            throw new \RuntimeException("Missing 'storage-provider' in $volumeName pod volume definition");
+            throw new RuntimeException("Missing 'storage-provider' in $volumeName pod volume definition");
         }
 
         return new PersistentVolume(
@@ -135,7 +141,7 @@ class PodCompiler implements CompilerInterface
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
             if (empty($volumeDefinition[static::KEY_MOUNT_PATH])) {
-                throw new \RuntimeException("Missing 'mount-path' in $volumeName pod volume definition");
+                throw new RuntimeException("Missing 'mount-path' in $volumeName pod volume definition");
             }
 
             $mountPath = $volumeDefinition[static::KEY_MOUNT_PATH];
@@ -177,7 +183,7 @@ class PodCompiler implements CompilerInterface
                 $mountPath,
                 new Promise(
                     fn (VolumeInterface $volume) => $containerVolumes[(string) $volumeName] = $volume,
-                    static function (\Throwable $error) {
+                    static function (Throwable $error) {
                         throw $error;
                     }
                 )
@@ -198,8 +204,8 @@ class PodCompiler implements CompilerInterface
         $originalImage = $image;
 
         $image = $originalImage . '_' . $job->getId();
-        $parts = \explode('/', $image);
-        $image = \array_pop($parts);
+        $parts = explode('/', $image);
+        $image = array_pop($parts);
 
         $embeddedImage = new EmbeddedVolumeImage(
             $image,
@@ -221,7 +227,7 @@ class PodCompiler implements CompilerInterface
     {
         if (isset($variables[static::KEY_FROM_SECRETS])) {
             foreach ($variables[static::KEY_FROM_SECRETS] as $varName => $key) {
-                $variables[(string) $varName] = new SecretReference(...\explode('.', $key));
+                $variables[(string) $varName] = new SecretReference(...explode('.', $key));
             }
             unset($variables[static::KEY_FROM_SECRETS]);
         }
@@ -270,7 +276,7 @@ class PodCompiler implements CompilerInterface
                     $name,
                     $image,
                     $version,
-                    (array) \array_map('intval', (array) ($config[static::KEY_LISTEN] ?? [])),
+                    (array) array_map('intval', (array) ($config[static::KEY_LISTEN] ?? [])),
                     $containerVolumes,
                     $variables
                 );

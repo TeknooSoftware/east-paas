@@ -32,6 +32,14 @@ use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Container\Secret;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
+use Throwable;
+
+use function base64_encode;
+use function is_array;
+use function is_string;
+use function strlen;
+use function strpos;
+use function substr;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -48,16 +56,16 @@ class SecretTranscriber implements DeploymentInterface
 
     private static function isValid64(string $value): bool
     {
-        return 0 === \strpos($value, static::BASE64_PREFIX);
+        return 0 === strpos($value, static::BASE64_PREFIX);
     }
 
     /**
      * @param string|array<string|int, mixed> $value
      * @return string|array<string|int, mixed>
      */
-    private static function encode($value)
+    private static function encode(int | string | array $value): string | array
     {
-        if (\is_array($value)) {
+        if (is_array($value)) {
             foreach ($value as $key => &$subValue) {
                 $subValue = static::encode($subValue);
             }
@@ -65,11 +73,11 @@ class SecretTranscriber implements DeploymentInterface
             return $value;
         }
 
-        if (!\is_string($value) || !static::isValid64($value)) {
-            return \base64_encode((string) $value);
+        if (!is_string($value) || !static::isValid64($value)) {
+            return base64_encode((string) $value);
         }
 
-        return \substr($value, \strlen(static::BASE64_PREFIX));
+        return substr($value, strlen(static::BASE64_PREFIX));
     }
 
     private static function convertToSecret(Secret $secret, string $namespace): ?KubeSecret
@@ -118,7 +126,7 @@ class SecretTranscriber implements DeploymentInterface
                     }
 
                     $promise->success($result);
-                } catch (\Throwable $error) {
+                } catch (Throwable $error) {
                     $promise->fail($error);
                 }
             }

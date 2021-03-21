@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Doctrine;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\Persistence\ObjectManager;
 use Psr\Container\ContainerInterface;
+use RuntimeException;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
@@ -51,9 +52,9 @@ return [
             return new AccountRepository($repository);
         }
 
-        throw new \RuntimeException(sprintf(
+        throw new RuntimeException(sprintf(
             "Error, repository of class %s are not currently managed",
-            \get_class($repository)
+            $repository::class
         ));
     },
 
@@ -64,9 +65,9 @@ return [
             return new JobRepository($repository);
         }
 
-        throw new \RuntimeException(sprintf(
+        throw new RuntimeException(sprintf(
             "Error, repository of class %s are not currently managed",
-            \get_class($repository)
+            $repository::class
         ));
     },
 
@@ -77,9 +78,9 @@ return [
             return new ProjectRepository($repository);
         }
 
-        throw new \RuntimeException(sprintf(
+        throw new RuntimeException(sprintf(
             "Error, repository of class %s are not currently managed",
-            \get_class($repository)
+            $repository::class
         ));
     },
 
@@ -90,9 +91,9 @@ return [
             return new ClusterRepository($repository);
         }
 
-        throw new \RuntimeException(sprintf(
+        throw new RuntimeException(sprintf(
             "Error, repository of class %s are not currently managed",
-            \get_class($repository)
+            $repository::class
         ));
     },
 ];

@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Serializing;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Throwable;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -47,18 +48,15 @@ class Serializer implements SerializerInterface
         $this->serializer = $serializer;
     }
 
-    /**
-     * @param mixed $data
-     */
     public function serialize(
-        $data,
+        mixed $data,
         string $format,
         PromiseInterface $promise,
         array $context = []
     ): SerializerInterface {
         try {
             $promise->success($this->serializer->serialize($data, $format, $context));
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
 

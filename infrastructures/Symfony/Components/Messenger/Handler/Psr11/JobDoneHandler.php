@@ -33,6 +33,8 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDoneHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 
+use function str_replace;
+
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
@@ -68,7 +70,7 @@ class JobDoneHandler implements JobDoneHandlerInterface, MessageHandlerInterface
 
     public function __invoke(JobDone $jobDone): JobDoneHandlerInterface
     {
-        $url = \str_replace(
+        $url = str_replace(
             ['{projectId}','{envName}','{jobId}'],
             [$jobDone->getProjectId(), $jobDone->getEnvironment(), $jobDone->getJobId()],
             $this->urlPattern

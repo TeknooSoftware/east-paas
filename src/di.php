@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas;
 
 use Psr\Container\ContainerInterface;
+use RuntimeException;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -137,8 +138,11 @@ use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\Recipe;
 use Teknoo\Recipe\RecipeInterface as OriginalRecipeInterface;
 
+use function array_merge;
 use function DI\get;
 use function DI\create;
+use function file_get_contents;
+use function is_dir;
 
 return [
     //Loaders
@@ -182,8 +186,8 @@ return [
         $imagesLibrary = $container->get('teknoo.east.paas.conductor.images_library');
         $rootPath = $container->get('teknoo.east.paas.root_dir');
         foreach ($imagesLibrary as &$image) {
-            if (empty($image['path']) || \is_dir($image['path'])) {
-                throw new \RuntimeException('Missing path');
+            if (empty($image['path']) || is_dir($image['path'])) {
+                throw new RuntimeException('Missing path');
             }
 
             $image['path'] = $rootPath . $image['path'];
@@ -209,7 +213,7 @@ return [
                 $this->collection[$pattern] = $compiler;
             }
 
-            public function getIterator(): \Traversable
+            public function getIterator(): iterable
             {
                 yield from $this->collection;
             }
@@ -231,7 +235,7 @@ return [
     CompiledDeploymentFactory::class => create()
         ->constructor(
             CompiledDeployment::class,
-            (string) \file_get_contents(__DIR__ . '/Contracts/Configuration/paas_validation.xsd'),
+            (string) file_get_contents(__DIR__ . '/Contracts/Configuration/paas_validation.xsd'),
         ),
 
     ConductorInterface::class => get(Conductor::class),
@@ -284,7 +288,7 @@ return [
             $container->get(DeserializerInterface::class),
             $container->get(MessageFactoryInterface::class),
             $container->get(StreamFactoryInterface::class),
-            \array_merge(
+            array_merge(
                 $container->get('teknoo.east.paas.worker.global_variables'),
                 $_ENV
             )
@@ -612,7 +616,7 @@ return [
                 return $this;
             }
 
-            public function validate($value): BaseRecipeInterface
+            public function validate(mixed $value): BaseRecipeInterface
             {
                 $this->getRunJob()->validate($value);
 

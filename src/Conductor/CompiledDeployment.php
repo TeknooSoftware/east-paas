@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Conductor;
 
+use DomainException;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Container\Expose\Ingress;
 use Teknoo\East\Paas\Container\Secret;
@@ -36,6 +37,9 @@ use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
 use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Container\Pod;
+
+use function is_string;
+use function strpos;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -115,12 +119,12 @@ class CompiledDeployment implements CompiledDeploymentInterface
         }
 
         if (!isset($this->buildables[$url][$tag])) {
-            throw new \DomainException("Buildable $url:$tag is not referenced");
+            throw new DomainException("Buildable $url:$tag is not referenced");
         }
 
         $value = $this->buildables[$url][$tag];
 
-        if (\is_string($value)) {
+        if (is_string($value)) {
             return $this->getBuildable($value, $tag);
         }
 
@@ -140,7 +144,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
         PromiseInterface $promise
     ): CompiledDeploymentInterface {
         if (!isset($this->volumes[$volumeFrom]) || !$this->volumes[$volumeFrom] instanceof Volume) {
-            $promise->fail(new \DomainException("Volume called $volumeFrom was not found volumes definition"));
+            $promise->fail(new DomainException("Volume called $volumeFrom was not found volumes definition"));
 
             return $this;
         }
@@ -161,7 +165,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
     {
         foreach ($pod as $container) {
             $buildable = $container->getImage();
-            if (false !== \strpos($buildable, '/')) {
+            if (false !== strpos($buildable, '/')) {
                 //Is an external buildable
                 continue;
             }

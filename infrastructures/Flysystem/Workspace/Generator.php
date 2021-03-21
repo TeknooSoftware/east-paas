@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 
+use Closure;
+use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\States\State\StateInterface;
@@ -44,23 +46,23 @@ class Generator implements StateInterface
 {
     use StateTrait;
 
-    private function doClean(): \Closure
+    private function doClean(): Closure
     {
         return function (): void {
         };
     }
 
-    private function getWorkspacePath(): \Closure
+    private function getWorkspacePath(): Closure
     {
         return function (): string {
-            throw new \RuntimeException('Workspace is in generator state');
+            throw new RuntimeException('Workspace is in generator state');
         };
     }
 
-    private function getRepositoryPath(): \Closure
+    private function getRepositoryPath(): Closure
     {
         return function (): string {
-            throw new \RuntimeException('Workspace is in generator state');
+            throw new RuntimeException('Workspace is in generator state');
         };
     }
 }

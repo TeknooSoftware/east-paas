@@ -25,7 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 
+use Closure;
 use Maclof\Kubernetes\Client as KubernetesClient;
+use RuntimeException;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
@@ -46,7 +48,7 @@ class Generator implements StateInterface
 {
     use StateTrait;
 
-    private function runTranscriber(): \Closure
+    private function runTranscriber(): Closure
     {
         return function (
             CompiledDeploymentInterface $compiledDeployment,
@@ -54,7 +56,7 @@ class Generator implements StateInterface
             bool $runDeployment,
             bool $runExposing
         ): KubernetesClient {
-            throw new \RuntimeException('Client is in generator state');
+            throw new RuntimeException('Client is in generator state');
         };
     }
 }

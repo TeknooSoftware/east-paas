@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\BuildKit;
 
+use DomainException;
+use RuntimeException;
 use Teknoo\East\Paas\Container\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
@@ -43,6 +45,11 @@ use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
+
+use function array_pop;
+use function explode;
+use function rtrim;
+use function uniqid;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -96,7 +103,7 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
     ) {
         foreach (['image', 'embedded-volume-image', 'volume'] as $entry) {
             if (empty($templates[$entry])) {
-                throw new \DomainException("Missing $entry template");
+                throw new DomainException("Missing $entry template");
             }
         }
 
@@ -140,7 +147,7 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
     public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface
     {
         if (null !== $auth && !$auth instanceof XRegistryAuth) {
-            throw new \RuntimeException('Not Supported');
+            throw new RuntimeException('Not Supported');
         }
 
         $that = clone $this;
@@ -199,8 +206,8 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
                         }
 
                         foreach ($volume->getPaths() as $path) {
-                            $parts = \explode('/', \rtrim($path, '/'));
-                            $paths[$path] = $volume->getMountPath() . '/' . \array_pop($parts);
+                            $parts = explode('/', rtrim($path, '/'));
+                            $paths[$path] = $volume->getMountPath() . '/' . array_pop($parts);
                         }
                     }
 
@@ -238,7 +245,7 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
                     [],
                     $workingPath,
                     $volumeUpdated->getUrl(),
-                    $volumeUpdated->getName() . $this->hash(\uniqid() . $volumeUpdated->getName()),
+                    $volumeUpdated->getName() . $this->hash(uniqid() . $volumeUpdated->getName()),
                     'volume'
                 );
 
@@ -247,8 +254,8 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
 
                 $paths = [];
                 foreach ($volumeUpdated->getPaths() as $path) {
-                    $parts = \explode('/', \rtrim($path, '/'));
-                    $paths[$path] = $volumeUpdated->getLocalPath() . '/' . \array_pop($parts);
+                    $parts = explode('/', rtrim($path, '/'));
+                    $paths[$path] = $volumeUpdated->getLocalPath() . '/' . array_pop($parts);
                 }
 
                 $variables = [

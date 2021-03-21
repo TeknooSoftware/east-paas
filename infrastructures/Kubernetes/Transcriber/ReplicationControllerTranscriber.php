@@ -38,6 +38,9 @@ use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
+use Throwable;
+
+use function array_map;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -62,7 +65,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                 'name'  => $container->getName(),
                 'image' => $image->getUrl() . ':' . $image->getTag(),
                 'imagePullPolicy' => 'Always',
-                'ports' => \array_map(
+                'ports' => array_map(
                     fn ($port) => ['containerPort' => $port,],
                     $container->getListen()
                 )
@@ -223,7 +226,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     }
 
                     $promise->success($result);
-                } catch (\Throwable $error) {
+                } catch (Throwable $error) {
                     $promise->fail($error);
                 }
             }

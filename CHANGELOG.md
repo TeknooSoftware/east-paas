@@ -1,7 +1,14 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.45] - 2021-03-21
+###Dev Release
+- Migrate toPHP*
+- Remove support of Symfony 4.4
+- QA
+- Fix license header
+
 ##[0.0.44] - 2021-03-17
-###Stable Release
+###Dev Release
 - Migrate ResponseInterface type hitting to MessageInterface, complete message object to pass job's ids
 - Remove JobUnit prepare URL
 - Migrate SendHistory/PushResult to Messenger, and 
@@ -12,7 +19,7 @@
 - Add Handler forwarder to enable this previous handlers only on console context.
 
 ##[0.0.43] - 2021-03-09
-###Stable Release
+###Dev Release
 - Clean symfony yaml indentations
 
 ##[0.0.42] - 2021-03-09

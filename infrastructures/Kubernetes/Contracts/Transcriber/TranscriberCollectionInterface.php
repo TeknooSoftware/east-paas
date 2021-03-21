@@ -25,6 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber;
 
+use IteratorAggregate;
+use Traversable;
+
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
@@ -34,10 +37,10 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface TranscriberCollectionInterface extends \IteratorAggregate
+interface TranscriberCollectionInterface extends IteratorAggregate
 {
     /**
-     * @return \Traversable<TranscriberInterface>
+     * @return Traversable<TranscriberInterface>
      */
-    public function getIterator(): \Traversable;
+    public function getIterator(): Traversable;
 }

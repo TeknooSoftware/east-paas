@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object\Job;
 
+use Closure;
+use RuntimeException;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
@@ -40,7 +42,7 @@ class Terminated implements StateInterface
 {
     use StateTrait;
 
-    public function isRunnable(): \Closure
+    public function isRunnable(): Closure
     {
         return function (PromiseInterface $promise): Job {
             $code = 501;
@@ -51,7 +53,7 @@ class Terminated implements StateInterface
                 $code = $extra['code'];
             }
 
-            $promise->fail(new \RuntimeException($history->getMessage(), $code));
+            $promise->fail(new RuntimeException($history->getMessage(), $code));
 
             return $this;
         };

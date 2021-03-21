@@ -46,24 +46,18 @@ class PropertyAccessor implements PropertyAccessorInterface
         $this->propertyAccessor = $propertyAccessor;
     }
 
-    /**
-     * @param mixed $value
-     */
-    public function setValue(array $array, string $propertyPath, $value): PropertyAccessorInterface
+    public function setValue(array $array, string $propertyPath, mixed $value): PropertyAccessorInterface
     {
         $this->propertyAccessor->setValue($array, $propertyPath, $value);
 
         return $this;
     }
 
-    /**
-     * @param mixed|null $default
-     */
     public function getValue(
         array $array,
         string $propertyPath,
         callable $callback,
-        $default = null
+        mixed $default = null
     ): PropertyAccessorInterface {
         if ($this->propertyAccessor->isReadable($array, $propertyPath)) {
             $callback($this->propertyAccessor->getValue($array, $propertyPath));

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Container;
 
+use Generator;
+use IteratorAggregate;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -37,7 +39,7 @@ use Teknoo\Immutable\ImmutableTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Pod implements ImmutableInterface, \IteratorAggregate
+class Pod implements ImmutableInterface, IteratorAggregate
 {
     use ImmutableTrait;
 
@@ -73,9 +75,9 @@ class Pod implements ImmutableInterface, \IteratorAggregate
     }
 
     /**
-     * @return \Generator<Container>|array<int, Container>
+     * @return iterable<Container>
      */
-    public function getIterator()
+    public function getIterator(): iterable
     {
         yield from $this->containers;
     }

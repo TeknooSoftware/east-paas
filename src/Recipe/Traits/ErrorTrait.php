@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -29,6 +29,9 @@ use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Http\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Throwable;
+
+use function json_encode;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -51,7 +54,7 @@ trait ErrorTrait
         MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ): callable {
-        return static function (\Throwable $error) use (
+        return static function (Throwable $error) use (
             $client,
             $manager,
             $message,
@@ -66,7 +69,7 @@ trait ErrorTrait
 
             $client->acceptResponse(
                 self::buildResponse(
-                    (string) \json_encode(
+                    (string) json_encode(
                         [
                             'type' => 'https://teknoo.software/probs/issue',
                             'title' => $message,

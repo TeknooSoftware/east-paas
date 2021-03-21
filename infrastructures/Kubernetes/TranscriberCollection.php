@@ -27,6 +27,9 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
+use Traversable;
+
+use function ksort;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -51,10 +54,10 @@ class TranscriberCollection implements TranscriberCollectionInterface
         return $this;
     }
 
-    public function getIterator(): \Traversable
+    public function getIterator(): Traversable
     {
         $orderedTranscriber = $this->transcribers;
-        \ksort($orderedTranscriber);
+        ksort($orderedTranscriber);
         foreach ($orderedTranscriber as &$transcribers) {
             foreach ($transcribers as $transcriber) {
                 yield $transcriber;

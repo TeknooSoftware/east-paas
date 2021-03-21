@@ -25,12 +25,22 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
 
+use Closure;
+use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
+
+use function array_keys;
+use function array_merge;
+use function implode;
+use function set_time_limit;
+use function sha1;
+use function str_replace;
+use function substr;
 
 /**
  * @mixin BuilderWrapper
@@ -47,37 +57,37 @@ class Running implements StateInterface
 {
     use StateTrait;
 
-    private function getUrl(): \Closure
+    private function getUrl(): Closure
     {
         return function (): string {
             return (string) $this->url;
         };
     }
 
-    private function getAuth(): \Closure
+    private function getAuth(): Closure
     {
         return function (): ?XRegistryAuth {
             return $this->auth;
         };
     }
 
-    private function hash(): \Closure
+    private function hash(): Closure
     {
-        return fn(string $name) => \substr(\sha1($this->projectId . $name), 0, 10);
+        return fn(string $name) => substr(sha1($this->projectId . $name), 0, 10);
     }
 
-    private function setTimeout(): \Closure
+    private function setTimeout(): Closure
     {
         return function (): void {
             if (empty($this->timeout)) {
-                \set_time_limit(0);
+                set_time_limit(0);
             } else {
-                \set_time_limit(($this->timeout + self::GRACEFULTIME));
+                set_time_limit(($this->timeout + self::GRACEFULTIME));
             }
         };
     }
 
-    private function generateShellScript(): \Closure
+    private function generateShellScript(): Closure
     {
         return function (
             array $variables,
@@ -89,14 +99,14 @@ class Running implements StateInterface
             $buildsArgs = '';
             if (!empty($variables)) {
                 $variablesList = [];
-                foreach (\array_keys($variables) as $key) {
+                foreach (array_keys($variables) as $key) {
                     $variablesList[] = $key . '=$' . $key;
                 }
 
-                $buildsArgs = \implode(' --build-arg', $variablesList);
+                $buildsArgs = implode(' --build-arg', $variablesList);
             }
 
-            $scriptContent = \str_replace(
+            $scriptContent = str_replace(
                 [
                     '{% imagePath %}',
                     '{% binary %}',
@@ -118,7 +128,7 @@ class Running implements StateInterface
         };
     }
 
-    private function generateDockerFile(): \Closure
+    private function generateDockerFile(): Closure
     {
         return function (string $fromImage, array $paths, ?string $command = null): string {
             $output = "FROM $fromImage" . PHP_EOL;
@@ -135,7 +145,7 @@ class Running implements StateInterface
         };
     }
 
-    private function startProcess(): \Closure
+    private function startProcess(): Closure
     {
         /**
          * @param Process<string> $process
@@ -156,7 +166,7 @@ class Running implements StateInterface
                 ];
             }
 
-            $envs = \array_merge(
+            $envs = array_merge(
                 $variables,
                 $authEnvs
             );
@@ -168,7 +178,7 @@ class Running implements StateInterface
         };
     }
 
-    private function waitProcess(): \Closure
+    private function waitProcess(): Closure
     {
         /**
          * @param Process[] $processes
@@ -198,7 +208,7 @@ class Running implements StateInterface
             }
 
             if (null !== $error) {
-                $promise->fail(new \RuntimeException($error));
+                $promise->fail(new RuntimeException($error));
             }
         };
     }

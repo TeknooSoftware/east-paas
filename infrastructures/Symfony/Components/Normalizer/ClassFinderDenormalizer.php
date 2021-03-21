@@ -25,8 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
+use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+
+use function class_exists;
+use function is_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -49,21 +53,21 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
     }
 
     /**
-     * @param mixed $data
-     * @param string $class
-     * @param ?string $format
      * @param array<string, mixed> $context
-     * @return array|object
      */
-    public function denormalize($data, $class, $format = null, array $context = array())
-    {
+    public function denormalize(
+        mixed $data,
+        string $class,
+        string $format = null,
+        array $context = []
+    ): array | object {
         if (
             !$this->denormalizer instanceof DenormalizerInterface
-            || !\is_array($data)
+            || !is_array($data)
             || empty($data['@class'])
-            || !\class_exists($data['@class'], true)
+            || !class_exists($data['@class'], true)
         ) {
-            throw new \RuntimeException('Error, this object is not managed by this denormalizer');
+            throw new RuntimeException('Error, this object is not managed by this denormalizer');
         }
 
         $class = $data['@class'];
@@ -75,8 +79,8 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
     public function supportsDenormalization($data, $type, $format = null): bool
     {
         return $this->denormalizer instanceof DenormalizerInterface
-            && \is_array($data)
+            && is_array($data)
             && !empty($data['@class'])
-            && \class_exists($data['@class'], true);
+            && class_exists($data['@class'], true);
     }
 }

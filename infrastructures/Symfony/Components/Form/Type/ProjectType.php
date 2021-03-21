@@ -34,6 +34,9 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 use Teknoo\East\Paas\Object\Project;
+use Traversable;
+
+use function iterator_to_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -71,7 +74,7 @@ class ProjectType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param \Traversable<string, PaasFormInterface> $forms
+             * @param Traversable<string, PaasFormInterface> $forms
              * @param ?Project $data
              */
             public function mapDataToForms($data, $forms): void
@@ -80,12 +83,12 @@ class ProjectType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data->injectDataInto($forms);
             }
 
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?Project $data
              */
             public function mapFormsToData($forms, &$data): void
@@ -94,7 +97,7 @@ class ProjectType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
                 $data->setSourceRepository($forms['sourceRepository']->getData());
                 $data->setImagesRegistry($forms['imagesRegistry']->getData());

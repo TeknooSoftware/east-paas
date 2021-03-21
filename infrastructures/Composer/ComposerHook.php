@@ -25,9 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Composer;
 
+use RuntimeException;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
+use Throwable;
+
+use function array_flip;
+use function preg_match;
+use function reset;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -72,7 +78,7 @@ class ComposerHook implements HookInterface
      */
     private function validateOptions(array $options): void
     {
-        $grantedCommands = \array_flip([
+        $grantedCommands = array_flip([
             'dump-autoload',
             'dumpautoload',
             'exec',
@@ -87,13 +93,13 @@ class ComposerHook implements HookInterface
         ]);
 
         foreach ($options as &$option) {
-            if (\preg_match('#[\&\||<|>;]#iS', $option)) {
-                throw new \RuntimeException('Pipe and redirection are forbidden');
+            if (preg_match('#[\&\||<|>;]#iS', $option)) {
+                throw new RuntimeException('Pipe and redirection are forbidden');
             }
         }
 
-        if (!isset($grantedCommands[$cmd = \reset($options)])) {
-            throw new \RuntimeException("$cmd is forbidden");
+        if (!isset($grantedCommands[$cmd = reset($options)])) {
+            throw new RuntimeException("$cmd is forbidden");
         }
     }
 
@@ -103,7 +109,7 @@ class ComposerHook implements HookInterface
             $this->validateOptions($options);
 
             $this->options = $options;
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
 
             return $this;
@@ -118,7 +124,7 @@ class ComposerHook implements HookInterface
     {
         $command = ($this->factory)([$this->binary, ...$this->options], $this->path);
         if (!$command instanceof Process) {
-            $promise->fail(new \RuntimeException('Bad process manager'));
+            $promise->fail(new RuntimeException('Bad process manager'));
 
             return $this;
         }
@@ -128,7 +134,7 @@ class ComposerHook implements HookInterface
         if ($command->isSuccessful()) {
             $promise->success($command->getOutput());
         } else {
-            $promise->fail(new \RuntimeException((string) $command->getErrorOutput()));
+            $promise->fail(new RuntimeException((string) $command->getErrorOutput()));
         }
 
         return $this;

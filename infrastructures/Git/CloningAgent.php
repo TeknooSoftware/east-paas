@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
 use GitWrapper\GitWrapper;
+use LogicException;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running;
 use Teknoo\Immutable\ImmutableTrait;
@@ -42,6 +43,9 @@ use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
+
+use function is_object;
+use function sprintf;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -129,17 +133,17 @@ class CloningAgent implements CloningAgentInterface, ProxyInterface, AutomatedIn
         JobWorkspaceInterface $workspace
     ): CloningAgentInterface {
         if (!$repository instanceof GitRepository) {
-            throw new \LogicException(
-                \sprintf("Repository of type %s is not managed by this agent", \get_class($repository))
+            throw new LogicException(
+                sprintf("Repository of type %s is not managed by this agent", $repository::class)
             );
         }
 
         $identity = $repository->getIdentity();
         if (!$identity instanceof SshIdentity) {
-            throw new \LogicException(
-                \sprintf(
+            throw new LogicException(
+                sprintf(
                     "Identity of type %s is not managed by this agent",
-                    \is_object($identity) ? \get_class($identity) : 'null'
+                    is_object($identity) ? $identity::class : 'null'
                 )
             );
         }

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license and the version 3 of the GPL3
+ * This source file is subject to the MIT license
  * license that are bundled with this package in the folder licences
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -25,6 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object\Job;
 
+use Closure;
+use DateTimeInterface;
+use RuntimeException;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Object\Job;
@@ -44,7 +47,7 @@ class Pending implements StateInterface
 {
     use StateTrait;
 
-    private function settingProject(): \Closure
+    private function settingProject(): Closure
     {
         return function (Project $project): Job {
             $this->project = $project;
@@ -55,7 +58,7 @@ class Pending implements StateInterface
         };
     }
 
-    private function settingEnvironment(): \Closure
+    private function settingEnvironment(): Closure
     {
         return function (Environment $environment): Job {
             $this->environment = $environment;
@@ -66,7 +69,7 @@ class Pending implements StateInterface
         };
     }
 
-    private function settingSourceRepository(): \Closure
+    private function settingSourceRepository(): Closure
     {
         return function (SourceRepositoryInterface $repository): Job {
             $this->sourceRepository = $repository;
@@ -77,7 +80,7 @@ class Pending implements StateInterface
         };
     }
 
-    private function settingImagesRegistry(): \Closure
+    private function settingImagesRegistry(): Closure
     {
         return function (ImageRegistryInterface $repository): Job {
             $this->imagesRegistry = $repository;
@@ -88,7 +91,7 @@ class Pending implements StateInterface
         };
     }
 
-    private function addingCluster(): \Closure
+    private function addingCluster(): Closure
     {
         return function (Cluster $cluster): Job {
             foreach ($this->clusters as $current) {
@@ -105,18 +108,18 @@ class Pending implements StateInterface
         };
     }
 
-    public function isRunnable(): \Closure
+    public function isRunnable(): Closure
     {
         return function (PromiseInterface $promise): Job {
-            $promise->fail(new \RuntimeException('teknoo.east.paas.error.job.not_runnable', 500));
+            $promise->fail(new RuntimeException('teknoo.east.paas.error.job.not_runnable', 500));
 
             return $this;
         };
     }
 
-    public function validate(): \Closure
+    public function validate(): Closure
     {
-        return function (\DateTimeInterface $date): Job {
+        return function (DateTimeInterface $date): Job {
             $this->addToHistory('teknoo.east.paas.error.job.not_validated', $date, true, ['code' => 400]);
 
             return $this;

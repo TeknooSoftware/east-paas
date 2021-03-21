@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
 
+use Closure;
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
@@ -34,6 +35,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Deployment
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
+use Throwable;
 
 /**
  * @mixin Client
@@ -49,7 +51,7 @@ class Running implements StateInterface
 {
     use StateTrait;
 
-    private function getClient(): \Closure
+    private function getClient(): Closure
     {
         return function (): KubernetesClient {
             return $this->client ?? ($this->clientFactory)(
@@ -59,7 +61,7 @@ class Running implements StateInterface
         };
     }
 
-    private function runTranscriber(): \Closure
+    private function runTranscriber(): Closure
     {
         return function (
             CompiledDeploymentInterface $compiledDeployment,
@@ -71,7 +73,7 @@ class Running implements StateInterface
 
             $promise = new Promise(
                 [$mainPromise, 'success'],
-                static function (\Throwable $error) {
+                static function (Throwable $error) {
                     //To break the foreach loop
                     throw $error;
                 }
@@ -90,7 +92,7 @@ class Running implements StateInterface
                         );
                     }
                 }
-            } catch (\Throwable $error) {
+            } catch (Throwable $error) {
                 $mainPromise->fail($error);
             }
         };

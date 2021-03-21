@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Configuration;
 use Symfony\Component\Yaml\Parser;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Throwable;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -51,7 +52,7 @@ class YamlParser implements YamlParserInterface
     {
         try {
             $promise->success($this->parser->parse($value, $flags));
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $promise->fail($error);
         }
 

@@ -32,6 +32,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Object\Environment;
+use Traversable;
+
+use function iterator_to_array;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -56,7 +59,7 @@ class EnvironmentType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?Environment $data
              */
             public function mapDataToForms($data, $forms): void
@@ -65,17 +68,17 @@ class EnvironmentType extends AbstractType
                     return;
                 }
 
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $forms['name']->setData($data->getName());
             }
 
             /**
-             * @param \Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?Environment $data
              */
             public function mapFormsToData($forms, &$data): void
             {
-                $forms = \iterator_to_array($forms);
+                $forms = iterator_to_array($forms);
                 $data = new Environment(
                     (string) $forms['name']->getData()
                 );

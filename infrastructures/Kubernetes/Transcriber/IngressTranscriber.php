@@ -32,6 +32,7 @@ use Teknoo\East\Paas\Container\Expose\Ingress;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
+use Throwable;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -144,7 +145,7 @@ class IngressTranscriber implements ExposingInterface
                     }
 
                     $promise->success($result);
-                } catch (\Throwable $error) {
+                } catch (Throwable $error) {
                     $promise->fail($error);
                 }
             }

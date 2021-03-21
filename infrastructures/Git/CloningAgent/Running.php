@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 
+use Closure;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Object\GitRepository;
@@ -46,21 +47,21 @@ class Running implements StateInterface
 {
     use StateTrait;
 
-    private function getWorkspace(): \Closure
+    private function getWorkspace(): Closure
     {
         return function (): JobWorkspaceInterface {
             return $this->workspace;
         };
     }
 
-    private function getSshIdentity(): \Closure
+    private function getSshIdentity(): Closure
     {
         return function (): SshIdentity {
             return $this->sshIdentity;
         };
     }
 
-    private function getSourceRepository(): \Closure
+    private function getSourceRepository(): Closure
     {
         return function (): GitRepository {
             return $this->sourceRepository;

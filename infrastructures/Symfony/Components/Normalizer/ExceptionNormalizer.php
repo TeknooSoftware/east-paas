@@ -25,7 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
+use LogicException;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Throwable;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -44,12 +46,12 @@ class ExceptionNormalizer implements NormalizerInterface
      */
     public function normalize($object, $format = null, array $context = array()): array
     {
-        if (!$object instanceof \Throwable) {
-            throw new \LogicException('teknoo.east.paas.normalizer.exception.non_manager');
+        if (!$object instanceof Throwable) {
+            throw new LogicException('teknoo.east.paas.normalizer.exception.non_manager');
         }
 
         return [
-            'class' => \get_class($object),
+            'class' => $object::class,
             'message' => $object->getMessage(),
             'code' => $object->getCode(),
             'file' => $object->getFile(),
@@ -59,6 +61,6 @@ class ExceptionNormalizer implements NormalizerInterface
 
     public function supportsNormalization($data, $format = null): bool
     {
-        return $data instanceof \Throwable;
+        return $data instanceof Throwable;
     }
 }
