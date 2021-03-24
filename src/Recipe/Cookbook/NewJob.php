@@ -54,61 +54,23 @@ class NewJob implements NewJobInterface
 {
     use BaseCookbookTrait;
 
-    private GetProject $stepGetProject;
-
-    private GetEnvironment $stepGetEnvironment;
-
-    private GetVariables $stepGetVariables;
-
-    private CreateNewJob $stepCreateNewJob;
-
-    private PrepareJob $stepPrepareJob;
-
-    private SaveJob $stepSaveJob;
-
-    private SerializeJob $stepSerializeJob;
-
-    private DispatchJobInterface $stepDispatchJobInterface;
-
-    private DisplayJob $stepDisplayJob;
-
-    /**
-     * @var iterable<callable>
-     */
-    private iterable $additionalSteps;
-
-    private DisplayError $stepDisplayError;
-
     /**
      * @param iterable<callable> $additionalSteps
      */
     public function __construct(
         RecipeInterface $recipe,
-        GetProject $stepGetProject,
-        GetEnvironment $stepGetEnvironment,
-        GetVariables $stepGetVariables,
-        CreateNewJob $stepCreateNewJob,
-        PrepareJob $stepPrepareJob,
-        SaveJob $stepSaveJob,
-        SerializeJob $stepSerializeJob,
-        DispatchJobInterface $stepDispatchJobInterface,
-        DisplayJob $stepDisplayJob,
-        iterable $additionalSteps,
-        DisplayError $stepDisplayError
+        private GetProject $stepGetProject,
+        private GetEnvironment $stepGetEnvironment,
+        private GetVariables $stepGetVariables,
+        private CreateNewJob $stepCreateNewJob,
+        private PrepareJob $stepPrepareJob,
+        private SaveJob $stepSaveJob,
+        private SerializeJob $stepSerializeJob,
+        private DispatchJobInterface $stepDispatchJobInterface,
+        private DisplayJob $stepDisplayJob,
+        private iterable $additionalSteps,
+        private DisplayError $stepDisplayError
     ) {
-        $this->stepGetProject = $stepGetProject;
-        $this->stepGetEnvironment = $stepGetEnvironment;
-        $this->stepGetVariables = $stepGetVariables;
-        $this->stepCreateNewJob = $stepCreateNewJob;
-        $this->stepPrepareJob = $stepPrepareJob;
-        $this->stepSaveJob = $stepSaveJob;
-        $this->stepSerializeJob = $stepSerializeJob;
-        $this->stepDispatchJobInterface = $stepDispatchJobInterface;
-        $this->stepDisplayJob = $stepDisplayJob;
-        $this->stepDisplayError = $stepDisplayError;
-
-        $this->additionalSteps = $additionalSteps;
-
         $this->fill($recipe);
     }
 

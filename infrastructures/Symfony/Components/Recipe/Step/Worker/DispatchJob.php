@@ -45,11 +45,9 @@ use Teknoo\East\Paas\Object\Project;
  */
 class DispatchJob implements DispatchJobInterface
 {
-    private MessageBusInterface $bus;
-
-    public function __construct(MessageBusInterface $bus)
-    {
-        $this->bus = $bus;
+    public function __construct(
+        private MessageBusInterface $bus,
+    ) {
     }
 
     public function __invoke(Project $project, Environment $environment, Job $job, string $jobSerialized): self

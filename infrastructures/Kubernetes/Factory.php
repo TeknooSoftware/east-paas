@@ -53,14 +53,10 @@ class Factory implements ClientFactoryInterface
      */
     private array $files = [];
 
-    private string $tmpDir;
-
-    private bool $verify;
-
-    public function __construct(string $tmpDir, bool $verify)
-    {
-        $this->tmpDir = $tmpDir;
-        $this->verify = $verify;
+    public function __construct(
+        private string $tmpDir,
+        private bool $verify,
+    ) {
     }
 
     public function __invoke(

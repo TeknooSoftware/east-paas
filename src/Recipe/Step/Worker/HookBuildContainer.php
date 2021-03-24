@@ -56,14 +56,11 @@ class HookBuildContainer
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private DispatchHistoryInterface $dispatchHistory;
-
     public function __construct(
-        DispatchHistoryInterface $dispatchHistory,
+        private DispatchHistoryInterface $dispatchHistory,
         MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
-        $this->dispatchHistory = $dispatchHistory;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

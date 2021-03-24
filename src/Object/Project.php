@@ -70,8 +70,6 @@ class Project implements
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
-    protected ?Account $account = null;
-
     protected ?string $name = null;
 
     protected ?SourceRepositoryInterface $sourceRepository = null;
@@ -90,9 +88,9 @@ class Project implements
      */
     protected iterable $jobs = [];
 
-    public function __construct(Account $account = null)
-    {
-        $this->account = $account;
+    public function __construct(
+        private ?Account $account = null,
+    ) {
         $this->initializeStateProxy();
         $this->updateStates();
     }

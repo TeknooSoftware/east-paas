@@ -41,11 +41,9 @@ use Throwable;
  */
 class YamlParser implements YamlParserInterface
 {
-    private Parser $parser;
-
-    public function __construct(Parser $parser)
-    {
-        $this->parser = $parser;
+    public function __construct(
+        private Parser $parser
+    ) {
     }
 
     public function parse(string $value, PromiseInterface $promise, int $flags = 0): YamlParserInterface

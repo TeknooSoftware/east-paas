@@ -59,10 +59,6 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
-    private ClientFactoryInterface $clientFactory;
-
-    private TranscriberCollectionInterface $transcribers;
-
     private ?string $master = null;
 
     private ?ClusterCredentials $credentials = null;
@@ -70,11 +66,10 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
     private ?KubernetesClient $client = null;
 
 
-    public function __construct(ClientFactoryInterface $clientFactory, TranscriberCollectionInterface $transcribers)
-    {
-        $this->clientFactory = $clientFactory;
-        $this->transcribers = $transcribers;
-
+    public function __construct(
+        private ClientFactoryInterface $clientFactory,
+        private TranscriberCollectionInterface $transcribers,
+    ) {
         $this->initializeStateProxy();
         $this->updateStates();
     }

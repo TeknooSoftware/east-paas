@@ -590,11 +590,9 @@ return [
         return new class ($container) implements RunJobInterface {
             private ?RunJobInterface $runJob = null;
 
-            private ContainerInterface $container;
-
-            public function __construct(ContainerInterface $container)
-            {
-                $this->container = $container;
+            public function __construct(
+                private ContainerInterface $container,
+            ) {
             }
 
             private function getRunJob(): RunJobInterface

@@ -49,14 +49,11 @@ class DeserializeHistory
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private DeserializerInterface $deserializer;
-
     public function __construct(
-        DeserializerInterface $deserializer,
+        private DeserializerInterface $deserializer,
         MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        StreamFactoryInterface $streamFactory,
     ) {
-        $this->deserializer = $deserializer;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

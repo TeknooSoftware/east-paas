@@ -49,14 +49,11 @@ class GetJob
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private JobLoader $jobLoader;
-
     public function __construct(
-        JobLoader $jobLoader,
+        private JobLoader $jobLoader,
         MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        StreamFactoryInterface $streamFactory,
     ) {
-        $this->jobLoader = $jobLoader;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

@@ -49,14 +49,11 @@ class GetProject
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private ProjectLoader $projectLoader;
-
     public function __construct(
-        ProjectLoader $projectLoader,
+        private ProjectLoader $projectLoader,
         MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        StreamFactoryInterface $streamFactory,
     ) {
-        $this->projectLoader = $projectLoader;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

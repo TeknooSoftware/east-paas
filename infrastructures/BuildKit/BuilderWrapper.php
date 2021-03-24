@@ -69,21 +69,6 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
 
     private const GRACEFULTIME = 30;
 
-    private string $binary;
-
-    /**
-     * @var array<string, string>
-     */
-    private array $templates;
-
-    private ProcessFactoryInterface $processFactory;
-
-    private string $builderName;
-
-    private string $platforms;
-
-    private ?int $timeout;
-
     private ?string $projectId;
 
     private ?string $url = null;
@@ -94,25 +79,18 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
      * @param array<string, string> $templates
      */
     public function __construct(
-        string $binary,
-        array $templates,
-        ProcessFactoryInterface $processFactory,
-        string $builderName,
-        string $platforms,
-        ?int $timeout
+        private string $binary,
+        private array $templates,
+        private ProcessFactoryInterface $processFactory,
+        private string $builderName,
+        private string $platforms,
+        private ?int $timeout,
     ) {
         foreach (['image', 'embedded-volume-image', 'volume'] as $entry) {
-            if (empty($templates[$entry])) {
+            if (empty($this->templates[$entry])) {
                 throw new DomainException("Missing $entry template");
             }
         }
-
-        $this->binary = $binary;
-        $this->templates = $templates;
-        $this->processFactory = $processFactory;
-        $this->builderName = $builderName;
-        $this->platforms = $platforms;
-        $this->timeout = $timeout;
 
         $this->initializeStateProxy();
         $this->updateStates();

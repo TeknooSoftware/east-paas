@@ -50,14 +50,11 @@ class ConfigureClusterClient
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private Directory $clientsDirectory;
-
     public function __construct(
-        Directory $clientsDirectory,
+        private Directory $clientsDirectory,
         MessageFactoryInterface $messageFactory,
         StreamFactoryInterface $streamFactory
     ) {
-        $this->clientsDirectory = $clientsDirectory;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

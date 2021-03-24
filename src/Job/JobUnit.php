@@ -60,58 +60,22 @@ use function substr;
  */
 class JobUnit implements JobUnitInterface
 {
-    private string $id;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $projectResume;
-
-    private Environment $environment;
-
-    private ?string $baseNamespace = null;
-
-    private SourceRepositoryInterface $sourceRepository;
-
-    private ImageRegistryInterface $imagesRegistry;
-
-    /**
-     * @var Cluster[]
-     */
-    private array $clusters;
-
-    private History $history;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $variables;
-
     /**
      * @param array<string, mixed> $projectResume
      * @param Cluster[] $clusters
      * @param array<string, mixed> $variables
      */
     public function __construct(
-        string $id,
-        array $projectResume,
-        Environment $environment,
-        ?string $baseNamespace,
-        SourceRepositoryInterface $sourceRepository,
-        ImageRegistryInterface $imagesRegistry,
-        array $clusters,
-        array $variables,
-        History $history
+        private string $id,
+        private array $projectResume,
+        private Environment $environment,
+        private ?string $baseNamespace,
+        private SourceRepositoryInterface $sourceRepository,
+        private ImageRegistryInterface $imagesRegistry,
+        private array $clusters,
+        private array $variables,
+        private History $history
     ) {
-        $this->id = $id;
-        $this->projectResume = $projectResume;
-        $this->environment = $environment;
-        $this->baseNamespace = $baseNamespace;
-        $this->sourceRepository = $sourceRepository;
-        $this->imagesRegistry = $imagesRegistry;
-        $this->clusters = $clusters;
-        $this->variables = $variables;
-        $this->history = $history;
     }
 
     public function getId(): string

@@ -41,11 +41,9 @@ use Throwable;
  */
 class Deserializer implements DeserializerInterface
 {
-    private SymfonySerializerInterface $serializer;
-
-    public function __construct(SymfonySerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
+    public function __construct(
+        private SymfonySerializerInterface $serializer,
+    ) {
     }
 
     public function deserialize(

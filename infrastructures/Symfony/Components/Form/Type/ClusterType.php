@@ -52,16 +52,11 @@ use function iterator_to_array;
 class ClusterType extends AbstractType
 {
     /**
-     * @var array<string, string>
-     */
-    private array $clustersTypes;
-
-    /**
      * @param array<string, string> $clustersTypes
      */
-    public function __construct(array $clustersTypes)
-    {
-        $this->clustersTypes = $clustersTypes;
+    public function __construct(
+        private array $clustersTypes,
+    ) {
     }
 
     /**

@@ -50,14 +50,11 @@ class ConfigureCloningAgent
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private CloningAgentInterface $agent;
-
     public function __construct(
-        CloningAgentInterface $agent,
+        private CloningAgentInterface $agent,
         MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        StreamFactoryInterface $streamFactory,
     ) {
-        $this->agent = $agent;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

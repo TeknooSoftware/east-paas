@@ -112,7 +112,7 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
     {
         try {
             $this->clean();
-        } catch (Throwable $error) {
+        } catch (Throwable) {
             /* nothing */
         }
     }

@@ -64,7 +64,7 @@ class NewAccountEndPoint extends CreateContentEndPoint implements NewAccountEndP
         RedirectClientInterface $redirectClient,
         RenderFormInterface $renderForm,
         RenderError $renderError,
-        iterable $additionalSteps
+        iterable $additionalSteps,
     ) {
         parent::__construct(
             $recipe,

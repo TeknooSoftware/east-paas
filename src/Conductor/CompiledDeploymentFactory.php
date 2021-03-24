@@ -42,18 +42,13 @@ use function class_exists;
  */
 class CompiledDeploymentFactory implements CompiledDeploymentFactoryInterface
 {
-    private string $className;
-
-    private string $xsdSchema;
-
-    public function __construct(string $className, string $xsdSchema)
-    {
-        if (!class_exists($className)) {
+    public function __construct(
+        private string $className,
+        private string $xsdSchema
+    ) {
+        if (!class_exists($this->className)) {
             throw new RuntimeException("Error, $className is not a valid CompiledDeploymentInterface class");
         }
-
-        $this->className = $className;
-        $this->xsdSchema = $xsdSchema;
     }
 
     public function build(int $version, string $namespace): CompiledDeploymentInterface

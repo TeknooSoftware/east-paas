@@ -38,7 +38,7 @@ use function base64_encode;
 use function is_array;
 use function is_string;
 use function strlen;
-use function strpos;
+use function str_starts_with;
 use function substr;
 
 /**
@@ -56,7 +56,7 @@ class SecretTranscriber implements DeploymentInterface
 
     private static function isValid64(string $value): bool
     {
-        return 0 === strpos($value, static::BASE64_PREFIX);
+        return str_starts_with($value, static::BASE64_PREFIX);
     }
 
     /**

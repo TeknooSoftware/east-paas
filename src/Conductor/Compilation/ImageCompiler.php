@@ -53,16 +53,11 @@ class ImageCompiler implements CompilerInterface
     private const VALUE_TAG_LATEST = 'latest';
 
     /**
-     * @var array<string, string|array<string, mixed>>
-     */
-    private array $imagesLibrary;
-
-    /**
      * @param array<string, string|array<string, mixed>> $imagesLibrary
      */
-    public function __construct(array $imagesLibrary)
-    {
-        $this->imagesLibrary = $imagesLibrary;
+    public function __construct(
+        private array $imagesLibrary
+    ) {
     }
 
     /**

@@ -47,8 +47,6 @@ use function libxml_get_last_error;
  */
 class YamlValidator
 {
-    private string $rootName;
-
     private static string $xsdUrl = 'http://xml.teknoo.it/schemas/east/paas-validation';
 
     /**
@@ -99,9 +97,9 @@ class YamlValidator
         'row',
     ];
 
-    public function __construct(string $rootName)
-    {
-        $this->rootName = $rootName;
+    public function __construct(
+        private string $rootName
+    ) {
     }
 
     /**

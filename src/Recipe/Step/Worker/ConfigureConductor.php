@@ -41,11 +41,9 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  */
 class ConfigureConductor
 {
-    private ConductorInterface $conductor;
-
-    public function __construct(ConductorInterface $conductor)
-    {
-        $this->conductor = $conductor;
+    public function __construct(
+        private ConductorInterface $conductor,
+    ) {
     }
 
     public function __invoke(

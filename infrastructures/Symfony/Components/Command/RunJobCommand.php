@@ -54,39 +54,18 @@ class RunJobCommand extends Command
 {
     private const FILE_ARGUMENT_NAME = 'file';
 
-    private ManagerInterface $manager;
-
-    private Client $client;
-
-    private RunJobInterface $runJob;
-
-    private MessageFactoryInterface $messageFactory;
-
-    private StreamFactoryInterface $streamFactory;
-
-    private DisplayHistoryHandler $displayHistoryHandler;
-
-    private DisplayResultHandler $displayResultHandler;
-
     public function __construct(
         string $name,
         string $description,
-        ManagerInterface $manager,
-        Client $client,
-        RunJobInterface $runJob,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory,
-        DisplayHistoryHandler $displayHistoryHandler,
-        DisplayResultHandler $displayResultHandler
+        private ManagerInterface $manager,
+        private Client $client,
+        private RunJobInterface $runJob,
+        private MessageFactoryInterface $messageFactory,
+        private StreamFactoryInterface $streamFactory,
+        private DisplayHistoryHandler $displayHistoryHandler,
+        private DisplayResultHandler $displayResultHandler
     ) {
         $this->setDescription($description);
-        $this->manager = $manager;
-        $this->client = $client;
-        $this->runJob = $runJob;
-        $this->messageFactory = $messageFactory;
-        $this->streamFactory = $streamFactory;
-        $this->displayResultHandler = $displayResultHandler;
-        $this->displayHistoryHandler = $displayHistoryHandler;
 
         parent::__construct($name);
     }

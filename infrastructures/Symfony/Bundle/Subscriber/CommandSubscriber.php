@@ -43,24 +43,12 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHa
  */
 class CommandSubscriber implements EventSubscriberInterface
 {
-    private DisplayHistoryHandler $historyHandler;
-
-    private DisplayResultHandler $resultHandler;
-
-    private HistorySentHandler $historyForwarder;
-
-    private JobDoneHandler $jobForwarder;
-
     public function __construct(
-        DisplayHistoryHandler $historyHandler,
-        DisplayResultHandler $resultHandler,
-        HistorySentHandler $historyForwarder,
-        JobDoneHandler $jobForwarder
+        private DisplayHistoryHandler $historyHandler,
+        private DisplayResultHandler $resultHandler,
+        private HistorySentHandler $historyForwarder,
+        private JobDoneHandler $jobForwarder,
     ) {
-        $this->historyHandler = $historyHandler;
-        $this->resultHandler = $resultHandler;
-        $this->historyForwarder = $historyForwarder;
-        $this->jobForwarder = $jobForwarder;
     }
 
 

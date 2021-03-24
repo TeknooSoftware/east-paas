@@ -72,20 +72,9 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
     private const CONFIG_KEY_VERSION = 'version';
     private const CONFIG_KEY_NAMESPACE = 'namespace';
 
-    private CompiledDeploymentFactoryInterface $factory;
-
-    private YamlValidator $validator;
-
-    /**
-     * @var array<string, CompilerInterface>
-     */
-    private iterable $compilers;
-
     private JobUnitInterface $job;
 
     private JobWorkspaceInterface $workspace;
-
-    private ?string $storageIdentifier;
 
     /**
      * @var array<string, mixed>
@@ -96,19 +85,15 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
      * @param array<string, CompilerInterface> $compilers
      */
     public function __construct(
-        CompiledDeploymentFactoryInterface $factory,
+        private CompiledDeploymentFactoryInterface $factory,
         PropertyAccessorInterface $propertyAccessor,
         YamlParserInterface $parser,
-        YamlValidator $validator,
-        iterable $compilers,
-        ?string $storageIdentifier
+        private YamlValidator $validator,
+        private iterable $compilers,
+        private ?string $storageIdentifier
     ) {
-        $this->factory = $factory;
         $this->setPropertyAccessor($propertyAccessor);
         $this->setParser($parser);
-        $this->validator = $validator;
-        $this->compilers = $compilers;
-        $this->storageIdentifier = $storageIdentifier;
 
         $this->initializeStateProxy();
         $this->updateStates();

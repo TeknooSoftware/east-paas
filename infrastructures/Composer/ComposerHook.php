@@ -46,8 +46,6 @@ use function reset;
  */
 class ComposerHook implements HookInterface
 {
-    private string $binary;
-
     /**
      * @var callable
      */
@@ -60,9 +58,10 @@ class ComposerHook implements HookInterface
      */
     private array $options = [];
 
-    public function __construct(string $binary, callable $factory)
-    {
-        $this->binary = $binary;
+    public function __construct(
+        private string $binary,
+        callable $factory,
+    ) {
         $this->factory = $factory;
     }
 

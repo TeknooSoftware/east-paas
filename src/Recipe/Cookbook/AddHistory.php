@@ -55,57 +55,22 @@ class AddHistory implements AddHistoryInterface
 {
     use BaseCookbookTrait;
 
-    private ReceiveHistory $stepReceiveHistory;
-
-    private DeserializeHistory $stepDeserializeHistory;
-
-    private GetProject $stepGetProject;
-
-    private GetJob $stepGetJob;
-
-    private StepAddHistory $stepAddHistory;
-
-    private SaveJob $stepSaveJob;
-
-    private SerializeHistory $stepSerializeHistory;
-
-    private DisplayHistory $stepDisplayHistory;
-
-    /**
-     * @var iterable<callable>
-     */
-    private iterable $additionalSteps;
-
-    private DisplayError $stepDisplayError;
-
     /**
      * @param iterable<callable> $additionalSteps
      */
     public function __construct(
         RecipeInterface $recipe,
-        ReceiveHistory $stepReceiveHistory,
-        DeserializeHistory $stepDeserializeHistory,
-        GetProject $stepGetProject,
-        GetJob $stepGetJob,
-        StepAddHistory $stepAddHistory,
-        SaveJob $stepSaveJob,
-        SerializeHistory $stepSerializeHistory,
-        DisplayHistory $stepDisplayHistory,
-        iterable $additionalSteps,
-        DisplayError $stepDisplayError
+        private ReceiveHistory $stepReceiveHistory,
+        private DeserializeHistory $stepDeserializeHistory,
+        private GetProject $stepGetProject,
+        private GetJob $stepGetJob,
+        private StepAddHistory $stepAddHistory,
+        private SaveJob $stepSaveJob,
+        private SerializeHistory $stepSerializeHistory,
+        private DisplayHistory $stepDisplayHistory,
+        private iterable $additionalSteps,
+        private DisplayError $stepDisplayError,
     ) {
-        $this->stepReceiveHistory = $stepReceiveHistory;
-        $this->stepDeserializeHistory = $stepDeserializeHistory;
-        $this->stepGetProject = $stepGetProject;
-        $this->stepGetJob = $stepGetJob;
-        $this->stepAddHistory = $stepAddHistory;
-        $this->stepSaveJob = $stepSaveJob;
-        $this->stepSerializeHistory = $stepSerializeHistory;
-        $this->stepDisplayHistory = $stepDisplayHistory;
-        $this->stepDisplayError = $stepDisplayError;
-
-        $this->additionalSteps = $additionalSteps;
-
         $this->fill($recipe);
     }
 

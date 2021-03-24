@@ -59,22 +59,13 @@ class PushResult implements DispatchResultInterface
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private DatesService $dateTimeService;
-
-    private MessageBusInterface $bus;
-
-    private NormalizerInterface $normalizer;
-
     public function __construct(
-        DatesService $dateTimeService,
-        MessageBusInterface $bus,
-        NormalizerInterface $normalizer,
+        private DatesService $dateTimeService,
+        private MessageBusInterface $bus,
+        private NormalizerInterface $normalizer,
         StreamFactoryInterface $streamFactory,
-        MessageFactoryInterface $messageFactory
+        MessageFactoryInterface $messageFactory,
     ) {
-        $this->dateTimeService = $dateTimeService;
-        $this->bus = $bus;
-        $this->normalizer = $normalizer;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

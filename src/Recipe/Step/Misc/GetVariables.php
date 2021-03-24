@@ -43,11 +43,9 @@ use function json_decode;
  */
 class GetVariables
 {
-    private string $jsonContentType;
-
-    public function __construct(string $jsonContentType = 'application/json')
-    {
-        $this->jsonContentType = $jsonContentType;
+    public function __construct(
+        private string $jsonContentType = 'application/json',
+    ) {
     }
 
     public function __invoke(

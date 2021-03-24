@@ -49,14 +49,11 @@ class ConfigureImagesBuilder
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private ImageBuilder $builder;
-
     public function __construct(
-        ImageBuilder $builder,
+        private ImageBuilder $builder,
         MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        StreamFactoryInterface $streamFactory,
     ) {
-        $this->builder = $builder;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

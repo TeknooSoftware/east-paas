@@ -45,17 +45,11 @@ use Throwable;
  */
 class IngressTranscriber implements ExposingInterface
 {
-    private ?string $defaultIngressClass = null;
-
-    private ?string $defaultIngressService = null;
-
-    private ?int $defaultIngressPort = null;
-
-    public function __construct(?string $defaultIngressClass, ?string $defaultIngressService, ?int $defaultIngressPort)
-    {
-        $this->defaultIngressClass = $defaultIngressClass;
-        $this->defaultIngressService = $defaultIngressService;
-        $this->defaultIngressPort = $defaultIngressPort;
+    public function __construct(
+        private ?string $defaultIngressClass,
+        private ?string $defaultIngressService,
+        private ?int $defaultIngressPort,
+    ) {
     }
 
     private function convertToIngress(

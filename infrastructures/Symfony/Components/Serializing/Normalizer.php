@@ -41,11 +41,9 @@ use Throwable;
  */
 class Normalizer implements NormalizerInterface
 {
-    private SymfonyNormalizerInterface $normalizer;
-
-    public function __construct(SymfonyNormalizerInterface $normalizer)
-    {
-        $this->normalizer = $normalizer;
+    public function __construct(
+        private SymfonyNormalizerInterface $normalizer,
+    ) {
     }
 
     public function normalize(

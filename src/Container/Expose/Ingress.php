@@ -41,42 +41,18 @@ class Ingress implements ImmutableInterface
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    private string $host;
-
-    private ?string $provider;
-
-    private ?string $defaultServiceName;
-
-    private ?int $defaultServicePort;
-
-    /**
-     * @var array<integer, IngressPath>
-     */
-    private array $paths;
-
-    private ?string $tlsSecret;
-
     /**
      * @param array<integer, IngressPath> $paths
      */
     public function __construct(
-        string $name,
-        string $host,
-        ?string $provider,
-        ?string $defaultServiceName,
-        ?int $defaultServicePort,
-        array $paths,
-        ?string $tlsSecret
+        private string $name,
+        private string $host,
+        private ?string $provider,
+        private ?string $defaultServiceName,
+        private ?int $defaultServicePort,
+        private array $paths,
+        private ?string $tlsSecret
     ) {
-        $this->name = $name;
-        $this->host = $host;
-        $this->provider = $provider;
-        $this->defaultServiceName = $defaultServiceName;
-        $this->defaultServicePort = $defaultServicePort;
-        $this->paths = $paths;
-        $this->tlsSecret = $tlsSecret;
     }
 
     public function getName(): string

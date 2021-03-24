@@ -48,20 +48,14 @@ class JobDoneHandler implements JobDoneHandlerInterface, MessageHandlerInterface
 {
     use RequestTrait;
 
-    private string $urlPattern;
-
-    private string $method;
-
     public function __construct(
-        string $urlPattern,
-        string $method,
+        private string $urlPattern,
+        private string $method,
         UriFactoryInterface $uriFactory,
         RequestFactoryInterface $requestFactory,
         StreamFactoryInterface $streamFactory,
-        ClientInterface $client
+        ClientInterface $client,
     ) {
-        $this->urlPattern = $urlPattern;
-        $this->method = $method;
         $this->uriFactory = $uriFactory;
         $this->requestFactory = $requestFactory;
         $this->streamFactory = $streamFactory;

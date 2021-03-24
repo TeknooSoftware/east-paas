@@ -64,97 +64,32 @@ class RunJob implements RunJobInterface
 {
     use BaseCookbookTrait;
 
-    private DispatchHistoryInterface $stepDispatchHistory;
-
-    private ReceiveJob $stepReceiveJob;
-
-    private DeserializeJob $stepDeserializeJob;
-
-    private PrepareWorkspace $stepPrepareWorkspace;
-
-    private ConfigureCloningAgent $stepConfigureCloningAgent;
-
-    private CloneRepository $stepCloneRepository;
-
-    private ConfigureConductor $stepConfigureConductor;
-
-    private ReadDeploymentConfiguration $stepReadDeploymentConfiguration;
-
-    private CompileDeployment $stepCompileDeployment;
-
-    private HookBuildContainer $stepHookBuildContainer;
-
-    private ConfigureImagesBuilder $stepConfigureImagesBuilder;
-
-    private BuildImages $stepBuildImages;
-
-    private BuildVolumes $stepBuildVolumes;
-
-    private ConfigureClusterClient $stepConfigureClusterClient;
-
-    private Deploying $stepDeploying;
-
-    private Exposing $stepExposing;
-
-    private DispatchResultInterface $stepDispatchResult;
-
-    private DisplayHistory $stepDisplayHistory;
-
-    /**
-     * @var iterable<callable>
-     */
-    private iterable $additionalSteps;
-
-    private DisplayError $stepDisplayError;
-
     /**
      * @param iterable<callable> $additionalSteps
      */
     public function __construct(
         RecipeInterface $recipe,
-        DispatchHistoryInterface $stepDispatchHistory,
-        ReceiveJob $stepReceiveJob,
-        DeserializeJob $stepDeserializeJob,
-        PrepareWorkspace $stepPrepareWorkspace,
-        ConfigureCloningAgent $stepConfigureCloningAgent,
-        CloneRepository $stepCloneRepository,
-        ConfigureConductor $stepConfigureConductor,
-        ReadDeploymentConfiguration $stepReadDeploymentConfiguration,
-        CompileDeployment $stepCompileDeployment,
-        HookBuildContainer $stepHookBuildContainer,
-        ConfigureImagesBuilder $stepConfigureImagesBuilder,
-        BuildImages $stepBuildImages,
-        BuildVolumes $stepBuildVolumes,
-        ConfigureClusterClient $stepConfigureClusterClient,
-        Deploying $stepDeploying,
-        Exposing $stepExposing,
-        DispatchResultInterface $stepDispatchResult,
-        DisplayHistory $stepDisplayHistory,
-        iterable $additionalSteps,
-        DisplayError $stepDisplayError
+        private DispatchHistoryInterface $stepDispatchHistory,
+        private ReceiveJob $stepReceiveJob,
+        private DeserializeJob $stepDeserializeJob,
+        private PrepareWorkspace $stepPrepareWorkspace,
+        private ConfigureCloningAgent $stepConfigureCloningAgent,
+        private CloneRepository $stepCloneRepository,
+        private ConfigureConductor $stepConfigureConductor,
+        private ReadDeploymentConfiguration $stepReadDeploymentConfiguration,
+        private CompileDeployment $stepCompileDeployment,
+        private HookBuildContainer $stepHookBuildContainer,
+        private ConfigureImagesBuilder $stepConfigureImagesBuilder,
+        private BuildImages $stepBuildImages,
+        private BuildVolumes $stepBuildVolumes,
+        private ConfigureClusterClient $stepConfigureClusterClient,
+        private Deploying $stepDeploying,
+        private Exposing $stepExposing,
+        private DispatchResultInterface $stepDispatchResult,
+        private DisplayHistory $stepDisplayHistory,
+        private iterable $additionalSteps,
+        private DisplayError $stepDisplayError,
     ) {
-        $this->stepDispatchHistory = $stepDispatchHistory;
-        $this->stepReceiveJob = $stepReceiveJob;
-        $this->stepDeserializeJob = $stepDeserializeJob;
-        $this->stepPrepareWorkspace = $stepPrepareWorkspace;
-        $this->stepConfigureCloningAgent = $stepConfigureCloningAgent;
-        $this->stepCloneRepository = $stepCloneRepository;
-        $this->stepConfigureConductor = $stepConfigureConductor;
-        $this->stepReadDeploymentConfiguration = $stepReadDeploymentConfiguration;
-        $this->stepCompileDeployment = $stepCompileDeployment;
-        $this->stepHookBuildContainer = $stepHookBuildContainer;
-        $this->stepConfigureImagesBuilder = $stepConfigureImagesBuilder;
-        $this->stepBuildImages = $stepBuildImages;
-        $this->stepBuildVolumes = $stepBuildVolumes;
-        $this->stepConfigureClusterClient = $stepConfigureClusterClient;
-        $this->stepDeploying = $stepDeploying;
-        $this->stepExposing = $stepExposing;
-        $this->stepDispatchResult = $stepDispatchResult;
-        $this->stepDisplayHistory = $stepDisplayHistory;
-        $this->stepDisplayError = $stepDisplayError;
-
-        $this->additionalSteps = $additionalSteps;
-
         $this->fill($recipe);
     }
 

@@ -43,11 +43,9 @@ use Throwable;
  */
 class SaveJob
 {
-    private JobWriter $jobWriter;
-
-    public function __construct(JobWriter $jobWriter)
-    {
-        $this->jobWriter = $jobWriter;
+    public function __construct(
+        private JobWriter $jobWriter,
+    ) {
     }
 
     public function __invoke(Job $job, ChefInterface $chef, ClientInterface $client): self

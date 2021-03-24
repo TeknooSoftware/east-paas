@@ -49,14 +49,11 @@ class DisplayError
     use ResponseTrait;
     use PsrFactoryTrait;
 
-    private SerializerInterface $serializer;
-
     public function __construct(
-        SerializerInterface $serializer,
+        private SerializerInterface $serializer,
         MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        StreamFactoryInterface $streamFactory,
     ) {
-        $this->serializer = $serializer;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

@@ -39,7 +39,7 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Container\Pod;
 
 use function is_string;
-use function strpos;
+use function str_contains;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -52,10 +52,6 @@ use function strpos;
  */
 class CompiledDeployment implements CompiledDeploymentInterface
 {
-    private int $version;
-
-    private string $namespace;
-
     /**
      * @var array<string, Secret>
      */
@@ -91,10 +87,10 @@ class CompiledDeployment implements CompiledDeploymentInterface
      */
     private array $ingresses = [];
 
-    public function __construct(int $version, string $namespace)
-    {
-        $this->version = $version;
-        $this->namespace = $namespace;
+    public function __construct(
+        private int $version,
+        private string $namespace
+    ) {
     }
 
     public function addBuildable(BuildableInterface $buildable): CompiledDeploymentInterface
@@ -165,7 +161,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
     {
         foreach ($pod as $container) {
             $buildable = $container->getImage();
-            if (false !== strpos($buildable, '/')) {
+            if (str_contains($buildable, '/')) {
                 //Is an external buildable
                 continue;
             }

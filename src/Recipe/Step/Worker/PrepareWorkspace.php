@@ -40,11 +40,9 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  */
 class PrepareWorkspace
 {
-    private JobWorkspaceInterface $workspace;
-
-    public function __construct(JobWorkspaceInterface $workspace)
-    {
-        $this->workspace = $workspace;
+    public function __construct(
+        private JobWorkspaceInterface $workspace,
+    ) {
     }
 
     public function __invoke(JobUnitInterface $job, ManagerInterface $manager): self

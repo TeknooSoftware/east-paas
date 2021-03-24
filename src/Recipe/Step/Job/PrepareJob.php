@@ -52,14 +52,11 @@ class PrepareJob
     use ErrorTrait;
     use PsrFactoryTrait;
 
-    private DatesService $dateTimeService;
-
     public function __construct(
-        DatesService $dateTimeService,
+        private DatesService $dateTimeService,
         MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        StreamFactoryInterface $streamFactory,
     ) {
-        $this->dateTimeService = $dateTimeService;
         $this->setMessageFactory($messageFactory);
         $this->setStreamFactory($streamFactory);
     }

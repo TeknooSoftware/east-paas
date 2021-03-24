@@ -47,16 +47,10 @@ use function json_encode;
  */
 class SendHistory implements DispatchHistoryInterface
 {
-    private DatesService $dateTimeService;
-
-    private MessageBusInterface $bus;
-
     public function __construct(
-        DatesService $dateTimeService,
-        MessageBusInterface $bus
+        private DatesService $dateTimeService,
+        private MessageBusInterface $bus,
     ) {
-        $this->dateTimeService = $dateTimeService;
-        $this->bus = $bus;
     }
 
     /**
