@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.46] - 2021-03-24
+###Dev Release
+- Constructor Property Promotion
+- Non-capturing catches
+
 ##[0.0.45] - 2021-03-21
 ###Dev Release
 - Migrate toPHP*
