@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.47] - 2021-03-25
+###Dev Release
+- Fix Project's account
+
 ##[0.0.46] - 2021-03-24
 ###Dev Release
 - Constructor Property Promotion

@@ -89,7 +89,7 @@ class Project implements
     protected iterable $jobs = [];
 
     public function __construct(
-        private ?Account $account = null,
+        protected ?Account $account = null,
     ) {
         $this->initializeStateProxy();
         $this->updateStates();
