@@ -33,11 +33,11 @@
         "ext-dom": "*",
         "php-di/php-di": "~6.3",
         "psr/http-client": "~1.0",
-        "teknoo/east-foundation": "^5.0.0",
-        "teknoo/east-website": "^5.0.0",
-        "teknoo/immutable": "^2.0.6",
-        "teknoo/recipe": "^3.0.0",
-        "teknoo/states": "^5.0.0"
+        "teknoo/east-foundation": "^5.0.1",
+        "teknoo/east-website": "^5.0.2",
+        "teknoo/immutable": "^2.0.7",
+        "teknoo/recipe": "^3.0.1",
+        "teknoo/states": "^5.0.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",

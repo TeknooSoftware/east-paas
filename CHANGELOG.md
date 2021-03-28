@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.48] - 2021-03-28
+###Dev Release
+- Migrate to last Website version and switch to `Teknoo\East\Website\Contracts\ObjectInterface`
+
 ##[0.0.47] - 2021-03-25
 ###Dev Release
 - Fix Project's account
