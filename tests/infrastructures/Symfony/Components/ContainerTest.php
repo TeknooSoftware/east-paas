@@ -27,15 +27,20 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony;
 
 use DI\Container;
 use DI\ContainerBuilder;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
 use Symfony\Component\Yaml\Parser;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
@@ -189,6 +194,22 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             DisplayResultHandler::class,
             $container->get(DisplayResultHandler::class)
+        );
+    }
+
+    public function testRunJobCommand()
+    {
+        $container = $this->buildContainer();
+        $container->set(ServerRequestFactoryInterface::class, $this->createMock(ServerRequestFactoryInterface::class));
+        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
+        $container->set(DatesService::class, $this->createMock(DatesService::class));
+        $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
+        $container->set(RunJobInterface::class . ':proxy', $this->createMock(RunJobInterface::class));
+
+        self::assertInstanceOf(
+            RunJobCommand::class,
+            $container->get(RunJobCommand::class)
         );
     }
 }

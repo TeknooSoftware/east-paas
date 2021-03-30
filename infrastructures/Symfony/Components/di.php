@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony;
 
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Foundation\Manager\Manager;
 use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
@@ -35,6 +36,8 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
@@ -60,6 +63,9 @@ return [
         'Run job manually from json file, without PaaS server'
     ),
 
+    DisplayHistoryHandler::class => create(),
+    DisplayResultHandler::class => create(),
+
     RunJobCommand::class => create()
         ->constructor(
             get('teknoo.east.paas.symfony.command.run_job.name'),
@@ -67,8 +73,10 @@ return [
             create(Manager::class),
             create(Client::class),
             get(RunJobInterface::class . ':proxy'),
-            get(ServerRequestFactoryInterface::class),
-            get(StreamFactoryInterface::class)
+            get(MessageFactoryInterface::class),
+            get(StreamFactoryInterface::class),
+            get(DisplayHistoryHandler::class),
+            get(DisplayResultHandler::class),
         ),
 
     DispatchJobInterface::class => get(DispatchJob::class),

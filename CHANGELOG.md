@@ -1,5 +1,14 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.49] - 2021-03-30
+###Dev Release
+- Fix DI about RunJobCommand
+- Require East Foundation 5.0.2+
+
+##[0.0.48] - 2021-03-28
+###Dev Release
+- Migrate to last Website version and switch to `Teknoo\East\Website\Contracts\ObjectInterface`
+
 ##[0.0.48] - 2021-03-28
 ###Dev Release
 - Migrate to last Website version and switch to `Teknoo\East\Website\Contracts\ObjectInterface`
