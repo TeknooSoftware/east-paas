@@ -68,4 +68,6 @@ interface JobUnitInterface extends NormalizableInterface
         array $values,
         PromiseInterface $promise
     ): JobUnitInterface;
+
+    public function runWithExtra(callable $callback): JobUnitInterface;
 }

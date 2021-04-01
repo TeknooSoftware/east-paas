@@ -282,6 +282,15 @@ class JobTest extends TestCase
         );
     }
 
+    public function testSetExtra()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            \get_class($object),
+            $object->setExtra(['foo'])
+        );
+    }
+
     public function testSetEnvironment()
     {
         $argument = new Environment('foo');
@@ -431,11 +440,15 @@ class JobTest extends TestCase
                 'clusters' => [],
                 'history' => null,
                 'base_namespace' => 'foo',
+                'extra' => ['foo' => 'bar'],
             ]);
 
         self::assertInstanceOf(
             Job::class,
-            $this->buildObject()->setId('123')->setBaseNamespace('foo')->exportToMeData(
+            $this->buildObject()->setId('123')
+                ->setBaseNamespace('foo')
+                ->setExtra(['foo' => 'bar'])
+                ->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']
             )

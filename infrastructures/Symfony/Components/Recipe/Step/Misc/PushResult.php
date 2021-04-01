@@ -43,6 +43,7 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 use Throwable;
 
+use function array_merge;
 use function json_encode;
 
 /**
@@ -70,25 +71,29 @@ class PushResult implements DispatchResultInterface
         $this->setStreamFactory($streamFactory);
     }
 
+    /**
+     * @param array<string, mixed> $extra
+     */
     private function sendResult(
         ManagerInterface $manager,
         string $projectId,
         string $envName,
         string $jobId,
-        mixed $result
+        mixed $result,
+        array $extra = [],
     ): void {
         $this->dateTimeService->passMeTheDate(
-            function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $result, $manager) {
+            function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $result, $manager, $extra) {
                 $this->normalizer->normalize(
                     $result,
                     new Promise(
-                        function ($extra) use ($projectId, $envName, $jobId, $manager, $now) {
+                        function ($normalizedResult) use ($projectId, $envName, $jobId, $manager, $now, $extra) {
                             $history = new History(
                                 null,
                                 DispatchResultInterface::class,
                                 $now,
                                 true,
-                                $extra
+                                array_merge($extra, ['result' => $normalizedResult])
                             );
 
                             $manager->updateWorkPlan([
@@ -119,6 +124,9 @@ class PushResult implements DispatchResultInterface
         );
     }
 
+    /**
+     * @param array<string, mixed> $extra
+     */
     public function __invoke(
         ManagerInterface $manager,
         EastClient $client,
@@ -126,14 +134,15 @@ class PushResult implements DispatchResultInterface
         string $envName,
         string $jobId,
         mixed $result = null,
-        ?Throwable $exception = null
+        ?Throwable $exception = null,
+        array $extra = []
     ): DispatchResultInterface {
         if (empty($result)) {
             $result = [];
         }
 
         try {
-            $this->sendResult($manager, $projectId, $envName, $jobId, $result);
+            $this->sendResult($manager, $projectId, $envName, $jobId, $result, $extra);
         } catch (Throwable $error) {
             $errorCode = $error->getCode();
             if ($errorCode < 400 || $errorCode > 600) {

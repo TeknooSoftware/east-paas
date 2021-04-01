@@ -569,6 +569,9 @@ class FeatureContext implements Context
     "extra": [],
     "previous": null
   },
+  "extra": {
+    "foo": "bar"
+  },
   "variables": {
     "FOO": "foo"
   }
@@ -648,7 +651,8 @@ EOF;
                 'extra' => [],
                 'previous' => null,
             ],
-            'variables' => $variables
+            'extra' => [],
+            'variables' => $variables,
         ];
     }
 
@@ -694,6 +698,7 @@ EOF;
             ->setSourceRepository($this->sourceRepository)
             ->setClusters([$this->cluster])
             ->setEnvironment($this->environment)
+            ->setExtra(['foo' => 'bar'])
             ->addToHistory('teknoo.east.paas.jobs.configured', new \DateTime($this->jobDate));
 
         $this->repositories[Job::class]->register(
@@ -726,7 +731,10 @@ EOF;
             'message' => DispatchResultInterface::class,
             'date' => $this->historyDate = $date,
             'is_final' => true,
-            'extra' => [],
+            'extra' => [
+                'foo' => 'bar',
+                'result' => [],
+            ],
             'previous' => null,
         ];
         Assert::assertEquals(\json_encode($history), $this->response->getContent());

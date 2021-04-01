@@ -32,6 +32,7 @@ use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Job\JobUnit;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
@@ -108,7 +109,7 @@ class JobUnitTest extends TestCase
         return $this->cluster;
     }
 
-    private function buildObject(?string $namespace = 'foo')
+    private function buildObject(?string $namespace = 'foo', array $extra = [])
     {
         return (new JobUnit(
             'test',
@@ -122,7 +123,8 @@ class JobUnitTest extends TestCase
                 'foo' => 'bar',
                 'bar' => 'FOO',
             ],
-            new History(null, 'foo', new \DateTimeImmutable('2018-05-01'))
+            new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),
+            $extra
         ));
     }
 
@@ -456,6 +458,29 @@ class JobUnitTest extends TestCase
                     }
                 )
             )
+        );
+    }
+
+    public function testRunWithExtra()
+    {
+        self::assertInstanceOf(
+            JobUnitInterface::class,
+            $this->buildObject()->runWithExtra(function () {
+                self::fail('Must not be called if no extra');
+            })
+        );
+
+        $extra = [];
+        self::assertInstanceOf(
+            JobUnitInterface::class,
+            $this->buildObject('foo', ['foo' => 'bar'])->runWithExtra(function ($e) use (&$extra) {
+                $extra = $e;
+            })
+        );
+
+        self::assertEquals(
+            ['foo' => 'bar'],
+            $extra
         );
     }
 }

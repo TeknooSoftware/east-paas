@@ -53,6 +53,7 @@ use function substr;
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
+ *
  * @link        http://teknoo.software/east/paas Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
@@ -64,6 +65,7 @@ class JobUnit implements JobUnitInterface
      * @param array<string, mixed> $projectResume
      * @param Cluster[] $clusters
      * @param array<string, mixed> $variables
+     * @param array<string, mixed> $extra
      */
     public function __construct(
         private string $id,
@@ -74,7 +76,8 @@ class JobUnit implements JobUnitInterface
         private ImageRegistryInterface $imagesRegistry,
         private array $clusters,
         private array $variables,
-        private History $history
+        private History $history,
+        private array $extra = [],
     ) {
     }
 
@@ -228,6 +231,15 @@ class JobUnit implements JobUnitInterface
         $this->updateNamespace($values);
 
         $this->updateVariables($values, $promise);
+
+        return $this;
+    }
+
+    public function runWithExtra(callable $callback): JobUnitInterface
+    {
+        if (!empty($this->extra)) {
+            $callback($this->extra);
+        }
 
         return $this;
     }

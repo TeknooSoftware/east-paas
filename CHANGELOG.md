@@ -1,5 +1,11 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.50] - 2021-04-01
+###Dev Release
+- Job can have extra value,
+- JobUnit can have extra value, and can be fetched thanks to `runWithExtra`
+- JobUnit inject to Manager extras values to be reinjected into history into DeserializedJob step
+
 ##[0.0.49] - 2021-03-30
 ###Dev Release
 - Fix DI about RunJobCommand

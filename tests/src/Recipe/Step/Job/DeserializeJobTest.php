@@ -141,6 +141,51 @@ class DeserializeJobTest extends TestCase
         );
     }
 
+    public function testInvokeWithExtra()
+    {
+        $job = $this->createMock(JobUnitInterface::class);
+        $job->expects(self::any())->method('runWithExtra')->willReturnCallback(
+            function (callable $callback) use ($job) {
+                $callback(['foo' => 'bar']);
+
+                return $job;
+            }
+        );
+        $manager = $this->createMock(ManagerInterface::class);
+        $client = $this->createMock(ClientInterface::class);
+
+        $this->getDeserializer()
+            ->expects(self::once())
+            ->method('deserialize')
+            ->with('fooBar', JobUnitInterface::class, 'json')
+            ->willReturnCallback(
+                function (
+                    string $data,
+                    string $type,
+                    string $format,
+                    PromiseInterface $promise,
+                    array $context = []
+                ) use ($job) {
+                    $promise->success($job);
+
+                    return $this->getDeserializer();
+                }
+            );
+
+        $manager->expects(self::exactly(2))
+            ->method('updateWorkPlan')
+            ->withConsecutive(
+                [[JobUnitInterface::class => $job]],
+                [['extra' => ['foo' => 'bar']]]
+            )
+            ->willReturnSelf();
+
+        self::assertInstanceOf(
+            DeserializeJob::class,
+            ($this->buildStep())('fooBar', $manager, $client)
+        );
+    }
+
     public function testInvokeErrorInDeserialization()
     {
         $manager = $this->createMock(ManagerInterface::class);

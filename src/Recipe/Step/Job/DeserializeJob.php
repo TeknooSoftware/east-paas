@@ -80,6 +80,7 @@ class DeserializeJob
             new Promise(
                 static function (JobUnitInterface $jobUnit) use ($manager) {
                     $manager->updateWorkPlan([JobUnitInterface::class => $jobUnit]);
+                    $jobUnit->runWithExtra(fn ($extra) => $manager->updateWorkPlan(['extra' => $extra]));
                 },
                 static::buildFailurePromise(
                     $client,

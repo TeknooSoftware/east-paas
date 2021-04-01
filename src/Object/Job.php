@@ -87,6 +87,11 @@ class Job implements
 
     protected ?History $history = null;
 
+    /**
+     * @var array<string, mixed>
+     */
+    private array $extra = [];
+
     public function __construct()
     {
         $this->initializeStateProxy();
@@ -215,6 +220,7 @@ class Job implements
             'images_repository' => $this->imagesRegistry,
             'clusters' => $this->clusters,
             'history' => $this->history,
+            'extra' => $this->extra,
         ]);
 
         return $this;
@@ -258,6 +264,16 @@ class Job implements
         $this->clusters = $clusters;
 
         $this->updateStates();
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $extra
+     */
+    public function setExtra(array $extra): Job
+    {
+        $this->extra = $extra;
 
         return $this;
     }

@@ -133,7 +133,8 @@ class JobUnitDenormalizer implements DenormalizerInterface
             $imagesRegistry,
             $clusters,
             $variables,
-            $history
+            $history,
+            $data['extra'] ?? [],
         );
     }
 

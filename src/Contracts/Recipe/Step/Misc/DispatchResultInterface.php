@@ -43,6 +43,9 @@ use Throwable;
  */
 interface DispatchResultInterface
 {
+    /**
+     * @param array<string, mixed> $extra
+     */
     public function __invoke(
         ManagerInterface $manager,
         EastClient $client,
@@ -50,6 +53,7 @@ interface DispatchResultInterface
         string $envName,
         string $jobId,
         mixed $result = null,
-        ?Throwable $exception = null
+        ?Throwable $exception = null,
+        array $extra = [],
     ): DispatchResultInterface;
 }
