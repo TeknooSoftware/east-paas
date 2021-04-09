@@ -1,7 +1,6 @@
 Teknoo Software - PaaS library
 ==============================
 
-[![Build Status](https://travis-ci.com/TeknooSoftware/east-paas.svg?branch=master)](https://travis-ci.com/TeknooSoftware/east-paas)
 [![Latest Stable Version](https://poser.pugx.org/teknoo/east-paas/v/stable)](https://packagist.org/packages/teknoo/east-paas)
 [![Latest Unstable Version](https://poser.pugx.org/teknoo/east-paas/v/unstable)](https://packagist.org/packages/teknoo/east-paas)
 [![Total Downloads](https://poser.pugx.org/teknoo/east-paas/downloads)](https://packagist.org/packages/teknoo/east-paas)
