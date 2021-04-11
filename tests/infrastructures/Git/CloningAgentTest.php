@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 
-use GitWrapper\GitWrapper;
+use Symplify\GitWrapper\GitWrapper;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;

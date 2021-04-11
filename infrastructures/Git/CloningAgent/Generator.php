@@ -30,7 +30,6 @@ use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Object\GitRepository;
-use Teknoo\East\Paas\Object\SshIdentity;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 

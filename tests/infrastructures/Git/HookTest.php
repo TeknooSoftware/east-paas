@@ -25,13 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 
-use GitWrapper\GitWrapper;
+use Symplify\GitWrapper\GitWrapper;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Infrastructures\Git\Hook;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Object\GitRepository;
-use Teknoo\East\Paas\Object\SshIdentity;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 

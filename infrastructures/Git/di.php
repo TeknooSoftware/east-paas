@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
-use GitWrapper\GitWrapper;
+use Symplify\GitWrapper\GitWrapper;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 
 use function DI\get;
