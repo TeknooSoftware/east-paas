@@ -1,5 +1,10 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.51] - 2021-04-11
+###Dev Release
+- Update to last Doctrine Common and remove deprecation
+- Switch to Simplify GitWrapper
+
 ##[0.0.50] - 2021-04-01
 ###Dev Release
 - Job can have extra value,
