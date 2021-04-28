@@ -663,8 +663,12 @@ EOF;
     {
         $job = $this->getNormalizedJob([]);
 
+        $content = \json_decode($this->response->getContent(), true);
         try {
-            Assert::assertEquals(\json_encode($job), $this->response->getContent());
+            Assert::assertEquals(
+                $job,
+                $content
+            );
         } catch (ExpectationFailedException $error) {
             throw new \RuntimeException((string) $error, $error->getCode(), $error);
         }
@@ -677,8 +681,10 @@ EOF;
     {
         $job = $this->getNormalizedJob(\json_decode($variables, true));
 
+        $content = \json_decode($this->response->getContent(), true);
+
         try {
-            Assert::assertEquals(\json_encode($job), $this->response->getContent());
+            Assert::assertEquals($job, $content);
         } catch (ExpectationFailedException $error) {
             throw new \RuntimeException((string) $error, $error->getCode(), $error);
         }
@@ -737,7 +743,10 @@ EOF;
             ],
             'previous' => null,
         ];
-        Assert::assertEquals(\json_encode($history), $this->response->getContent());
+
+        $content = \json_decode($this->response->getContent(), true);
+
+        Assert::assertEquals($history, $content);
     }
 
     /**

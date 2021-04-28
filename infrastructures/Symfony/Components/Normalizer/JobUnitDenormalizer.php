@@ -35,7 +35,6 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Cluster;
 
-use function array_merge;
 use function is_array;
 
 /**
@@ -119,10 +118,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
             throw new RuntimeException('Bad denormalized history');
         }
 
-        $variables = array_merge(
-            $context['variables'] ?? [],
-            $data['variables'] ?? []
-        );
+        $variables = ($data['variables'] ?? []) + ($context['variables'] ?? []);
 
         return new JobUnit(
             $jobId,

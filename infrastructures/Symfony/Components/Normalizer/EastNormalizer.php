@@ -28,7 +28,6 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 use Teknoo\East\FoundationBundle\Normalizer\EastNormalizer as BaseEastNormalizer;
 use Teknoo\East\Paas\Object\Job;
 
-use function array_merge;
 use function is_array;
 
 /**
@@ -55,7 +54,7 @@ class EastNormalizer extends BaseEastNormalizer
             && is_array($context['add'])
             && $object instanceof Job
         ) {
-            $data = array_merge($data, $context['add']);
+            $data = $context['add'] + $data;
         }
 
         return $data;

@@ -35,7 +35,6 @@ use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
 use function array_keys;
-use function array_merge;
 use function implode;
 use function set_time_limit;
 use function sha1;
@@ -166,10 +165,7 @@ class Running implements StateInterface
                 ];
             }
 
-            $envs = array_merge(
-                $variables,
-                $authEnvs
-            );
+            $envs = $authEnvs + $variables;
 
             $process->setEnv($envs);
 

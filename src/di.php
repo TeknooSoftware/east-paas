@@ -138,7 +138,6 @@ use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\Recipe;
 use Teknoo\Recipe\RecipeInterface as OriginalRecipeInterface;
 
-use function array_merge;
 use function DI\get;
 use function DI\create;
 use function file_get_contents;
@@ -288,10 +287,7 @@ return [
             $container->get(DeserializerInterface::class),
             $container->get(MessageFactoryInterface::class),
             $container->get(StreamFactoryInterface::class),
-            array_merge(
-                $container->get('teknoo.east.paas.worker.global_variables'),
-                $_ENV
-            )
+            $_ENV + $container->get('teknoo.east.paas.worker.global_variables'),
         );
     },
     DisplayJob::class => create()

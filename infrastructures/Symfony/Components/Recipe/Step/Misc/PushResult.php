@@ -43,7 +43,6 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 use Throwable;
 
-use function array_merge;
 use function json_encode;
 
 /**
@@ -93,7 +92,7 @@ class PushResult implements DispatchResultInterface
                                 DispatchResultInterface::class,
                                 $now,
                                 true,
-                                array_merge($extra, ['result' => $normalizedResult])
+                                ['result' => $normalizedResult] + $extra
                             );
 
                             $manager->updateWorkPlan([

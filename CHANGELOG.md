@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.52] - 2021-04-28
+###Stable Release
+- Some optimisations on array functions to limit O(n)
+
 ##[0.0.51] - 2021-04-11
 ###Dev Release
 - Update to last Doctrine Common and remove deprecation

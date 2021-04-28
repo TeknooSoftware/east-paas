@@ -31,7 +31,7 @@ use RuntimeException;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Throwable;
 
-use function in_array;
+use function array_flip;
 use function is_array;
 use function is_string;
 use function libxml_get_last_error;
@@ -118,7 +118,7 @@ class YamlValidator
                 $name = 'row';
             }
 
-            $isStatic = in_array($name, static::$staticNodesNames);
+            $isStatic = isset(array_flip(static::$staticNodesNames)[$name]);
             $nodeName = $name;
             if (false === $isStatic) {
                 $nodeName = 'node';
