@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.53] - 2021-05-31
+###Stable Release
+- Minor version about libs requirements
+
 ##[0.0.52] - 2021-04-28
 ###Stable Release
 - Some optimisations on array functions to limit O(n)

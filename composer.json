@@ -33,10 +33,10 @@
         "ext-dom": "*",
         "php-di/php-di": "~6.3",
         "psr/http-client": "~1.0",
-        "teknoo/east-foundation": "^5.0.3",
-        "teknoo/east-website": "^5.0.3",
+        "teknoo/east-foundation": "^5.1.1",
+        "teknoo/east-website": "^5.0.4",
         "teknoo/immutable": "^2.0.7",
-        "teknoo/recipe": "^3.0.2",
+        "teknoo/recipe": "^3.0.5",
         "teknoo/states": "^5.0.2"
     },
     "require-dev": {
@@ -46,7 +46,7 @@
         "pdepend/pdepend": "~2.9",
         "sebastian/phpcpd": "^6.0.3",
         "phploc/phploc": "^7.0.2",
-        "phpstan/phpstan": "^0.12.83",
+        "phpstan/phpstan": "^0.12.88",
         "behat/behat": "~3.8",
         "symplify/git-wrapper": "^9.2.15",
         "doctrine/common": "~3.1",
@@ -73,7 +73,7 @@
         "symfony/yaml": "~5.2",
         "symfony/psr-http-message-bridge": "~2.0",
         "symfony/security-core": "~5.2",
-        "teknoo/bridge-phpdi-symfony": "^5.0.0"
+        "teknoo/bridge-phpdi-symfony": "^5.0.1"
     },
     "autoload": {
         "psr-4": {
