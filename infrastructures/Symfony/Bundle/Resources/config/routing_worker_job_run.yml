@@ -1,5 +1,0 @@
-_teknoo_paas_job_run:
-    path: '/project/{projectId}/environment/{envName}/job/{jobId}/run'
-    methods:  ['PUT']
-    defaults:
-        _controller: 'teknoo.east.paas.symfony.end_point.job_run'

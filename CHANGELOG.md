@@ -1,15 +1,20 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.55] - 2021-06-13
+###Dev Release
+- Remove Symfony routes about worker and api (use Messenger instead). Endpoints stay available, routes can be implemented
+  manually.
+
 ##[0.0.54] - 2021-06-13
-###Stable Release
+###Dev Release
 - Rework symfony's routing files to allow dev to override easily a some definitions
 
 ##[0.0.53] - 2021-05-31
-###Stable Release
+###Dev Release
 - Minor version about libs requirements
 
 ##[0.0.52] - 2021-04-28
-###Stable Release
+###Dev Release
 - Some optimisations on array functions to limit O(n)
 
 ##[0.0.51] - 2021-04-11
