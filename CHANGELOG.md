@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.54] - 2021-06-13
+###Stable Release
+- Rework symfony's routing files to allow dev to override easily a some definitions
+
 ##[0.0.53] - 2021-05-31
 ###Stable Release
 - Minor version about libs requirements

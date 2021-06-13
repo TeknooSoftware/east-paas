@@ -1,0 +1,48 @@
+_teknoo_paas_admin_project_list:
+    path: '/projects/'
+    methods:  ['GET']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.crud.list'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        defaultOrderDirection: 'ASC'
+        itemsPerPage: 20
+        template: '@@TeknooEastWebsite/AdminProject/list.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+
+_teknoo_paas_admin_project_edit:
+    path: '/project/edit/{id}'
+    methods:  ['GET', 'POST', 'PUT']
+    defaults:
+        _controller: 'teknoo.east.paas.endpoint.admin.edit.project'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
+        formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
+        template: '@@TeknooEastWebsite/AdminProject/edit.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        formOptions: { }
+
+_teknoo_paas_admin_project_new:
+    path: '/project/new/{accountId}'
+    methods:  ['GET', 'POST', 'PUT']
+    defaults:
+        _controller: 'teknoo.east.paas.endpoint.admin.new.project'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        accountLoader: '@Teknoo\East\Paas\Loader\AccountLoader'
+        writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
+        objectClass: 'Teknoo\East\Paas\Object\Project'
+        formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
+        template: '@@TeknooEastWebsite/AdminProject/new.html.twig'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        formOptions: { }
+        route: '_teknoo_paas_admin_project_edit'
+        accountKey: 'constructorArguments'
+
+_teknoo_paas_admin_project_delete:
+    path: '/project/delete/{id}'
+    methods:  ['GET']
+    defaults:
+        _controller: 'teknoo.east.website.endpoint.crud.delete'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        deleter: '@teknoo.east.paas.deleting.project'
+        route: '_teknoo_paas_admin_project_list'
+        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'

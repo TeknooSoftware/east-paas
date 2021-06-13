@@ -1,0 +1,11 @@
+_teknoo_paas_job_new:
+    path: '/project/{projectId}/environment/{envName}/job/create'
+    methods:  ['GET', 'POST', 'PUT']
+    defaults:
+        _controller: 'teknoo.east.paas.symfony.end_point.new_job'
+
+_teknoo_paas_history:
+    path: '/project/{projectId}/environment/{envName}/job/{jobId}/log'
+    methods:  ['PUT']
+    defaults:
+        _controller: 'teknoo.east.paas.symfony.end_point.job_add_history'
