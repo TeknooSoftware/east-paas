@@ -1,5 +1,9 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.56] - 2021-06-20
+###Dev Release
+- Update to Recipe 3.1, East Foundation 5.2 and Website 5.1
+
 ##[0.0.55] - 2021-06-13
 ###Dev Release
 - Remove Symfony routes about worker and api (use Messenger instead). Endpoints stay available, routes can be implemented
