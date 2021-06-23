@@ -25,15 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Project;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -47,15 +44,10 @@ use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 class GetProject
 {
     use ErrorTrait;
-    use PsrFactoryTrait;
 
     public function __construct(
         private ProjectLoader $projectLoader,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     public function __invoke(string $projectId, ManagerInterface $manager, ClientInterface $client): self
@@ -71,8 +63,6 @@ class GetProject
                     $manager,
                     'teknoo.east.paas.error.recipe.project.not_found',
                     404,
-                    $this->messageFactory,
-                    $this->streamFactory
                 )
             )
         );

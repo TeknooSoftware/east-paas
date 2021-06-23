@@ -35,6 +35,7 @@ use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
+use Teknoo\East\Paas\Recipe\Traits\ResponseTrait;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Object\History;
@@ -58,6 +59,7 @@ class PushResult implements DispatchResultInterface
 {
     use ErrorTrait;
     use PsrFactoryTrait;
+    use ResponseTrait;
 
     public function __construct(
         private DatesService $dateTimeService,

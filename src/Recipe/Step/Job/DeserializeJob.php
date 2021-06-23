@@ -25,15 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -47,7 +44,6 @@ use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 class DeserializeJob
 {
     use ErrorTrait;
-    use PsrFactoryTrait;
 
     private DeserializerInterface $deserializer;
 
@@ -61,14 +57,10 @@ class DeserializeJob
      */
     public function __construct(
         DeserializerInterface $deserializer,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory,
         array $variables
     ) {
         $this->deserializer = $deserializer;
         $this->variables = $variables;
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     public function __invoke(string $serializedJob, ManagerInterface $manager, ClientInterface $client): self
@@ -87,8 +79,6 @@ class DeserializeJob
                     $manager,
                     'teknoo.east.paas.error.recipe.job.mal_formed',
                     400,
-                    $this->messageFactory,
-                    $this->streamFactory
                 )
             ),
             [

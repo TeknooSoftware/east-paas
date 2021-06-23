@@ -25,8 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
@@ -36,7 +34,6 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -50,15 +47,10 @@ use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 class BuildImages
 {
     use ErrorTrait;
-    use PsrFactoryTrait;
 
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     public function __invoke(
@@ -101,8 +93,6 @@ class BuildImages
                             $manager,
                             'teknoo.east.paas.error.recipe.images.building_error',
                             500,
-                            $this->messageFactory,
-                            $this->streamFactory
                         )
                     )
                 );

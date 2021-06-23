@@ -68,8 +68,6 @@ class SaveJobTest extends TestCase
         $client = $this->createMock(ClientInterface::class);
         $job = $this->createMock(Job::class);
 
-        $projectId = 'dev';
-
         $this->getjobWriterMock()
             ->expects(self::once())
             ->method('save')

@@ -26,8 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use DateTimeInterface;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Website\Service\DatesService;
@@ -36,7 +34,6 @@ use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -50,15 +47,10 @@ use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 class PrepareJob
 {
     use ErrorTrait;
-    use PsrFactoryTrait;
 
     public function __construct(
         private DatesService $dateTimeService,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     public function __invoke(
@@ -68,8 +60,6 @@ class PrepareJob
         ManagerInterface $manager,
         ClientInterface $client
     ): self {
-        $messageFactory = $this->messageFactory;
-        $streamFactory = $this->streamFactory;
 
         $this->dateTimeService->passMeTheDate(
             static function (DateTimeInterface $now) use (
@@ -78,8 +68,6 @@ class PrepareJob
                 $job,
                 $manager,
                 $client,
-                $messageFactory,
-                $streamFactory
             ) {
                 $project->prepareJob($job, $now, $environment);
 
@@ -91,8 +79,6 @@ class PrepareJob
                             $manager,
                             null,
                             500,
-                            $messageFactory,
-                            $streamFactory
                         )
                     )
                 );

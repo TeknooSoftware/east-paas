@@ -25,13 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Traits;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Object\Error;
 use Throwable;
-
-use function json_encode;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -44,23 +41,17 @@ use function json_encode;
  */
 trait ErrorTrait
 {
-    use ResponseTrait;
-
     private static function buildFailurePromise(
         ClientInterface $client,
         ManagerInterface $manager,
         ?string $message,
         int $httpCode,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
     ): callable {
         return static function (Throwable $error) use (
             $client,
             $manager,
             $message,
             $httpCode,
-            $messageFactory,
-            $streamFactory
         ) {
             if (null === $message) {
                 $message = $error->getMessage();
@@ -68,20 +59,7 @@ trait ErrorTrait
             }
 
             $client->acceptResponse(
-                self::buildResponse(
-                    (string) json_encode(
-                        [
-                            'type' => 'https://teknoo.software/probs/issue',
-                            'title' => $message,
-                            'status' => $httpCode,
-                            'detail' => $error->getMessage(),
-                        ]
-                    ),
-                    $httpCode,
-                    'application/problem+json',
-                    $messageFactory,
-                    $streamFactory
-                )
+                new Error($message, $httpCode, $error)
             );
 
             $manager->finish($error);

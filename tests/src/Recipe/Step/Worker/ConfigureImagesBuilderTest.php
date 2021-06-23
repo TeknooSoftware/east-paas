@@ -27,10 +27,6 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
@@ -66,25 +62,8 @@ class ConfigureImagesBuilderTest extends TestCase
 
     public function buildStep(): ConfigureImagesBuilder
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $response->expects(self::any())->method('withBody')->willReturnSelf();
-        $response->expects(self::any())->method('withStatus')->willReturnSelf();
-
-        $messageFactory = $this->createMock(MessageFactoryInterface::class);
-        $messageFactory->expects(self::any())->method('createMessage')->willReturn(
-            $response
-        );
-
-        $streamFactory = $this->createMock(StreamFactoryInterface::class);
-        $streamFactory->expects(self::any())->method('createStream')->willReturn(
-            $this->createMock(StreamInterface::class)
-        );
-
         return new ConfigureImagesBuilder(
             $this->getBuilderMock(),
-            $messageFactory,
-            $streamFactory
         );
     }
 

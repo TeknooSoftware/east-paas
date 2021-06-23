@@ -453,44 +453,6 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testDisplayError()
-    {
-        $container = $this->buildContainer();
-
-        $container->set(SerializerInterface::class, $this->createMock(SerializerInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
-
-        self::assertInstanceOf(
-            DisplayError::class,
-            $container->get(DisplayError::class)
-        );
-    }
-
-    public function testDisplayHistory()
-    {
-        $container = $this->buildContainer();
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
-
-        self::assertInstanceOf(
-            DisplayHistory::class,
-            $container->get(DisplayHistory::class)
-        );
-    }
-
-    public function testDisplayJob()
-    {
-        $container = $this->buildContainer();
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
-
-        self::assertInstanceOf(
-            DisplayJob::class,
-            $container->get(DisplayJob::class)
-        );
-    }
-
     public function testGetEnvironment()
     {
         $container = $this->buildContainer();
@@ -629,20 +591,6 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             SaveJob::class,
             $container->get(SaveJob::class)
-        );
-    }
-
-    public function testSerializeHistory()
-    {
-        $container = $this->buildContainer();
-
-        $container->set(SerializerInterface::class, $this->createMock(SerializerInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
-
-        self::assertInstanceOf(
-            SerializeHistory::class,
-            $container->get(SerializeHistory::class)
         );
     }
 
@@ -846,8 +794,7 @@ class ContainerTest extends TestCase
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
         $container->set(DispatchJobInterface::class, $this->createMock(DispatchJobInterface::class));
 
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -869,8 +816,8 @@ class ContainerTest extends TestCase
         $container->set(DeserializerInterface::class, $this->createMock(DeserializerInterface::class));
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
 
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
+
 
         self::assertInstanceOf(
             CookbookInterface::class,

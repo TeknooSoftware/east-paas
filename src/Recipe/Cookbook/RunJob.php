@@ -29,10 +29,8 @@ use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
-use Teknoo\East\Paas\Recipe\Step\History\DisplayHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
-use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -86,9 +84,7 @@ class RunJob implements RunJobInterface
         private Deploying $stepDeploying,
         private Exposing $stepExposing,
         private DispatchResultInterface $stepDispatchResult,
-        private DisplayHistory $stepDisplayHistory,
         private iterable $additionalSteps,
-        private DisplayError $stepDisplayError,
     ) {
         $this->fill($recipe);
     }
@@ -295,19 +291,11 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_FINAL
         );
 
-        $recipe = $recipe->cook(
-            $this->stepDisplayHistory,
-            DisplayHistory::class,
-            [],
-            RunJobInterface::STEP_FINAL
-        );
-
         foreach ($this->additionalSteps as $position => $step) {
             $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
         }
 
         $recipe = $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
-        $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 
         return $recipe;
     }

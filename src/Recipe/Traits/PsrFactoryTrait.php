@@ -36,6 +36,8 @@ use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ *
+ * @todo remove ?
  */
 trait PsrFactoryTrait
 {
