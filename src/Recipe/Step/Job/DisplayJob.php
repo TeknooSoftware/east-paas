@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 use Teknoo\East\Paas\Recipe\Traits\ResponseTrait;

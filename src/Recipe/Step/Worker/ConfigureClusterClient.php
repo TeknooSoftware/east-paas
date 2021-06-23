@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
+use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Collection;

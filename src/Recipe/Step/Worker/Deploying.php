@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
+use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
@@ -35,8 +35,6 @@ use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 

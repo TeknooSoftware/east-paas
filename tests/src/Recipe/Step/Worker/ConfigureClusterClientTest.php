@@ -31,7 +31,7 @@ use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
+use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Cluster\Collection;

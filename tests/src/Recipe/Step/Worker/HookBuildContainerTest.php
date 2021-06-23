@@ -31,7 +31,7 @@ use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
@@ -39,8 +39,6 @@ use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 

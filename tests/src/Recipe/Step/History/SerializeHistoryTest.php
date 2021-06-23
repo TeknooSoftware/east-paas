@@ -30,12 +30,11 @@ use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Recipe\Step\History\SerializeHistory;
-use Teknoo\Recipe\ChefInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**

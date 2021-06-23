@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Recipe\Traits;
 
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Throwable;
 

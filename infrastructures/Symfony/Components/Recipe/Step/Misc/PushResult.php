@@ -31,7 +31,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
+use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
