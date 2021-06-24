@@ -25,7 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
-use Teknoo\East\Foundation\Client\ResponseInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponse;
+use Teknoo\East\Foundation\Client\ResponseInterface as EastResponse;
 use Teknoo\East\Website\Contracts\ObjectInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
@@ -43,8 +44,9 @@ use Throwable;
 class Error implements
     ObjectInterface,
     ImmutableInterface,
-    ResponseInterface,
-    \JsonSerializable
+    EastResponse,
+    \JsonSerializable,
+    PsrResponse
 {
     use ImmutableTrait;
 
