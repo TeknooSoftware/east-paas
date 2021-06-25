@@ -23,14 +23,12 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Step\Worker;
+namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
 
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
-use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Throwable;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -41,32 +39,30 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class ReadDeploymentConfiguration
+class ErrorFactory implements ErrorFactoryInterface
 {
-    public function __construct(
-        private ErrorFactoryInterface $errorFactory,
-    ) {
-    }
-
-    public function __invoke(
-        JobWorkspaceInterface $workspace,
-        ConductorInterface $conductor,
+    public function buildFailurePromise(
         ClientInterface $client,
-        ManagerInterface $manager
-    ): self {
-        $workspace->loadDeploymentIntoConductor(
-            $conductor,
-            new Promise(
-                null,
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    500,
-                    'teknoo.east.paas.error.recipe.configuration.read_error',
-                )
-            )
-        );
+        ManagerInterface $manager,
+        int $statusCode,
+        ?string $reasonPhrase,
+    ): callable {
+        return static function (Throwable $error) use (
+            $client,
+            $manager,
+            $statusCode,
+            $reasonPhrase,
+        ) {
+            if (null === $reasonPhrase) {
+                $reasonPhrase = $error->getMessage();
+                $statusCode = $error->getCode();
+            }
 
-        return $this;
+            $client->acceptResponse(
+                new Error($statusCode, (string) $reasonPhrase, $error)
+            );
+
+            $manager->finish($error);
+        };
     }
 }

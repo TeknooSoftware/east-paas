@@ -33,8 +33,8 @@ use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 use Throwable;
 
 /**
@@ -48,10 +48,9 @@ use Throwable;
  */
 class HookBuildContainer
 {
-    use ErrorTrait;
-
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,
+        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -90,11 +89,11 @@ class HookBuildContainer
                     function (Throwable $error) use ($client, $manager, &$inError) {
                         $inError = true;
 
-                        static::buildFailurePromise(
+                        $this->errorFactory->buildFailurePromise(
                             $client,
                             $manager,
-                            'teknoo.east.paas.error.recipe.hook.building_error',
                             500,
+                            'teknoo.east.paas.error.recipe.hook.building_error',
                         )($error);
                     }
                 );

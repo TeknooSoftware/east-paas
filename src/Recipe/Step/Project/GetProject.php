@@ -28,9 +28,9 @@ namespace Teknoo\East\Paas\Recipe\Step\Project;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,10 +43,9 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class GetProject
 {
-    use ErrorTrait;
-
     public function __construct(
         private ProjectLoader $projectLoader,
+        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -58,11 +57,11 @@ class GetProject
                 static function (Project $project) use ($manager) {
                     $manager->updateWorkPlan(['project' => $project]);
                 },
-                static::buildFailurePromise(
+                $this->errorFactory->buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.east.paas.error.recipe.project.not_found',
                     404,
+                    'teknoo.east.paas.error.recipe.project.not_found',
                 )
             )
         );

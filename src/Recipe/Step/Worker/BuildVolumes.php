@@ -32,8 +32,8 @@ use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as VolumeBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -46,10 +46,9 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class BuildVolumes
 {
-    use ErrorTrait;
-
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,
+        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -88,11 +87,11 @@ class BuildVolumes
                                 ['build_output' => $buildSuccess]
                             );
                         },
-                        static::buildFailurePromise(
+                        $this->errorFactory->buildFailurePromise(
                             $client,
                             $manager,
-                            'teknoo.east.paas.error.recipe.volumes.building_error',
                             500,
+                            'teknoo.east.paas.error.recipe.volumes.building_error',
                         )
                     )
                 );

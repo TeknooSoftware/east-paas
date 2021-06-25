@@ -23,9 +23,12 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Object;
+namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
 
+use JsonSerializable;
+use Laminas\Diactoros\MessageTrait;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
+use Psr\Http\Message\StreamInterface;
 use Teknoo\East\Foundation\Client\ResponseInterface as EastResponse;
 use Teknoo\East\Website\Contracts\ObjectInterface;
 use Teknoo\Immutable\ImmutableInterface;
@@ -45,34 +48,33 @@ class Error implements
     ObjectInterface,
     ImmutableInterface,
     EastResponse,
-    \JsonSerializable,
+    JsonSerializable,
     PsrResponse
 {
     use ImmutableTrait;
+    use MessageTrait;
 
-    private string $message;
+    private int $statusCode;
 
-    private int $httpCode;
+    private string $reasonPhrase;
 
     private Throwable $error;
 
-    public function __construct(string $message, int $httpCode, Throwable $error)
-    {
+    public function __construct(
+        int $statusCode,
+        string $reasonPhrase,
+        Throwable $error,
+        string|StreamInterface $body = 'php://memory',
+        array $headers = []
+    ) {
         $this->uniqueConstructorCheck();
 
-        $this->message = $message;
-        $this->httpCode = $httpCode;
+        $this->reasonPhrase = $reasonPhrase;
+        $this->statusCode = $statusCode;
         $this->error = $error;
-    }
 
-    public function getMessage(): string
-    {
-        return $this->message;
-    }
-
-    public function getHttpCode(): int
-    {
-        return $this->httpCode;
+        $this->stream = $this->getStream($body, 'wb+');
+        $this->setHeaders($headers);
     }
 
     public function getError(): Throwable
@@ -82,16 +84,38 @@ class Error implements
 
     public function __toString(): string
     {
-        return "{$this->message} ({$this->httpCode})";
+        return "$this->reasonPhrase ($this->statusCode)";
     }
 
-    public function jsonSerialize()
+    /**
+     * @return array<string, string|int>
+     */
+    public function jsonSerialize(): array
     {
         return [
             'type' => 'https://teknoo.software/probs/issue',
-            'title' => $this->message,
-            'status' => $this->getMessage(),
+            'title' => $this->reasonPhrase,
+            'status' => $this->getStatusCode(),
             'detail' => $this->error->getMessage(),
         ];
+    }
+
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
+    public function getReasonPhrase(): string
+    {
+        return $this->reasonPhrase;
+    }
+
+    public function withStatus($code, $reasonPhrase = ''): self
+    {
+        $that = clone $this;
+        $that->statusCode = $code;
+        $that->reasonPhrase = $reasonPhrase;
+
+        return $this;
     }
 }

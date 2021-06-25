@@ -30,7 +30,7 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,7 +43,10 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class CompileDeployment
 {
-    use ErrorTrait;
+    public function __construct(
+        private ErrorFactoryInterface $errorFactory,
+    ) {
+    }
 
     public function __invoke(
         ManagerInterface $manager,
@@ -58,11 +61,11 @@ class CompileDeployment
                         CompiledDeploymentInterface::class => $deployment,
                     ]);
                 },
-                static::buildFailurePromise(
+                $this->errorFactory->buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.east.paas.error.recipe.configuration.compilation_error',
                     500,
+                    'teknoo.east.paas.error.recipe.configuration.compilation_error',
                 )
             ),
             $storageIdentifier

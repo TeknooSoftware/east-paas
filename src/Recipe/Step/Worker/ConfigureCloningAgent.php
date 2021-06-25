@@ -30,8 +30,8 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -44,10 +44,9 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class ConfigureCloningAgent
 {
-    use ErrorTrait;
-
     public function __construct(
         private CloningAgentInterface $agent,
+        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -64,11 +63,11 @@ class ConfigureCloningAgent
                 static function (CloningAgentInterface $agent) use ($manager) {
                     $manager->updateWorkPlan([CloningAgentInterface::class => $agent]);
                 },
-                static::buildFailurePromise(
+                $this->errorFactory->buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.east.paas.error.recipe.agent.configuration_error',
                     500,
+                    'teknoo.east.paas.error.recipe.agent.configuration_error',
                 )
             )
         );

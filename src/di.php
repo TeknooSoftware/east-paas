@@ -60,6 +60,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInt
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList;
 use Teknoo\East\Paas\Recipe\Cookbook\AbstractEditObjectEndPoint;
@@ -259,7 +260,8 @@ return [
         ->constructor(
             get(DeserializerInterface::class),
             get(MessageFactoryInterface::class),
-            get(StreamFactoryInterface::class)
+            get(StreamFactoryInterface::class),
+            get(ErrorFactoryInterface::class),
         ),
     ReceiveHistory::class => create(),
 
@@ -269,15 +271,18 @@ return [
         return new DeserializeJob(
             $container->get(DeserializerInterface::class),
             $_ENV + $container->get('teknoo.east.paas.worker.global_variables'),
+            $container->get(ErrorFactoryInterface::class),
         );
     },
     GetJob::class => create()
         ->constructor(
             get(JobLoader::class),
+            get(ErrorFactoryInterface::class),
         ),
     PrepareJob::class => create()
         ->constructor(
             get(DatesService::class),
+            get(ErrorFactoryInterface::class),
         ),
     ReceiveJob::class => create(),
     SaveJob::class => create()
@@ -285,6 +290,7 @@ return [
     SerializeJob::class => static function (ContainerInterface $container): SerializeJob {
         return new SerializeJob(
             $container->get(SerializerInterface::class),
+            $container->get(ErrorFactoryInterface::class),
         );
     },
 
@@ -296,29 +302,36 @@ return [
     GetProject::class => create()
         ->constructor(
             get(ProjectLoader::class),
+            get(ErrorFactoryInterface::class),
         ),
 
     //Worker
     BuildImages::class => create()
         ->constructor(
             get(DHI::class),
+            get(ErrorFactoryInterface::class),
         ),
     BuildVolumes::class => create()
         ->constructor(
             get(DHI::class),
+            get(ErrorFactoryInterface::class),
         ),
     CloneRepository::class => create(),
     CompileDeployment::class => create()
-        ->constructor(),
+        ->constructor(
+            get(ErrorFactoryInterface::class),
+        ),
     ConfigureCloningAgent::class => create()
         ->constructor(
             get(CloningAgentInterface::class),
+            get(ErrorFactoryInterface::class),
         ),
     ConfigureConductor::class => create()
         ->constructor(get(ConductorInterface::class)),
     ConfigureImagesBuilder::class => create()
         ->constructor(
             get(BuilderInterface::class),
+            get(ErrorFactoryInterface::class),
         ),
     ConfigureClusterClient::class => create()
         ->constructor(
@@ -327,19 +340,24 @@ return [
     Deploying::class => create()
         ->constructor(
             get(DHI::class),
+            get(ErrorFactoryInterface::class),
         ),
     Exposing::class => create()
         ->constructor(
             get(DHI::class),
+            get(ErrorFactoryInterface::class),
         ),
     HookBuildContainer::class => create()
         ->constructor(
             get(DHI::class),
+            get(ErrorFactoryInterface::class),
         ),
     PrepareWorkspace::class => create()
         ->constructor(get(JobWorkspaceInterface::class)),
     ReadDeploymentConfiguration::class => create()
-        ->constructor(),
+        ->constructor(
+            get(ErrorFactoryInterface::class),
+        ),
 
     //Base recipe
     OriginalRecipeInterface::class => get(Recipe::class),

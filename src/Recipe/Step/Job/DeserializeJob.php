@@ -27,10 +27,10 @@ namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,24 +43,14 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class DeserializeJob
 {
-    use ErrorTrait;
-
-    private DeserializerInterface $deserializer;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $variables;
-
     /**
      * @param array<string, mixed> $variables
      */
     public function __construct(
-        DeserializerInterface $deserializer,
-        array $variables
+        private DeserializerInterface $deserializer,
+        private array $variables,
+        private ErrorFactoryInterface $errorFactory,
     ) {
-        $this->deserializer = $deserializer;
-        $this->variables = $variables;
     }
 
     public function __invoke(string $serializedJob, ManagerInterface $manager, ClientInterface $client): self
@@ -74,11 +64,11 @@ class DeserializeJob
                     $manager->updateWorkPlan([JobUnitInterface::class => $jobUnit]);
                     $jobUnit->runWithExtra(fn ($extra) => $manager->updateWorkPlan(['extra' => $extra]));
                 },
-                static::buildFailurePromise(
+                $this->errorFactory->buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.east.paas.error.recipe.job.mal_formed',
                     400,
+                    'teknoo.east.paas.error.recipe.job.mal_formed',
                 )
             ),
             [

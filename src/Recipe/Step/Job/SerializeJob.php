@@ -27,10 +27,10 @@ namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,10 +43,9 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class SerializeJob
 {
-    use ErrorTrait;
-
     public function __construct(
         private SerializerInterface $serializer,
+        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -62,11 +61,11 @@ class SerializeJob
                 static function (string $jobSerialized) use ($manager) {
                     $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
                 },
-                static::buildFailurePromise(
+                $this->errorFactory->buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.east.paas.error.recipe.job.serialization_error',
                     400,
+                    'teknoo.east.paas.error.recipe.job.serialization_error',
                 )
             ),
             [

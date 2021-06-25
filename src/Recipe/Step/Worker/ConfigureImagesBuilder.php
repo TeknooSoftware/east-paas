@@ -30,7 +30,7 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,10 +43,9 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class ConfigureImagesBuilder
 {
-    use ErrorTrait;
-
     public function __construct(
         private ImageBuilder $builder,
+        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -61,11 +60,11 @@ class ConfigureImagesBuilder
                 static function (ImageBuilder $builder) use ($manager) {
                     $manager->updateWorkPlan([ImageBuilder::class => $builder]);
                 },
-                static::buildFailurePromise(
+                $this->errorFactory->buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.east.paas.error.recipe.images.configuration_error',
                     500,
+                    'teknoo.east.paas.error.recipe.images.configuration_error',
                 )
             )
         );

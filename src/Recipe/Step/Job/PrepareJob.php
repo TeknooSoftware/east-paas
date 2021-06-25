@@ -28,12 +28,12 @@ namespace Teknoo\East\Paas\Recipe\Step\Job;
 use DateTimeInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -46,10 +46,9 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class PrepareJob
 {
-    use ErrorTrait;
-
     public function __construct(
         private DatesService $dateTimeService,
+        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -60,6 +59,7 @@ class PrepareJob
         ManagerInterface $manager,
         ClientInterface $client
     ): self {
+        $errorFactory = $this->errorFactory;
 
         $this->dateTimeService->passMeTheDate(
             static function (DateTimeInterface $now) use (
@@ -68,17 +68,18 @@ class PrepareJob
                 $job,
                 $manager,
                 $client,
+                $errorFactory,
             ) {
                 $project->prepareJob($job, $now, $environment);
 
                 $job->isRunnable(
                     new Promise(
                         null,
-                        static::buildFailurePromise(
+                        $errorFactory->buildFailurePromise(
                             $client,
                             $manager,
-                            null,
                             500,
+                            null,
                         )
                     )
                 );

@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -46,10 +46,9 @@ use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
  */
 class Exposing
 {
-    use ErrorTrait;
-
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,
+        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -76,11 +75,11 @@ class Exposing
                             $result
                         );
                     },
-                    static::buildFailurePromise(
+                    $this->errorFactory->buildFailurePromise(
                         $eastClient,
                         $manager,
-                        'teknoo.east.paas.error.recipe.cluster.exposing_error',
                         500,
+                        'teknoo.east.paas.error.recipe.cluster.exposing_error',
                     )
                 )
             );
