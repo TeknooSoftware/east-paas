@@ -27,12 +27,13 @@ namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
+use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
@@ -63,6 +64,8 @@ class AddHistory implements AddHistoryInterface
         private StepAddHistory $stepAddHistory,
         private SaveJob $stepSaveJob,
         private iterable $additionalSteps,
+        private SendHistoryInterface $stepSendHistoryInterface,
+        private DispatchError $stepDispatchError,
     ) {
         $this->fill($recipe);
     }
@@ -80,7 +83,9 @@ class AddHistory implements AddHistoryInterface
             $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
         }
 
-        $recipe = $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
+        $recipe = $recipe->cook($this->stepSendHistoryInterface, SendHistoryInterface::class, [], 80);
+
+        $recipe = $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
 
         return $recipe;
     }

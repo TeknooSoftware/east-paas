@@ -57,6 +57,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Parser\YamlValidator;
@@ -68,6 +69,7 @@ use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
+use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Website\Contracts\Recipe\Step\ObjectAccessControlInterface;
@@ -292,6 +294,10 @@ return [
 
     //Misc
     GetVariables::class => create(),
+    DispatchError::class => create()
+        ->constructor(
+            get(ErrorFactoryInterface::class),
+        ),
 
     //Project
     GetEnvironment::class => create(),
@@ -487,9 +493,9 @@ return [
             get(PrepareJob::class),
             get(SaveJob::class),
             get(SerializeJob::class),
-            get(DispatchJobInterface::class),
             get(NewJobStepsInterface::class),
-            get(DRI::class)
+            get(DispatchJobInterface::class),
+            get(DispatchError::class),
         ),
 
     AddHistoryInterface::class => get(AddHistory::class),
@@ -503,7 +509,8 @@ return [
             get(StepAddHistory::class),
             get(SaveJob::class),
             get(AddHistoryStepsInterface::class),
-            get(DRI::class)
+            get(SendHistoryInterface::class),
+            get(DispatchError::class),
         ),
 
     RunJobInterface::class => get(RunJob::class),
@@ -526,8 +533,8 @@ return [
             get(ConfigureClusterClient::class),
             get(Deploying::class),
             get(Exposing::class),
-            get(DRI::class),
             get(RunJobStepsInterface::class),
+            get(DRI::class),
         ),
 
     RunJobInterface::class . ':proxy' => static function (ContainerInterface $container): RunJobInterface {
