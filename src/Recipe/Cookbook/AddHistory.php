@@ -63,7 +63,6 @@ class AddHistory implements AddHistoryInterface
         private StepAddHistory $stepAddHistory,
         private SaveJob $stepSaveJob,
         private iterable $additionalSteps,
-        private DispatchResultInterface $stepDispatchResult,
     ) {
         $this->fill($recipe);
     }

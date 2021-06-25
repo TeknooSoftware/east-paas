@@ -28,9 +28,9 @@ namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
 use Laminas\Diactoros\MessageTrait;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
 use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorInterface;
+use Teknoo\East\Paas\Contracts\Response\HistoryInterface;
+use Teknoo\East\Paas\Object\History as BaseHistory;
 use Teknoo\Immutable\ImmutableTrait;
-use Throwable;
 
 use function json_encode;
 
@@ -43,8 +43,8 @@ use function json_encode;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Error implements
-    ErrorInterface,
+class History implements
+    HistoryInterface,
     PsrResponse
 {
     use ImmutableTrait;
@@ -54,12 +54,12 @@ class Error implements
 
     private string $reasonPhrase;
 
-    private Throwable $error;
+    private BaseHistory $history;
 
     public function __construct(
         int $statusCode,
         string $reasonPhrase,
-        Throwable $error,
+        BaseHistory $history,
         string|StreamInterface $body = 'php://memory',
         array $headers = []
     ) {
@@ -67,23 +67,23 @@ class Error implements
 
         $this->reasonPhrase = $reasonPhrase;
         $this->statusCode = $statusCode;
-        $this->error = $error;
+        $this->history = $history;
 
         $this->stream = $this->getStream($body, 'wb+');
-        $this->stream->write(json_encode($this));
+        $this->stream->write(json_encode($this->history));
 
-        $headers['Content-Type'] = ['application/problem+json'];
+        $headers['Content-Type'] = ['application/json'];
         $this->setHeaders($headers);
     }
 
     public function __toString(): string
     {
-        return "$this->reasonPhrase ($this->statusCode)";
+        return $this->history->getMessage();
     }
 
-    public function getError(): Throwable
+    public function getHistory(): BaseHistory
     {
-        return $this->error;
+        return $this->history;
     }
 
     /**
@@ -91,12 +91,7 @@ class Error implements
      */
     public function jsonSerialize(): array
     {
-        return [
-            'type' => 'https://teknoo.software/probs/issue',
-            'title' => $this->reasonPhrase,
-            'status' => $this->getStatusCode(),
-            'detail' => $this->error->getMessage(),
-        ];
+        return $this->history->jsonSerialize();
     }
 
     public function getStatusCode(): int
