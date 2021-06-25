@@ -26,15 +26,12 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc;
 
 use DateTimeInterface;
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 use Teknoo\East\Website\Service\DatesService;
@@ -56,41 +53,12 @@ use function json_encode;
  */
 class PushResult implements DispatchResultInterface
 {
-    private MessageFactoryInterface $messageFactory;
-
-    private StreamFactoryInterface $streamFactory;
-
     public function __construct(
         private DatesService $dateTimeService,
         private MessageBusInterface $bus,
         private NormalizerInterface $normalizer,
-        StreamFactoryInterface $streamFactory,
-        MessageFactoryInterface $messageFactory,
+        private ErrorFactoryInterface $errorFactory,
     ) {
-        $this->messageFactory = $messageFactory;
-        $this->streamFactory = $streamFactory;
-    }
-
-    private static function buildResponse(
-        string $body,
-        int $httpCode,
-        string $contentType,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
-    ): MessageInterface {
-        $stream = $streamFactory->createStream($body);
-
-        $message = $messageFactory->createMessage('1.1');
-
-        if ($message instanceof ResponseInterface) {
-            $message = $message->withStatus($httpCode);
-        }
-
-        $message = $message->withAddedHeader('paas-http-code', (string) $httpCode);
-        $message = $message->withAddedHeader('content-type', $contentType);
-        $message = $message->withBody($stream);
-
-        return $message;
     }
 
     /**
@@ -171,23 +139,8 @@ class PushResult implements DispatchResultInterface
                 $errorCode = 500;
             }
 
-            $client->acceptResponse(
-                self::buildResponse(
-                    (string) json_encode(
-                        [
-                            'type' => 'https://teknoo.software/probs/issue',
-                            'title' => $error->getMessage(),
-                            'status' => $errorCode,
-                        ]
-                    ),
-                    $errorCode,
-                    'application/problem+json',
-                    $this->messageFactory,
-                    $this->streamFactory
-                )
-            );
-
-            $manager->finish($error);
+            $this->errorFactory
+                ->buildFailurePromise($client, $manager, $errorCode, null)($error);
         }
 
         return $this;
