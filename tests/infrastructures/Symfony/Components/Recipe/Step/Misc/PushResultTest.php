@@ -45,8 +45,6 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class PushResultTest extends TestCase
 {

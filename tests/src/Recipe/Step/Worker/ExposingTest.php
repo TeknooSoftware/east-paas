@@ -36,13 +36,12 @@ use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Worker\Exposing
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class ExposingTest extends TestCase
 {
@@ -64,6 +63,7 @@ class ExposingTest extends TestCase
     {
         return new Exposing(
             $this->getDispatchHistoryMock(),
+            new ErrorFactory(),
         );
     }
 

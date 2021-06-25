@@ -34,6 +34,7 @@ use Teknoo\East\Website\Contracts\ObjectInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Throwable;
+use function json_encode;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -74,6 +75,9 @@ class Error implements
         $this->error = $error;
 
         $this->stream = $this->getStream($body, 'wb+');
+        $this->stream->write(json_encode($this));
+
+        $headers['Content-Type'] = ['application/problem+json'];
         $this->setHeaders($headers);
     }
 

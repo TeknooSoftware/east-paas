@@ -23,12 +23,10 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas;
+namespace Teknoo\Tests\East\Paas;
 
 use Psr\Container\ContainerInterface;
 use RuntimeException;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Conductor\Compilation\HookCompiler;
 use Teknoo\East\Paas\Conductor\Compilation\ImageCompiler;
@@ -259,8 +257,6 @@ return [
     DeserializeHistory::class => create()
         ->constructor(
             get(DeserializerInterface::class),
-            get(MessageFactoryInterface::class),
-            get(StreamFactoryInterface::class),
             get(ErrorFactoryInterface::class),
         ),
     ReceiveHistory::class => create(),
@@ -336,6 +332,7 @@ return [
     ConfigureClusterClient::class => create()
         ->constructor(
             get(Directory::class),
+            get(ErrorFactoryInterface::class),
         ),
     Deploying::class => create()
         ->constructor(

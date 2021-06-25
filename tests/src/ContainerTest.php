@@ -61,6 +61,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInt
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
 use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
@@ -106,9 +107,6 @@ use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureImagesBuilder;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureClusterClient;
 use Teknoo\East\Paas\Recipe\Step\Worker\Deploying;
-use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
-use Teknoo\East\Paas\Recipe\Step\History\DisplayHistory;
-use Teknoo\East\Paas\Recipe\Step\Job\DisplayJob;
 use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
@@ -120,7 +118,6 @@ use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
-use Teknoo\East\Paas\Recipe\Step\History\SerializeHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -302,6 +299,7 @@ class ContainerTest extends TestCase
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             BuildImages::class,
@@ -318,6 +316,7 @@ class ContainerTest extends TestCase
         $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             BuildVolumes::class,
@@ -340,6 +339,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             CompileDeployment::class,
@@ -352,8 +352,8 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
-
         $container->set(CloningAgentInterface::class, $this->createMock(CloningAgentInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             ConfigureCloningAgent::class,
@@ -387,8 +387,8 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
-
         $container->set(DeserializerInterface::class, $this->createMock(DeserializerInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             DeserializeHistory::class,
@@ -402,8 +402,7 @@ class ContainerTest extends TestCase
 
         $container->set(DeserializerInterface::class, $this->createMock(DeserializerInterface::class));
         $container->set('teknoo.east.paas.worker.global_variables', ['foo' => 'bar']);
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             DeserializeJob::class,
@@ -415,8 +414,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(BuilderInterface::class, $this->createMock(BuilderInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             ConfigureImagesBuilder::class,
@@ -428,8 +426,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(Directory::class, $this->createMock(Directory::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             ConfigureClusterClient::class,
@@ -441,11 +438,8 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
-        $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             Deploying::class,
@@ -466,8 +460,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(JobRepositoryInterface::class, $this->createMock(JobRepositoryInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             GetJob::class,
@@ -483,8 +476,7 @@ class ContainerTest extends TestCase
 
         $container->set(ManagerInterface::class, $manager);
         $container->set(ProjectRepositoryInterface::class, $this->createMock(ProjectRepositoryInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             GetProject::class,
@@ -496,10 +488,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
-        $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
 
         self::assertInstanceOf(
@@ -512,10 +501,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
-        $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(RequestFactoryInterface::class, $this->createMock(RequestFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
 
         self::assertInstanceOf(
@@ -527,8 +513,7 @@ class ContainerTest extends TestCase
     public function testPrepareJob()
     {
         $container = $this->buildContainer();
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             PrepareJob::class,
@@ -541,6 +526,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
 
         $container->set(JobWorkspaceInterface::class, $this->createMock(JobWorkspaceInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             PrepareWorkspace::class,
@@ -572,8 +558,7 @@ class ContainerTest extends TestCase
     public function testReadDeploymentConfiguration()
     {
         $container = $this->buildContainer();
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             ReadDeploymentConfiguration::class,
@@ -587,6 +572,7 @@ class ContainerTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
 
         $container->set(ManagerInterface::class, $manager);
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             SaveJob::class,
@@ -599,8 +585,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
 
         $container->set(SerializerInterface::class, $this->createMock(SerializerInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             SerializeJob::class,
@@ -621,6 +606,7 @@ class ContainerTest extends TestCase
         $container->set(RedirectClientInterface::class, $this->createMock(RedirectClientInterface::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
         $container->set(RenderError::class, $this->createMock(RenderError::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(
             NewAccountEndPointStepsInterface::class,
             $this->createMock(AdditionalStepsInterface::class)
@@ -794,6 +780,7 @@ class ContainerTest extends TestCase
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
         $container->set(DispatchJobInterface::class, $this->createMock(DispatchJobInterface::class));
 
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
 
         self::assertInstanceOf(
@@ -817,7 +804,7 @@ class ContainerTest extends TestCase
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
 
         $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
-
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -849,6 +836,7 @@ class ContainerTest extends TestCase
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
         $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -861,6 +849,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
 
         $container->set(RunJobInterface::class, $this->createMock(RunJobInterface::class));
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
             RunJobInterface::class,

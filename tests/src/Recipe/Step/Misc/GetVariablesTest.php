@@ -35,7 +35,6 @@ use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Misc\GetVariables
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
  */
 class GetVariablesTest extends TestCase
 {

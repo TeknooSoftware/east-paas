@@ -26,6 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc;
 
 use DateTimeInterface;
+use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -35,13 +37,10 @@ use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
-use Teknoo\East\Paas\Recipe\Traits\ResponseTrait;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 use Throwable;
 
 use function json_encode;
@@ -57,9 +56,9 @@ use function json_encode;
  */
 class PushResult implements DispatchResultInterface
 {
-    use ErrorTrait;
-    use PsrFactoryTrait;
-    use ResponseTrait;
+    private MessageFactoryInterface $messageFactory;
+
+    private StreamFactoryInterface $streamFactory;
 
     public function __construct(
         private DatesService $dateTimeService,
@@ -68,8 +67,30 @@ class PushResult implements DispatchResultInterface
         StreamFactoryInterface $streamFactory,
         MessageFactoryInterface $messageFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
+        $this->messageFactory = $messageFactory;
+        $this->streamFactory = $streamFactory;
+    }
+
+    private static function buildResponse(
+        string $body,
+        int $httpCode,
+        string $contentType,
+        MessageFactoryInterface $messageFactory,
+        StreamFactoryInterface $streamFactory
+    ): MessageInterface {
+        $stream = $streamFactory->createStream($body);
+
+        $message = $messageFactory->createMessage('1.1');
+
+        if ($message instanceof ResponseInterface) {
+            $message = $message->withStatus($httpCode);
+        }
+
+        $message = $message->withAddedHeader('paas-http-code', (string) $httpCode);
+        $message = $message->withAddedHeader('content-type', $contentType);
+        $message = $message->withBody($stream);
+
+        return $message;
     }
 
     /**

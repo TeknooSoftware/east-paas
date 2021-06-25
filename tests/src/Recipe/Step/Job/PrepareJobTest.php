@@ -33,13 +33,12 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Step\Job\PrepareJob;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Job\PrepareJob
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class PrepareJobTest extends TestCase
 {
@@ -64,6 +63,7 @@ class PrepareJobTest extends TestCase
     {
         return new PrepareJob(
             $this->getDateTimeServiceMock(),
+            new ErrorFactory(),
         );
     }
 

@@ -32,13 +32,12 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class DeserializeHistoryTest extends TestCase
 {
@@ -63,6 +62,7 @@ class DeserializeHistoryTest extends TestCase
     {
         return new DeserializeHistory(
             $this->getDeserializer(),
+            new ErrorFactory(),
         );
     }
 

@@ -34,13 +34,12 @@ use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureClusterClient;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Worker\ConfigureClusterClient
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class ConfigureClusterClientTest extends TestCase
 {
@@ -65,6 +64,7 @@ class ConfigureClusterClientTest extends TestCase
     {
         return new ConfigureClusterClient(
             $this->getClientsMock(),
+            new ErrorFactory(),
         );
     }
 

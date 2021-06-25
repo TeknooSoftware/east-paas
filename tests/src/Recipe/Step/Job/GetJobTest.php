@@ -32,13 +32,12 @@ use Teknoo\East\Paas\Loader\JobLoader;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Job\GetJob
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class GetJobTest extends TestCase
 {
@@ -63,6 +62,7 @@ class GetJobTest extends TestCase
     {
         return new GetJob(
             $this->getJobLoaderMock(),
+            new ErrorFactory(),
         );
     }
 

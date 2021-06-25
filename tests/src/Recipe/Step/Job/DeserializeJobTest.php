@@ -32,13 +32,12 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class DeserializeJobTest extends TestCase
 {
@@ -63,7 +62,8 @@ class DeserializeJobTest extends TestCase
     {
         return new DeserializeJob(
             $this->getDeserializer(),
-            ['foo' => 'bar']
+            ['foo' => 'bar'],
+            new ErrorFactory(),
         );
     }
 

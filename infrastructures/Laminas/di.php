@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
+namespace Teknoo\East\Paas\Infrastructures\Laminas;
 
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
@@ -32,6 +32,6 @@ use function DI\create;
 use function DI\get;
 
 return [
+    ErrorFactory::class => create(),
     ErrorFactoryInterface::class => get(ErrorFactory::class),
-    ErrorFactory::class => create()
 ];

@@ -34,13 +34,12 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class ConfigureCloningAgentTest extends TestCase
 {
@@ -65,6 +64,7 @@ class ConfigureCloningAgentTest extends TestCase
     {
         return new ConfigureCloningAgent(
             $this->getAgentMock(),
+            new ErrorFactory(),
         );
     }
 

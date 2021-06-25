@@ -32,6 +32,7 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\CompileDeployment;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -42,7 +43,9 @@ class CompileDeploymentTest extends TestCase
 {
     public function buildStep(): CompileDeployment
     {
-        return new CompileDeployment();
+        return new CompileDeployment(
+            new ErrorFactory(),
+        );
     }
 
     public function testInvokeBadManager()

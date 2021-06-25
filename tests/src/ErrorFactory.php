@@ -23,43 +23,37 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Traits;
+namespace Teknoo\Tests\East\Paas;
 
 use Teknoo\East\Foundation\Client\ClientInterface;
+use Teknoo\East\Foundation\Client\ResponseInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Object\Error;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Throwable;
 
 /**
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-trait ErrorTrait
+class ErrorFactory implements ErrorFactoryInterface
 {
-    private static function buildFailurePromise(
+    public function buildFailurePromise(
         ClientInterface $client,
         ManagerInterface $manager,
-        ?string $message,
-        int $httpCode,
+        int $statusCode,
+        ?string $reasonPhrase,
     ): callable {
         return static function (Throwable $error) use (
             $client,
             $manager,
-            $message,
-            $httpCode,
         ) {
-            if (null === $message) {
-                $message = $error->getMessage();
-                $httpCode = $error->getCode();
-            }
-
             $client->acceptResponse(
-                new Error($message, $httpCode, $error)
+                new class implements ResponseInterface {
+                    public function __toString(): string
+                    {
+                        return 'error';
+                    }
+                }
             );
 
             $manager->finish($error);
