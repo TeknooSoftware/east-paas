@@ -25,15 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
 
-use JsonSerializable;
 use Laminas\Diactoros\MessageTrait;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
 use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Paas\Contracts\Response\HistoryInterface;
-use Teknoo\East\Paas\Object\History as BaseHistory;
+use Teknoo\East\Paas\Contracts\Response\JobInterface;
+use Teknoo\East\Paas\Object\Job as BaseJob;
 use Teknoo\Immutable\ImmutableTrait;
-
-use function json_encode;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -44,9 +41,8 @@ use function json_encode;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class History implements
-    HistoryInterface,
-    JsonSerializable,
+class Job implements
+    JobInterface,
     PsrResponse
 {
     use ImmutableTrait;
@@ -56,7 +52,9 @@ class History implements
 
     private string $reasonPhrase;
 
-    private BaseHistory $history;
+    private BaseJob $job;
+
+    private string $jobSerialized;
 
     /**
      * @param array<string, mixed> $headers
@@ -64,7 +62,8 @@ class History implements
     public function __construct(
         int $statusCode,
         string $reasonPhrase,
-        BaseHistory $history,
+        BaseJob $job,
+        string $jobSerialized,
         string|StreamInterface $body = 'php://memory',
         array $headers = []
     ) {
@@ -72,10 +71,11 @@ class History implements
 
         $this->reasonPhrase = $reasonPhrase;
         $this->statusCode = $statusCode;
-        $this->history = $history;
+        $this->job = $job;
+        $this->jobSerialized = $jobSerialized;
 
         $this->stream = $this->getStream($body, 'wb+');
-        $this->stream->write((string) json_encode($this->history));
+        $this->stream->write($this->jobSerialized);
 
         $headers['Content-Type'] = ['application/json'];
         $this->setHeaders($headers);
@@ -83,20 +83,12 @@ class History implements
 
     public function __toString(): string
     {
-        return $this->history->getMessage();
+        return $this->jobSerialized;
     }
 
-    public function getHistory(): BaseHistory
+    public function getJob(): BaseJob
     {
-        return $this->history;
-    }
-
-    /**
-     * @return array<string, string|int>
-     */
-    public function jsonSerialize(): array
-    {
-        return $this->history->jsonSerialize();
+        return $this->job;
     }
 
     public function getStatusCode(): int

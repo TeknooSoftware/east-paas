@@ -58,6 +58,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInt
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Parser\YamlValidator;
@@ -495,6 +496,7 @@ return [
             get(SerializeJob::class),
             get(NewJobStepsInterface::class),
             get(DispatchJobInterface::class),
+            get(SendJobInterface::class),
             get(DispatchError::class),
         ),
 
@@ -535,6 +537,7 @@ return [
             get(Exposing::class),
             get(RunJobStepsInterface::class),
             get(DRI::class),
+            get(SendHistoryInterface::class),
         ),
 
     RunJobInterface::class . ':proxy' => static function (ContainerInterface $container): RunJobInterface {

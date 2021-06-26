@@ -29,9 +29,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult;
@@ -40,6 +37,7 @@ use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -59,10 +57,6 @@ class PushResultTest extends TestCase
     private $normalizer;
 
     private ?MessageBusInterface $bus = null;
-
-    private ?MessageFactoryInterface $messageFactory = null;
-
-    private ?StreamFactoryInterface $streamFactory = null;
 
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject|DatesService
@@ -100,38 +94,13 @@ class PushResultTest extends TestCase
         return $this->normalizer;
     }
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|MessageFactoryInterface
-     */
-    public function getMessageFactoryMock(): MessageFactoryInterface
-    {
-        if (!$this->messageFactory instanceof MessageFactoryInterface) {
-            $this->messageFactory = $this->createMock(MessageFactoryInterface::class);
-        }
-
-        return $this->messageFactory;
-    }
-
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|StreamFactoryInterface
-     */
-    public function getStreamFactoryMock(): StreamFactoryInterface
-    {
-        if (!$this->streamFactory instanceof StreamFactoryInterface) {
-            $this->streamFactory = $this->createMock(StreamFactoryInterface::class);
-        }
-
-        return $this->streamFactory;
-    }
-
     public function buildStep(): PushResult
     {
         return new PushResult(
             $this->getDateTimeServiceMock(),
             $this->getMessageBusMock(),
             $this->getNormalizer(),
-            $this->getStreamFactoryMock(),
-            $this->getMessageFactoryMock()
+            new ErrorFactory(),
         );
     }
 
@@ -150,10 +119,6 @@ class PushResultTest extends TestCase
     public function testInvoke()
     {
         $client = $this->createMock(EastClient::class);
-
-        $this->getStreamFactoryMock()->expects(self::any())->method('createStream')->willReturn(
-            $this->createMock(StreamInterface::class)
-        );
 
         $manager = $this->createMock(ManagerInterface::class);
         $project = 'foo';
@@ -206,10 +171,6 @@ class PushResultTest extends TestCase
     public function testInvokeWithNoResult()
     {
         $client = $this->createMock(EastClient::class);
-
-        $this->getStreamFactoryMock()->expects(self::any())->method('createStream')->willReturn(
-            $this->createMock(StreamInterface::class)
-        );
 
         $manager = $this->createMock(ManagerInterface::class);
         $project = 'foo';
@@ -264,13 +225,6 @@ class PushResultTest extends TestCase
         $message = $this->createMock(MessageInterface::class);
         $message->expects(self::any())->method('withAddedHeader')->willReturnSelf();
         $message->expects(self::any())->method('withBody')->willReturnSelf();
-        $this->getMessageFactoryMock()->expects(self::any())->method('createMessage')->willReturn(
-            $message
-        );
-
-        $this->getStreamFactoryMock()->expects(self::any())->method('createStream')->willReturn(
-            $this->createMock(StreamInterface::class)
-        );
 
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(EastClient::class);

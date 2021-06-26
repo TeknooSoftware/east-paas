@@ -39,11 +39,8 @@ use Teknoo\East\Paas\Object\History;
  */
 interface SendHistoryInterface
 {
-    /**
-     * @param array<string, mixed> $extra
-     */
     public function __invoke(
         ClientInterface $client,
-        History $history
+        History $history,
     ): SendHistoryInterface;
 }

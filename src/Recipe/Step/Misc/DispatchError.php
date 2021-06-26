@@ -41,9 +41,6 @@ use Throwable;
  */
 class DispatchError
 {
-    /**
-     * @param array<string, mixed> $variables
-     */
     public function __construct(
         private ErrorFactoryInterface $errorFactory,
     ) {

@@ -28,9 +28,11 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas;
 use DI\Container;
 use DI\ContainerBuilder;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
 
 /**
@@ -78,6 +80,21 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             SendHistoryInterface::class,
             $container->get(SendHistoryInterface::class)
+        );
+    }
+
+    public function testSendJob()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            SendJob::class,
+            $container->get(SendJob::class)
+        );
+
+        self::assertInstanceOf(
+            SendJobInterface::class,
+            $container->get(SendJobInterface::class)
         );
     }
 }

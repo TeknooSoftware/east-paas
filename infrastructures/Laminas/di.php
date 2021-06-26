@@ -26,8 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Laminas;
 
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
 
 use function DI\create;
@@ -36,6 +38,9 @@ use function DI\get;
 return [
     SendHistory::class => create(),
     SendHistoryInterface::class => get(SendHistory::class),
+
+    SendJob::class => create(),
+    SendJobInterface::class => get(SendJob::class),
 
     ErrorFactory::class => create(),
     ErrorFactoryInterface::class => get(ErrorFactory::class),

@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Response;
 
-use JsonSerializable;
 use Teknoo\East\Foundation\Client\ResponseInterface as EastResponse;
 use Teknoo\East\Website\Contracts\ObjectInterface;
 use Teknoo\Immutable\ImmutableInterface;
@@ -43,8 +42,7 @@ use Throwable;
 interface ErrorInterface extends
     ObjectInterface,
     ImmutableInterface,
-    EastResponse,
-    JsonSerializable
+    EastResponse
 {
     public function getError(): Throwable;
 }

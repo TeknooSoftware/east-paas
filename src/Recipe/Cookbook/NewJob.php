@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\CreateNewJob;
 use Teknoo\East\Paas\Recipe\Step\Job\PrepareJob;
@@ -67,6 +68,7 @@ class NewJob implements NewJobInterface
         private SerializeJob $stepSerializeJob,
         private iterable $additionalSteps,
         private DispatchJobInterface $stepDispatchJob,
+        private SendJobInterface $stepSendJob,
         private DispatchError $stepDispatchError,
     ) {
         $this->fill($recipe);
@@ -92,6 +94,8 @@ class NewJob implements NewJobInterface
             [],
             90
         );
+
+        $recipe = $recipe->cook($this->stepSendJob, SendJobInterface::class, [], 100);
 
         $recipe = $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
 

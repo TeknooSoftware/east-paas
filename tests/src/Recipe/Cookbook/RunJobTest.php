@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
@@ -77,11 +78,12 @@ class RunJobTest extends TestCase
             $this->createMock(ConfigureClusterClient::class),
             $this->createMock(Deploying::class),
             $this->createMock(Exposing::class),
-            $this->createMock(DispatchResultInterface::class),
             [
                 24 => static function () {},
                 12 => static function () {},
             ],
+            $this->createMock(DispatchResultInterface::class),
+            $this->createMock(SendHistoryInterface::class),
         );
     }
 }

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
@@ -33,6 +34,7 @@ use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
+use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\RecipeInterface;
@@ -61,7 +63,8 @@ class AddHistoryTest extends TestCase
                 24 => static function () {},
                 12 => static function () {},
             ],
-            $this->createMock(DispatchResultInterface::class)
+            $this->createMock(SendHistoryInterface::class),
+            $this->createMock(DispatchError::class),
         );
     }
 }

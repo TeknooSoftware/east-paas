@@ -23,12 +23,10 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
+namespace Teknoo\East\Paas\Contracts\Recipe\Step\Job;
 
 use Teknoo\East\Foundation\Client\ClientInterface;
-use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
-use Throwable;
+use Teknoo\East\Paas\Object\Job;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -39,30 +37,11 @@ use Throwable;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class ErrorFactory implements ErrorFactoryInterface
+interface SendJobInterface
 {
-    public function buildFailurePromise(
+    public function __invoke(
         ClientInterface $client,
-        ManagerInterface $manager,
-        int $statusCode,
-        ?string $reasonPhrase,
-    ): callable {
-        return static function (Throwable $error) use (
-            $client,
-            $manager,
-            $statusCode,
-            $reasonPhrase,
-        ) {
-            if (null === $reasonPhrase) {
-                $reasonPhrase = $error->getMessage();
-                $statusCode = $error->getCode();
-            }
-
-            $client->acceptResponse(
-                new Error($statusCode, (string) $reasonPhrase, $error)
-            );
-
-            $manager->finish($error);
-        };
-    }
+        Job $job,
+        string $jobSerialized,
+    ): SendJobInterface;
 }

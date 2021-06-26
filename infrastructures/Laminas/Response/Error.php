@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
 
+use JsonSerializable;
 use Laminas\Diactoros\MessageTrait;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
 use Psr\Http\Message\StreamInterface;
@@ -45,6 +46,7 @@ use function json_encode;
  */
 class Error implements
     ErrorInterface,
+    JsonSerializable,
     PsrResponse
 {
     use ImmutableTrait;
@@ -56,6 +58,9 @@ class Error implements
 
     private Throwable $error;
 
+    /**
+     * @param array<string, mixed> $headers
+     */
     public function __construct(
         int $statusCode,
         string $reasonPhrase,
@@ -70,7 +75,7 @@ class Error implements
         $this->error = $error;
 
         $this->stream = $this->getStream($body, 'wb+');
-        $this->stream->write(json_encode($this));
+        $this->stream->write((string) json_encode($this));
 
         $headers['Content-Type'] = ['application/problem+json'];
         $this->setHeaders($headers);

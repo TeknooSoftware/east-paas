@@ -60,6 +60,8 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
@@ -782,6 +784,7 @@ class ContainerTest extends TestCase
 
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
+        $container->set(SendJobInterface::class, $this->createMock(SendJobInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -805,6 +808,8 @@ class ContainerTest extends TestCase
 
         $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
+        $container->set(SendJobInterface::class, $this->createMock(SendJobInterface::class));
+        $container->set(SendHistoryInterface::class, $this->createMock(SendHistoryInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -837,6 +842,7 @@ class ContainerTest extends TestCase
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
         $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
+        $container->set(SendHistoryInterface::class, $this->createMock(SendHistoryInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
