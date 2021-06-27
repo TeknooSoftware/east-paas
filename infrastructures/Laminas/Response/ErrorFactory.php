@@ -23,15 +23,12 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Traits;
+namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Throwable;
-
-use function json_encode;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -42,46 +39,27 @@ use function json_encode;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-trait ErrorTrait
+class ErrorFactory implements ErrorFactoryInterface
 {
-    use ResponseTrait;
-
-    private static function buildFailurePromise(
+    public function buildFailurePromise(
         ClientInterface $client,
         ManagerInterface $manager,
-        ?string $message,
-        int $httpCode,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        int $statusCode,
+        ?string $reasonPhrase,
     ): callable {
         return static function (Throwable $error) use (
             $client,
             $manager,
-            $message,
-            $httpCode,
-            $messageFactory,
-            $streamFactory
-        ) {
-            if (null === $message) {
-                $message = $error->getMessage();
-                $httpCode = $error->getCode();
+            $statusCode,
+            $reasonPhrase,
+        ): void {
+            if (null === $reasonPhrase) {
+                $reasonPhrase = $error->getMessage();
+                $statusCode = $error->getCode();
             }
 
             $client->acceptResponse(
-                self::buildResponse(
-                    (string) json_encode(
-                        [
-                            'type' => 'https://teknoo.software/probs/issue',
-                            'title' => $message,
-                            'status' => $httpCode,
-                            'detail' => $error->getMessage(),
-                        ]
-                    ),
-                    $httpCode,
-                    'application/problem+json',
-                    $messageFactory,
-                    $streamFactory
-                )
+                new Error($statusCode, (string) $reasonPhrase, $error)
             );
 
             $manager->finish($error);

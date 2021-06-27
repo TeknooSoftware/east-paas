@@ -23,12 +23,12 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Traits;
+namespace Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job;
 
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
+use Teknoo\East\Paas\Infrastructures\Laminas\Response\Job as JobResponse;
+use Teknoo\East\Paas\Object\Job;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -39,27 +39,14 @@ use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-trait ResponseTrait
+class SendJob implements SendJobInterface
 {
-    private static function buildResponse(
-        string $body,
-        int $httpCode,
-        string $contentType,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
-    ): MessageInterface {
-        $stream = $streamFactory->createStream($body);
+    public function __invoke(ClientInterface $client, Job $job, string $jobSerialized): SendJobInterface
+    {
+        $client->acceptResponse(
+            new JobResponse(200, '', $job, $jobSerialized)
+        );
 
-        $message = $messageFactory->createMessage('1.1');
-
-        if ($message instanceof ResponseInterface) {
-            $message = $message->withStatus($httpCode);
-        }
-
-        $message = $message->withAddedHeader('paas-http-code', (string) $httpCode);
-        $message = $message->withAddedHeader('content-type', $contentType);
-        $message = $message->withBody($stream);
-
-        return $message;
+        return $this;
     }
 }

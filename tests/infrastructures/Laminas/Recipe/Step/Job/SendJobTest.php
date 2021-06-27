@@ -23,33 +23,32 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Traits;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Recipe\Step\Job;
 
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Foundation\Client\ClientInterface;
+use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob;
+use Teknoo\East\Paas\Object\Job;
 
 /**
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @covers \Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob
  */
-trait PsrFactoryTrait
+class SendJobTest extends TestCase
 {
-    private MessageFactoryInterface $messageFactory;
-
-    private StreamFactoryInterface $streamFactory;
-
-    public function setMessageFactory(MessageFactoryInterface $messageFactory): void
+    public function testInvoke()
     {
-        $this->messageFactory = $messageFactory;
-    }
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects(self::once())->method('acceptResponse');
 
-    public function setStreamFactory(StreamFactoryInterface $streamFactory): void
-    {
-        $this->streamFactory = $streamFactory;
+        self::assertInstanceOf(
+            SendJob::class,
+            (new SendJob())(
+                $client,
+                $this->createMock(Job::class),
+                \json_encode(['foo' => 'bar']),
+            )
+        );
     }
 }

@@ -23,15 +23,12 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Recipe\Step\Job;
+namespace Teknoo\East\Paas\Contracts\Response;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
-use Teknoo\East\Paas\Object\Job;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
-use Teknoo\East\Paas\Recipe\Traits\ResponseTrait;
-use Teknoo\Recipe\ChefInterface;
+use Teknoo\East\Foundation\Client\ResponseInterface as EastResponse;
+use Teknoo\East\Paas\Object\History as BaseHistory;
+use Teknoo\East\Website\Contracts\ObjectInterface;
+use Teknoo\Immutable\ImmutableInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -42,31 +39,10 @@ use Teknoo\Recipe\ChefInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class DisplayJob
+interface HistoryInterface extends
+    ObjectInterface,
+    ImmutableInterface,
+    EastResponse
 {
-    use ResponseTrait;
-    use PsrFactoryTrait;
-
-    public function __construct(MessageFactoryInterface $messageFactory, StreamFactoryInterface $streamFactory)
-    {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
-    }
-
-    public function __invoke(Job $job, ClientInterface $client, ChefInterface $chef, string $jobSerialized): self
-    {
-        $client->acceptResponse(
-            static::buildResponse(
-                $jobSerialized,
-                200,
-                'application/json',
-                $this->messageFactory,
-                $this->streamFactory
-            )
-        );
-
-        $chef->finish($job);
-
-        return $this;
-    }
+    public function getHistory(): BaseHistory;
 }

@@ -28,11 +28,10 @@ namespace Teknoo\East\Paas\Recipe\Cookbook;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
-use Teknoo\East\Paas\Recipe\Step\History\DisplayHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
-use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -85,10 +84,9 @@ class RunJob implements RunJobInterface
         private ConfigureClusterClient $stepConfigureClusterClient,
         private Deploying $stepDeploying,
         private Exposing $stepExposing,
-        private DispatchResultInterface $stepDispatchResult,
-        private DisplayHistory $stepDisplayHistory,
         private iterable $additionalSteps,
-        private DisplayError $stepDisplayError,
+        private DispatchResultInterface $stepDispatchResult,
+        private SendHistoryInterface $stepSendHistoryInterface,
     ) {
         $this->fill($recipe);
     }
@@ -287,6 +285,10 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_EXPOSING
         );
 
+        foreach ($this->additionalSteps as $position => $step) {
+            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
+        }
+
         //Final
         $recipe = $recipe->cook(
             $this->stepDispatchResult,
@@ -296,18 +298,13 @@ class RunJob implements RunJobInterface
         );
 
         $recipe = $recipe->cook(
-            $this->stepDisplayHistory,
-            DisplayHistory::class,
+            $this->stepSendHistoryInterface,
+            SendHistoryInterface::class,
             [],
-            RunJobInterface::STEP_FINAL
+            RunJobInterface::STEP_SEND_HISTORY
         );
 
-        foreach ($this->additionalSteps as $position => $step) {
-            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
-        }
-
         $recipe = $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
-        $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
 
         return $recipe;
     }

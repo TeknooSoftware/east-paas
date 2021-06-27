@@ -25,9 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
@@ -35,11 +33,8 @@ use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 use Throwable;
 
 /**
@@ -53,16 +48,10 @@ use Throwable;
  */
 class HookBuildContainer
 {
-    use ErrorTrait;
-    use PsrFactoryTrait;
-
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        private ErrorFactoryInterface $errorFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     public function __invoke(
@@ -100,13 +89,11 @@ class HookBuildContainer
                     function (Throwable $error) use ($client, $manager, &$inError) {
                         $inError = true;
 
-                        static::buildFailurePromise(
+                        $this->errorFactory->buildFailurePromise(
                             $client,
                             $manager,
-                            'teknoo.east.paas.error.recipe.hook.building_error',
                             500,
-                            $this->messageFactory,
-                            $this->streamFactory
+                            'teknoo.east.paas.error.recipe.hook.building_error',
                         )($error);
                     }
                 );

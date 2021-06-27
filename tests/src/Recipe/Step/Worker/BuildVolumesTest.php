@@ -27,11 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
@@ -39,16 +35,13 @@ use Teknoo\East\Paas\Contracts\Container\BuilderInterface as VolumeBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class BuildVolumesTest extends TestCase
 {
@@ -68,25 +61,9 @@ class BuildVolumesTest extends TestCase
 
     public function buildStep(): BuildVolumes
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $response->expects(self::any())->method('withBody')->willReturnSelf();
-        $response->expects(self::any())->method('withStatus')->willReturnSelf();
-
-        $messageFactory = $this->createMock(MessageFactoryInterface::class);
-        $messageFactory->expects(self::any())->method('createMessage')->willReturn(
-            $response
-        );
-
-        $streamFactory = $this->createMock(StreamFactoryInterface::class);
-        $streamFactory->expects(self::any())->method('createStream')->willReturn(
-            $this->createMock(StreamInterface::class)
-        );
-
         return new BuildVolumes(
             $this->getDispatchHistoryMock(),
-            $messageFactory,
-            $streamFactory
+            new ErrorFactory(),
         );
     }
 

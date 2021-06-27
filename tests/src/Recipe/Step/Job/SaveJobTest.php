@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Writer\JobWriter;
@@ -67,8 +67,6 @@ class SaveJobTest extends TestCase
         $chef = $this->createMock(ChefInterface::class);
         $client = $this->createMock(ClientInterface::class);
         $job = $this->createMock(Job::class);
-
-        $projectId = 'dev';
 
         $this->getjobWriterMock()
             ->expects(self::once())

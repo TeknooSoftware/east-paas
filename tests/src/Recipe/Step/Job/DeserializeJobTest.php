@@ -26,23 +26,18 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class DeserializeJobTest extends TestCase
 {
@@ -65,26 +60,10 @@ class DeserializeJobTest extends TestCase
 
     public function buildStep(): DeserializeJob
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $response->expects(self::any())->method('withBody')->willReturnSelf();
-        $response->expects(self::any())->method('withStatus')->willReturnSelf();
-
-        $messageFactory = $this->createMock(MessageFactoryInterface::class);
-        $messageFactory->expects(self::any())->method('createMessage')->willReturn(
-            $response
-        );
-
-        $streamFactory = $this->createMock(StreamFactoryInterface::class);
-        $streamFactory->expects(self::any())->method('createStream')->willReturn(
-            $this->createMock(StreamInterface::class)
-        );
-
         return new DeserializeJob(
             $this->getDeserializer(),
-            $messageFactory,
-            $streamFactory,
-            ['foo' => 'bar']
+            ['foo' => 'bar'],
+            new ErrorFactory(),
         );
     }
 

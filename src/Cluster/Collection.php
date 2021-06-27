@@ -25,12 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Cluster;
 
-use Generator;
 use IteratorAggregate;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
-use Traversable;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
