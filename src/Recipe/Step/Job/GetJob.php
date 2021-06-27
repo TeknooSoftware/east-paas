@@ -25,15 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Loader\JobLoader;
 use Teknoo\East\Paas\Object\Job;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -46,16 +43,10 @@ use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
  */
 class GetJob
 {
-    use ErrorTrait;
-    use PsrFactoryTrait;
-
     public function __construct(
         private JobLoader $jobLoader,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory,
+        private ErrorFactoryInterface $errorFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     public function __invoke(string $jobId, ManagerInterface $manager, ClientInterface $client): self
@@ -66,13 +57,11 @@ class GetJob
                 static function (Job $job) use ($manager) {
                     $manager->updateWorkPlan(['job' => $job]);
                 },
-                static::buildFailurePromise(
+                $this->errorFactory->buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.east.paas.error.recipe.job.not_found',
                     404,
-                    $this->messageFactory,
-                    $this->streamFactory
+                    'teknoo.east.paas.error.recipe.job.not_found',
                 )
             )
         );

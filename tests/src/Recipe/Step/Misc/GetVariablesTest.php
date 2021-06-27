@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
 
@@ -35,7 +35,6 @@ use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Misc\GetVariables
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
  */
 class GetVariablesTest extends TestCase
 {

@@ -26,23 +26,18 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Job\SerializeJob
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class SerializeJobTest extends TestCase
 {
@@ -65,25 +60,9 @@ class SerializeJobTest extends TestCase
 
     public function buildStep(): SerializeJob
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $response->expects(self::any())->method('withBody')->willReturnSelf();
-        $response->expects(self::any())->method('withStatus')->willReturnSelf();
-
-        $messageFactory = $this->createMock(MessageFactoryInterface::class);
-        $messageFactory->expects(self::any())->method('createMessage')->willReturn(
-            $response
-        );
-
-        $streamFactory = $this->createMock(StreamFactoryInterface::class);
-        $streamFactory->expects(self::any())->method('createStream')->willReturn(
-            $this->createMock(StreamInterface::class)
-        );
-
         return new SerializeJob(
             $this->getSerializerInterfaceMock(),
-            $messageFactory,
-            $streamFactory
+            new ErrorFactory(),
         );
     }
 

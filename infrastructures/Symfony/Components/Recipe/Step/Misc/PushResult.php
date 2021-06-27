@@ -26,21 +26,18 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc;
 
 use DateTimeInterface;
-use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
+use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 use Throwable;
 
 use function json_encode;
@@ -56,18 +53,12 @@ use function json_encode;
  */
 class PushResult implements DispatchResultInterface
 {
-    use ErrorTrait;
-    use PsrFactoryTrait;
-
     public function __construct(
         private DatesService $dateTimeService,
         private MessageBusInterface $bus,
         private NormalizerInterface $normalizer,
-        StreamFactoryInterface $streamFactory,
-        MessageFactoryInterface $messageFactory,
+        private ErrorFactoryInterface $errorFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     /**
@@ -148,23 +139,8 @@ class PushResult implements DispatchResultInterface
                 $errorCode = 500;
             }
 
-            $client->acceptResponse(
-                self::buildResponse(
-                    (string) json_encode(
-                        [
-                            'type' => 'https://teknoo.software/probs/issue',
-                            'title' => $error->getMessage(),
-                            'status' => $errorCode,
-                        ]
-                    ),
-                    $errorCode,
-                    'application/problem+json',
-                    $this->messageFactory,
-                    $this->streamFactory
-                )
-            );
-
-            $manager->finish($error);
+            $this->errorFactory
+                ->buildFailurePromise($client, $manager, $errorCode, null)($error);
         }
 
         return $this;

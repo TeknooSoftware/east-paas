@@ -25,15 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -46,16 +43,10 @@ use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
  */
 class SerializeJob
 {
-    use ErrorTrait;
-    use PsrFactoryTrait;
-
     public function __construct(
         private SerializerInterface $serializer,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory,
+        private ErrorFactoryInterface $errorFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     /**
@@ -70,13 +61,11 @@ class SerializeJob
                 static function (string $jobSerialized) use ($manager) {
                     $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
                 },
-                static::buildFailurePromise(
+                $this->errorFactory->buildFailurePromise(
                     $client,
                     $manager,
-                    'teknoo.east.paas.error.recipe.job.serialization_error',
                     400,
-                    $this->messageFactory,
-                    $this->streamFactory
+                    'teknoo.east.paas.error.recipe.job.serialization_error',
                 )
             ),
             [

@@ -27,24 +27,19 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
-use Teknoo\East\Foundation\Http\ClientInterface;
+use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent
- * @covers \Teknoo\East\Paas\Recipe\Traits\ErrorTrait
- * @covers \Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait
  */
 class ConfigureCloningAgentTest extends TestCase
 {
@@ -67,25 +62,9 @@ class ConfigureCloningAgentTest extends TestCase
 
     public function buildStep(): ConfigureCloningAgent
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects(self::any())->method('withAddedHeader')->willReturnSelf();
-        $response->expects(self::any())->method('withBody')->willReturnSelf();
-        $response->expects(self::any())->method('withStatus')->willReturnSelf();
-
-        $messageFactory = $this->createMock(MessageFactoryInterface::class);
-        $messageFactory->expects(self::any())->method('createMessage')->willReturn(
-            $response
-        );
-
-        $streamFactory = $this->createMock(StreamFactoryInterface::class);
-        $streamFactory->expects(self::any())->method('createStream')->willReturn(
-            $this->createMock(StreamInterface::class)
-        );
-
         return new ConfigureCloningAgent(
             $this->getAgentMock(),
-            $messageFactory,
-            $streamFactory
+            new ErrorFactory(),
         );
     }
 

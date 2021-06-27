@@ -65,4 +65,5 @@ interface RunJobInterface extends CookbookInterface
     public const STEP_EXPOSING = 150;
 
     public const STEP_FINAL = 160;
+    public const STEP_SEND_HISTORY = 170;
 }

@@ -25,21 +25,18 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
-use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
-use Teknoo\East\Paas\Recipe\Step\History\DisplayHistory;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
-use Teknoo\East\Paas\Recipe\Step\History\SerializeHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
-use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
+use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
-use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
@@ -66,10 +63,9 @@ class AddHistory implements AddHistoryInterface
         private GetJob $stepGetJob,
         private StepAddHistory $stepAddHistory,
         private SaveJob $stepSaveJob,
-        private SerializeHistory $stepSerializeHistory,
-        private DisplayHistory $stepDisplayHistory,
         private iterable $additionalSteps,
-        private DisplayError $stepDisplayError,
+        private SendHistoryInterface $stepSendHistoryInterface,
+        private DispatchError $stepDispatchError,
     ) {
         $this->fill($recipe);
     }
@@ -82,14 +78,14 @@ class AddHistory implements AddHistoryInterface
         $recipe = $recipe->cook($this->stepGetJob, GetJob::class, [], 40);
         $recipe = $recipe->cook($this->stepAddHistory, StepAddHistory::class, [], 50);
         $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
-        $recipe = $recipe->cook($this->stepSerializeHistory, SerializeHistory::class, [], 70);
-        $recipe = $recipe->cook($this->stepDisplayHistory, DisplayHistory::class, [], 80);
 
         foreach ($this->additionalSteps as $position => $step) {
             $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
         }
 
-        $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
+        $recipe = $recipe->cook($this->stepSendHistoryInterface, SendHistoryInterface::class, [], 80);
+
+        $recipe = $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
 
         return $recipe;
     }

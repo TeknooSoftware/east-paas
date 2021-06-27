@@ -25,9 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
-use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Teknoo\East\Foundation\Http\ClientInterface as EastClient;
+use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Collection;
@@ -35,10 +33,7 @@ use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Paas\Recipe\Traits\ErrorTrait;
-use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
+use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 
 /**
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -51,16 +46,10 @@ use Teknoo\East\Paas\Recipe\Traits\PsrFactoryTrait;
  */
 class Exposing
 {
-    use ErrorTrait;
-    use PsrFactoryTrait;
-
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,
-        MessageFactoryInterface $messageFactory,
-        StreamFactoryInterface $streamFactory
+        private ErrorFactoryInterface $errorFactory,
     ) {
-        $this->setMessageFactory($messageFactory);
-        $this->setStreamFactory($streamFactory);
     }
 
     public function __invoke(
@@ -86,13 +75,11 @@ class Exposing
                             $result
                         );
                     },
-                    static::buildFailurePromise(
+                    $this->errorFactory->buildFailurePromise(
                         $eastClient,
                         $manager,
-                        'teknoo.east.paas.error.recipe.cluster.exposing_error',
                         500,
-                        $this->messageFactory,
-                        $this->streamFactory
+                        'teknoo.east.paas.error.recipe.cluster.exposing_error',
                     )
                 )
             );

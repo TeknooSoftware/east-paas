@@ -27,13 +27,13 @@ namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\CreateNewJob;
-use Teknoo\East\Paas\Recipe\Step\Job\DisplayJob;
 use Teknoo\East\Paas\Recipe\Step\Job\PrepareJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
-use Teknoo\East\Paas\Recipe\Step\Misc\DisplayError;
+use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
 use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
@@ -66,10 +66,10 @@ class NewJob implements NewJobInterface
         private PrepareJob $stepPrepareJob,
         private SaveJob $stepSaveJob,
         private SerializeJob $stepSerializeJob,
-        private DispatchJobInterface $stepDispatchJobInterface,
-        private DisplayJob $stepDisplayJob,
         private iterable $additionalSteps,
-        private DisplayError $stepDisplayError
+        private DispatchJobInterface $stepDispatchJob,
+        private SendJobInterface $stepSendJob,
+        private DispatchError $stepDispatchError,
     ) {
         $this->fill($recipe);
     }
@@ -83,19 +83,21 @@ class NewJob implements NewJobInterface
         $recipe = $recipe->cook($this->stepPrepareJob, PrepareJob::class, [], 50);
         $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
         $recipe = $recipe->cook($this->stepSerializeJob, SerializeJob::class, [], 70);
-        $recipe = $recipe->cook(
-            $this->stepDispatchJobInterface,
-            DispatchJobInterface::class,
-            [],
-            80
-        );
-        $recipe = $recipe->cook($this->stepDisplayJob, DisplayJob::class, [], 90);
 
         foreach ($this->additionalSteps as $position => $step) {
             $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
         }
 
-        $recipe = $recipe->onError(new Bowl($this->stepDisplayError, []));
+        $recipe = $recipe->cook(
+            $this->stepDispatchJob,
+            DispatchJobInterface::class,
+            [],
+            90
+        );
+
+        $recipe = $recipe->cook($this->stepSendJob, SendJobInterface::class, [], 100);
+
+        $recipe = $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
 
         return $recipe;
     }

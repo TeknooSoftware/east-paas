@@ -33,11 +33,11 @@
         "ext-dom": "*",
         "php-di/php-di": "~6.3",
         "psr/http-client": "~1.0",
-        "teknoo/east-foundation": "^5.2.0",
-        "teknoo/east-website": "^5.1.0",
         "teknoo/immutable": "^2.0.8",
+        "teknoo/states": "^5.0.3",
         "teknoo/recipe": "^3.1.0",
-        "teknoo/states": "^5.0.3"
+        "teknoo/east-foundation": "^5.3.1",
+        "teknoo/east-website": "^5.1.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -84,6 +84,7 @@
             "Teknoo\\East\\Paas\\Infrastructures\\Flysystem\\": "infrastructures/Flysystem/",
             "Teknoo\\East\\Paas\\Infrastructures\\Git\\": "infrastructures/Git/",
             "Teknoo\\East\\Paas\\Infrastructures\\Kubernetes\\": "infrastructures/Kubernetes/",
+            "Teknoo\\East\\Paas\\Infrastructures\\Laminas\\": "infrastructures/Laminas/",
             "Teknoo\\East\\Paas\\Infrastructures\\Symfony\\": "infrastructures/Symfony/Components/",
             "Teknoo\\East\\Paas\\Infrastructures\\EastPaasBundle\\": "infrastructures/Symfony/Bundle/"
         }
@@ -98,6 +99,7 @@
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Flysystem\\": "tests/infrastructures/Flysystem/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Git\\": "tests/infrastructures/Git/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Kubernetes\\": "tests/infrastructures/Kubernetes/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Laminas\\": "tests/infrastructures/Laminas/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Symfony\\": "tests/infrastructures/Symfony/Components/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\EastPaasBundle\\": "tests/infrastructures/Symfony/Bundle/"
         }

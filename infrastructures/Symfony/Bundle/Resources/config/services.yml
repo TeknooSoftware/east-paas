@@ -86,8 +86,7 @@ services:
             - '@Teknoo\East\Website\Service\DatesService'
             - '@messenger.default_bus'
             - '@Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface'
-            - '@Psr\Http\Message\StreamFactoryInterface'
-            - '@Teknoo\East\Foundation\Http\Message\MessageFactoryInterface'
+            - '@Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer'
