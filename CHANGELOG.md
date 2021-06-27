@@ -1,5 +1,11 @@
 #Teknoo Software - PaaS - Change Log
 
+##[0.0.57] - 2021-06-20
+###Dev Release
+- Update to East Foundation 5.3.1 and Website 5.1.1
+- Rework error notifications by adding new ErrorResponse, compliant with PSR and East response to pass to the client
+- Add History and Job responses, compliant also with PSR and East for client to be use in any context.
+
 ##[0.0.56] - 2021-06-20
 ###Dev Release
 - Update to Recipe 3.1, East Foundation 5.2 and Website 5.1
