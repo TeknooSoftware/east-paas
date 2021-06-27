@@ -120,6 +120,6 @@ class Error implements
         $that->statusCode = $code;
         $that->reasonPhrase = $reasonPhrase;
 
-        return $this;
+        return $that;
     }
 }

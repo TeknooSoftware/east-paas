@@ -23,40 +23,32 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Recipe\Step\Job;
 
+use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
-use Teknoo\East\Foundation\Client\ResponseInterface;
-use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
-use Throwable;
+use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob;
+use Teknoo\East\Paas\Object\Job;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @covers \Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob
  */
-class ErrorFactory implements ErrorFactoryInterface
+class SendJobTest extends TestCase
 {
-    public function buildFailurePromise(
-        ClientInterface $client,
-        ManagerInterface $manager,
-        int $statusCode,
-        ?string $reasonPhrase,
-    ): callable {
-        return static function (Throwable $error) use (
-            $client,
-            $manager,
-        ): void {
-            $client->acceptResponse(
-                new class implements ResponseInterface {
-                    public function __toString(): string
-                    {
-                        return 'error';
-                    }
-                }
-            );
+    public function testInvoke()
+    {
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects(self::once())->method('acceptResponse');
 
-            $manager->finish($error);
-        };
+        self::assertInstanceOf(
+            SendJob::class,
+            (new SendJob())(
+                $client,
+                $this->createMock(Job::class),
+                \json_encode(['foo' => 'bar']),
+            )
+        );
     }
 }

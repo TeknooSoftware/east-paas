@@ -26,6 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Response;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Foundation\Client\ClientInterface;
+use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Infrastructures\Laminas\Response\Error;
+use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -34,5 +38,49 @@ use PHPUnit\Framework\TestCase;
  */
 class ErrorFactoryTest extends TestCase
 {
+    public function testBuildFailurePromiseWithReason()
+    {
+        $factory = new ErrorFactory();
+        $client = $this->createMock(ClientInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
 
+        $callable = $factory->buildFailurePromise($client, $manager, 500, 'foo');
+        self::assertIsCallable($callable);
+
+        $client->expects(self::once())
+            ->method('acceptResponse')
+            ->willReturnCallback(
+                function ($error) use ($client) {
+                    self::assertInstanceOf(Error::class, $error);
+                    self::assertEquals('foo', $error->getReasonPhrase());
+                    return $client;
+                }
+            );
+        $manager->expects(self::once())->method('finish');
+
+        $callable(new \RuntimeException('bar', 501));
+    }
+
+    public function testBuildFailurePromiseWithNoReason()
+    {
+        $factory = new ErrorFactory();
+        $client = $this->createMock(ClientInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
+
+        $callable = $factory->buildFailurePromise($client, $manager, 500, null);
+        self::assertIsCallable($callable);
+
+        $client->expects(self::once())
+            ->method('acceptResponse')
+            ->willReturnCallback(
+                function ($error) use ($client) {
+                    self::assertInstanceOf(Error::class, $error);
+                    self::assertEquals('bar', $error->getReasonPhrase());
+                    return $client;
+                }
+            );
+        $manager->expects(self::once())->method('finish');
+
+        $callable(new \RuntimeException('bar', 501));
+    }
 }

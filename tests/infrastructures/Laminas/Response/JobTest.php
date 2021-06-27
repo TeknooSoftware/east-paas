@@ -26,57 +26,46 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Response;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Infrastructures\Laminas\Response\Error;
+use Teknoo\East\Paas\Infrastructures\Laminas\Response\Job;
+use Teknoo\East\Paas\Object\Job as BaseJob;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\Laminas\Response\Error
+ * @covers \Teknoo\East\Paas\Infrastructures\Laminas\Response\Job
  */
-class ErrorTest extends TestCase
+class JobTest extends TestCase
 {
-    private function build(): Error
+    private function build(): Job
     {
-        return new Error(
-            500,
+        return new Job(
+            200,
             'foo',
-            new \RuntimeException('bar', 500)
+            new BaseJob(),
+            \json_encode(['foo' => 'bar', 'bar' => 'foo'])
         );
     }
 
     public function testToString()
     {
         self::assertEquals(
-            'foo (500)',
+            '{"foo":"bar","bar":"foo"}',
             (string) $this->build()
         );
     }
 
-    public function testToJson()
-    {
-        self::assertEquals(
-            [
-                'type' => 'https://teknoo.software/probs/issue',
-                'title' => 'foo',
-                'status' => 500,
-                'detail' => 'bar',
-            ],
-            \json_decode(\json_encode($this->build()), true)
-        );
-    }
-
-    public function testGetError()
+    public function testGetJob()
     {
         self::assertInstanceOf(
-            \Throwable::class,
-            $this->build()->getError()
+            BaseJob::class,
+            $this->build()->getJob()
         );
     }
 
     public function testGetStatusCode()
     {
         self::assertEquals(
-            500,
+            200,
             $this->build()->getStatusCode()
         );
     }
@@ -92,7 +81,7 @@ class ErrorTest extends TestCase
     public function testWithStatus()
     {
         $response1 = $this->build();
-        $response2 = $response1->withStatus(501, 'bar');
+        $response2 = $response1->withStatus(201, 'bar');
 
         self::assertNotSame(
             $response1,
@@ -100,12 +89,12 @@ class ErrorTest extends TestCase
         );
 
         self::assertInstanceOf(
-            Error::class,
+            Job::class,
             $response2
         );
 
         self::assertEquals(
-            500,
+            200,
             $response1->getStatusCode()
         );
 
@@ -115,7 +104,7 @@ class ErrorTest extends TestCase
         );
 
         self::assertEquals(
-            501,
+            201,
             $response2->getStatusCode()
         );
 

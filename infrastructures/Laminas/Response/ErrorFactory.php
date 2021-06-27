@@ -52,7 +52,7 @@ class ErrorFactory implements ErrorFactoryInterface
             $manager,
             $statusCode,
             $reasonPhrase,
-        ) {
+        ): void {
             if (null === $reasonPhrase) {
                 $reasonPhrase = $error->getMessage();
                 $statusCode = $error->getCode();
