@@ -32,6 +32,9 @@ use function DI\get;
 use function DI\create;
 
 return [
+    GitWrapper::class => create()
+        ->constructor('git'),
+
     CloningAgentInterface::class => get(CloningAgent::class),
     CloningAgent::class => create()
         ->constructor(get(GitWrapper::class)),

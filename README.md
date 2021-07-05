@@ -324,14 +324,14 @@ To install this library with composer, run this command :
 
 This library requires :
 
-    * PHP 7.4+
+    * PHP 8.0+
     * A PHP autoloader (Composer is recommended)
     * Teknoo/Immutable.
     * Teknoo/States.
     * Teknoo/Recipe.
     * Teknoo/East-Foundation.
     * Teknoo/East-Website.
-    * Optional: Symfony 4.4+ (for administration)
+    * Optional: Symfony 5.2+ (for administration)
 
 Credits
 -------
