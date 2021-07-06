@@ -38,6 +38,11 @@ use function is_array;
 use function iterator_to_array;
 
 /**
+ * Compilation module able to convert `hooks` sections in paas.yaml file as Hook instance, from the Hook library
+ * into the CompiledDeploymentInterface instance.
+ * Each hook instance injected are a clone from the library, configuration from paas.yaml are passed to the cloned
+ * instance.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

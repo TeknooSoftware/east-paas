@@ -30,7 +30,7 @@ use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface as ClusterClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Cluster\Collection as ClusterCollection;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;

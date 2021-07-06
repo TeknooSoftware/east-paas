@@ -26,12 +26,12 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
 use RuntimeException;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Generator;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Running;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Generator;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Running;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
@@ -52,7 +52,7 @@ use Teknoo\States\Proxy\ProxyTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Client implements ClientInterface, ProxyInterface, AutomatedInterface
+class Driver implements DriverInterface, ProxyInterface, AutomatedInterface
 {
     use ProxyTrait;
     use AutomatedTrait {
@@ -99,7 +99,7 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
         ];
     }
 
-    public function configure(string $url, ?IdentityInterface $identity): ClientInterface
+    public function configure(string $url, ?IdentityInterface $identity): DriverInterface
     {
         if (null !== $identity && !$identity instanceof ClusterCredentials) {
             throw new RuntimeException('Not Supported');
@@ -114,14 +114,14 @@ class Client implements ClientInterface, ProxyInterface, AutomatedInterface
         return $that;
     }
 
-    public function deploy(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): ClientInterface
+    public function deploy(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): DriverInterface
     {
         $this->runTranscriber($compiledDeployment, $promise, true, false);
 
         return $this;
     }
 
-    public function expose(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): ClientInterface
+    public function expose(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): DriverInterface
     {
         $this->runTranscriber($compiledDeployment, $promise, false, true);
 

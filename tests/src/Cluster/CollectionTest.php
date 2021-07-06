@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Cluster;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Cluster\Collection;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -39,13 +39,13 @@ class CollectionTest extends TestCase
     public function testGetIterator()
     {
         $collection = new Collection([
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ClientInterface::class),
+            $this->createMock(DriverInterface::class),
+            $this->createMock(DriverInterface::class),
         ]);
 
         $count = 0;
         foreach ($collection as $client) {
-            self::assertInstanceOf(ClientInterface::class, $client);
+            self::assertInstanceOf(DriverInterface::class, $client);
             $count++;
         }
 

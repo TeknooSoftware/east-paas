@@ -36,6 +36,10 @@ use function explode;
 use function is_array;
 
 /**
+ * Compilation module able to convert `images` sections in paas.yaml file as Image instance. An Image can inherits from
+ * the Image library. The Image instance will be pushed into the CompiledDeploymentInterface instance.
+ * Dockerfile must be present in the source repository, in the path defined at the key `path` of this image.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

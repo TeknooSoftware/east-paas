@@ -30,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -75,7 +75,7 @@ class DeployingTest extends TestCase
         $eastClient =  $this->createMock(EastClient::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createMock(DriverInterface::class);
         $collection->expects(self::any())
             ->method('getIterator')
             ->willReturnCallback(function () use ($client) {
@@ -122,7 +122,7 @@ class DeployingTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createMock(DriverInterface::class);
         $collection->expects(self::any())
             ->method('getIterator')
             ->willReturnCallback(function () use ($client) {

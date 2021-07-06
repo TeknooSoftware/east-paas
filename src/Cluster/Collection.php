@@ -28,9 +28,12 @@ namespace Teknoo\East\Paas\Cluster;
 use IteratorAggregate;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 
 /**
+ * Immutable and iterable collections of cluster's drivers (adapter to use to connect to a cluster,
+ * like Kubernetes or Docker Swarm)
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -44,12 +47,12 @@ class Collection implements IteratorAggregate, ImmutableInterface
     use ImmutableTrait;
 
     /**
-     * @var iterable<int, ClientInterface>
+     * @var iterable<int, DriverInterface>
      */
     private iterable $clients;
 
     /**
-     * @param iterable<int, ClientInterface> $clients
+     * @param iterable<int, DriverInterface> $clients
      */
     public function __construct(iterable $clients)
     {
@@ -59,7 +62,7 @@ class Collection implements IteratorAggregate, ImmutableInterface
     }
 
     /**
-     * @return iterable<ClientInterface>
+     * @return iterable<DriverInterface>
      */
     public function getIterator(): iterable
     {

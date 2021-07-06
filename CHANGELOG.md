@@ -78,7 +78,7 @@
 - Migrate SendHistory/PushResult to Messenger, and 
 - Migrate PSR18 SendHistory/PushResult to Messenger
 - Clean Main DI, remove resolvers
-- Add Handler for Messenger to send a HTTP message via a PSR 18 Client (not enable by default)
+- Add Handler for Messenger to send a HTTP message via a PSR 18 Driver (not enable by default)
 - Add Handler for Messenger to dedicated to Symfony Console, replace Console dedicated steps
 - Add Handler forwarder to enable this previous handlers only on console context.
 
@@ -176,7 +176,7 @@
 
 ## [0.0.24] - 2021-02-07
 ### Dev release
-- Extract Kubernetes Client factory to independent class from DI
+- Extract Kubernetes Driver factory to independent class from DI
 
 ## [0.0.23] - 2021-02-06
 ### Dev release

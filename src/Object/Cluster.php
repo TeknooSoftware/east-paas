@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Website\Object\ObjectInterface;
 use Teknoo\East\Website\Object\ObjectTrait;
 use Teknoo\East\Website\Object\TimestampableInterface;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
@@ -205,7 +205,7 @@ class Cluster implements
         return $this;
     }
 
-    public function configureCluster(ClientInterface $client, PromiseInterface $promise): self
+    public function configureCluster(DriverInterface $client, PromiseInterface $promise): self
     {
         try {
             $promise->success(

@@ -28,7 +28,7 @@ namespace Teknoo\Tests\East\Paas\Cluster;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Cluster\Directory;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Object\Cluster;
 
 /**
@@ -49,7 +49,7 @@ class DirectoryTest extends TestCase
 
         $this->buildDirectory()->register(
             new \stdClass(),
-            $this->createMock(ClientInterface::class)
+            $this->createMock(DriverInterface::class)
         );
     }
 
@@ -69,7 +69,7 @@ class DirectoryTest extends TestCase
             Directory::class,
             $this->buildDirectory()->register(
                 'foo',
-                $this->createMock(ClientInterface::class)
+                $this->createMock(DriverInterface::class)
             )
         );
     }
@@ -115,7 +115,7 @@ class DirectoryTest extends TestCase
             Directory::class,
             $directory->register(
                 'foo',
-                $this->createMock(ClientInterface::class)
+                $this->createMock(DriverInterface::class)
             )
         );
 
@@ -144,7 +144,7 @@ class DirectoryTest extends TestCase
             Directory::class,
             $directory->register(
                 'foo',
-                $this->createMock(ClientInterface::class)
+                $this->createMock(DriverInterface::class)
             )
         );
 

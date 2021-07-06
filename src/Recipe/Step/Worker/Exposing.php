@@ -30,7 +30,7 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
@@ -61,7 +61,7 @@ class Exposing
         string $envName,
         JobUnitInterface $jobUnit
     ): self {
-        /** @var ClientInterface $client */
+        /** @var DriverInterface $client */
         foreach ($clustersClients as $client) {
             $client->expose(
                 $compiledDeployment,

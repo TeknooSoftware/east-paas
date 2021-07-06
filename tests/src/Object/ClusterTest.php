@@ -29,7 +29,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
@@ -454,14 +454,14 @@ class ClusterTest extends TestCase
         $this->expectException(\TypeError::class);
 
         $this->buildObject()->configureCluster(
-            $this->createMock(ClientInterface::class),
+            $this->createMock(DriverInterface::class),
             new \stdClass()
         );
     }
 
     public function testConfigureCluster()
     {
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createMock(DriverInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
 
         $cluster = $this->generateObjectPopulated(
@@ -490,7 +490,7 @@ class ClusterTest extends TestCase
 
     public function testConfigureClusterOnError()
     {
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createMock(DriverInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
 
         $cluster = $this->generateObjectPopulated(

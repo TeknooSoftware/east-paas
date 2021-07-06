@@ -27,10 +27,13 @@ namespace Teknoo\East\Paas\Cluster;
 
 use DomainException;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Object\Cluster;
 
 /**
+ * Cluster's drivers directory able to find and configure a Cluster instance with a driver corresponding with the type
+ * required.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -42,11 +45,11 @@ use Teknoo\East\Paas\Object\Cluster;
 class Directory
 {
     /**
-     * @var array<string, ClientInterface>
+     * @var array<string, DriverInterface>
      */
     private array $clients;
 
-    public function register(string $type, ClientInterface $client): self
+    public function register(string $type, DriverInterface $client): self
     {
         $this->clients[$type] = $client;
 

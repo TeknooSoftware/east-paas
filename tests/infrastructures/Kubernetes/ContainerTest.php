@@ -29,7 +29,7 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Maclof\Kubernetes\Client as KubClient;
 use Teknoo\East\Paas\Cluster\Directory;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
@@ -96,8 +96,8 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
 
         self::assertInstanceOf(
-            Client::class,
-            $container->get(Client::class)
+            Driver::class,
+            $container->get(Driver::class)
         );
     }
 

@@ -28,7 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -61,7 +61,7 @@ class Deploying
         string $envName,
         JobUnitInterface $jobUnit
     ): self {
-        /** @var ClientInterface $client */
+        /** @var DriverInterface $client */
         foreach ($clustersClients as $client) {
             $client->deploy(
                 $compiledDeployment,

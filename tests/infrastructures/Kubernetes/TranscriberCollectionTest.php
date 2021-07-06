@@ -34,7 +34,7 @@ use Teknoo\East\Paas\Container\Secret;
 use Teknoo\East\Paas\Container\SecretReference;
 use Teknoo\East\Paas\Container\Volume\PersistentVolume;
 use Teknoo\East\Paas\Container\Volume\SecretVolume;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Maclof\Kubernetes\Client as KubeClient;
 use Maclof\Kubernetes\Repositories\ReplicationControllerRepository;

@@ -34,6 +34,10 @@ use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
 /**
+ * State for the class Conductor for the daughter instance, to prepare a deployment by compiling instructions from
+ * paas.yaml to objects understable by deployments adapters and clusters's drivers, grouped into a
+ * summary object implemented via 'CompiledDeployment'.
+ *
  * @mixin Conductor
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)

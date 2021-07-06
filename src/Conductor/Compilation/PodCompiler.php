@@ -46,6 +46,12 @@ use function array_pop;
 use function explode;
 
 /**
+ * Compilation module able to convert `pods` sections in paas.yaml file as Pod instance.
+ * The Pod instance will be pushed into the CompiledDeploymentInterface instance.
+ * If the pod define also some secrets, embedded volumes or persistent volumes, SecretVolume, EmbeddedVolume and
+ * PersistentVolume will be also created and added to the CompiledDeploymentInterface instance and referenced
+ * with the Pod instance.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

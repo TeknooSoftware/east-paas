@@ -23,14 +23,14 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
+namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 
 use Closure;
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\States\State\StateInterface;
@@ -38,7 +38,7 @@ use Teknoo\States\State\StateTrait;
 use Throwable;
 
 /**
- * @mixin Client
+ * @mixin Driver
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

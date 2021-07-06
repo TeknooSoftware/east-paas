@@ -92,14 +92,14 @@ return [
         return $collection;
     },
 
-    Client::class => create()
+    Driver::class => create()
         ->constructor(
             get(ClientFactoryInterface::class),
             get(TranscriberCollectionInterface::class)
         ),
 
     Directory::class => decorate(static function (Directory $previous, ContainerInterface $container) {
-        $previous->register('kubernetes', $container->get(Client::class));
+        $previous->register('kubernetes', $container->get(Driver::class));
 
         return $previous;
     }),

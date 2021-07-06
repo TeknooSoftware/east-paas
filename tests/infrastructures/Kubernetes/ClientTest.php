@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Client;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -41,9 +41,9 @@ use Teknoo\East\Paas\Object\ClusterCredentials;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Client
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Generator
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Client\Running
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Driver
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Generator
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Running
  */
 class ClientTest extends TestCase
 {
@@ -75,9 +75,9 @@ class ClientTest extends TestCase
         return $this->transcribers;
     }
 
-    public function buildClient(): Client
+    public function buildClient(): Driver
     {
-        return new Client(
+        return new Driver(
             $this->getClientFactory(),
             $this->getTranscriberCollection()
         );
@@ -113,7 +113,7 @@ class ClientTest extends TestCase
     public function testConfigure()
     {
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $this->buildClient()->configure(
                 'foo',
                 $this->createMock(ClusterCredentials::class)
@@ -134,7 +134,7 @@ class ClientTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client->deploy(
                 $this->createMock(CompiledDeploymentInterface::class),
                 $promise
@@ -163,7 +163,7 @@ class ClientTest extends TestCase
         $client = $this->buildClient();
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client = $client->configure(
                 'foo',
                 $this->createMock(ClusterCredentials::class)
@@ -175,7 +175,7 @@ class ClientTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client->deploy(
                 $cd,
                 $promise
@@ -212,7 +212,7 @@ class ClientTest extends TestCase
         $client = $this->buildClient();
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client = $client->configure(
                 'foo',
                 $this->createMock(ClusterCredentials::class)
@@ -225,7 +225,7 @@ class ClientTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client->deploy(
                 $cd,
                 $promise
@@ -246,7 +246,7 @@ class ClientTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client->expose(
                 $this->createMock(CompiledDeploymentInterface::class),
                 $promise
@@ -275,7 +275,7 @@ class ClientTest extends TestCase
         $client = $this->buildClient();
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client = $client->configure(
                 'foo',
                 $this->createMock(ClusterCredentials::class)
@@ -287,7 +287,7 @@ class ClientTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client->expose(
                 $cd,
                 $promise
@@ -324,7 +324,7 @@ class ClientTest extends TestCase
         $client = $this->buildClient();
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client = $client->configure(
                 'foo',
                 $this->createMock(ClusterCredentials::class)
@@ -337,7 +337,7 @@ class ClientTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         self::assertInstanceOf(
-            Client::class,
+            Driver::class,
             $client->expose(
                 $cd,
                 $promise

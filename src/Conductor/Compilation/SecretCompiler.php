@@ -32,6 +32,10 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
+ * Compilation module able to convert `Secrets` sections in paas.yaml file as Secret instance.
+ * The Secret instance will be pushed into the CompiledDeploymentInterface instance.
+ * A Provider must be define for the secret. (Map is the default)
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

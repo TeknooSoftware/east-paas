@@ -23,7 +23,7 @@ use Teknoo\East\Website\Object\Type;
 use Teknoo\East\Website\Object\User;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
-use Teknoo\East\Paas\Contracts\Cluster\ClientInterface;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
 use Teknoo\East\Paas\Object\Cluster;
@@ -1072,20 +1072,20 @@ EOF;
      */
     public function aClusterClient()
     {
-        $client = new class implements ClientInterface {
-            public function configure(string $url, ?IdentityInterface $identity): ClientInterface
+        $client = new class implements DriverInterface {
+            public function configure(string $url, ?IdentityInterface $identity): DriverInterface
             {
                 return clone $this;
             }
 
-            public function deploy(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): ClientInterface
+            public function deploy(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): DriverInterface
             {
                 $promise->success(['foo' => 'bar']);
 
                 return $this;
             }
 
-            public function expose(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): ClientInterface
+            public function expose(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): DriverInterface
             {
                 $promise->success(['foo' => 'bar']);
                 return $this;
