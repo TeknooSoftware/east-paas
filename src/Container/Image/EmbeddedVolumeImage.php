@@ -33,6 +33,10 @@ use Teknoo\Immutable\ImmutableTrait;
 use function trim;
 
 /**
+  Immutable value object, representing a container image, with some directory or files imported from the source
+ * repository. This Image avoid to have some pods with executables and some other pods only dedicated to share
+ * theirs volumes to firsts pods.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
