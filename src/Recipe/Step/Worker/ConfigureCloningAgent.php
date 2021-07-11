@@ -34,6 +34,10 @@ use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
+ * Step to configure the cloning agent with project's configuration to fetch source from the repository
+ * and push it into the workplan.
+ * (The agent injected is a clone of the original agent, the original is "immutable").
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

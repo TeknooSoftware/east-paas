@@ -32,6 +32,9 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 
 /**
+ * To represent the dedicated file system manager used locally to perform the deployment, clone source,
+ s* prepare deployment (get vendors, compile, do some stuf, etc...) compile oci images
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

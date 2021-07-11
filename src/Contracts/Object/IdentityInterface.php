@@ -28,6 +28,9 @@ namespace Teknoo\East\Paas\Contracts\Object;
 use Teknoo\Immutable\ImmutableInterface;
 
 /**
+ * To define persisted object storing identity credentials to perform some operations on
+ * remote service like git or kubernetes.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

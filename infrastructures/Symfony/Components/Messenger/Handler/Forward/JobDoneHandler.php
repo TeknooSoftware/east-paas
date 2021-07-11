@@ -30,6 +30,9 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDone
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 
 /**
+ * Default message handler for Symfony Messenger to handle a JobDone and forward it to the defined handler.
+ * If there are no defined handler, the message will be ignored, without throw any error.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Infrastructures\EastPaasBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
+ * East Paas integration in Symfony platform
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -30,6 +30,9 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
+ * Contrat defining a client driver able to perform a deployment and expose services on a cluster from a
+ * CompiledDeploymentInterface instance.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

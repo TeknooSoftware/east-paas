@@ -33,6 +33,8 @@ use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
 /**
+ * State representing an project non fully completed, unable to be deployed.
+ *
  * @mixin Project
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

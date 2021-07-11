@@ -33,6 +33,10 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 
 /**
+ * Step to deserialize an json encoded job into a job unit thanks to a deserializer and inject into the workplan.
+ * Extra variables will be also directy available in the workplan under the key `extra`.
+ * On any error, the error factory will be called.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

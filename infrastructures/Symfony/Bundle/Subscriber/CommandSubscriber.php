@@ -33,6 +33,9 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySe
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler;
 
 /**
+ * Event subscriber, on console's events to update handlers of HistorySent and JobDone message in Symfony Messenger on
+ * dedicated console handler to print messge on the standard output.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -44,8 +47,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHa
 class CommandSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private DisplayHistoryHandler $historyHandler,
-        private DisplayResultHandler $resultHandler,
+        private DisplayHistoryHandler $displayHistory,
+        private DisplayResultHandler $displayResult,
         private HistorySentHandler $historyForwarder,
         private JobDoneHandler $jobForwarder,
     ) {
@@ -66,8 +69,8 @@ class CommandSubscriber implements EventSubscriberInterface
 
     public function updateForwarders(): self
     {
-        $this->historyForwarder->setHandler($this->historyHandler);
-        $this->jobForwarder->setHandler($this->resultHandler);
+        $this->historyForwarder->setHandler($this->displayHistory);
+        $this->jobForwarder->setHandler($this->displayResult);
 
         return $this;
     }

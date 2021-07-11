@@ -44,6 +44,13 @@ use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
 /**
+ * Client driver able to perform a deployment and expose services on a kubernetes cluster from a
+ * CompiledDeploymentInterface instance. This driver is built on the Kubernetes Client of Maclof.
+ *
+ * This class has two state :
+ * - Generator for instance created via the DI, only able to clone self
+ * - Running, configured to be executed with a job, only available in a workplan.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

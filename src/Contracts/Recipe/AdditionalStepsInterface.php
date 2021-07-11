@@ -29,6 +29,9 @@ use ArrayIterator;
 use IteratorAggregate;
 
 /**
+ * To define a collection of steps in the DI to inject in some cookbook to custom behavior in your
+ * applications.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

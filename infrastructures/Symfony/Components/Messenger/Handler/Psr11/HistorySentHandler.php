@@ -36,6 +36,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 use function str_replace;
 
 /**
+ * Message handler for Symfony Messenger to handle a HistorySent and forward it to a remmote server via a HTTP request.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

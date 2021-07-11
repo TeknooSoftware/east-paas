@@ -31,6 +31,10 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
+ * Step to configure the conductor with the job and its dedicated filesystem and push it into
+ * the workplan.
+ * (The Conductor injected is a clone of the original conductor, the original is "immutable").
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

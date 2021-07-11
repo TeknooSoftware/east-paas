@@ -48,6 +48,13 @@ use function is_callable;
 use function random_int;
 
 /**
+ * Implementation of `JobWorkspaceInterface` to represent the dedicated file system manager used locally to perform the
+ * deployment, clone source, prepare deployment (get vendors, compile, do some stuf, etc...) compile oci images.,
+ * This implementation is built on `FlySystem` of the PHP League.
+ * This class has two state :
+ * - Generator for instance created via the DI, only able to clone self
+ * - Running, configured to be executed with a job, only available in a workplan
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

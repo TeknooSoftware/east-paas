@@ -35,6 +35,8 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Transcribe
 use Throwable;
 
 /**
+ * Exposing Transcriber to translate CompiledDeployment's ingresses to Kubernetes Ingresses manifest.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

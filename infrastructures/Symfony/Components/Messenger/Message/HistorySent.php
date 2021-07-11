@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
 use Teknoo\Immutable\ImmutableInterface;
 
 /**
+ * Message object, for Symfony Messenger, about any job's event to persist in the database
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

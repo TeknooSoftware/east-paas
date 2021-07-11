@@ -26,6 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Object;
 
 /**
+ * To define immutable object wrapping all needed data to connect to source repository, like a git
+ * server.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

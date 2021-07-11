@@ -53,6 +53,8 @@ use Teknoo\States\Proxy\ProxyTrait;
 use function is_callable;
 
 /**
+ * Persisted object representing a deployment of a project on a cluster from a source repository.
+ *
  * @method Job configureCloningAgent(CloningAgentInterface $agent, JobWorkspaceInterface $workspace)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

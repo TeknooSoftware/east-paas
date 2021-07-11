@@ -29,6 +29,8 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\Recipe\ChefInterface;
 
 /**
+ * To create a new environment instance from the ingredient `envName`.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -41,7 +43,7 @@ class GetEnvironment
 {
     public function __invoke(string $envName, ChefInterface $chef): self
     {
-        $chef->updateWorkPlan(['environment' => new Environment($envName)]);
+        $chef->updateWorkPlan([Environment::class => new Environment($envName)]);
 
         return $this;
     }

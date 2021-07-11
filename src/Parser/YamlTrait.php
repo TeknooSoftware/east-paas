@@ -29,6 +29,8 @@ use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
+ * Trait to decode a yaml stream thanks to a YamlParserInterface.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

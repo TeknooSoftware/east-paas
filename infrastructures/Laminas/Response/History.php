@@ -36,6 +36,9 @@ use Teknoo\Immutable\ImmutableTrait;
 use function json_encode;
 
 /**
+ * Response representing a history entry instance, compliant with East's response interface and
+ * Clients instances.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

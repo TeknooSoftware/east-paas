@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Contracts\Serializing;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
+ * To define a service able to serialize a PHP object to a json object as string.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

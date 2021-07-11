@@ -33,6 +33,10 @@ use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Foundation\Promise\Promise;
 
 /**
+ * Step to serialize as json object a Job instance thanks to a serializer.
+ * User can also add variables into the json object by adding value into they key `envVars` in the workplan.
+ * On any error, the error factory will be called.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

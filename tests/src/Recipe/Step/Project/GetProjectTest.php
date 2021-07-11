@@ -86,7 +86,7 @@ class GetProjectTest extends TestCase
 
         $chef->expects(self::once())
             ->method('updateWorkPlan')
-            ->with(['project' => $project]);
+            ->with([Project::class => $project]);
 
         self::assertInstanceOf(
             GetProject::class,

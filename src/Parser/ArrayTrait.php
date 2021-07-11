@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Parser;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 
 /**
+ * Trait to use a PropertyAccessorInterface instance on an array to get a value or return a default value.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

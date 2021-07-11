@@ -32,6 +32,8 @@ use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
 /**
+ * State representing a new job, at begining of its execution, checking job's attributes
+ *
  * @mixin Job
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

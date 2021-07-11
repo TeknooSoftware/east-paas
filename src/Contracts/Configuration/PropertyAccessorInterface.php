@@ -26,6 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Configuration;
 
 /**
+ * To define service able to parse a path of key' split by a dot, to read / pass the value of a
+ * multidimensional array to a callable
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

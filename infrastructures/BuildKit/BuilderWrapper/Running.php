@@ -42,6 +42,8 @@ use function str_replace;
 use function substr;
 
 /**
+ * State for the class BuilderWrapper for the daughter instance present into the workplan
+ *
  * @mixin BuilderWrapper
  *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -81,7 +83,7 @@ class Running implements StateInterface
             if (empty($this->timeout)) {
                 set_time_limit(0);
             } else {
-                set_time_limit(($this->timeout + self::GRACEFULTIME));
+                set_time_limit(($this->timeout + self::GRACEFUL_TIME));
             }
         };
     }

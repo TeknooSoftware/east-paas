@@ -40,6 +40,9 @@ use Traversable;
 use function iterator_to_array;
 
 /**
+ * Symfony Form dedicated to manage translatable Account Object in a Symfony Website.
+ * This form is placed in this namespace to use the good Symfony Form Doctrine Type to link an account to an user.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

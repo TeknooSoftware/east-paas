@@ -39,6 +39,8 @@ use Teknoo\East\Website\Recipe\Step\SlugPreparation;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
+ * Cookbook to create a new account on the platform via an HTTP Endpoint.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

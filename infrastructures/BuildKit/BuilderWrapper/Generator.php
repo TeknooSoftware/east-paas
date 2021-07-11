@@ -30,6 +30,9 @@ use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
 /**
+ * State for the class BuilderWrapper for the mother instance present into container, to build new Conductor instance
+ * via a self cloning.
+ *
  * @mixin BuilderWrapper
  *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)

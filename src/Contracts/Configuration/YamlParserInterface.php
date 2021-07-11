@@ -28,6 +28,9 @@ namespace Teknoo\East\Paas\Contracts\Configuration;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
+ * To define parser able to read a yaml stream passed as string and return to a promise a valid array.
+ * If the yaml is invalid, the fail method of the promise must be called.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

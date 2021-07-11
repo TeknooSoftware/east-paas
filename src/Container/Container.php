@@ -32,6 +32,11 @@ use Teknoo\Immutable\ImmutableTrait;
 //todo rename namespace
 
 /**
+ * Immutable value object, representing a normalized OCI container, executing an OCI image, on a pod
+ * with somes volumes to mount automatically into the container, and external ports to plug to this
+ * container.
+ * A pod can have several containers.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

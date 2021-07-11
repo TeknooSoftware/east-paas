@@ -29,6 +29,8 @@ use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Object\History;
 
 /**
+ * To define step able to send any job's event to the client.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

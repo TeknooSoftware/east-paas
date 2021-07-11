@@ -30,6 +30,7 @@ use Maclof\Kubernetes\RepositoryRegistry;
 use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
+use Throwable;
 
 use function chmod;
 use function file_exists;
@@ -38,6 +39,9 @@ use function tempnam;
 use function unlink;
 
 /**
+ * Factory in the DI to create, on demand, a new `Kubernetes Client` instance,
+ * needed to execute manifest on the remote Kubernetes manager.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -99,10 +103,10 @@ class Factory implements ClientFactoryInterface
 
     private function write(string $value): string
     {
-        $fileName = tempnam($this->tmpDir, 'east-paas-kube-') . '.paas';
-
-        if (empty($fileName)) {
-            throw new RuntimeException('Bad file temp name');
+        try {
+            $fileName = tempnam($this->tmpDir, 'east-paas-kube-') . '.paas';
+        } catch (Throwable $error) {
+            throw new RuntimeException('Bad file temp name in K3s factory', 0, $error);
         }
 
         file_put_contents($fileName, $value);
@@ -116,11 +120,9 @@ class Factory implements ClientFactoryInterface
     private function delete(): void
     {
         foreach ($this->files as $file) {
-            if (!file_exists($file)) {
-                continue;
+            if (file_exists($file)) {
+                unlink($file);
             }
-
-            unlink($file);
         }
 
         $this->files = [];

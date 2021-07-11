@@ -29,6 +29,9 @@ use Teknoo\East\Website\Doctrine\DBSource\ODM\RepositoryTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ProjectRepositoryInterface;
 
 /**
+ * ODM optimised implementation of `ProjectRepositoryInterface` for Doctrine's ODM repositories
+ * Can be used only with Doctrine ODM.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

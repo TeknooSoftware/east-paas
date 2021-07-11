@@ -32,6 +32,9 @@ use Traversable;
 use function ksort;
 
 /**
+ * Collection of transcribers browsable by the Kubernetes driver to transcribe
+ * a CompiledDeployment instance to Kubernetes manifests.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

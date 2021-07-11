@@ -31,6 +31,11 @@ use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
+ * Immutable value object, representing a normalized Pod, depoyable unit, grouping at least one
+ * container, having shared storage / network, and a specification on how to run these containers. The elements of a
+ * pod are always co-located and co-ordered, and run in a shared context.
+ * Pods can being replicated more than once times.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

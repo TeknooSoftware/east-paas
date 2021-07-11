@@ -32,6 +32,9 @@ use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
 use Traversable;
 
 /**
+ * Collections of available hooks to pass them to the Conductor to configure the
+ * CompiledDeployment object
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -33,6 +33,8 @@ use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 
 /**
+ * Step to decode, validate parse and compile the paas yaml file to a CompiledDeployment instance.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

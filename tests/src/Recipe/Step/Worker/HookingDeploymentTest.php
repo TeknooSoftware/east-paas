@@ -35,16 +35,16 @@ use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
+use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer
+ * @covers \Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment
  */
-class HookBuildContainerTest extends TestCase
+class HookingDeploymentTest extends TestCase
 {
     private ?DispatchHistoryInterface $dispatchHistory = null;
 
@@ -60,9 +60,9 @@ class HookBuildContainerTest extends TestCase
         return $this->dispatchHistory;
     }
 
-    public function buildStep(): HookBuildContainer
+    public function buildStep(): HookingDeployment
     {
-        return new HookBuildContainer(
+        return new HookingDeployment(
             $this->getDispatchHistoryMock(),
             new ErrorFactory(),
         );
@@ -129,11 +129,11 @@ class HookBuildContainerTest extends TestCase
 
         $this->getDispatchHistoryMock()->expects(self::exactly(2))
             ->method('__invoke')
-            ->with($project, $env, $jobUnit->getId(), HookBuildContainer::class . ':Result')
+            ->with($project, $env, $jobUnit->getId(), HookingDeployment::class . ':Result')
             ->willReturnSelf();
 
         self::assertInstanceOf(
-            HookBuildContainer::class,
+            HookingDeployment::class,
             ($this->buildStep())(
                 $workspace,
                 $compiled,
@@ -203,7 +203,7 @@ class HookBuildContainerTest extends TestCase
             ->willReturnSelf();
 
         self::assertInstanceOf(
-            HookBuildContainer::class,
+            HookingDeployment::class,
             ($this->buildStep())(
                 $workspace,
                 $compiled,
@@ -269,7 +269,7 @@ class HookBuildContainerTest extends TestCase
 
         $this->getDispatchHistoryMock()->expects(self::exactly(1))
             ->method('__invoke')
-            ->with($project, $env, $jobUnit->getId(), HookBuildContainer::class . ':Result')
+            ->with($project, $env, $jobUnit->getId(), HookingDeployment::class . ':Result')
             ->willReturnSelf();
 
         $manager->expects(self::never())
@@ -284,7 +284,7 @@ class HookBuildContainerTest extends TestCase
             ->willReturnSelf();
 
         self::assertInstanceOf(
-            HookBuildContainer::class,
+            HookingDeployment::class,
             ($this->buildStep())(
                 $workspace,
                 $compiled,

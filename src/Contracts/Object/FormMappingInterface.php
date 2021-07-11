@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Contracts\Object;
 use Teknoo\East\Paas\Contracts\Form\FormInterface;
 
 /**
+ * Interface to define persisted object able to populate a FormInstance
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

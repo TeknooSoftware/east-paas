@@ -37,6 +37,8 @@ use Teknoo\East\Website\Service\DatesService;
 use function json_encode;
 
 /**
+ * Step able to dispatch any job's event on a Symfony Messenger bus.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

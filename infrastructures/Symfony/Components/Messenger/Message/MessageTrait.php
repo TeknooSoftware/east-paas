@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
+ * Trait to implement messages to send on Symfony Messenger with all needed data to be processed by handler.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

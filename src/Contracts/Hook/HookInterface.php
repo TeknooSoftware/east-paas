@@ -28,6 +28,10 @@ namespace Teknoo\East\Paas\Contracts\Hook;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 
 /**
+ * To define service, to call before any deployments to perform some actions to prepare it
+ * (like download and install vendors or any other dependencies, compile some stuff, etc).
+ * An Hook can be configured from the PaaS file.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

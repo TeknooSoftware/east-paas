@@ -29,6 +29,9 @@ use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
+ * Immutable value object, representing a normalized Secret. Secrets' values are not hosted by these instances.
+ * They wrap only an identifier and the provider's name where secret are hosted and can be accessible.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

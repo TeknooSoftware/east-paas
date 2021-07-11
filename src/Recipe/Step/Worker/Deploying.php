@@ -36,6 +36,9 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 
 /**
+ * Step to perform the deployment of container from built images in previous step on the cluster thanks to
+ * the cluster client.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -31,6 +31,8 @@ use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Throwable;
 
 /**
+ * Step to call the error factory with the exception catched.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

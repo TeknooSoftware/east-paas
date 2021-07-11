@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Flysystem;
 
+use http\Exception\RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;
@@ -411,5 +412,21 @@ class WorkspaceTest extends TestCase
             Workspace::class,
             $this->buildJobWorkspace()->setJob($this->getJobMock())->clean()
         );
+    }
+
+    public function testCleanException()
+    {
+        $this->getFilesystemMock()
+            ->expects(self::any())
+            ->method('has')
+            ->willReturn(true);
+
+        $this->getFilesystemMock()
+            ->expects(self::once())
+            ->method('deleteDir')
+            ->willThrowException(new \RuntimeException('test'));
+
+        $object = $this->buildJobWorkspace()->setJob($this->getJobMock());
+        unset($object);
     }
 }

@@ -33,6 +33,9 @@ use function current;
 use function json_decode;
 
 /**
+ * Step to inject environment variables, as array, under the key `envVars` with the body of the message if has been
+ * encoded as json.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

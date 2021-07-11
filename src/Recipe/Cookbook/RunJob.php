@@ -29,7 +29,7 @@ use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
@@ -42,7 +42,7 @@ use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureConductor;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureImagesBuilder;
 use Teknoo\East\Paas\Recipe\Step\Worker\Deploying;
 use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
-use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
+use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
 use Teknoo\Recipe\Bowl\Bowl;
@@ -51,6 +51,8 @@ use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
+ * Cookbook to run a created job via the cookbook NewJob, aka a project deployment.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -77,7 +79,7 @@ class RunJob implements RunJobInterface
         private ConfigureConductor $stepConfigureConductor,
         private ReadDeploymentConfiguration $stepReadDeploymentConfiguration,
         private CompileDeployment $stepCompileDeployment,
-        private HookBuildContainer $stepHookBuildContainer,
+        private HookingDeployment $stepHookingDeployment,
         private ConfigureImagesBuilder $stepConfigureImagesBuilder,
         private BuildImages $stepBuildImages,
         private BuildVolumes $stepBuildVolumes,
@@ -195,13 +197,13 @@ class RunJob implements RunJobInterface
         //Configure Build Image
         $recipe = $recipe->cook(
             $notification,
-            HookBuildContainer::class,
+            HookingDeployment::class,
             $notificationMapping,
             RunJobInterface::STEP_HOOK_PRE_BUILD_CONTAINER
         );
         $recipe = $recipe->cook(
-            $this->stepHookBuildContainer,
-            HookBuildContainer::class,
+            $this->stepHookingDeployment,
+            HookingDeployment::class,
             [],
             RunJobInterface::STEP_HOOK_PRE_BUILD_CONTAINER
         );

@@ -31,6 +31,9 @@ use Teknoo\East\Paas\Object\Job;
 use function is_array;
 
 /**
+ * Extension of the east normalizer to add, without overwrite them, some fields on a normalized object, from the
+ * context, defined at the key `add`.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

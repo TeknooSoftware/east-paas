@@ -86,7 +86,7 @@ class GetJobTest extends TestCase
 
         $manager->expects(self::once())
             ->method('updateWorkPlan')
-            ->with(['job' => $job]);
+            ->with([Job::class => $job]);
 
         self::assertInstanceOf(
             GetJob::class,

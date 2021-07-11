@@ -30,6 +30,9 @@ use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 
 /**
+ * To define step able to dispatch a new created job, aka a job deployment, to any bus or client, to be executed
+ * on a worker
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

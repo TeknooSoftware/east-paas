@@ -36,6 +36,20 @@ use function preg_match;
 use function reset;
 
 /**
+ * Hook to perform some operations with composer to install dependencies for PHP Project.
+ * Available composer's commands are :
+ * - dump-autoload
+ * - dumpautoload
+ * - exec
+ * - install
+ * - require
+ * - run
+ * - run-script
+ * - update
+ * - upgrade
+ * - self-update
+ * - selfupdate
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

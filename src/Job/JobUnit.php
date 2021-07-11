@@ -50,6 +50,9 @@ use function preg_replace_callback;
 use function substr;
 
 /**
+ * Unit representing the current deployment execution' called a job.
+ * This is a projection of the persisted object Job, dedicated to the execution.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

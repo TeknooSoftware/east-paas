@@ -49,7 +49,7 @@ class GetEnvironmentTest extends TestCase
         $envName = 'dev';
         $chef->expects(self::once())
             ->method('updateWorkPlan')
-            ->with(['environment' => new Environment($envName)]);
+            ->with([Environment::class => new Environment($envName)]);
 
         self::assertInstanceOf(
             GetEnvironment::class,

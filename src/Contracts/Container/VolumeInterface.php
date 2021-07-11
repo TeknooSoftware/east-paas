@@ -26,6 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Container;
 
 /**
+ * Interface to define object representing a volume : a non persisted and non populated file system to mount to a mount
+ * point into a container.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -37,6 +37,10 @@ use function is_string;
 use function libxml_get_last_error;
 
 /**
+ * Object able to validate a Yaml structure. As there is no standardized validation system in yaml,
+ * but it is included in the XML Standard, this validator will convert the decoded Yaml array to a Xml stream
+ * thanks to DOMDocument and validate it with the xsd `src/Contracts/Configuration/paas_validation.xsd`.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

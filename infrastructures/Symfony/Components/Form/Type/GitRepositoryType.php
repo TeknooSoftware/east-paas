@@ -37,6 +37,8 @@ use Traversable;
 use function iterator_to_array;
 
 /**
+ * Symfony form to edit East PaaS GitRepository
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

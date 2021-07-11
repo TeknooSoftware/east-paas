@@ -48,6 +48,13 @@ use function is_object;
 use function sprintf;
 
 /**
+ * Default implementation of `CloningAgentInterface`, service able to clone in a local filesystem a source repository
+ * specified to a project before deploy it.
+ * This agent is built on of `GitWrapper` of Symplify.
+ * This class has two state :
+ * - Generator for instance created via the DI, only able to clone self
+ * - Running, configured to be executed with a job, only available in a workplan.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

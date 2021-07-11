@@ -33,6 +33,9 @@ use Teknoo\East\Paas\Loader\JobLoader;
 use Teknoo\East\Paas\Object\Job;
 
 /**
+ * Step to load a persisted job from the DB source thanks to the job loaded and inject it into the workplan.
+ * On any error, the error factory will be called.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -55,7 +58,7 @@ class GetJob
             $jobId,
             new Promise(
                 static function (Job $job) use ($manager) {
-                    $manager->updateWorkPlan(['job' => $job]);
+                    $manager->updateWorkPlan([Job::class => $job]);
                 },
                 $this->errorFactory->buildFailurePromise(
                     $client,

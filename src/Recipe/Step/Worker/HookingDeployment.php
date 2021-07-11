@@ -38,6 +38,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Throwable;
 
 /**
+ * Step to run all configured hooks for this project in the paas yaml file before run the deployment.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -46,7 +48,7 @@ use Throwable;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class HookBuildContainer
+class HookingDeployment
 {
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,

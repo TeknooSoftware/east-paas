@@ -33,6 +33,9 @@ use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Object\Project;
 
 /**
+ * Step to load a persisted project from the DB source thanks to the project loaded and inject it into the workplan.
+ * On any error, the error factory will be called.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -55,7 +58,7 @@ class GetProject
             $projectId,
             new Promise(
                 static function (Project $project) use ($manager) {
-                    $manager->updateWorkPlan(['project' => $project]);
+                    $manager->updateWorkPlan([Project::class => $project]);
                 },
                 $this->errorFactory->buildFailurePromise(
                     $client,

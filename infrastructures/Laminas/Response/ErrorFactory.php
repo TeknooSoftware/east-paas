@@ -31,6 +31,9 @@ use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Throwable;
 
 /**
+ * Factory able to create an `ErrorInterface` instance and pass it to the client
+ * and finish the recipe on the manager.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -30,6 +30,9 @@ use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Job;
 
 /**
+ * Step to add a new event in a job. The new event will be updated in the workplan with previous
+ * event.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Job;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
@@ -31,7 +31,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -42,7 +42,7 @@ use Teknoo\Tests\East\Paas\ErrorFactory;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult
  */
 class PushResultTest extends TestCase
 {

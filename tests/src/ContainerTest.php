@@ -62,7 +62,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
@@ -113,7 +113,7 @@ use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
-use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
+use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Recipe\Step\Job\PrepareJob;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
@@ -499,7 +499,7 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testHookBuildContainer()
+    public function testHookingDeployment()
     {
         $container = $this->buildContainer();
         $container->set(DispatchHistoryInterface::class, $this->createMock(DispatchHistoryInterface::class));
@@ -507,8 +507,8 @@ class ContainerTest extends TestCase
         $container->set(ClientInterface::class, $this->createMock(ClientInterface::class));
 
         self::assertInstanceOf(
-            HookBuildContainer::class,
-            $container->get(HookBuildContainer::class)
+            HookingDeployment::class,
+            $container->get(HookingDeployment::class)
         );
     }
 

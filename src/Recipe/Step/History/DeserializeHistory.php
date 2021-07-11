@@ -33,6 +33,9 @@ use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Foundation\Promise\Promise;
 
 /**
+ * Step to deserialize an json encoded history thanks to a deserializer and inject into the workplan.
+ * On any error, the error factory will be called.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

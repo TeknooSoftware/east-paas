@@ -29,6 +29,8 @@ use Psr\Http\Message\MessageInterface;
 use Teknoo\Recipe\ChefInterface;
 
 /**
+ * Step to inject as a string variable called `serializedJob` with the body of the message.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

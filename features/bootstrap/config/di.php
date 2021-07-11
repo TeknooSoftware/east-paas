@@ -42,7 +42,7 @@ return [
     StreamFactoryInterface::class => get(StreamFactory::class),
     StreamFactory::class => create(),
 
-    //Misc
+    //Job
     PsrClient::class => static function (): PsrClient {
         return new class () implements PsrClient {
             public function sendRequest(RequestInterface $request): ResponseInterface

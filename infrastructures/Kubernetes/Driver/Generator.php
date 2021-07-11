@@ -35,6 +35,9 @@ use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
 /**
+ * State for the class Driver for the mother instance present into container, to build new Conductor instance via
+ * a self cloning.
+ *
  * @mixin Driver
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)

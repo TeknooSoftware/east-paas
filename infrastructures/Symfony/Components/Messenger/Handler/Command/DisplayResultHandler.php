@@ -30,6 +30,9 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDone
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 
 /**
+ * Message handler for Symfony Messenger to handle a JobDone and print it to the standard output, in a
+ * Symfony Console context
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -59,7 +59,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface as DRI;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList;
@@ -116,7 +116,7 @@ use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
-use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
+use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Recipe\Step\Job\PrepareJob;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
@@ -293,7 +293,7 @@ return [
         );
     },
 
-    //Misc
+    //Job
     GetVariables::class => create(),
     DispatchError::class => create()
         ->constructor(
@@ -351,7 +351,7 @@ return [
             get(DHI::class),
             get(ErrorFactoryInterface::class),
         ),
-    HookBuildContainer::class => create()
+    HookingDeployment::class => create()
         ->constructor(
             get(DHI::class),
             get(ErrorFactoryInterface::class),
@@ -528,7 +528,7 @@ return [
             get(ConfigureConductor::class),
             get(ReadDeploymentConfiguration::class),
             get(CompileDeployment::class),
-            get(HookBuildContainer::class),
+            get(HookingDeployment::class),
             get(ConfigureImagesBuilder::class),
             get(BuildImages::class),
             get(BuildVolumes::class),

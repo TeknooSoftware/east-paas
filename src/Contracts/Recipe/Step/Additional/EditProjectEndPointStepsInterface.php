@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Contracts\Recipe\Step\Additional;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 
 /**
+ * To define additionals steps in EditProjectEndPoint Cookbook.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

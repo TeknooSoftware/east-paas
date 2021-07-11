@@ -52,6 +52,14 @@ use function rtrim;
 use function uniqid;
 
 /**
+ * Service able to take a BuildableInterface instance and convert it / build them to OCI images and
+ * push it to a registry thanks to BuildKit.
+ * Symfony Process is used to control Buildkit, process created via a factory defined by the ProcessFactoryInterface
+ * of this namespace.
+ * This class has two state :
+ * - Generator for instance created via the DI, only able to clone self
+ * - Running, configured to be executed with a job, only available in a workplan
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
@@ -67,7 +75,7 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
-    private const GRACEFULTIME = 30;
+    private const GRACEFUL_TIME = 30;
 
     private ?string $projectId;
 

@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Contracts\DbSource\Repository;
 use Teknoo\East\Website\DBSource\RepositoryInterface;
 
 /**
+ * Interface to define repository in charge of object `Teknoo\East\Paas\Object\Project`.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

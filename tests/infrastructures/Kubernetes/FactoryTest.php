@@ -58,6 +58,23 @@ class FactoryTest extends TestCase
         unset($factory);
     }
 
+    public function testInvokeWithServerCertificateOnBadPath()
+    {
+        $factory = new Factory(
+            '/../../../../lol/',
+            false
+        );
+
+        $credential = new ClusterCredentials(
+            'foo',
+            'privateBar',
+            'publicBar'
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $factory('foo', $credential);
+    }
+
     public function testInvokeWithServerCertificate()
     {
         $factory = $this->buildFactory();

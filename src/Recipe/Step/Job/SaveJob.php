@@ -33,6 +33,8 @@ use Teknoo\Recipe\ChefInterface;
 use Throwable;
 
 /**
+ * Step to persist a job object into the database.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -28,7 +28,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Misc\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
@@ -42,7 +42,7 @@ use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureConductor;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureImagesBuilder;
 use Teknoo\East\Paas\Recipe\Step\Worker\Deploying;
 use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
-use Teknoo\East\Paas\Recipe\Step\Worker\HookBuildContainer;
+use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
 use Teknoo\Recipe\CookbookInterface;
@@ -71,7 +71,7 @@ class RunJobTest extends TestCase
             $this->createMock(ConfigureConductor::class),
             $this->createMock(ReadDeploymentConfiguration::class),
             $this->createMock(CompileDeployment::class),
-            $this->createMock(HookBuildContainer::class),
+            $this->createMock(HookingDeployment::class),
             $this->createMock(ConfigureImagesBuilder::class),
             $this->createMock(BuildImages::class),
             $this->createMock(BuildVolumes::class),

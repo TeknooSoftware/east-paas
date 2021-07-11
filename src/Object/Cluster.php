@@ -39,6 +39,8 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Throwable;
 
 /**
+ * Persisted object representing a cluster where perform a deployment.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *

@@ -43,6 +43,9 @@ use Throwable;
 use function array_map;
 
 /**
+ * Deployment Transcriber to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsController
+ * manifest.
+ *
  * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
  *
