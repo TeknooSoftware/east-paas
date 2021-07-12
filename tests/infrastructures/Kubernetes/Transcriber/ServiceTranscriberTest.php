@@ -29,7 +29,7 @@ use Maclof\Kubernetes\Client as KubeClient;
 use Maclof\Kubernetes\Repositories\ServiceRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Container\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 

@@ -26,10 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Conductor;
 
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Container\Expose\Ingress;
-use Teknoo\East\Paas\Container\Expose\Service;
-use Teknoo\East\Paas\Container\Pod;
-use Teknoo\East\Paas\Container\Secret;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;

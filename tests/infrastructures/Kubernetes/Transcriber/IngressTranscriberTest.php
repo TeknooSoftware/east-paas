@@ -29,8 +29,8 @@ use Maclof\Kubernetes\Client as KubeClient;
 use Maclof\Kubernetes\Repositories\IngressRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Container\Expose\Ingress;
-use Teknoo\East\Paas\Container\Expose\IngressPath;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 

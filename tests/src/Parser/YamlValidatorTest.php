@@ -91,8 +91,8 @@ pods:
   php-pods: #podset name
     replicas: 2 #instance of pods
     containers:
-      php-run: #Container name
-        image: registry.teknoo.io/php-run #Container image to use
+      php-run: #CompiledDeployment name
+        image: registry.teknoo.io/php-run #CompiledDeployment image to use
         version: 7.4
         listen: #Port listen by the container
           - 8080

@@ -25,9 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\BuildKit;
 
-use Teknoo\East\Paas\Container\Image\EmbeddedVolumeImage;
-use Teknoo\East\Paas\Container\Image\Image;
-use Teknoo\East\Paas\Container\Volume\PersistentVolume;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
 use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
@@ -36,7 +36,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Container\Volume\Volume;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 

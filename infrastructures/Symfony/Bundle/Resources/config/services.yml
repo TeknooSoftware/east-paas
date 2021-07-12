@@ -79,8 +79,8 @@ services:
             - '@Teknoo\East\Website\Service\DatesService'
             - '@messenger.default_bus'
 
-    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult:
-        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Misc\PushResult'
+    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult'
         public: true
         arguments:
             - '@Teknoo\East\Website\Service\DatesService'

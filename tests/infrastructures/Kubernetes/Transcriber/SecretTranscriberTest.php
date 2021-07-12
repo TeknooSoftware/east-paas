@@ -29,7 +29,7 @@ use Maclof\Kubernetes\Client as KubeClient;
 use Maclof\Kubernetes\Repositories\SecretRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\East\Paas\Container\Secret;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 

@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\BuildKit;
 
 use DomainException;
 use RuntimeException;
-use Teknoo\East\Paas\Container\Image\EmbeddedVolumeImage;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Container\PersistentVolumeInterface;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Generator;
@@ -35,7 +35,7 @@ use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Running;
 use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Container\Volume\Volume;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;

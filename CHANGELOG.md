@@ -1,5 +1,13 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.59] - 2021-07-12
+### Dev Release
+- Update documents and dev libs requirements.
+- Complete tests.  
+- Rename Namespace `Conductor` to `Compilation`.
+- Rename Namespace `Conductor\Compilation` to `Compilation\Compiler`.
+- Rename Namespace `Compilation` to `Compilation\CompiledDeployment`.
+
 ## [0.0.58] - 2021-07-05
 ### Dev Release
 - Update libs requirement
