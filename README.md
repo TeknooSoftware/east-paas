@@ -15,77 +15,74 @@ Example with Symfony
 
     //config/packages/di_bridge.yaml:
     di_bridge:
-      definitions:
-        - '%kernel.project_dir%/config/di.php'
+        definitions:
+          - '%kernel.project_dir%/config/di.php'
     
     //config/packages/east_foundation.yaml:
     di_bridge:
-      definitions:
-        - '%kernel.project_dir%/vendor/teknoo/east-foundation/src/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/Resources/config/di.php'
+        definitions:
+            - '%kernel.project_dir%/vendor/teknoo/east-foundation/src/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/Resources/config/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/Resources/config/laminas_di.php'
+        import:
+            Psr\Log\LoggerInterface: 'logger'
 
     //config/packages/east_website_di.yaml:
     di_bridge:
-      definitions:
-        - '%kernel.project_dir%/vendor/teknoo/east-website/src/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/doctrine/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/symfony/Resources/config/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/di.php'
-      import:
-        Doctrine\Persistence\ObjectManager: 'doctrine_mongodb.odm.default_document_manager'
+        definitions:
+            - '%kernel.project_dir%/vendor/teknoo/east-website/src/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/doctrine/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/symfony/Resources/config/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/symfony/Resources/config/laminas_di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/di.php'
+        import:
+            Doctrine\Persistence\ObjectManager: 'doctrine_mongodb.odm.default_document_manager'
     
     //config/packages/east_paas_di.yaml:
     di_bridge:
-      definitions:
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/src/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Doctrine/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Flysystem/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Git/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Kubernetes/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/BuildKit/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Composer/di.php'
-        - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Symfony/Components/di.php'
-        - '%kernel.project_dir%/config/di.php'
+        definitions:
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/src/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Doctrine/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Flysystem/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Git/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Kubernetes/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/BuildKit/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Composer/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Symfony/Components/di.php'
       
-    //config/packages/di_bridge.yaml:
-    di_bridge:
-      definitions:
-        - '%kernel.project_dir%/config/di.php'
-
-    
     //bundles.php
     ...
+    Teknoo\DI\SymfonyBridge\DIBridgeBundle::class => ['all' => true],
     Teknoo\East\FoundationBundle\EastFoundationBundle::class => ['all' => true],
     Teknoo\East\WebsiteBundle\TeknooEastWebsiteBundle::class => ['all' => true],
-    Teknoo\DI\SymfonyBridge\DIBridgeBundle::class => ['all' => true],
     Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle::class => ['all' => true],
-
+    
     //In doctrine config
     doctrine_mongodb:
-      document_managers:
-        default:
-          auto_mapping: true
-          mappings:
-            TeknooEastWebsite:
-              type: 'xml'
-              dir: '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/doctrine/config/universal'
-              is_bundle: false
-              prefix: 'Teknoo\East\Website\Object'
-            TeknooEastWebsiteDoctrine:
-              type: 'xml'
-              dir: '%kernel.project_dir%/vendor/teknoo/east-website/infrastructures/doctrine/config/doctrine'
-              is_bundle: false
-              prefix: 'Teknoo\East\Website\Doctrine\Object'
-            TeknooEastPaas:
-              type: 'xml'
-              dir: '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Doctrine/config/universal'
-              is_bundle: false
-              prefix: 'Teknoo\East\Paas\Object'
-            TeknooEastPaasInfrastructuresDoctrine:
-              type: 'xml'
-              dir: '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Doctrine/config/odm'
-              is_bundle: false
-              prefix: 'Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM'
+        connections:
+            default:
+                server: "%env(MONGODB_SERVER)%"
+                options: {}
+        default_database: '%env(MONGODB_NAME)%'
+        document_managers:
+            default:
+                auto_mapping: true
+                mappings:
+                    TeknooEastPaas:
+                        type: 'xml'
+                        dir: '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Doctrine/config/universal'
+                        is_bundle: false
+                        prefix: 'Teknoo\East\Paas\Object'
+                    TeknooEastPaasInfrastructuresDoctrine:
+                        type: 'xml'
+                        dir: '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Doctrine/config/odm'
+                        is_bundle: false
+                        prefix: 'Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM'
+                    AppObjectPersisted:
+                        type: 'xml'
+                        dir: '%kernel.project_dir%/config/doctrine'
+                        is_bundle: false
+                        prefix: 'App\Object\Persisted'
 
     //In security.yml
     security:
@@ -95,96 +92,40 @@ Example with Symfony
           id: 'teknoo.east.website.bundle.user_provider'
 
     //In routing.yml
-    website:
-      resource: '@TeknooEastWebsiteBundle/Resources/config/routing.yml'
-      
-    app_job_new:
-      path: '/project/{projectId}/environment/{envName}/job/create'
-      methods:  ['GET', 'POST', 'PUT']
-      defaults: { _controller: 'teknoo.east.paas.symfony.end_point.new_job' }
+    paas_admin_account:
+        resource: '@TeknooEastPaasBundle/Resources/config/routing_admin_account.yml'
+        prefix: '/admin'
+        schemes:    [https]
     
-    app_job_add_history:
-      path: '/project/{projectId}/environment/{envName}/job/{jobId}/log'
-      methods:  ['PUT']
-      defaults: { _controller: 'teknoo.east.paas.symfony.end_point.job_add_history' }
-    
-    app_worker_job_run:
-      path: '/project/{projectId}/environment/{envName}/job/{jobId}/run'
-      methods:  ['PUT']
-      defaults: { _controller: 'teknoo.east.paas.symfony.end_point.job_run' }
+    paas_admin_job:
+        resource: '@TeknooEastPaasBundle/Resources/config/routing_admin_job.yml'
+        prefix: '/admin'
+        schemes:    [https]
 
     //in config/di.php
     return [
-       'app.paas.hostname' => env('WEBSITE_HOSTNAME', 'localhost'),
-       'app.paas.job_root' => env('JOB_ROOT', \sys_get_temp_dir()),
-       'app.http_client.verify_ssl' => env('HTTP_CLIENT_VERIFY_SSL', true),
-       'app.http_client.timeout' => env('HTTP_CLIENT_TIMEOUT', 30),
-   
-       'teknoo.east.paas.worker.add_history_pattern' => function (ContainerInterface $container): string {
-           return 'https://' . $container->get('app.paas.hostname') . '/project/{projectId}/environment/{envName}/job/{jobId}/log';
-       },
-   
-       'teknoo.east.paas.worker.global_variables' => [
-           'ROOT' => \dirname(__DIR__)
-       ],
-   
-       'teknoo.east.paas.kubernetes.ssl.verify' => value(false),
-       'teknoo.east.paas.buildkit.build.timeout' => value(10*60),
-       'teknoo.east.paas.buildkit.builder.name' => 'paas_builderx_mono',
-       'teknoo.east.paas.default_storage_provider' => 'paas-nfs-pvc',
-       'teknoo.east.paas.buildkit.build.platforms' => 'linux/arm64',
+        //Hook
+        HooksCollectionInterface::class => ...
+
+        //OCI libraries
+        'teknoo.east.paas.conductor.images_library' => [...]
+
+        //variables
+        'teknoo.east.paas.root_dir' => ...,
     
-        HostnameRedirectionMiddleware::class => function (ContainerInterface $container): HostnameRedirectionMiddleware {
-        return new HostnameRedirectionMiddleware($container->get('app.paas.hostname'));
-    },
-
-    RecipeInterface::class => decorate(function ($previous, ContainerInterface $container) {
-        if ($previous instanceof RecipeInterface) {
-            $previous = $previous->registerMiddleware(
-                $container->get(HostnameRedirectionMiddleware::class),
-                4
-            );
-        }
-
-        return $previous;
-    }),
-
-    'teknoo.east.paas.conductor.images_library' => [
-        'php-run-74' => [
-            'build-name' => 'php-run',
-            'tag' => '7.4',
-            'path' => '/library/php-run/7.4/',
-        ],
-    ],
-
-    'teknoo.east.paas.root_dir' => \dirname(__DIR__),
-    'teknoo.east.paas.worker.tmp_dir' => get('app.paas.job_root'),
-
-    'teknoo.east.paas.composer.phar.path' => \dirname(__DIR__) . '/composer.phar',
-
-    HooksCollectionInterface::class => static function (ContainerInterface $container): HooksCollectionInterface {
-        return new class ($container) implements HooksCollectionInterface {
-
-            private ContainerInterface $container;
-
-            public function __construct(ContainerInterface $container)
-            {
-                $this->container = $container;
-            }
-
-            public function getIterator(): \Traversable {
-                yield 'composer' => $this->container->get(ComposerHook::class);
-            }
-        };
-    },
-
-    UriFactoryInterface::class => ...
-    ResponseFactoryInterface::class => ...
-    RequestFactoryInterface::class => ...
-    StreamFactoryInterface::class => ...
-
-    //Job
-    ClientInterface::class => ...
+        'teknoo.east.paas.default_storage_provider' => ...,
+    
+        'teknoo.east.paas.worker.tmp_dir' => ...,
+        'teknoo.east.paas.worker.global_variables' => [...],
+    
+        'teknoo.east.paas.composer.phar.path' => ...,
+    
+        'teknoo.east.paas.buildkit.build.timeout' => ...,
+        'teknoo.east.paas.buildkit.build.platforms' => ...,
+        'teknoo.east.paas.buildkit.builder.name' => ...,
+    
+        'teknoo.east.paas.kubernetes.ssl.verify' => ...,
+    ];
 
 Example of **.paas.yml** configuration file present into git repository to deploy
 ---------------------------------------------------------------------------------
@@ -193,6 +134,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
    
     paas: #Dedicated to compiler
       version: v1
+      namespace: 'demo'
     
     #Secrets provider
     secrets:
@@ -217,7 +159,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
     #Hook to build the project before container, Called in this order
     builds:
       composer-build: #Name of the step
-        composer: ${COMPOSER} #Hook to call
+        composer: install #Hook to call
     
     #Volume to build to use with container
     volumes:
