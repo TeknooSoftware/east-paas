@@ -48,6 +48,7 @@ Example with Symfony
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Kubernetes/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/BuildKit/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Composer/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Laminas/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Symfony/Components/di.php'
       
     //bundles.php
@@ -106,6 +107,9 @@ Example with Symfony
     return [
         //Hook
         HooksCollectionInterface::class => ...
+
+        //Message
+        MessageFactoryInterface::class => get(MessageFactory::class),
 
         //OCI libraries
         'teknoo.east.paas.conductor.images_library' => [...]
