@@ -25,13 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Throwable;
 
 /**
  * Step to configure the cluster client with job's configuration and push it into the workplan.
@@ -49,7 +50,6 @@ class ConfigureClusterClient
 {
     public function __construct(
         private Directory $clientsDirectory,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -68,11 +68,10 @@ class ConfigureClusterClient
                         ]
                     );
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $eastClient,
-                    $manager,
-                    500,
+                fn (Throwable $error) => throw new RuntimeException(
                     'teknoo.east.paas.error.recipe.cluster.configuration_error',
+                    500,
+                    $error
                 )
             )
         );

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.60] - 2021-07-18
+### Dev Release
+- Fix errors management when job running
+
 ## [0.0.59] - 2021-07-12
 ### Dev Release
 - Update documents and dev libs requirements.

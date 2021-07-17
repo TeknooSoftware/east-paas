@@ -32,7 +32,6 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -63,7 +62,6 @@ class DeserializeJobTest extends TestCase
         return new DeserializeJob(
             $this->getDeserializer(),
             ['foo' => 'bar'],
-            new ErrorFactory(),
         );
     }
 
@@ -193,14 +191,7 @@ class DeserializeJobTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
-            ->method('finish')
-            ->with($error)
-            ->willReturnSelf();
-
-        $client->expects(self::once())
-            ->method('acceptResponse')
-            ->willReturnSelf();
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             DeserializeJob::class,

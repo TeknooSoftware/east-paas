@@ -36,7 +36,6 @@ use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -63,7 +62,6 @@ class ExposingTest extends TestCase
     {
         return new Exposing(
             $this->getDispatchHistoryMock(),
-            new ErrorFactory(),
         );
     }
 
@@ -145,13 +143,7 @@ class ExposingTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
-            ->method('finish')
-            ->willReturnSelf();
-
-        $eastClient->expects(self::once())
-            ->method('acceptResponse')
-            ->willReturnSelf();
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             Exposing::class,

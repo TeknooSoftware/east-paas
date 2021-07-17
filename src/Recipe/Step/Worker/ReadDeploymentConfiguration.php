@@ -25,12 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Throwable;
 
 /**
  * Step to read the paas file yaml from the cloned source repository and load it into the conductor
@@ -46,11 +47,6 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  */
 class ReadDeploymentConfiguration
 {
-    public function __construct(
-        private ErrorFactoryInterface $errorFactory,
-    ) {
-    }
-
     public function __invoke(
         JobWorkspaceInterface $workspace,
         ConductorInterface $conductor,
@@ -61,11 +57,10 @@ class ReadDeploymentConfiguration
             $conductor,
             new Promise(
                 null,
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    500,
+                fn (Throwable $error) => throw new RuntimeException(
                     'teknoo.east.paas.error.recipe.configuration.read_error',
+                    500,
+                    $error
                 )
             )
         );

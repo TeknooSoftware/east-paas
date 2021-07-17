@@ -32,7 +32,6 @@ use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -62,7 +61,6 @@ class SerializeJobTest extends TestCase
     {
         return new SerializeJob(
             $this->getSerializerInterfaceMock(),
-            new ErrorFactory(),
         );
     }
 
@@ -126,11 +124,10 @@ class SerializeJobTest extends TestCase
 
         $chef = $this->createMock(ManagerInterface::class);
         $chef->expects(self::never())->method('updateWorkPlan');
-        $chef->expects(self::once())->method('finish');
 
         $client = $this->createMock(ClientInterface::class);
-        $client->expects(self::once())->method('acceptResponse');
 
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             SerializeJob::class,

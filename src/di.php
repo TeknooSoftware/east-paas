@@ -260,7 +260,6 @@ return [
     DeserializeHistory::class => create()
         ->constructor(
             get(DeserializerInterface::class),
-            get(ErrorFactoryInterface::class),
         ),
     ReceiveHistory::class => create(),
 
@@ -270,13 +269,11 @@ return [
         return new DeserializeJob(
             $container->get(DeserializerInterface::class),
             $_ENV + $container->get('teknoo.east.paas.worker.global_variables'),
-            $container->get(ErrorFactoryInterface::class),
         );
     },
     GetJob::class => create()
         ->constructor(
             get(JobLoader::class),
-            get(ErrorFactoryInterface::class),
         ),
     PrepareJob::class => create()
         ->constructor(
@@ -289,7 +286,6 @@ return [
     SerializeJob::class => static function (ContainerInterface $container): SerializeJob {
         return new SerializeJob(
             $container->get(SerializerInterface::class),
-            $container->get(ErrorFactoryInterface::class),
         );
     },
 
@@ -305,63 +301,48 @@ return [
     GetProject::class => create()
         ->constructor(
             get(ProjectLoader::class),
-            get(ErrorFactoryInterface::class),
         ),
 
     //Worker
     BuildImages::class => create()
         ->constructor(
             get(DHI::class),
-            get(ErrorFactoryInterface::class),
         ),
     BuildVolumes::class => create()
         ->constructor(
             get(DHI::class),
-            get(ErrorFactoryInterface::class),
         ),
     CloneRepository::class => create(),
-    CompileDeployment::class => create()
-        ->constructor(
-            get(ErrorFactoryInterface::class),
-        ),
+    CompileDeployment::class => create(),
     ConfigureCloningAgent::class => create()
         ->constructor(
             get(CloningAgentInterface::class),
-            get(ErrorFactoryInterface::class),
         ),
     ConfigureConductor::class => create()
         ->constructor(get(ConductorInterface::class)),
     ConfigureImagesBuilder::class => create()
         ->constructor(
             get(BuilderInterface::class),
-            get(ErrorFactoryInterface::class),
         ),
     ConfigureClusterClient::class => create()
         ->constructor(
             get(Directory::class),
-            get(ErrorFactoryInterface::class),
         ),
     Deploying::class => create()
         ->constructor(
             get(DHI::class),
-            get(ErrorFactoryInterface::class),
         ),
     Exposing::class => create()
         ->constructor(
             get(DHI::class),
-            get(ErrorFactoryInterface::class),
         ),
     HookingDeployment::class => create()
         ->constructor(
             get(DHI::class),
-            get(ErrorFactoryInterface::class),
         ),
     PrepareWorkspace::class => create()
         ->constructor(get(JobWorkspaceInterface::class)),
-    ReadDeploymentConfiguration::class => create()
-        ->constructor(
-            get(ErrorFactoryInterface::class),
-        ),
+    ReadDeploymentConfiguration::class => create(),
 
     //Base recipe
     OriginalRecipeInterface::class => get(Recipe::class),

@@ -168,6 +168,59 @@ class PushResultTest extends TestCase
         );
     }
 
+    public function testInvokeWithException()
+    {
+        $client = $this->createMock(EastClient::class);
+
+        $manager = $this->createMock(ManagerInterface::class);
+        $project = 'foo';
+        $env = 'bar';
+
+        $this->getDateTimeServiceMock()
+            ->expects(self::any())
+            ->method('passMeTheDate')
+            ->willReturnCallback(function (callable $callback) {
+                $callback(new \DateTime('2018-08-01'));
+
+                return $this->getDateTimeServiceMock();
+            });
+
+        $error = new \Exception("fooBar", 500);
+        $this->getNormalizer()
+            ->expects(self::once())
+            ->method('normalize')
+            ->with($result = ['fooBar'])
+            ->willReturnCallback(
+                function (
+                    $object,
+                    PromiseInterface $promise
+                ) use ($result) {
+                    $promise->success($result);
+
+                    return $this->getNormalizer();
+                }
+            );
+
+        $manager->expects(self::once())
+            ->method('updateWorkPlan')
+            ->willReturnCallback(function ($values) use ($manager) {
+               self::assertInstanceOf(History::class, $values[History::class]);
+               self::assertIsString($values['historySerialized']);
+
+               return $manager;
+            });
+
+        $this->getMessageBusMock()
+            ->expects(self::once())
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass()));
+
+        self::assertInstanceOf(
+            PushResult::class,
+            ($this->buildStep())($manager, $client, $project, $env, 'babar', null, $error)
+        );
+    }
+
     public function testInvokeWithNoResult()
     {
         $client = $this->createMock(EastClient::class);

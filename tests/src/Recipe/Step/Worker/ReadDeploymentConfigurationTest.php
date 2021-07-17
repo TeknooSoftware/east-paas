@@ -32,7 +32,6 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -43,9 +42,7 @@ class ReadDeploymentConfigurationTest extends TestCase
 {
     public function buildStep(): ReadDeploymentConfiguration
     {
-        return new ReadDeploymentConfiguration(
-            new ErrorFactory(),
-        );
+        return new ReadDeploymentConfiguration();
     }
 
     public function testInvoke()
@@ -91,13 +88,7 @@ class ReadDeploymentConfigurationTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
-            ->method('finish')
-            ->willReturnSelf();
-
-        $client->expects(self::once())
-            ->method('acceptResponse')
-            ->willReturnSelf();
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             ReadDeploymentConfiguration::class,

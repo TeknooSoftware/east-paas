@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
@@ -32,8 +33,8 @@ use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as VolumeBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Throwable;
 
 /**
  * Step, run in the deployment workspace filesystem, to build all persisted volumes, defined in the compiled deployment
@@ -51,7 +52,6 @@ class BuildVolumes
 {
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -74,8 +74,6 @@ class BuildVolumes
                 $projectId,
                 $envName,
                 $jobUnit,
-                $client,
-                $manager
             ) {
                 $builder->buildVolumes(
                     $compiledDeployment,
@@ -90,11 +88,10 @@ class BuildVolumes
                                 ['build_output' => $buildSuccess]
                             );
                         },
-                        $this->errorFactory->buildFailurePromise(
-                            $client,
-                            $manager,
-                            500,
+                        fn (Throwable $error) => throw new RuntimeException(
                             'teknoo.east.paas.error.recipe.volumes.building_error',
+                            500,
+                            $error
                         )
                     )
                 );

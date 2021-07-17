@@ -25,12 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Throwable;
 
 /**
  * Step to configure the builder with the job and push it into the workplan.
@@ -48,7 +49,6 @@ class ConfigureImagesBuilder
 {
     public function __construct(
         private ImageBuilder $builder,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -63,11 +63,10 @@ class ConfigureImagesBuilder
                 static function (ImageBuilder $builder) use ($manager) {
                     $manager->updateWorkPlan([ImageBuilder::class => $builder]);
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    500,
+                fn (Throwable $error) => throw new RuntimeException(
                     'teknoo.east.paas.error.recipe.images.configuration_error',
+                    500,
+                    $error
                 )
             )
         );

@@ -34,7 +34,6 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -64,7 +63,6 @@ class ConfigureCloningAgentTest extends TestCase
     {
         return new ConfigureCloningAgent(
             $this->getAgentMock(),
-            new ErrorFactory(),
         );
     }
 
@@ -159,13 +157,7 @@ class ConfigureCloningAgentTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
-            ->method('finish')
-            ->willReturnSelf();
-
-        $client->expects(self::once())
-            ->method('acceptResponse')
-            ->willReturnSelf();
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             ConfigureCloningAgent::class,

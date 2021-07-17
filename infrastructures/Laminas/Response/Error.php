@@ -99,11 +99,16 @@ class Error implements
      */
     public function jsonSerialize(): array
     {
+        $firstError = $this->error;
+        do {
+            $message = $firstError->getMessage();
+        } while (null !== ($firstError = $firstError->getPrevious()));
+
         return [
             'type' => 'https://teknoo.software/probs/issue',
             'title' => $this->reasonPhrase,
             'status' => $this->getStatusCode(),
-            'detail' => $this->error->getMessage(),
+            'detail' => $message,
         ];
     }
 

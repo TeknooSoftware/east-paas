@@ -32,7 +32,6 @@ use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -62,7 +61,6 @@ class GetProjectTest extends TestCase
     {
         return new GetProject(
             $this->getProjectLoaderMock(),
-            new ErrorFactory(),
         );
     }
 
@@ -112,15 +110,10 @@ class GetProjectTest extends TestCase
                 return $this->getProjectLoaderMock();
             });
 
-        $client->expects(self::once())
-            ->method('acceptResponse');
-
-        $chef->expects(self::once())
-            ->method('finish')
-            ->with($exception);
-
         $chef->expects(self::never())
             ->method('updateWorkPlan');
+
+        $this->expectException(\DomainException::class);
 
         self::assertInstanceOf(
             GetProject::class,

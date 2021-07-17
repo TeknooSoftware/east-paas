@@ -25,12 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Foundation\Promise\Promise;
+use Throwable;
 
 /**
  * Step to deserialize an json encoded job into a job unit thanks to a deserializer and inject into the workplan.
@@ -53,7 +54,6 @@ class DeserializeJob
     public function __construct(
         private DeserializerInterface $deserializer,
         private array $variables,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -68,11 +68,10 @@ class DeserializeJob
                     $manager->updateWorkPlan([JobUnitInterface::class => $jobUnit]);
                     $jobUnit->runWithExtra(fn ($extra) => $manager->updateWorkPlan(['extra' => $extra]));
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    400,
+                fn (Throwable $error) => throw new RuntimeException(
                     'teknoo.east.paas.error.recipe.job.mal_formed',
+                    400,
+                    $error
                 )
             ),
             [

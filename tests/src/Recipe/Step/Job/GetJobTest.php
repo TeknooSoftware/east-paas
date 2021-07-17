@@ -32,7 +32,6 @@ use Teknoo\East\Paas\Loader\JobLoader;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -62,7 +61,6 @@ class GetJobTest extends TestCase
     {
         return new GetJob(
             $this->getJobLoaderMock(),
-            new ErrorFactory(),
         );
     }
 
@@ -112,15 +110,10 @@ class GetJobTest extends TestCase
                 return $this->getJobLoaderMock();
             });
 
-        $client->expects(self::once())
-            ->method('acceptResponse');
-
-        $manager->expects(self::once())
-            ->method('finish')
-            ->with($exception);
-
         $manager->expects(self::never())
             ->method('updateWorkPlan');
+
+        $this->expectException(\DomainException::class);
 
         self::assertInstanceOf(
             GetJob::class,

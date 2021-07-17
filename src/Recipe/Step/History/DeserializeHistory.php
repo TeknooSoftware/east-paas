@@ -25,12 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\History;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Foundation\Promise\Promise;
+use Throwable;
 
 /**
  * Step to deserialize an json encoded history thanks to a deserializer and inject into the workplan.
@@ -48,7 +49,6 @@ class DeserializeHistory
 {
     public function __construct(
         private DeserializerInterface $deserializer,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -62,11 +62,10 @@ class DeserializeHistory
                 static function (History $history) use ($manager) {
                     $manager->updateWorkPlan([History::class => $history]);
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    400,
+                fn (Throwable $error) => throw new RuntimeException(
                     'teknoo.east.paas.error.recipe.history.mal_formed',
+                    400,
+                    $error
                 )
             )
         );

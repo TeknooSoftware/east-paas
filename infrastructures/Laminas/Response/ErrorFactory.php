@@ -61,6 +61,10 @@ class ErrorFactory implements ErrorFactoryInterface
                 $statusCode = $error->getCode();
             }
 
+            if ($statusCode < 400 || $statusCode > 600) {
+                $statusCode = 500;
+            }
+
             $client->acceptResponse(
                 new Error($statusCode, (string) $reasonPhrase, $error)
             );

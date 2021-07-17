@@ -25,13 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Throwable;
 
 /**
  * Step to configure the cloning agent with project's configuration to fetch source from the repository
@@ -50,7 +51,6 @@ class ConfigureCloningAgent
 {
     public function __construct(
         private CloningAgentInterface $agent,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -67,11 +67,10 @@ class ConfigureCloningAgent
                 static function (CloningAgentInterface $agent) use ($manager) {
                     $manager->updateWorkPlan([CloningAgentInterface::class => $agent]);
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    500,
+                fn (Throwable $error) => throw new RuntimeException(
                     'teknoo.east.paas.error.recipe.agent.configuration_error',
+                    500,
+                    $error
                 )
             )
         );

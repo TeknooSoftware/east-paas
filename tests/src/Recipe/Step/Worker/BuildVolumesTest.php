@@ -36,7 +36,6 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -63,7 +62,6 @@ class BuildVolumesTest extends TestCase
     {
         return new BuildVolumes(
             $this->getDispatchHistoryMock(),
-            new ErrorFactory(),
         );
     }
 
@@ -250,13 +248,7 @@ class BuildVolumesTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
-            ->method('finish')
-            ->willReturnSelf();
-
-        $client->expects(self::once())
-            ->method('acceptResponse')
-            ->willReturnSelf();
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             BuildVolumes::class,

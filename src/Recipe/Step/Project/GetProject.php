@@ -25,12 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Project;
 
+use DomainException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Object\Project;
+use Throwable;
 
 /**
  * Step to load a persisted project from the DB source thanks to the project loaded and inject it into the workplan.
@@ -48,7 +49,6 @@ class GetProject
 {
     public function __construct(
         private ProjectLoader $projectLoader,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -60,11 +60,10 @@ class GetProject
                 static function (Project $project) use ($manager) {
                     $manager->updateWorkPlan([Project::class => $project]);
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    404,
+                fn (Throwable $error) => throw new DomainException(
                     'teknoo.east.paas.error.recipe.project.not_found',
+                    404,
+                    $error
                 )
             )
         );

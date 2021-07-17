@@ -25,12 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
+use DomainException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Loader\JobLoader;
 use Teknoo\East\Paas\Object\Job;
+use Throwable;
 
 /**
  * Step to load a persisted job from the DB source thanks to the job loaded and inject it into the workplan.
@@ -48,7 +49,6 @@ class GetJob
 {
     public function __construct(
         private JobLoader $jobLoader,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -60,11 +60,10 @@ class GetJob
                 static function (Job $job) use ($manager) {
                     $manager->updateWorkPlan([Job::class => $job]);
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    404,
+                fn (Throwable $error) => throw new DomainException(
                     'teknoo.east.paas.error.recipe.job.not_found',
+                    404,
+                    $error
                 )
             )
         );

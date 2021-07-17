@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
@@ -33,7 +34,7 @@ use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Throwable;
 
 /**
  * Step to perform the deployment of container from built images in previous step on the cluster thanks to
@@ -51,7 +52,6 @@ class Deploying
 {
     public function __construct(
         private DispatchHistoryInterface $dispatchHistory,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -78,11 +78,10 @@ class Deploying
                             $result
                         );
                     },
-                    $this->errorFactory->buildFailurePromise(
-                        $eastClient,
-                        $manager,
-                        500,
+                    fn (Throwable $error) => throw new RuntimeException(
                         'teknoo.east.paas.error.recipe.cluster.deployment_error',
+                        500,
+                        $error
                     )
                 )
             );

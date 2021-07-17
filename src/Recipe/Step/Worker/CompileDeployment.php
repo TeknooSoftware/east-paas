@@ -25,12 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Throwable;
 
 /**
  * Step to decode, validate parse and compile the paas yaml file to a CompiledDeployment instance.
@@ -45,11 +46,6 @@ use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
  */
 class CompileDeployment
 {
-    public function __construct(
-        private ErrorFactoryInterface $errorFactory,
-    ) {
-    }
-
     public function __invoke(
         ManagerInterface $manager,
         ClientInterface $client,
@@ -63,11 +59,10 @@ class CompileDeployment
                         CompiledDeploymentInterface::class => $deployment,
                     ]);
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    500,
+                fn (Throwable $error) => throw new RuntimeException(
                     'teknoo.east.paas.error.recipe.configuration.compilation_error',
+                    500,
+                    $error
                 )
             ),
             $storageIdentifier

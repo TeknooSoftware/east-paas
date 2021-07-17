@@ -34,7 +34,6 @@ use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureClusterClient;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -64,7 +63,6 @@ class ConfigureClusterClientTest extends TestCase
     {
         return new ConfigureClusterClient(
             $this->getClientsMock(),
-            new ErrorFactory(),
         );
     }
 
@@ -143,13 +141,7 @@ class ConfigureClusterClientTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
-            ->method('finish')
-            ->willReturnSelf();
-
-        $client->expects(self::once())
-            ->method('acceptResponse')
-            ->willReturnSelf();
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             ConfigureClusterClient::class,

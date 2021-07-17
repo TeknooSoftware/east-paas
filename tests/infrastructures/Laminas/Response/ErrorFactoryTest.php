@@ -61,6 +61,29 @@ class ErrorFactoryTest extends TestCase
         $callable(new \RuntimeException('bar', 501));
     }
 
+    public function testBuildFailurePromiseWithInvalidCode()
+    {
+        $factory = new ErrorFactory();
+        $client = $this->createMock(ClientInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
+
+        $callable = $factory->buildFailurePromise($client, $manager, 500, null);
+        self::assertIsCallable($callable);
+
+        $client->expects(self::once())
+            ->method('acceptResponse')
+            ->willReturnCallback(
+                function ($error) use ($client) {
+                    self::assertInstanceOf(Error::class, $error);
+                    self::assertEquals('bar', $error->getReasonPhrase());
+                    return $client;
+                }
+            );
+        $manager->expects(self::once())->method('finish');
+
+        $callable(new \RuntimeException('bar', 100));
+    }
+
     public function testBuildFailurePromiseWithNoReason()
     {
         $factory = new ErrorFactory();

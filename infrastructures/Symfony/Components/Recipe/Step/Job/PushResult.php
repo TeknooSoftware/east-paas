@@ -133,16 +133,21 @@ class PushResult implements DispatchResultInterface
             $result = [];
         }
 
+        $failure = $this->errorFactory->buildFailurePromise($client, $manager, 500, null);
+
+        if (null !== $exception) {
+            $result = [$exception->getMessage()];
+        }
+
         try {
             $this->sendResult($manager, $projectId, $envName, $jobId, $result, $extra);
-        } catch (Throwable $error) {
-            $errorCode = $error->getCode();
-            if ($errorCode < 400 || $errorCode > 600) {
-                $errorCode = 500;
-            }
 
-            $this->errorFactory
-                ->buildFailurePromise($client, $manager, $errorCode, null)($error);
+            if (null !== $exception) {
+                $failure($exception);
+                $manager->stopErrorReporting();
+            }
+        } catch (Throwable $error) {
+            $failure($error);
         }
 
         return $this;

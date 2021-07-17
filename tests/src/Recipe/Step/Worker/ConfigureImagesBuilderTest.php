@@ -33,7 +33,6 @@ use Teknoo\East\Foundation\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureImagesBuilder;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -63,7 +62,6 @@ class ConfigureImagesBuilderTest extends TestCase
     {
         return new ConfigureImagesBuilder(
             $this->getBuilderMock(),
-            new ErrorFactory(),
         );
     }
 
@@ -142,13 +140,7 @@ class ConfigureImagesBuilderTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
-            ->method('finish')
-            ->willReturnSelf();
-
-        $client->expects(self::once())
-            ->method('acceptResponse')
-            ->willReturnSelf();
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             ConfigureImagesBuilder::class,

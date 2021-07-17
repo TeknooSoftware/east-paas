@@ -32,7 +32,6 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
 use Teknoo\East\Foundation\Promise\PromiseInterface;
-use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -62,7 +61,6 @@ class DeserializeHistoryTest extends TestCase
     {
         return new DeserializeHistory(
             $this->getDeserializer(),
-            new ErrorFactory(),
         );
     }
 
@@ -146,14 +144,7 @@ class DeserializeHistoryTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
-            ->method('finish')
-            ->with($error)
-            ->willReturnSelf();
-
-        $client->expects(self::once())
-            ->method('acceptResponse')
-            ->willReturnSelf();
+        $this->expectException(\RuntimeException::class);
 
         self::assertInstanceOf(
             DeserializeHistory::class,

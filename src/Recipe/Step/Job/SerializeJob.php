@@ -25,12 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Foundation\Promise\Promise;
+use Throwable;
 
 /**
  * Step to serialize as json object a Job instance thanks to a serializer.
@@ -49,7 +50,6 @@ class SerializeJob
 {
     public function __construct(
         private SerializerInterface $serializer,
-        private ErrorFactoryInterface $errorFactory,
     ) {
     }
 
@@ -65,11 +65,10 @@ class SerializeJob
                 static function (string $jobSerialized) use ($manager) {
                     $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
                 },
-                $this->errorFactory->buildFailurePromise(
-                    $client,
-                    $manager,
-                    400,
+                fn (Throwable $error) => throw new RuntimeException(
                     'teknoo.east.paas.error.recipe.job.serialization_error',
+                    500,
+                    $error
                 )
             ),
             [
