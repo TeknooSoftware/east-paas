@@ -1,6 +1,7 @@
 parameters:
     teknoo.east.symfony.normalizer.east_normalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer'
     teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
+    teknoo.east.paas.symfony.history.prefer-real-date: true
 
 services:
     teknoo.east.paas.symfony.property_accessor:
@@ -78,6 +79,7 @@ services:
         arguments:
             - '@Teknoo\East\Website\Service\DatesService'
             - '@messenger.default_bus'
+            - '%teknoo.east.paas.symfony.history.prefer-real-date%'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult'
@@ -87,6 +89,7 @@ services:
             - '@messenger.default_bus'
             - '@Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface'
             - '@Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface'
+            - '%teknoo.east.paas.symfony.history.prefer-real-date%'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer'

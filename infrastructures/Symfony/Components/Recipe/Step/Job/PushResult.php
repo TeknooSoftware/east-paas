@@ -60,6 +60,7 @@ class PushResult implements DispatchResultInterface
         private MessageBusInterface $bus,
         private NormalizerInterface $normalizer,
         private ErrorFactoryInterface $errorFactory,
+        private bool $preferRealDate = false,
     ) {
     }
 
@@ -112,7 +113,8 @@ class PushResult implements DispatchResultInterface
                     ),
                     'json'
                 );
-            }
+            },
+            $this->preferRealDate,
         );
     }
 

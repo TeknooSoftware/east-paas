@@ -52,6 +52,7 @@ class SendHistory implements DispatchHistoryInterface
     public function __construct(
         private DatesService $dateTimeService,
         private MessageBusInterface $bus,
+        private bool $preferRealDate = false,
     ) {
     }
 
@@ -90,7 +91,8 @@ class SendHistory implements DispatchHistoryInterface
                         ]
                     )
                 );
-            }
+            },
+            $this->preferRealDate,
         );
     }
 

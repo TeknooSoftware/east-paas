@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.61] - 2021-07-19
+### Dev Release
+- History event use by defaut real date instead of first fetched date value
+
 ## [0.0.60] - 2021-07-18
 ### Dev Release
 - Fix errors management when job running
