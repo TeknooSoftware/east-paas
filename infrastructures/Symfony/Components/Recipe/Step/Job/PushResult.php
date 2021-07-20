@@ -40,6 +40,8 @@ use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Foundation\Promise\Promise;
 use Throwable;
 
+use function array_unique;
+use function array_values;
 use function json_encode;
 
 /**
@@ -138,7 +140,12 @@ class PushResult implements DispatchResultInterface
         $failure = $this->errorFactory->buildFailurePromise($client, $manager, 500, null);
 
         if (null !== $exception) {
-            $result = [$exception->getMessage()];
+            $result = [];
+            $currentException = $exception;
+            do {
+                $result[] = $currentException->getMessage();
+            } while (null !== ($currentException = $currentException->getPrevious()));
+            $result = array_values(array_unique($result));
         }
 
         try {

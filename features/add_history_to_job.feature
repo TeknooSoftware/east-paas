@@ -8,7 +8,7 @@ Feature: Push an entry to a specific job history
     And a project on this account "fooBar Project" with the id "projectid"
     When I push a new message "foobar" at "2018-01-01 01:00:00 UTC" to "/project/anotherid/environment/prod/job/foo-bar/log"
     Then I must obtain an HTTP answer with this status code equals to "404".
-    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.project.not_found", "status": 404, "detail":"Object not found"}'
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.project.not_found","status":404,"detail":["teknoo.east.paas.error.recipe.project.not_found","Object not found"]}'
 
   Scenario: Return an error 404 when the job does not exist
     Given I have a configured platform
@@ -18,7 +18,7 @@ Feature: Push an entry to a specific job history
     And a repository on the url "https://github.com/foo/bar"
     When I push a new message "foobar" at "2018-01-01 01:00:00 UTC" to "/project/projectid/environment/prod/job/foo-bar/log"
     Then I must obtain an HTTP answer with this status code equals to "404".
-    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.job.not_found", "status": 404, "detail":"Object not found"}'
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.job.not_found","status":404,"detail":["teknoo.east.paas.error.recipe.job.not_found","Object not found"]}'
 
   Scenario: Return a valid JSON answer when the job exists
     Given I have a configured platform

@@ -59,7 +59,7 @@ class ErrorTest extends TestCase
                 'type' => 'https://teknoo.software/probs/issue',
                 'title' => 'foo',
                 'status' => 500,
-                'detail' => 'bar',
+                'detail' => ['bar'],
             ],
             \json_decode(\json_encode($this->build()), true)
         );

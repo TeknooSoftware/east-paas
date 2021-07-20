@@ -33,6 +33,8 @@ use Teknoo\East\Paas\Contracts\Response\ErrorInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Throwable;
 
+use function array_unique;
+use function array_values;
 use function json_encode;
 
 /**
@@ -99,16 +101,17 @@ class Error implements
      */
     public function jsonSerialize(): array
     {
+        $messages =  [];
         $firstError = $this->error;
         do {
-            $message = $firstError->getMessage();
+            $messages[] = $firstError->getMessage();
         } while (null !== ($firstError = $firstError->getPrevious()));
 
         return [
             'type' => 'https://teknoo.software/probs/issue',
             'title' => $this->reasonPhrase,
             'status' => $this->getStatusCode(),
-            'detail' => $message,
+            'detail' => array_values(array_unique($messages)),
         ];
     }
 

@@ -598,7 +598,7 @@ EOF;
     {
         Assert::assertEquals('application/problem+json', $this->response->headers->get('Content-Type'));
         $expected = \json_decode($body, true);
-        $actual = \json_decode($this->response->getContent(), true);
+        $actual = \json_decode($current = $this->response->getContent(), true);
         Assert::assertEquals($expected, $actual);
     }
 
