@@ -27,8 +27,8 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Flysystem;
 
 use DI\Container;
 use DI\ContainerBuilder;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
-use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
@@ -56,8 +56,8 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
-            Local::class,
-            $container->get(Local::class)
+            LocalFilesystemAdapter::class,
+            $container->get(LocalFilesystemAdapter::class)
         );
     }
 

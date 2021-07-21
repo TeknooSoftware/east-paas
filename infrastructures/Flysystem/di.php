@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Flysystem;
 
-use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 use function DI\get;
@@ -34,10 +34,10 @@ use function DI\create;
 use function DI\string;
 
 return [
-    Local::class => create()
+    LocalFilesystemAdapter::class => create()
         ->constructor(string('{teknoo.east.paas.worker.tmp_dir}')),
     Filesystem::class => create()
-        ->constructor(get(Local::class)),
+        ->constructor(get(LocalFilesystemAdapter::class)),
     JobWorkspaceInterface::class => get(Workspace::class),
     Workspace::class => create()
         ->constructor(get(Filesystem::class), string('{teknoo.east.paas.worker.tmp_dir}')),

@@ -25,7 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Flysystem;
 
-use http\Exception\RuntimeException;
+use League\Flysystem\DirectoryListing;
+use League\Flysystem\StorageAttributes;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;
@@ -147,7 +148,7 @@ class WorkspaceTest extends TestCase
 
         $this->getFilesystemMock()
             ->expects(self::once())
-            ->method('put')
+            ->method('write')
             ->with(
                 $this->callback(function ($name) {
                     return false !== \strpos($name, '/foo');
@@ -176,7 +177,7 @@ class WorkspaceTest extends TestCase
 
         $this->getFilesystemMock()
             ->expects(self::once())
-            ->method('put')
+            ->method('write')
             ->with(
                 $this->callback(function ($name) {
                     return false !== \strpos($name, '/foo');
@@ -229,7 +230,7 @@ class WorkspaceTest extends TestCase
 
         $this->getFilesystemMock()
             ->expects(self::once())
-            ->method('createDir')
+            ->method('createDirectory')
             ->with($this->callback(function ($value) {
                 return 0 === \strpos($value, '/fooBar');
             }));
@@ -334,7 +335,7 @@ class WorkspaceTest extends TestCase
             ->expects(self::any())
             ->method('listContents')
             ->with($path = 'foo')
-            ->willReturn(true);
+            ->willReturn(new DirectoryListing(new \ArrayIterator([$this->createMock(StorageAttributes::class)])));
 
         self::assertInstanceOf(
             Workspace::class,
@@ -352,7 +353,7 @@ class WorkspaceTest extends TestCase
             ->expects(self::any())
             ->method('listContents')
             ->with($path = 'foo')
-            ->willReturn(false);
+            ->willReturn(new DirectoryListing(new \ArrayIterator([])));
 
         self::assertInstanceOf(
             Workspace::class,
@@ -401,12 +402,12 @@ class WorkspaceTest extends TestCase
     {
         $this->getFilesystemMock()
             ->expects(self::any())
-            ->method('has')
+            ->method('fileExists')
             ->willReturn(true);
 
         $this->getFilesystemMock()
             ->expects(self::once())
-            ->method('deleteDir');
+            ->method('deleteDirectory');
 
         self::assertInstanceOf(
             Workspace::class,
@@ -418,12 +419,12 @@ class WorkspaceTest extends TestCase
     {
         $this->getFilesystemMock()
             ->expects(self::any())
-            ->method('has')
+            ->method('fileExists')
             ->willReturn(true);
 
         $this->getFilesystemMock()
             ->expects(self::once())
-            ->method('deleteDir')
+            ->method('deleteDirectory')
             ->willThrowException(new \RuntimeException('test'));
 
         $object = $this->buildJobWorkspace()->setJob($this->getJobMock());

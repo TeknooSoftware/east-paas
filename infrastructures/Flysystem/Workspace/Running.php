@@ -59,9 +59,7 @@ class Running implements StateInterface
         return function (): void {
             $workspacePath = $this->getWorkspacePath();
 
-            if ($this->filesystem->has($workspacePath)) {
-                $this->filesystem->deleteDir($workspacePath);
-            }
+            $this->filesystem->deleteDirectory($workspacePath);
 
             $this->job = null;
             $this->updateStates();
@@ -73,7 +71,7 @@ class Running implements StateInterface
         return function (): void {
             $workspacePath = $this->getWorkspacePath();
 
-            $this->filesystem->createDir($workspacePath);
+            $this->filesystem->createDirectory($workspacePath);
         };
     }
 

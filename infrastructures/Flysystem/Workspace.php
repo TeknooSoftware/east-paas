@@ -158,7 +158,7 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
     {
         $name = $this->getWorkspacePath() . $file->getName();
 
-        $this->filesystem->put(
+        $this->filesystem->write(
             $name,
             $file->getContent(),
             [
@@ -207,11 +207,13 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
 
     public function hasDirectory(string $path, PromiseInterface $promise): JobWorkspaceInterface
     {
-        if (!empty($this->filesystem->listContents($path))) {
+        foreach ($this->filesystem->listContents($path) as $item) {
             $promise->success();
-        } else {
-            $promise->fail(new DomainException());
+
+            return $this;
         }
+
+        $promise->fail(new DomainException());
 
         return $this;
     }
