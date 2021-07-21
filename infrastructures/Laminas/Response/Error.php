@@ -97,7 +97,7 @@ class Error implements
     }
 
     /**
-     * @return array<string, string|int>
+     * @return array<string, array<int, string>|int|string>
      */
     public function jsonSerialize(): array
     {
