@@ -178,7 +178,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
     ): ReplicationController {
         $specs = [
             'metadata' => [
-                'name' => $pod->getName() . '-deployment',
+                'name' => $pod->getName() . '-replication-ctrl',
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $pod->getName(),

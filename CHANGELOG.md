@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.64] - 2021-07-24
+### Dev Release
+- Fix ReplicationController names in Kubernetes
+
 ## [0.0.63] - 2021-07-21
 ### Dev Release
 - Migrate to FlySystem 2.2+
