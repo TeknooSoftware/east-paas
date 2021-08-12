@@ -29,7 +29,7 @@ use Closure;
 use RuntimeException;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Job;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 

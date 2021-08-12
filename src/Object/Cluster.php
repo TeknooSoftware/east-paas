@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Object;
 
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
-use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Website\Object\ObjectInterface;
 use Teknoo\East\Website\Object\ObjectTrait;
@@ -35,7 +35,7 @@ use Teknoo\East\Website\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
 /**

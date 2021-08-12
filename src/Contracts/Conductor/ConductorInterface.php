@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Contracts\Conductor;
 
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * To define service able to validate and prepare a deployment by compiling instructions from paas.yaml to objects

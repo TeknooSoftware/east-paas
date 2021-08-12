@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Composer;
 
 use RuntimeException;
 use Symfony\Component\Process\Process;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Throwable;
 

@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation;
 
 use RuntimeException;
-use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Compilation\Conductor\Generator;
 use Teknoo\East\Paas\Compilation\Conductor\Running;
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentFactoryInterface;
@@ -38,7 +38,7 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Parser\ArrayTrait;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Parser\YamlTrait;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;

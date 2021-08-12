@@ -29,7 +29,7 @@ use DomainException;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Generator;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Running;
 use League\Flysystem\Filesystem;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;

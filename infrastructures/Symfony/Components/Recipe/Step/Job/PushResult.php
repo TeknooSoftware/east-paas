@@ -37,7 +37,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\Recipe\Promise\Promise;
 use Throwable;
 
 use function array_unique;

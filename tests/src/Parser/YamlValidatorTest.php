@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Parser;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Parser;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
 use Teknoo\East\Paas\Parser\YamlValidator;
 

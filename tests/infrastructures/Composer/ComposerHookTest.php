@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Composer;
 
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\Composer\ComposerHook;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;

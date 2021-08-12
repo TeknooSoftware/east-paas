@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use Teknoo\East\Foundation\Client\ClientInterface;
-use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\Recipe\ChefInterface;

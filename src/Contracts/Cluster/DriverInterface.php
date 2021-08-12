@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Contracts\Cluster;
 
 use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * Contrat defining a client driver able to perform a deployment and expose services on a cluster from a

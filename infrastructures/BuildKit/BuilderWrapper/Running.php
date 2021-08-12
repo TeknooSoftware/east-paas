@@ -29,7 +29,7 @@ use Closure;
 use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
 use Symfony\Component\Process\Process;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;

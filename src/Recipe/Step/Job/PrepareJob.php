@@ -33,7 +33,7 @@ use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Foundation\Promise\Promise;
+use Teknoo\Recipe\Promise\Promise;
 
 /**
  * Step to prepare a new deployment of a project.

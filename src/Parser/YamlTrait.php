@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Parser;
 
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * Trait to decode a yaml stream thanks to a YamlParserInterface.

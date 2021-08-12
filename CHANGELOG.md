@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.65] - 2021-08-12
+### Dev Release
+- Switch to `Recipe Promise`
+- Remove support of Symfony 5.2
+
 ## [0.0.64] - 2021-07-24
 ### Dev Release
 - Fix ReplicationController names in Kubernetes

@@ -30,7 +30,7 @@ use League\Flysystem\StorageAttributes;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;

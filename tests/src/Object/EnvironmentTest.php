@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
 

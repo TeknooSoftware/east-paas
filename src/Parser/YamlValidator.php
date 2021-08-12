@@ -28,7 +28,7 @@ namespace Teknoo\East\Paas\Parser;
 use DOMDocument;
 use DOMElement;
 use RuntimeException;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
 use function array_flip;

@@ -40,7 +40,7 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Foundation\Promise\PromiseInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
