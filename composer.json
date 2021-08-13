@@ -73,7 +73,7 @@
         "symfony/yaml": "^5.3.6",
         "symfony/psr-http-message-bridge": "~2.0",
         "symfony/security-core": "^5.3.6",
-        "symfony/dependency-injection": "~5.3",
+        "symfony/framework-bundle": "^5.3.4",
         "teknoo/bridge-phpdi-symfony": "^5.0.4"
     },
     "autoload": {
