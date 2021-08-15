@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.66] - 2021-08-15
+### Dev Release
+- Improve promise uses
+
 ## [0.0.65] - 2021-08-12
 ### Dev Release
 - Switch to `Recipe Promise`
