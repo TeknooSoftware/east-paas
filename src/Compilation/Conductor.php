@@ -144,30 +144,41 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
     public function prepare(string $configuration, PromiseInterface $promise): ConductorInterface
     {
         try {
-            $validatorPromise = new Promise(
-                function ($result) use ($promise) {
-                    $this->getJob()->updateVariablesIn(
-                        $result,
-                        new Promise(
-                            function ($result) use ($promise) {
-                                $this->configuration = $result;
+            $configurationPromise = new Promise(
+                function ($result, PromiseInterface $next) {
+                    $this->configuration = $result;
 
-                                $promise->success($result);
-                            },
-                            [$promise, 'fail']
-                        )
-                    );
+                    $next->success($result);
                 },
-                [$promise, 'fail']
+                fn (Throwable $error, PromiseInterface $next) => $next->fail($error),
+                true
+            );
+
+            $validatorPromise = new Promise(
+                fn ($result, PromiseInterface $next) => $this->getJob()->updateVariablesIn(
+                    $result,
+                    $next
+                ),
+                fn (Throwable $error, PromiseInterface $next) => $next->fail($error),
+                true
+            );
+
+            $parsedPromise = new Promise(
+                fn ($result, PromiseInterface $next) => $this->validator->validate(
+                    $result,
+                    $this->factory->getSchema(),
+                    $next
+                ),
+                fn (Throwable $error, PromiseInterface $next) => $next->fail($error),
+                true
             );
 
             $this->parseYaml(
                 $configuration,
-                new Promise(
-                    function ($result) use ($validatorPromise) {
-                        $this->validator->validate($result, $this->factory->getSchema(), $validatorPromise);
-                    },
-                    [$promise, 'fail']
+                $parsedPromise->next(
+                    $validatorPromise->next(
+                        $configurationPromise->next($promise)
+                    )
                 )
             );
         } catch (Throwable $error) {

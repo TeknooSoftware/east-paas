@@ -140,9 +140,7 @@ class JobUnit implements JobUnitInterface
                         static function (ClusterClientInterface $client) use (&$selectedClients) {
                             $selectedClients[] = $client;
                         },
-                        static function (Throwable $error) {
-                            throw $error;
-                        }
+                        fn (Throwable $error) => throw $error,
                     )
                 );
             }
