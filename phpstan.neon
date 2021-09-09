@@ -1,6 +1,5 @@
 parameters:
     scopeClass: Teknoo\States\PHPStan\Analyser\Scope
-    checkGenericClassInNonGenericObjectType: false
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
