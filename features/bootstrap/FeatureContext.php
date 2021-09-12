@@ -233,6 +233,7 @@ class FeatureContext implements Context
                 yield new \Teknoo\East\WebsiteBundle\TeknooEastWebsiteBundle();
                 yield new \Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle();
                 yield new \Teknoo\DI\SymfonyBridge\DIBridgeBundle();
+                yield new \Symfony\Bundle\SecurityBundle\SecurityBundle();
             }
 
             protected function configureContainer(SfContainerBuilder $container, LoaderInterface $loader)
