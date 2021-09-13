@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.67] - 2021-09-13
+### Dev Release
+- Migrate to last Teknoo libs, Recipe 3.3 and Website 6.0
+- Fixing Contracts namespaces about compilation
+- QA, Fix PHPDoc
+
 ## [0.0.66] - 2021-08-15
 ### Dev Release
 - Improve promise uses
