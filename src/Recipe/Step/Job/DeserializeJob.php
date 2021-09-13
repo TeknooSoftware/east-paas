@@ -38,11 +38,6 @@ use Throwable;
  * Extra variables will be also directy available in the workplan under the key `extra`.
  * On any error, the error factory will be called.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

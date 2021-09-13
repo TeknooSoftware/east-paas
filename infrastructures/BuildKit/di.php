@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\BuildKit;
 
 use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
-use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ScriptWriterInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Container\BuilderInterface;

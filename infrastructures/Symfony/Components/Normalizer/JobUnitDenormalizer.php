@@ -40,11 +40,6 @@ use function is_array;
 /**
  * Symfony denormalizer dedicated to PaaS JobUnitInterface object.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

@@ -36,11 +36,6 @@ use function trim;
  * Immutable value object, representing a normalized configuration about a Volume, to mount into pods. Volume are not
  * persistent and all data will be lost when there are no more pods using them. They are correlated to pods' lifecycles.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

@@ -38,11 +38,6 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
  * To define object able to grouping normalized instructions and states of a deployment. Understable by adapters and
  * clusters's drivers.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

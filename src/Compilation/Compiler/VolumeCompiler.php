@@ -36,11 +36,6 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * The Volume instance will be pushed into the CompiledDeploymentInterface instance.
  * The Volume is a basic volume, embedding files and data from the source repository, to share between pods
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

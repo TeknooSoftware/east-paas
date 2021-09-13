@@ -34,11 +34,6 @@ use Teknoo\Immutable\ImmutableTrait;
  * to mount into pods's filesystem, They are not impacted by deployment, and uncorrelated with any pods lifecycle.
  * Data stay available when after pod deletion.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

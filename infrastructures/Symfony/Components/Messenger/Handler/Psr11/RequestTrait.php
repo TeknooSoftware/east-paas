@@ -33,14 +33,9 @@ use Psr\Http\Message\UriFactoryInterface;
 /**
  * Trait to perform PSR request to forward any jobs events to a remote server via a PSR Http Client.
  *
-* @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
-* @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
-*
-* @link        http://teknoo.software/east/paas Project website
-*
-* @license     http://teknoo.software/license/mit         MIT License
-* @author      Richard Déloge <richarddeloge@gmail.com>
-*/
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ */
 trait RequestTrait
 {
     private UriFactoryInterface $uriFactory;

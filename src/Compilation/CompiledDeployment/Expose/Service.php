@@ -32,11 +32,6 @@ use Teknoo\Immutable\ImmutableTrait;
  * Immutable value object, representing a normalized configuration about Service in a deployment to expose some pod
  * via a service (internal or available on the external host). Only TCP or UDP ports.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

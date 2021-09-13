@@ -31,11 +31,6 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  * To define parser able to read a yaml stream passed as string and return to a promise a valid array.
  * If the yaml is invalid, the fail method of the promise must be called.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

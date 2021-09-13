@@ -32,10 +32,7 @@ use Traversable;
  * To define a collection of transcribers browsable by the Kubernetes driver to transcribe
  * a CompiledDeployment instance to Kubernetes manifests.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
+ * @extends IteratorAggregate<int, TranscriberInterface>
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

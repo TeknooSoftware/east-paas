@@ -31,10 +31,7 @@ use Traversable;
 /**
  * To define a collection of `CompilerInstance` to pass to Conductor to compile and to normalize a PaaS Yaml.
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
- *
- * @link        http://teknoo.software/east/paas Project website
+ * @extends IteratorAggregate<int, CompilerInterface>
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
