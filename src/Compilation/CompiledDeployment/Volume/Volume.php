@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\CompiledDeployment\Volume;
 
-use Teknoo\East\Paas\Contracts\Container\PopulatedVolumeInterface;
-use Teknoo\East\Paas\Contracts\Container\RegistrableInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PopulatedVolumeInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\RegistrableInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 

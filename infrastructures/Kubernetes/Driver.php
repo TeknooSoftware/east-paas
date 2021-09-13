@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;

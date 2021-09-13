@@ -23,19 +23,18 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
-
-use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
 
 /**
- * Interface to define object registrable and pushable to a registry to be used by the cluster.
+ * Interface to define object representing a volume : a non persisted and non populated file system to mount to a mount
+ * point into a container.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface RegistrableInterface
+interface VolumeInterface
 {
-    public function withRegistry(string $registry): self;
+    public function getName(): string;
+
+    public function getMountPath(): string;
 }

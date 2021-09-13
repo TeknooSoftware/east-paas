@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Contracts\Job;
 
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Cluster\Directory;
-use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;

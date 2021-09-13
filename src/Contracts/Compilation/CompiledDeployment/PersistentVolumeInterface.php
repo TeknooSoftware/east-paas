@@ -23,18 +23,15 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
 
 /**
- * Interface to define object representing a volume : a non persisted and non populated file system to mount to a mount
- * point into a container.
+ * Extension of VolumeInterface to define persistend volume, able to keep data between pods execution.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface VolumeInterface
+interface PersistentVolumeInterface extends VolumeInterface
 {
-    public function getName(): string;
-
-    public function getMountPath(): string;
+    public function getStorageIdentifier(): ?string;
 }

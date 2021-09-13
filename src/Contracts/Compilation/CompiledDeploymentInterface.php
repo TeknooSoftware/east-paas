@@ -23,15 +23,15 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Conductor;
+namespace Teknoo\East\Paas\Contracts\Compilation;
 
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
-use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
-use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 
 /**

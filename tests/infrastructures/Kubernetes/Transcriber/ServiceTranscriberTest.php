@@ -30,7 +30,7 @@ use Maclof\Kubernetes\Repositories\ServiceRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 
 /**

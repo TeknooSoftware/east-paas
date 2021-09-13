@@ -28,7 +28,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureConductor;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;

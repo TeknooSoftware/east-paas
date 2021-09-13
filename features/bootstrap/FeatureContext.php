@@ -24,7 +24,7 @@ use Teknoo\East\Website\Object\User;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
-use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\Environment;
@@ -42,11 +42,11 @@ use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
-use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Symfony\Component\DependencyInjection\Container;
 
 /**

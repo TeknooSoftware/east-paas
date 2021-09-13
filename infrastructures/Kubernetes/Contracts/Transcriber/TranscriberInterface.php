@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 
 /**
  * Base interface to help the Kubernetes driver to transcribe a `CompiledDeploymentInterface` instance to

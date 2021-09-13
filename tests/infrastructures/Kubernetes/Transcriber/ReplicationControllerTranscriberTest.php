@@ -36,7 +36,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
 
 /**

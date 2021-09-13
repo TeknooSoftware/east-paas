@@ -31,7 +31,7 @@ use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface as ClusterClientInterface;
-use Teknoo\East\Paas\Contracts\Container\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Job\JobUnit;
 use Teknoo\East\Paas\Object\Environment;

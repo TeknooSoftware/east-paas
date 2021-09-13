@@ -23,28 +23,23 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Conductor;
+namespace Teknoo\East\Paas\Contracts\Compilation;
 
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use IteratorAggregate;
+use Traversable;
 
 /**
- * To define compiler able to read Paas yaml definition to convert to normalized object to inject
- * into a CompiledDeploymentInterface instance.
+ * To define a collection of `CompilerInstance` to pass to Conductor to compile and to normalize a PaaS Yaml.
+ *
+ * @extends IteratorAggregate<int, CompilerInterface>
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface CompilerInterface
+interface CompilerCollectionInterface extends IteratorAggregate
 {
     /**
-     * @param array<string, mixed> $definitions
+     * @return iterable<CompilerInterface>
      */
-    public function compile(
-        array &$definitions,
-        CompiledDeploymentInterface $compiledDeployment,
-        JobWorkspaceInterface $workspace,
-        JobUnitInterface $job,
-        ?string $storageIdentifier = null
-    ): CompilerInterface;
+    public function getIterator(): iterable;
 }

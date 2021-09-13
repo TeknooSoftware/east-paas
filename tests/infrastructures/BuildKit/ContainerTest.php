@@ -31,7 +31,7 @@ use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
 use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

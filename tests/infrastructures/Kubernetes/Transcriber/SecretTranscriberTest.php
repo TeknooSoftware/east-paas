@@ -30,7 +30,7 @@ use Maclof\Kubernetes\Repositories\SecretRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 
 /**

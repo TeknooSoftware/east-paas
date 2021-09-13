@@ -26,8 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation;
 
 use RuntimeException;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentFactoryInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentFactoryInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 
 use function class_exists;
 

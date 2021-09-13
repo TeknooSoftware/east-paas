@@ -28,7 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Maclof\Kubernetes\Models\Service as KubeService;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;

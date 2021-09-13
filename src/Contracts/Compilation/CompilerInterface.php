@@ -23,15 +23,28 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\East\Paas\Contracts\Compilation;
+
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * Extension of VolumeInterface to define persistend volume, able to keep data between pods execution.
+ * To define compiler able to read Paas yaml definition to convert to normalized object to inject
+ * into a CompiledDeploymentInterface instance.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface PersistentVolumeInterface extends VolumeInterface
+interface CompilerInterface
 {
-    public function getStorageIdentifier(): ?string;
+    /**
+     * @param array<string, mixed> $definitions
+     */
+    public function compile(
+        array &$definitions,
+        CompiledDeploymentInterface $compiledDeployment,
+        JobWorkspaceInterface $workspace,
+        JobUnitInterface $job,
+        ?string $storageIdentifier = null
+    ): CompilerInterface;
 }

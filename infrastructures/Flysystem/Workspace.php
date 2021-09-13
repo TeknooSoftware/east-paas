@@ -31,7 +31,7 @@ use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Running;
 use League\Flysystem\Filesystem;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\Immutable\ImmutableTrait;
-use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;

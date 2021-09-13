@@ -23,20 +23,19 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
+
+use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
 /**
- * Extension of VolumeInterface to define volume with populated files and folders, copied from the source
- * repository.
+ * Interface to define object registrable and pushable to a registry to be used by the cluster.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface PopulatedVolumeInterface extends VolumeInterface
+interface RegistrableInterface
 {
-    public function getLocalPath(): string;
-
-    public function isEmbedded(): bool;
-
-    public function import(string $mountPath): PopulatedVolumeInterface;
+    public function withRegistry(string $registry): self;
 }

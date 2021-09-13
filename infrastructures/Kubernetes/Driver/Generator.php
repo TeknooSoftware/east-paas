@@ -29,7 +29,7 @@ use Closure;
 use Maclof\Kubernetes\Client as KubernetesClient;
 use RuntimeException;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;

@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\CompiledDeployment\Image;
 
-use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
-use Teknoo\East\Paas\Contracts\Container\VolumeInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 

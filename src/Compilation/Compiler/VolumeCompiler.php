@@ -25,9 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
-use Teknoo\East\Paas\Contracts\Conductor\CompilerInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 

@@ -23,17 +23,31 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Conductor;
+namespace Teknoo\East\Paas\Contracts\Compilation;
+
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
- * To define factory able to build new CompiledDeploymentInterface instance.
+ * To define service able to validate and prepare a deployment by compiling instructions from paas.yaml to objects
+ * understable by deployments adapters and clusters's drivers, grouped into a summary object implemented via
+ * 'CompiledDeploymentInterface'.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface CompiledDeploymentFactoryInterface
+interface ConductorInterface
 {
-    public function build(int $version, string $namespace): CompiledDeploymentInterface;
+    public function configure(
+        JobUnitInterface $job,
+        JobWorkspaceInterface $workspace
+    ): ConductorInterface;
 
-    public function getSchema(): string;
+    public function prepare(
+        string $configuration,
+        PromiseInterface $promise
+    ): ConductorInterface;
+
+    public function compileDeployment(PromiseInterface $promise, ?string $storageIdentifier = null): ConductorInterface;
 }

@@ -29,8 +29,8 @@ use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\Promise\Promise;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Contracts\Conductor\ConductorInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Throwable;
 
 /**

@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\Compiler\SecretCompiler;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 

@@ -28,7 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\BuildKit;
 use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
-use Teknoo\East\Paas\Contracts\Container\BuilderInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 
 use function DI\get;
 use function file_get_contents;

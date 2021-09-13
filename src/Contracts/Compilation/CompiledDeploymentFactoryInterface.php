@@ -23,30 +23,17 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
-
-use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+namespace Teknoo\East\Paas\Contracts\Compilation;
 
 /**
- * Interface to define an object buildable to create an OCI image and push it to a repository
+ * To define factory able to build new CompiledDeploymentInterface instance.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface BuildableInterface extends RegistrableInterface
+interface CompiledDeploymentFactoryInterface
 {
-    public function getName(): string;
+    public function build(int $version, string $namespace): CompiledDeploymentInterface;
 
-    public function getUrl(): string;
-
-    public function getPath(): string;
-
-    public function getTag(): ?string;
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getVariables(): array;
+    public function getSchema(): string;
 }

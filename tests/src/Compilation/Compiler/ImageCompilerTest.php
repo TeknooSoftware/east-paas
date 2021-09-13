@@ -27,8 +27,8 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Contracts\Container\BuildableInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 

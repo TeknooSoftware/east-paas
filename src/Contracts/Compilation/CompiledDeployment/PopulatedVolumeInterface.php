@@ -23,31 +23,20 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Conductor;
-
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\Recipe\Promise\PromiseInterface;
+namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
 
 /**
- * To define service able to validate and prepare a deployment by compiling instructions from paas.yaml to objects
- * understable by deployments adapters and clusters's drivers, grouped into a summary object implemented via
- * 'CompiledDeploymentInterface'.
+ * Extension of VolumeInterface to define volume with populated files and folders, copied from the source
+ * repository.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface ConductorInterface
+interface PopulatedVolumeInterface extends VolumeInterface
 {
-    public function configure(
-        JobUnitInterface $job,
-        JobWorkspaceInterface $workspace
-    ): ConductorInterface;
+    public function getLocalPath(): string;
 
-    public function prepare(
-        string $configuration,
-        PromiseInterface $promise
-    ): ConductorInterface;
+    public function isEmbedded(): bool;
 
-    public function compileDeployment(PromiseInterface $promise, ?string $storageIdentifier = null): ConductorInterface;
+    public function import(string $mountPath): PopulatedVolumeInterface;
 }

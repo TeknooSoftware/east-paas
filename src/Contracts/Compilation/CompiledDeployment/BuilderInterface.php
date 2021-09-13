@@ -23,23 +23,32 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Conductor;
+namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
 
-use IteratorAggregate;
-use Traversable;
+use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
 /**
- * To define a collection of `CompilerInstance` to pass to Conductor to compile and to normalize a PaaS Yaml.
- *
- * @extends IteratorAggregate<int, CompilerInterface>
+ * Interface to define service able to take BuildableInterface instance and convert it / build them to OCI images and
+ * push it to a registry.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface CompilerCollectionInterface extends IteratorAggregate
+interface BuilderInterface
 {
-    /**
-     * @return iterable<CompilerInterface>
-     */
-    public function getIterator(): iterable;
+    public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface;
+
+    public function buildImages(
+        CompiledDeploymentInterface $compiledDeployment,
+        string $workingPath,
+        PromiseInterface $promise
+    ): BuilderInterface;
+
+    public function buildVolumes(
+        CompiledDeploymentInterface $compiledDeployment,
+        string $workingPath,
+        PromiseInterface $promise
+    ): BuilderInterface;
 }

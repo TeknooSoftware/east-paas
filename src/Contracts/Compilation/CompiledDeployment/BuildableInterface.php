@@ -23,32 +23,30 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Container;
+namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
 
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Conductor\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
 /**
- * Interface to define service able to take BuildableInterface instance and convert it / build them to OCI images and
- * push it to a registry.
+ * Interface to define an object buildable to create an OCI image and push it to a repository
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface BuilderInterface
+interface BuildableInterface extends RegistrableInterface
 {
-    public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface;
+    public function getName(): string;
 
-    public function buildImages(
-        CompiledDeploymentInterface $compiledDeployment,
-        string $workingPath,
-        PromiseInterface $promise
-    ): BuilderInterface;
+    public function getUrl(): string;
 
-    public function buildVolumes(
-        CompiledDeploymentInterface $compiledDeployment,
-        string $workingPath,
-        PromiseInterface $promise
-    ): BuilderInterface;
+    public function getPath(): string;
+
+    public function getTag(): ?string;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getVariables(): array;
 }
