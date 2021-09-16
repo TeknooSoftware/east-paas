@@ -75,7 +75,6 @@
         "symfony/validator": "^5.3.7",
         "symfony/yaml": "^5.3.6",
         "symfony/psr-http-message-bridge": "~2.1",
-        "symfony/security-core": "^5.3.7",
         "symfony/framework-bundle": "^5.3.7",
         "teknoo/bridge-phpdi-symfony": "^5.0.4"
     },

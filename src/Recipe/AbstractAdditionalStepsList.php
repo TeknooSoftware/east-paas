@@ -31,6 +31,8 @@ use Teknoo\Recipe\Bowl\BowlInterface;
 use function ksort;
 
 /**
+ * Abstract class used by the DI to implement `AdditionalStepsInterface` collections to customize East PaaS cookbooks.
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
