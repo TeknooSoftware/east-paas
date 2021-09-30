@@ -27,10 +27,13 @@ namespace Teknoo\East\Paas\Object\Account;
 
 use Closure;
 use DateTimeInterface;
+use RuntimeException;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
+use Teknoo\East\Website\Object\User;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
@@ -49,6 +52,25 @@ class Active implements StateInterface
     {
         return function (Project $project, Job $job, DateTimeInterface $date, Environment $environment): Account {
             $project->configure($job, $date, $environment, $this->getNamespace());
+
+            return $this;
+        };
+    }
+
+    public function verifyAccessToUser(): Closure
+    {
+        return function (User $user, PromiseInterface $promise): Account {
+            foreach ($this->getUsers() as $u) {
+                if ($u->getId() === $user->getId()) {
+                    $promise->success(true);
+
+                    return $this;
+                }
+            }
+
+            $promise->fail(
+                new RuntimeException('teknoo.east.paas.error.account.inactive')
+            );
 
             return $this;
         };

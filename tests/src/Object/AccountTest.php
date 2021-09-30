@@ -32,6 +32,7 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Object\User as BaseUser;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
 
 /**
@@ -305,5 +306,52 @@ class AccountTest extends TestCase
         $this->buildObject()
             ->setName('foo')
             ->canIPrepareNewJob($project, $job, new \DateTime('2018-05-01'), new \stdClass());
+    }
+    
+    public function testVerifyAccessToUserInactive()
+    {
+        $user = $this->createMock(BaseUser::class);
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('fail');
+        $promise->expects(self::never())->method('success');
+
+        self::assertInstanceOf(
+            Account::class,
+            $this->buildObject()->verifyAccessToUser($user, $promise)
+        );
+    }
+
+    public function testVerifyAccessToUserActiveNotIn()
+    {
+        $user = $this->createMock(BaseUser::class);
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('fail');
+        $promise->expects(self::never())->method('success');
+
+        self::assertInstanceOf(
+            Account::class,
+            $this->buildObject()
+                ->setName('foo')
+                ->setNamespace('bar')
+                ->verifyAccessToUser($user, $promise)
+        );
+    }
+
+    public function testVerifyAccessToUserActiveIn()
+    {
+        $user = $this->createMock(BaseUser::class);
+        $user->expects(self::any())->method('getId')->willReturn('foo');
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            Account::class,
+            $this->buildObject()
+                ->setName('foo')
+                ->setNamespace('bar')
+                ->setUsers([$user])
+                ->verifyAccessToUser($user, $promise)
+        );
     }
 }
