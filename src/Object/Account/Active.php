@@ -37,6 +37,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
+use function is_iterable;
+
 /**
  * State representing an account fully completed, able to create new project.
  *
@@ -60,11 +62,15 @@ class Active implements StateInterface
     public function verifyAccessToUser(): Closure
     {
         return function (User $user, PromiseInterface $promise): Account {
-            foreach ($this->getUsers() as $u) {
-                if ($u->getId() === $user->getId()) {
-                    $promise->success(true);
+            $usersList = $this->getUsers();
 
-                    return $this;
+            if (is_iterable($usersList)) {
+                foreach ($usersList as $u) {
+                    if ($u->getId() === $user->getId()) {
+                        $promise->success(true);
+
+                        return $this;
+                    }
                 }
             }
 
