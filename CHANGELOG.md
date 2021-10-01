@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.68] - 2021-10-01
+### Dev Release
+- Add `verifyAccessToUser` to `Account` to check user's rights about a project
+
 ## [0.0.67] - 2021-09-13
 ### Dev Release
 - Migrate to last Teknoo libs, Recipe 3.3 and Website 6.0
