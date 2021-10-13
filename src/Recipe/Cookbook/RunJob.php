@@ -45,6 +45,7 @@ use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
 use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
+use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Bowl\BowlInterface;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
@@ -59,6 +60,7 @@ use Teknoo\Recipe\RecipeInterface;
 class RunJob implements RunJobInterface
 {
     use BaseCookbookTrait;
+    use AdditionalStepsTrait;
 
     /**
      * @param iterable<callable> $additionalSteps
@@ -81,10 +83,11 @@ class RunJob implements RunJobInterface
         private ConfigureClusterClient $stepConfigureClusterClient,
         private Deploying $stepDeploying,
         private Exposing $stepExposing,
-        private iterable $additionalSteps,
+        iterable $additionalSteps,
         private DispatchResultInterface $stepDispatchResult,
         private SendHistoryInterface $stepSendHistoryInterface,
     ) {
+        $this->additionalSteps = $additionalSteps;
         $this->fill($recipe);
     }
 
@@ -282,9 +285,7 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_EXPOSING
         );
 
-        foreach ($this->additionalSteps as $position => $step) {
-            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
-        }
+        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
 
         //Final
         $recipe = $recipe->cook(

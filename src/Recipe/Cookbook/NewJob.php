@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
 use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
+use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
 use Teknoo\Recipe\RecipeInterface;
@@ -50,6 +51,7 @@ use Teknoo\Recipe\RecipeInterface;
 class NewJob implements NewJobInterface
 {
     use BaseCookbookTrait;
+    use AdditionalStepsTrait;
 
     /**
      * @param iterable<callable> $additionalSteps
@@ -63,11 +65,12 @@ class NewJob implements NewJobInterface
         private PrepareJob $stepPrepareJob,
         private SaveJob $stepSaveJob,
         private SerializeJob $stepSerializeJob,
-        private iterable $additionalSteps,
+        iterable $additionalSteps,
         private DispatchJobInterface $stepDispatchJob,
         private SendJobInterface $stepSendJob,
         private DispatchError $stepDispatchError,
     ) {
+        $this->additionalSteps = $additionalSteps;
         $this->fill($recipe);
     }
 
@@ -81,9 +84,7 @@ class NewJob implements NewJobInterface
         $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
         $recipe = $recipe->cook($this->stepSerializeJob, SerializeJob::class, [], 70);
 
-        foreach ($this->additionalSteps as $position => $step) {
-            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
-        }
+        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
 
         $recipe = $recipe->cook(
             $this->stepDispatchJob,

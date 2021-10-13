@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
+use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
 use Teknoo\Recipe\RecipeInterface;
@@ -48,6 +49,7 @@ use Teknoo\Recipe\RecipeInterface;
 class AddHistory implements AddHistoryInterface
 {
     use BaseCookbookTrait;
+    use AdditionalStepsTrait;
 
     /**
      * @param iterable<callable> $additionalSteps
@@ -60,10 +62,11 @@ class AddHistory implements AddHistoryInterface
         private GetJob $stepGetJob,
         private StepAddHistory $stepAddHistory,
         private SaveJob $stepSaveJob,
-        private iterable $additionalSteps,
+        iterable $additionalSteps,
         private SendHistoryInterface $stepSendHistoryInterface,
         private DispatchError $stepDispatchError,
     ) {
+        $this->additionalSteps = $additionalSteps;
         $this->fill($recipe);
     }
 
@@ -76,9 +79,7 @@ class AddHistory implements AddHistoryInterface
         $recipe = $recipe->cook($this->stepAddHistory, StepAddHistory::class, [], 50);
         $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
 
-        foreach ($this->additionalSteps as $position => $step) {
-            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
-        }
+        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
 
         $recipe = $recipe->cook($this->stepSendHistoryInterface, SendHistoryInterface::class, [], 80);
 

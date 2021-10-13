@@ -42,13 +42,23 @@ trait AdditionalStepsTrait
      */
     private iterable $additionalSteps;
 
+    /**
+     * @param iterable<callable> $steps
+     */
+    private function registerAdditionalSteps(RecipeInterface $recipe, iterable $steps): RecipeInterface
+    {
+        foreach ($steps as $position => $step) {
+            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
+        }
+
+        return $recipe;
+    }
+
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
         $recipe = parent::populateRecipe($recipe);
 
-        foreach ($this->additionalSteps as $position => $step) {
-            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
-        }
+        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
 
         return $recipe;
     }

@@ -49,9 +49,7 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class NewProjectEndPoint extends CreateContentEndPoint implements NewAccountEndPointInterface
 {
-    use AdditionalStepsTrait {
-        populateRecipe as traitPopulateRecipe;
-    }
+    use AdditionalStepsTrait;
 
     private LoadObject $loadObject;
 
@@ -105,6 +103,8 @@ class NewProjectEndPoint extends CreateContentEndPoint implements NewAccountEndP
             05
         );
 
-        return $this->traitPopulateRecipe($recipe);
+        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
+
+        return parent::populateRecipe($recipe);
     }
 }
