@@ -37,7 +37,7 @@ use Teknoo\States\State\StateTrait;
 use function array_keys;
 use function implode;
 use function set_time_limit;
-use function sha1;
+use function hash;
 use function str_replace;
 use function substr;
 
@@ -69,7 +69,7 @@ class Running implements StateInterface
 
     private function hash(): Closure
     {
-        return fn(string $name) => substr(sha1($this->projectId . $name), 0, 10);
+        return fn(string $name) => substr(hash('sha256', $this->projectId . $name), 0, 10);
     }
 
     private function setTimeout(): Closure
