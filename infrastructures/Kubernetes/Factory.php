@@ -93,7 +93,7 @@ class Factory implements ClientFactoryInterface
             }
         }
 
-        return new KubClient($options, null, $repositoryRegistry);
+        return new KubClient($options, $repositoryRegistry);
     }
 
     private function write(string $value): string
