@@ -50,6 +50,8 @@ use Teknoo\States\Proxy\ProxyTrait;
 /**
  * Persisted object representing a project, in an Account, to deploy on clusters from a source repository.
  *
+ * @method Project prepareJob(Job $job, DateTimeInterface $date, Environment $environment)
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
@@ -72,8 +74,6 @@ class Project implements
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
     protected ?ImageRegistryInterface $imagesRegistry = null;
-
-    private ?ImageRegistry $identity = null;
 
     /**
      * @var array<int, Cluster>|iterable<Cluster>

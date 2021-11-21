@@ -53,7 +53,7 @@ class SecretTranscriber implements DeploymentInterface
 
     private static function isValid64(string $value): bool
     {
-        return str_starts_with($value, static::BASE64_PREFIX);
+        return str_starts_with($value, self::BASE64_PREFIX);
     }
 
     /**
@@ -64,17 +64,17 @@ class SecretTranscriber implements DeploymentInterface
     {
         if (is_array($value)) {
             foreach ($value as $key => &$subValue) {
-                $subValue = static::encode($subValue);
+                $subValue = self::encode($subValue);
             }
 
             return $value;
         }
 
-        if (!is_string($value) || !static::isValid64($value)) {
+        if (!is_string($value) || !self::isValid64($value)) {
             return base64_encode((string) $value);
         }
 
-        return substr($value, strlen(static::BASE64_PREFIX));
+        return substr($value, strlen(self::BASE64_PREFIX));
     }
 
     private static function convertToSecret(Secret $secret, string $namespace): ?KubeSecret
@@ -93,7 +93,7 @@ class SecretTranscriber implements DeploymentInterface
                 ],
             ],
             'type' => 'Opaque',
-            'data' => static::encode($secret->getOptions()),
+            'data' => self::encode($secret->getOptions()),
         ]);
     }
 
@@ -104,7 +104,7 @@ class SecretTranscriber implements DeploymentInterface
     ): TranscriberInterface {
         $compiledDeployment->foreachSecret(
             static function (Secret $secret, string $namespace) use ($client, $promise) {
-                $kubeSecret = static::convertToSecret($secret, $namespace);
+                $kubeSecret = self::convertToSecret($secret, $namespace);
 
                 if (null === $kubeSecret) {
                     return;

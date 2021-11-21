@@ -38,17 +38,17 @@ use Teknoo\Recipe\RecipeInterface;
 trait AdditionalStepsTrait
 {
     /**
-     * @var iterable<callable>
+     * @var iterable<int, callable>
      */
     private iterable $additionalSteps;
 
     /**
-     * @param iterable<callable> $steps
+     * @param iterable<int, callable> $steps
      */
     private function registerAdditionalSteps(RecipeInterface $recipe, iterable $steps): RecipeInterface
     {
         foreach ($steps as $position => $step) {
-            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], $position);
+            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], (int) $position);
         }
 
         return $recipe;

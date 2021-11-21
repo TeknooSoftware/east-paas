@@ -34,6 +34,7 @@ use Throwable;
 use function array_flip;
 use function is_array;
 use function is_string;
+use function is_scalar;
 use function libxml_get_last_error;
 
 /**
@@ -102,7 +103,7 @@ class YamlValidator
     }
 
     /**
-     * @param array<mixed, mixed> $values
+     * @param array<string|int, mixed> $values
      */
     private function parse(
         array &$values,
@@ -117,26 +118,26 @@ class YamlValidator
                 $name = 'row';
             }
 
-            $isStatic = isset(array_flip(static::$staticNodesNames)[$name]);
+            $isStatic = isset(array_flip(self::$staticNodesNames)[$name]);
             $nodeName = $name;
             if (false === $isStatic) {
                 $nodeName = 'node';
 
-                if (true === $isVolume && isset($values[$name]['add'])) {
+                if (true === $isVolume && is_array($values[$name]) && isset($values[$name]['add'])) {
                     $nodeName = 'embedded-' . $nodeName;
-                } elseif (true === $isVolume && isset($values[$name]['from'])) {
+                } elseif (true === $isVolume && is_array($values[$name]) && isset($values[$name]['from'])) {
                     $nodeName = 'from-' . $nodeName;
-                } elseif (true === $isVolume && isset($values[$name]['persistent'])) {
+                } elseif (true === $isVolume && is_array($values[$name]) && isset($values[$name]['persistent'])) {
                     $nodeName = 'persistent-' . $nodeName;
-                } elseif (true === $isVolume && isset($values[$name]['from-secret'])) {
+                } elseif (true === $isVolume && is_array($values[$name]) && isset($values[$name]['from-secret'])) {
                     $nodeName = 'secret-' . $nodeName;
                 }
             }
 
-            if (!is_array($mixedElement)) {
-                $newNode = $document->createElementNS(static::$xsdUrl, $nodeName, (string) $mixedElement);
+            if (!is_array($mixedElement) && is_scalar($mixedElement)) {
+                $newNode = $document->createElementNS(self::$xsdUrl, $nodeName, (string) $mixedElement);
             } else {
-                $newNode = $document->createElementNS(static::$xsdUrl, $nodeName);
+                $newNode = $document->createElementNS(self::$xsdUrl, $nodeName);
                 $this->parse(
                     $mixedElement,
                     $document,
@@ -160,11 +161,11 @@ class YamlValidator
     private function convert(array $values): DOMDocument
     {
         $document = new DOMDocument('1.0', 'UTF-8');
-        $root = $document->createElementNS(static::$xsdUrl, $this->rootName);
+        $root = $document->createElementNS(self::$xsdUrl, $this->rootName);
         $root->setAttributeNS(
             'http://www.w3.org/2001/XMLSchema-instance',
             'xsi:schemaLocation',
-            static::$xsdUrl . ' ' . static::$xsdUrl . '.xsd'
+            self::$xsdUrl . ' ' . self::$xsdUrl . '.xsd'
         );
 
         $document->appendChild($root);
@@ -189,7 +190,7 @@ class YamlValidator
         } finally {
             $libError = libxml_get_last_error();
 
-            if ($xmlError || $libError) {
+            if ($xmlError || false !== $libError) {
                 $exception = new RuntimeException((string) ($xmlError ?? $libError->message));
                 $promise->fail($exception);
 

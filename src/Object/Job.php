@@ -259,7 +259,7 @@ class Job implements
     }
 
     /**
-     * @param array<int, Cluster>|iterable<Cluster> $clusters
+     * @param array<int, Cluster>|iterable<int, Cluster> $clusters
      */
     public function setClusters(iterable $clusters): Job
     {

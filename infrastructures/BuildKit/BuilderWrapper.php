@@ -182,7 +182,10 @@ class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInter
                 if ($newImage instanceof EmbeddedVolumeImage) {
                     $paths = [];
                     foreach ($newImage->getVolumes() as $volume) {
-                        if ($volume instanceof PersistentVolumeInterface) {
+                        if (
+                            $volume instanceof PersistentVolumeInterface
+                            || !$volume instanceof Volume
+                        ) {
                             continue;
                         }
 

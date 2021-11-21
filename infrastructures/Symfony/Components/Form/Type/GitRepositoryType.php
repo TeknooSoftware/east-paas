@@ -58,7 +58,7 @@ class GitRepositoryType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<GitRepository>> $forms
              * @param ?GitRepository $data
              */
             public function mapDataToForms($data, $forms): void
@@ -74,7 +74,7 @@ class GitRepositoryType extends AbstractType
             }
 
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<GitRepository>> $forms
              * @param ?GitRepository $data
              */
             public function mapFormsToData($forms, &$data): void

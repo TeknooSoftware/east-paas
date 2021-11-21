@@ -52,7 +52,7 @@ use function array_map;
 class ReplicationControllerTranscriber implements DeploymentInterface
 {
     /**
-     * @param array<string, mixed> $specs
+     * @param array<string, > $specs
      * @param array<string, array<string, Image>>|Image[][] $images
      */
     private static function convertToContainer(array &$specs, Pod $pod, array $images): void
@@ -209,7 +209,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
     ): TranscriberInterface {
         $compiledDeployment->foreachPod(
             static function (Pod $pod, array $images, array $volumes, string $namespace) use ($client, $promise) {
-                $kubeController = static::convertToReplicationController($pod, $images, $volumes, $namespace);
+                $kubeController = self::convertToReplicationController($pod, $images, $volumes, $namespace);
 
                 try {
                     if (!empty($namespace)) {

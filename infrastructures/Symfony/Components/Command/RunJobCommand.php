@@ -70,12 +70,12 @@ class RunJobCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument(static::FILE_ARGUMENT_NAME, InputArgument::REQUIRED, 'Filename');
+        $this->addArgument(self::FILE_ARGUMENT_NAME, InputArgument::REQUIRED, 'Filename');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $file = $input->getArgument(static::FILE_ARGUMENT_NAME);
+        $file = $input->getArgument(self::FILE_ARGUMENT_NAME);
         if (!is_string($file)) {
             $output->writeln('Wrong filename');
             return 1;

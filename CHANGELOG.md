@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.69] - 2021-11-21
+### Dev Release
+- Switch to PHPStan 1.1+
+- Fix some QA
+
 ## [0.0.68] - 2021-10-01
 ### Dev Release
 - Add `verifyAccessToUser` to `Account` to check user's rights about a project

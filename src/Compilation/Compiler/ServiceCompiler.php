@@ -56,18 +56,18 @@ class ServiceCompiler implements CompilerInterface
     ): CompilerInterface {
         foreach ($definitions as $name => &$config) {
             $ports = [];
-            foreach ($config[static::KEY_PORTS] as $row) {
-                $ports[(int) $row[static::KEY_LISTEN]] = (int) $row[static::KEY_TARGET];
+            foreach ($config[self::KEY_PORTS] as $row) {
+                $ports[(int) $row[self::KEY_LISTEN]] = (int) $row[self::KEY_TARGET];
             }
 
             $compiledDeployment->addService(
                 $name,
                 new Service(
                     $name,
-                    $config[static::KEY_POD_NAME] ?? $name,
+                    $config[self::KEY_POD_NAME] ?? $name,
                     $ports,
-                    $config[static::KEY_PROTOCOL] ?? Service::TCP,
-                    !empty($config[static::KEY_INTERNAL])
+                    $config[self::KEY_PROTOCOL] ?? Service::TCP,
+                    !empty($config[self::KEY_INTERNAL])
                 )
             );
         }

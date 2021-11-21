@@ -72,7 +72,7 @@ class Deploying
                             $projectId,
                             $envName,
                             $jobUnit->getId(),
-                            static::class . ':Result',
+                            self::class . ':Result',
                             $result
                         );
                     },

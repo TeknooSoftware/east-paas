@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
+use RuntimeException;
 use Symplify\GitWrapper\GitWrapper;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
@@ -63,7 +64,7 @@ class Hook implements HookInterface, HookAwareInterface, ProxyInterface, Automat
     private ?string $path = null;
 
     /**
-     * @var array<string, mixed>
+     * @var array<string, string>
      */
     private array $options = [];
 
@@ -72,11 +73,15 @@ class Hook implements HookInterface, HookAwareInterface, ProxyInterface, Automat
     private ?JobWorkspaceInterface $workspace = null;
 
     /**
-     * @param GitWrapper $gitWrapper
+     * @param ?GitWrapper $gitWrapper
      */
     public function __construct($gitWrapper)
     {
         $this->uniqueConstructorCheck();
+
+        if (empty($gitWrapper)) {
+            throw new RuntimeException('Missing git wrapper tools injected in this hook');
+        }
 
         $this->gitWrapper = $gitWrapper;
 
@@ -134,9 +139,7 @@ class Hook implements HookInterface, HookAwareInterface, ProxyInterface, Automat
         $this->jobUnit = null;
         $this->workspace = null;
 
-        if (!empty($this->gitWrapper)) {
-            $this->gitWrapper = clone $this->gitWrapper;
-        }
+        $this->gitWrapper = clone $this->gitWrapper;
 
         $this->updateStates();
     }

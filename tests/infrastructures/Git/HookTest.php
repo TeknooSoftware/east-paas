@@ -69,6 +69,12 @@ class HookTest extends TestCase
         return new Hook($this->getGitWrapperMock());
     }
 
+    public function testMissingGitWrapper()
+    {
+        $this->expectException(\RuntimeException::class);
+        $a =  new Hook(null);
+    }
+
     public function testSetContextBadJobUnit()
     {
         $this->expectException(\TypeError::class);

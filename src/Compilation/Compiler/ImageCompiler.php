@@ -68,7 +68,7 @@ class ImageCompiler implements CompilerInterface
     {
         foreach ($new as $key => &$value) {
             if (isset($original[$key]) && is_array($value)) {
-                $original[$key] = static::mergeConfigurations($original[$key], $value, false);
+                $original[$key] = self::mergeConfigurations($original[$key], $value, false);
             } elseif (false === $isFirstLevel || isset($original[$key])) {
                 $original[$key] = $value;
             }
@@ -87,10 +87,10 @@ class ImageCompiler implements CompilerInterface
         $imagesConfigs = $this->mergeConfigurations($definitions, $this->imagesLibrary);
 
         foreach ($imagesConfigs as $name => &$config) {
-            $buildName = $config[static::KEY_BUILD_NAME] ?? $name;
+            $buildName = $config[self::KEY_BUILD_NAME] ?? $name;
             $isLibrary = isset($this->imagesLibrary[$name]);
-            $tag = (string) ($config[static::KEY_TAG] ?? static::VALUE_TAG_LATEST);
-            $variables = ($config[static::KEY_VARIABLES] ?? []);
+            $tag = (string) ($config[self::KEY_TAG] ?? self::VALUE_TAG_LATEST);
+            $variables = ($config[self::KEY_VARIABLES] ?? []);
 
             $addImage = static function ($path) use (
                 $compiledDeployment,
@@ -114,13 +114,13 @@ class ImageCompiler implements CompilerInterface
             };
 
             if (true === $isLibrary) {
-                $addImage($config[static::KEY_PATH]);
+                $addImage($config[self::KEY_PATH]);
 
                 continue;
             }
 
             $workspace->runInRoot(
-                fn ($root) => $addImage($root . $config[static::KEY_PATH])
+                fn ($root) => $addImage($root . $config[self::KEY_PATH])
             );
         }
 

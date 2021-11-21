@@ -50,7 +50,7 @@ class AccountType extends AbstractType
 {
     /**
      * @param FormBuilderInterface<Account> $builder
-     * @param array<string, mixed> $options
+     * @param array<string, string|bool> $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options): self
     {
@@ -71,7 +71,7 @@ class AccountType extends AbstractType
 
         $builder->add(
             'users',
-            $options['doctrine_type'],
+            (string) $options['doctrine_type'],
             [
                 'class' => User::class,
                 'required' => true,
@@ -95,7 +95,7 @@ class AccountType extends AbstractType
             }
 
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<AccountType>> $forms
              * @param ?Account $data
              */
             public function mapFormsToData($forms, &$data): void

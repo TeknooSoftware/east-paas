@@ -75,7 +75,7 @@ class HookingDeployment
                             $projectId,
                             $envName,
                             $jobUnit->getId(),
-                            static::class . ':Result',
+                            self::class . ':Result',
                             ['hook_output' => $buildSuccess]
                         );
                     },

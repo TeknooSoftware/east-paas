@@ -59,7 +59,7 @@ use function substr;
 class JobUnit implements JobUnitInterface
 {
     /**
-     * @param array<string, mixed> $projectResume
+     * @param array{id: string, name: string} $projectResume
      * @param Cluster[] $clusters
      * @param array<string, mixed> $variables
      * @param array<string, mixed> $extra
@@ -166,7 +166,7 @@ class JobUnit implements JobUnitInterface
     }
 
     /**
-     * @param array<string, mixed> $values
+     * @param array{paas: array<string, mixed>} $values
      */
     private function updateNamespace(array &$values): void
     {

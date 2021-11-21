@@ -39,6 +39,9 @@ use function class_exists;
  */
 class CompiledDeploymentFactory implements CompiledDeploymentFactoryInterface
 {
+    /**
+     * @param 'Teknoo\East\Paas\Compilation\CompiledDeployment' $className
+     */
     public function __construct(
         private string $className,
         private string $xsdSchema

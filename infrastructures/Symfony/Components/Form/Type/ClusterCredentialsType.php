@@ -60,7 +60,7 @@ class ClusterCredentialsType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<ClusterCredentials>> $forms
              * @param ?ClusterCredentials $data
              */
             public function mapDataToForms($data, $forms): void
@@ -77,7 +77,7 @@ class ClusterCredentialsType extends AbstractType
             }
 
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<ClusterCredentials>> $forms
              * @param ?ClusterCredentials $data
              */
             public function mapFormsToData($forms, &$data): void
