@@ -57,6 +57,7 @@
         "maclof/kubernetes-client": "^0.22.0",
         "psr/http-message":"^1.0.1",
         "psr/http-factory":"^1.0.1",
+        "psr/http-client":"^1.0.1",
         "laminas/laminas-diactoros": "~2.8",
         "symfony/config": "^5.3.4",
         "symfony/console": "^5.3.7",
