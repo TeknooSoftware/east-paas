@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Git;
 
 use Symplify\GitWrapper\GitWrapper;
 use LogicException;
+use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running;
 use Teknoo\Immutable\ImmutableTrait;
@@ -79,11 +80,15 @@ class CloningAgent implements CloningAgentInterface, ProxyInterface, AutomatedIn
     private $gitWrapper;
 
     /**
-     * @param GitWrapper $gitWrapper
+     * @param ?GitWrapper $gitWrapper
      */
     public function __construct($gitWrapper)
     {
         $this->uniqueConstructorCheck();
+
+        if (empty($gitWrapper)) {
+            throw new RuntimeException('Missing git wrapper tools injected in this agent');
+        }
 
         $this->gitWrapper = $gitWrapper;
 
@@ -124,9 +129,7 @@ class CloningAgent implements CloningAgentInterface, ProxyInterface, AutomatedIn
         $this->sourceRepository = null;
         $this->workspace = null;
 
-        if (!empty($this->gitWrapper)) {
-            $this->gitWrapper = clone $this->gitWrapper;
-        }
+        $this->gitWrapper = clone $this->gitWrapper;
 
         $this->updateStates();
     }

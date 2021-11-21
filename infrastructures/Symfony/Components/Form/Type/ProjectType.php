@@ -85,7 +85,7 @@ class ProjectType extends AbstractType
             }
 
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<Project>> $forms
              * @param ?Project $data
              */
             public function mapFormsToData($forms, &$data): void

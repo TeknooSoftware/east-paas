@@ -96,7 +96,7 @@ class ClusterType extends AbstractType
             }
 
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<Cluster>> $forms
              * @param ?Cluster $data
              */
             public function mapFormsToData($forms, &$data): void

@@ -72,6 +72,12 @@ class CloningAgentTest extends TestCase
         return new CloningAgent($this->getGitWrapperMock());
     }
 
+    public function testMissingGitWrapper()
+    {
+        $this->expectException(\RuntimeException::class);
+        $a =  new CloningAgent(null);
+    }
+
     public function testConfigureBadRepository()
     {
         $this->expectException(\TypeError::class);

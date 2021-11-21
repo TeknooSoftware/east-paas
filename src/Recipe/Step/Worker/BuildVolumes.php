@@ -79,7 +79,7 @@ class BuildVolumes
                                 $projectId,
                                 $envName,
                                 $jobUnit->getId(),
-                                static::class . ':Result',
+                                self::class . ':Result',
                                 ['build_output' => $buildSuccess]
                             );
                         },

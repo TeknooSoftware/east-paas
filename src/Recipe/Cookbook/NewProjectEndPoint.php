@@ -54,7 +54,7 @@ class NewProjectEndPoint extends CreateContentEndPoint implements NewAccountEndP
     private LoadObject $loadObject;
 
     /**
-     * @param iterable<callable> $additionalSteps
+     * @param iterable<int, callable> $additionalSteps
      */
     public function __construct(
         RecipeInterface $recipe,

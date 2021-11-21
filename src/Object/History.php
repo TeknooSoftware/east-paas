@@ -108,14 +108,22 @@ class History implements ObjectInterface, ImmutableInterface, JsonSerializable
         return $this->extra;
     }
 
+    /**
+     * @return array<string, array<string, mixed>|bool|string|null>
+     */
     public function jsonSerialize()
     {
+        $previousArray = null;
+        if (null !== ($previous = $this->getPrevious())) {
+            $previousArray = $previous->jsonSerialize();
+        }
+
         return [
             'message' => $this->getMessage(),
-            'date' => $this->date->format(static::DATE_FORMAT),
+            'date' => $this->date->format(self::DATE_FORMAT),
             'is_final' => $this->isFinal(),
             'extra' => $this->getExtra(),
-            'previous' => $this->getPrevious()
+            'previous' => $previousArray,
         ];
     }
 

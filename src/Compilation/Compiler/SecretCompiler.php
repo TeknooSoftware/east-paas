@@ -56,8 +56,8 @@ class SecretCompiler implements CompilerInterface
                 $name,
                 new Secret(
                     $name,
-                    $config[static::KEY_PROVIDER],
-                    $config[static::KEY_OPTIONS]
+                    $config[self::KEY_PROVIDER],
+                    $config[self::KEY_OPTIONS]
                 )
             );
         }

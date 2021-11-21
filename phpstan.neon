@@ -1,45 +1,87 @@
 parameters:
-    scopeClass: Teknoo\States\PHPStan\Analyser\Scope
-    treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
-            message: '#Method [a-zA-Z0-9\\_]+::denormalize|normalize\(\) return type has no value type specified in iterable type array.#'
-            path: infrastructures/Symfony/Components/Normalizer
+            message: '#mixed#'
+            path:  infrastructures/BuildKit/di.php
+        -
+            message: '#mixed given#'
+            path:  infrastructures/Doctrine/Form/Type/AccountType.php
+        -
+            message: '#mixed given#'
+            path:  infrastructures/Symfony/Components/Form/Type/
+        -
+            message: '#cast mixed to#'
+            path:  infrastructures/Symfony/Components/Form/Type/
+        -
+            message: '#Anonymous function should return [a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
+            path:  infrastructures/
+        -
+            message: '#Cannot access an offset on mixed#'
+            path: infrastructures/Kubernetes/Transcriber/ReplicationControllerTranscriber.php
+        -
+            message: '#SecretTranscriber::encode#'
+            path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
+        -
+            message: '#expects int, mixed given#'
+            path: infrastructures/Laminas/Response/ErrorFactory.php
+        -
+            message: '#ClassFinderDenormalizer::denormalize#'
+            path: infrastructures/Symfony/Components/Normalizer/ClassFinderDenormalizer.php
+        -
+            message: '#version is never read, only written#'
+            path:  src/Compilation/CompiledDeployment.php
+        -
+            message: '#project is never read, only written#'
+            path:  src/Object/Cluster.php
+        -
+            message: '#mixed#' #array validated by validation schema
+            path:  src/Compilation/
+        -
+            message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
+            path:  src/Object/Job.php
+        -
+            message: '#RuntimeException constructor expects int, mixed given#'
+            path:  src/Object/Job.php
         -
             message: '#Cannot access an offset on iterable#'
-            path: src/Object/Job/Pending.php
+            path:  src/Object/Job.php
         -
-            message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z0-9\\_]+\|null.#'
-            path: src/Object/Job/Terminated.php
+            message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
+            path:  src/Object/Project.php
         -
-            message: '#Cannot call method canIPrepareNewJob\(\) on [a-zA-Z0-9\\_]+\|null.#'
-            path: src/Object/Project/Executable.php
+            message: '#[a-zA-Z\\]+\|null given#'
+            path:  src/Object/Project.php
         -
-            message: '#Parameter \#1 \$repository of method [a-zA-Z0-9\\_]+::[a-zA-Z0-9\\_]+\(\) expects [a-zA-Z0-9\\_]+, [a-zA-Z0-9\\_]+\|null given#'
-            path: src/Object/Project/Executable.php
+            message: '#prepareJob\(\) invoked with 3 parameters, 2 required#'
+            path:  src/Recipe/Step/Job/PrepareJob.php
         -
-            message: '#Cannot access property \$message on LibXMLError\|false.#'
-            path: src/Parser/YamlValidator.php
+            message: '#\$message on LibXMLError\|false#'
+            path:  src/Parser/YamlValidator.php
         -
-            message: '#Anonymous function should return [a-zA-Z0-9\\_]+ but returns [a-zA-Z0-9\\_]+\|null#'
-            path: infrastructures/Flysystem/Workspace/Running.php
-        -
-            message: '#Anonymous function should return [a-zA-Z0-9\\_]+ but returns [a-zA-Z0-9\\_]+\|null#'
-            path: infrastructures/Git/CloningAgent/Running.php
-        -
-            message: '#Anonymous function should return [a-zA-Z0-9\\_]+ but returns [a-zA-Z0-9\\_]+\|null#'
-            path: infrastructures/Git/Hook/Running.php
-        -
-            message: '#Method [a-zA-Z0-9\\_]+::prepareJob\(\) invoked with 3 parameters, 2 required#'
-            path: src/Recipe/Step/Job/PrepareJob.php
-        -
-            message: '#Parameter \#2 \$new of method [a-zA-Z0-9\\_]+::updateBuildable\(\) expects [a-zA-Z0-9\\_]+, [a-zA-Z0-9\\_]+ given#'
-            path: infrastructures/BuildKit/BuilderWrapper.php
-        -
-            message: '#Call to an undefined method [a-zA-Z0-9\\_]+::[a-zA-Z]+\(\)#'
-            path: infrastructures/BuildKit/BuilderWrapper.php
+            message: '#mixed#'
+            path:  */di.php
+
 services:
-	-
-		class: Teknoo\States\PHPStan\MethodsClassExtension
-		tags:
-			- phpstan.broker.methodsClassReflectionExtension
+    -
+        class: Teknoo\States\PHPStan\MethodsClassExtension
+        arguments:
+            parser: @defaultAnalysisParser
+        tags:
+            - phpstan.broker.methodsClassReflectionExtension
+
+    -
+        class: Teknoo\States\PHPStan\Analyser\ASTVisitor
+        arguments:
+            parser: @defaultAnalysisParser
+
+    -
+        class: Teknoo\States\PHPStan\Analyser\NodeScopeResolver
+        autowired: PHPStan\Analyser\NodeScopeResolver
+        arguments:
+            parser: @defaultAnalysisParser
+            classReflector: @nodeScopeResolverClassReflector
+            polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
+            polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
+            earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
+            earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
+            implicitThrows: %exceptions.implicitThrows%

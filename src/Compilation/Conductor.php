@@ -190,20 +190,20 @@ class Conductor implements ConductorInterface, ProxyInterface, AutomatedInterfac
     {
         $this->extract(
             $this->configuration,
-            static::CONFIG_PAAS,
+            self::CONFIG_PAAS,
             [
-                static::CONFIG_KEY_VERSION => 'v1',
-                static::CONFIG_KEY_NAMESPACE => 'default',
+                self::CONFIG_KEY_VERSION => 'v1',
+                self::CONFIG_KEY_NAMESPACE => 'default',
             ],
             function ($paas) use ($promise, $storageIdentifier): void {
-                if (!isset($paas[static::CONFIG_KEY_VERSION]) || 'v1' !== $paas[static::CONFIG_KEY_VERSION]) {
+                if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
                     $promise->fail(new RuntimeException('Paas config file version not supported'));
 
                     return;
                 }
 
-                $version = (int) str_replace('v', '', $paas[static::CONFIG_KEY_VERSION]);
-                $namespace = $paas[static::CONFIG_KEY_NAMESPACE] ?? 'default';
+                $version = (int) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
+                $namespace = $paas[self::CONFIG_KEY_NAMESPACE] ?? 'default';
 
                 try {
                     $compiledDeployment = $this->factory->build($version, $namespace);

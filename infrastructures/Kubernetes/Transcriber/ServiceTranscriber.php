@@ -85,7 +85,7 @@ class ServiceTranscriber implements ExposingInterface
     ): TranscriberInterface {
         $compiledDeployment->foreachService(
             static function (Service $service, string $namespace) use ($client, $promise) {
-                $kubeService = static::convertToService($service, $namespace);
+                $kubeService = self::convertToService($service, $namespace);
 
                 try {
                     if (!empty($namespace)) {

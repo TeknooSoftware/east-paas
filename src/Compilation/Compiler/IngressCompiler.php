@@ -60,15 +60,15 @@ class IngressCompiler implements CompilerInterface
     ): CompilerInterface {
         foreach ($definitions as $name => &$config) {
             $paths = [];
-            foreach ($config[static::KEY_PATHS] ?? [] as $path) {
+            foreach ($config[self::KEY_PATHS] ?? [] as $path) {
                 $paths[] = new IngressPath(
-                    $path[static::KEY_PATH],
-                    $path[static::KEY_SERVICE][static::KEY_SERVICE_NAME] ?? null,
-                    (int) ($path[static::KEY_SERVICE][static::KEY_PORT] ?? null)
+                    $path[self::KEY_PATH],
+                    $path[self::KEY_SERVICE][self::KEY_SERVICE_NAME] ?? null,
+                    (int) ($path[self::KEY_SERVICE][self::KEY_PORT] ?? null)
                 );
             }
 
-            $port = $config[static::KEY_SERVICE][static::KEY_PORT] ?? null;
+            $port = $config[self::KEY_SERVICE][self::KEY_PORT] ?? null;
             if (null !== $port) {
                 $port = (int) $port;
             }
@@ -77,12 +77,12 @@ class IngressCompiler implements CompilerInterface
                 $name,
                 new Ingress(
                     $name,
-                    $config[static::KEY_HOST],
-                    $config[static::KEY_SERVICE][static::KEY_PROVIDER] ?? null,
-                    $config[static::KEY_SERVICE][static::KEY_SERVICE_NAME] ?? null,
+                    $config[self::KEY_HOST],
+                    $config[self::KEY_SERVICE][self::KEY_PROVIDER] ?? null,
+                    $config[self::KEY_SERVICE][self::KEY_SERVICE_NAME] ?? null,
                     $port,
                     $paths,
-                    $config[static::KEY_TLS][static::KEY_SECRET] ?? null
+                    $config[self::KEY_TLS][self::KEY_SECRET] ?? null
                 )
             );
         }

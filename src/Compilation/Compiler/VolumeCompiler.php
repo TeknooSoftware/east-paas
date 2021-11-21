@@ -61,9 +61,9 @@ class VolumeCompiler implements CompilerInterface
                 $volumeName,
                 $volume = new Volume(
                     $volumeName . $job->getId(),
-                    $config[static::KEY_ADD],
-                    $config[static::KEY_LOCAL_PATH] ?? static::DEFAULT_LOCAL_PATH_IN_VOLUME,
-                    $config[static::KEY_MOUNT_PATH] ?? static::DEFAULT_MOUNT_PATH_IN_VOLUME
+                    $config[self::KEY_ADD],
+                    $config[self::KEY_LOCAL_PATH] ?? self::DEFAULT_LOCAL_PATH_IN_VOLUME,
+                    $config[self::KEY_MOUNT_PATH] ?? self::DEFAULT_MOUNT_PATH_IN_VOLUME
                 )
             );
 

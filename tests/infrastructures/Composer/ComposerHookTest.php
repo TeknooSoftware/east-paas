@@ -70,6 +70,15 @@ class ComposerHookTest extends TestCase
         $this->buildHook()->setOptions(new \stdClass(), $this->createMock(PromiseInterface::class));
     }
 
+    public function testSetOptionsNottScalar()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        $this->buildHook()->setOptions(['foo' => new \stdClass()], $promise);
+    }
+
     public function testSetOptionsBadPromise()
     {
         $this->expectException(\TypeError::class);

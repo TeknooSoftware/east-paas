@@ -70,7 +70,7 @@ class ImageRegistryType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<ImageRegistry>> $forms
              * @param ?ImageRegistry $data
              */
             public function mapDataToForms($data, $forms): void
@@ -85,7 +85,7 @@ class ImageRegistryType extends AbstractType
             }
 
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<ImageRegistry>> $forms
              * @param ?ImageRegistry $data
              */
             public function mapFormsToData($forms, &$data): void

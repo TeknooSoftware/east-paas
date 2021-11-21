@@ -83,7 +83,7 @@ class PodCompiler implements CompilerInterface
         array &$volumeDefinition,
         ?string $storageIdentifier
     ): PersistentVolume {
-        $identifier = $volumeDefinition[static::KEY_STORAGE_IDENTIFIER] ?? $storageIdentifier;
+        $identifier = $volumeDefinition[self::KEY_STORAGE_IDENTIFIER] ?? $storageIdentifier;
 
         if (empty($identifier)) {
             throw new RuntimeException("Missing 'storage-provider' in $volumeName pod volume definition");
@@ -107,7 +107,7 @@ class PodCompiler implements CompilerInterface
         return new SecretVolume(
             $volumeName,
             $mountPath,
-            $volumeDefinition[static::KEY_FROM_SECRET]
+            $volumeDefinition[self::KEY_FROM_SECRET]
         );
     }
 
@@ -121,8 +121,8 @@ class PodCompiler implements CompilerInterface
     ): Volume {
         return new Volume(
             $volumeName,
-            $volumeDefinition[static::KEY_ADD],
-            static::VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME,
+            $volumeDefinition[self::KEY_ADD],
+            self::VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME,
             $mountPath,
             true
         );
@@ -141,13 +141,13 @@ class PodCompiler implements CompilerInterface
         ?string $storageIdentifier
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
-            if (empty($volumeDefinition[static::KEY_MOUNT_PATH])) {
+            if (empty($volumeDefinition[self::KEY_MOUNT_PATH])) {
                 throw new RuntimeException("Missing 'mount-path' in $volumeName pod volume definition");
             }
 
-            $mountPath = $volumeDefinition[static::KEY_MOUNT_PATH];
+            $mountPath = $volumeDefinition[self::KEY_MOUNT_PATH];
 
-            if (isset($volumeDefinition[static::KEY_PERSISTENT])) {
+            if (isset($volumeDefinition[self::KEY_PERSISTENT])) {
                 $containerVolumes[(string) $volumeName] = $this->buildPersistentVolume(
                     $volumeName,
                     $mountPath,
@@ -158,7 +158,7 @@ class PodCompiler implements CompilerInterface
                 continue;
             }
 
-            if (isset($volumeDefinition[static::KEY_FROM_SECRET])) {
+            if (isset($volumeDefinition[self::KEY_FROM_SECRET])) {
                 $containerVolumes[(string) $volumeName] = $this->buildSecretVolume(
                     $volumeName,
                     $mountPath,
@@ -168,7 +168,7 @@ class PodCompiler implements CompilerInterface
                 continue;
             }
 
-            if (!isset($volumeDefinition[static::KEY_FROM])) {
+            if (!isset($volumeDefinition[self::KEY_FROM])) {
                 $embeddedVolumes[(string) $volumeName] = $this->buildVolume(
                     $volumeName,
                     $mountPath,
@@ -178,7 +178,7 @@ class PodCompiler implements CompilerInterface
                 continue;
             }
 
-            $volumeFrom = $volumeDefinition[static::KEY_FROM];
+            $volumeFrom = $volumeDefinition[self::KEY_FROM];
             $compiledDeployment->importVolume(
                 $volumeFrom,
                 $mountPath,
@@ -226,11 +226,11 @@ class PodCompiler implements CompilerInterface
      */
     private function processVariables(array $variables): array
     {
-        if (isset($variables[static::KEY_FROM_SECRETS])) {
-            foreach ($variables[static::KEY_FROM_SECRETS] as $varName => $key) {
+        if (isset($variables[self::KEY_FROM_SECRETS])) {
+            foreach ($variables[self::KEY_FROM_SECRETS] as $varName => $key) {
                 $variables[(string) $varName] = new SecretReference(...explode('.', $key));
             }
-            unset($variables[static::KEY_FROM_SECRETS]);
+            unset($variables[self::KEY_FROM_SECRETS]);
         }
 
         return $variables;
@@ -245,12 +245,12 @@ class PodCompiler implements CompilerInterface
     ): CompilerInterface {
         foreach ($definitions as $nameSet => &$podsList) {
             $containers = [];
-            foreach ($podsList[static::KEY_CONTAINERS] as $name => &$config) {
+            foreach ($podsList[self::KEY_CONTAINERS] as $name => &$config) {
                 $containerVolumes = [];
                 $embeddedVolumes = [];
 
                 $this->processVolumes(
-                    $config[static::KEY_VOLUMES] ?? [],
+                    $config[self::KEY_VOLUMES] ?? [],
                     $embeddedVolumes,
                     $containerVolumes,
                     $compiledDeployment,
@@ -258,8 +258,8 @@ class PodCompiler implements CompilerInterface
                 );
 
 
-                $image = $config[static::KEY_IMAGE];
-                $version = (string)($config[static::KEY_VERSION] ?? static::VALUE_LATEST);
+                $image = $config[self::KEY_IMAGE];
+                $version = (string)($config[self::KEY_VERSION] ?? self::VALUE_LATEST);
 
                 if (!empty($embeddedVolumes)) {
                     $image = $this->processEmbeddedVolumes(
@@ -271,13 +271,13 @@ class PodCompiler implements CompilerInterface
                     );
                 }
 
-                $variables = $this->processVariables($config[static::KEY_VARIABLES] ?? []);
+                $variables = $this->processVariables($config[self::KEY_VARIABLES] ?? []);
 
                 $containers[] = new Container(
                     $name,
                     $image,
                     $version,
-                    (array) array_map('intval', (array) ($config[static::KEY_LISTEN] ?? [])),
+                    (array) array_map('intval', (array) ($config[self::KEY_LISTEN] ?? [])),
                     $containerVolumes,
                     $variables
                 );
@@ -285,7 +285,7 @@ class PodCompiler implements CompilerInterface
 
             $compiledDeployment->addPod(
                 $nameSet,
-                new Pod($nameSet, (int)($podsList[static::KEY_REPLICAS] ?? 1), $containers)
+                new Pod($nameSet, (int)($podsList[self::KEY_REPLICAS] ?? 1), $containers)
             );
         }
 

@@ -32,6 +32,8 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 /**
  * Interface to define an object buildable to create an OCI image and push it to a repository
  *
+ * @method RegistrableInterface&BuildableInterface withRegistry(string $registry)
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

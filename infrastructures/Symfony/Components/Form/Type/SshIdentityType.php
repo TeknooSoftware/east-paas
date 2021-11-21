@@ -58,7 +58,7 @@ class SshIdentityType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<SshIdentity>> $forms
              * @param ?SshIdentity $data
              */
             public function mapDataToForms($data, $forms): void
@@ -73,7 +73,7 @@ class SshIdentityType extends AbstractType
             }
 
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<SshIdentity>> $forms
              * @param ?SshIdentity $data
              */
             public function mapFormsToData($forms, &$data): void

@@ -32,6 +32,7 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Throwable;
 
 use function array_flip;
+use function is_string;
 use function preg_match;
 use function reset;
 
@@ -82,7 +83,7 @@ class ComposerHook implements HookInterface
     }
 
     /**
-     * @param array<string, mixed> $options
+     * @param array<string, scalar> $options
      */
     private function validateOptions(array $options): void
     {
@@ -101,7 +102,13 @@ class ComposerHook implements HookInterface
         ]);
 
         foreach ($options as &$option) {
-            if (preg_match('#[\&\||<|>;]#iS', $option)) {
+            if (!is_scalar($option)) {
+                throw new RuntimeException('Options must be scalar value');
+            }
+        }
+
+        foreach ($options as &$option) {
+            if (preg_match('#[\&\||<|>;]#iS', (string) $option)) {
                 throw new RuntimeException('Pipe and redirection are forbidden');
             }
         }
@@ -111,6 +118,9 @@ class ComposerHook implements HookInterface
         }
     }
 
+    /**
+     * @param array<string, scalar> $options
+     */
     public function setOptions(array $options, PromiseInterface $promise): HookInterface
     {
         try {

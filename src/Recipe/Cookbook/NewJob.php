@@ -54,7 +54,7 @@ class NewJob implements NewJobInterface
     use AdditionalStepsTrait;
 
     /**
-     * @param iterable<callable> $additionalSteps
+     * @param iterable<int, callable> $additionalSteps
      */
     public function __construct(
         RecipeInterface $recipe,

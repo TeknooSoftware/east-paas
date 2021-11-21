@@ -90,7 +90,7 @@ class History implements
     }
 
     /**
-     * @return array<string, string|int>
+     * @return array<string, array<string, mixed>|bool|string|null>
      */
     public function jsonSerialize(): array
     {

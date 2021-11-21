@@ -193,7 +193,7 @@ class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInter
         $repositoryPath = $this->getRepositoryPath();
 
         $conductor->prepare(
-            (string) $this->filesystem->read($repositoryPath . static::CONFIGURATION_FILE),
+            (string) $this->filesystem->read($repositoryPath . self::CONFIGURATION_FILE),
             $promise
         );
 

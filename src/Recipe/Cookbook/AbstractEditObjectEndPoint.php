@@ -48,7 +48,7 @@ abstract class AbstractEditObjectEndPoint extends EditContentEndPoint
     use AdditionalStepsTrait;
 
     /**
-     * @param iterable<callable> $additionalSteps
+     * @param iterable<int, callable> $additionalSteps
      */
     public function __construct(
         RecipeInterface $recipe,

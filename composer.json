@@ -33,11 +33,11 @@
         "ext-dom": "*",
         "php-di/php-di": "~6.3",
         "psr/http-client": "~1.0",
-        "teknoo/immutable": "^2.0.9",
-        "teknoo/states": "^5.0.6",
-        "teknoo/recipe": "^3.4.0",
-        "teknoo/east-foundation": "^5.3.5",
-        "teknoo/east-website": "^6.1.0"
+        "teknoo/immutable": "^2.0.10",
+        "teknoo/states": "^5.1.1",
+        "teknoo/recipe": "^3.4.1",
+        "teknoo/east-foundation": "^5.3.6",
+        "teknoo/east-website": "^6.1.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -46,8 +46,8 @@
         "pdepend/pdepend": "~2.10",
         "sebastian/phpcpd": "^6.0.3",
         "phploc/phploc": "^7.0.2",
-        "phpstan/phpstan": "^0.12.99",
-        "behat/behat": "~3.8",
+        "phpstan/phpstan": "^1.1.2",
+        "behat/behat": "~3.10",
         "symplify/git-wrapper": "^9.4.70",
         "doctrine/common": "~3.1",
         "doctrine/mongodb-odm": "~2.2",
@@ -75,8 +75,8 @@
         "symfony/validator": "^5.3.7",
         "symfony/yaml": "^5.3.6",
         "symfony/psr-http-message-bridge": "~2.1",
-        "symfony/framework-bundle": "^5.3.7",
-        "teknoo/bridge-phpdi-symfony": "^5.0.4"
+        "symfony/framework-bundle": "^5.3.10",
+        "teknoo/bridge-phpdi-symfony": "^5.0.5"
     },
     "autoload": {
         "psr-4": {

@@ -57,7 +57,7 @@ class XRegistryAuthType extends AbstractType
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<XRegistryAuth>> $forms
              * @param ?XRegistryAuth $data
              */
             public function mapDataToForms($data, $forms): void
@@ -72,7 +72,7 @@ class XRegistryAuthType extends AbstractType
             }
 
             /**
-             * @param Traversable<string, FormInterface> $forms
+             * @param Traversable<string, FormInterface<XRegistryAuth>> $forms
              * @param ?XRegistryAuth $data
              */
             public function mapFormsToData($forms, &$data): void
