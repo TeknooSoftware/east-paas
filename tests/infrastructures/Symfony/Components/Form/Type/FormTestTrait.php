@@ -85,21 +85,23 @@ trait FormTestTrait
                         $options['query_builder']($repository);
                     }
 
-                    return $this;
+                    return $builder;
                 }
             );
 
         $builder->expects(self::any())
             ->method('addEventListener')
-            ->willReturnCallback(function ($name, $callable) {
+            ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $form = $this->createMock(FormInterface::class);
                 $event = new FormEvent($form, null);
                 $callable($event);
+
+                return $builder;
             });
 
         $builder->expects(self::any())
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
@@ -112,6 +114,8 @@ trait FormTestTrait
                 $result = $this->getObject();
                 $dataMapper->mapFormsToData($form, $result);
                 self::assertInstanceOf(ObjectInterface::class, $result);
+
+                return $builder;
             });
 
         self::assertInstanceOf(
@@ -157,21 +161,23 @@ trait FormTestTrait
                         $options['entry_options']['empty_data']($form, null);
                     }
 
-                    return $this;
+                    return $builder;
                 }
             );
 
         $builder->expects(self::any())
             ->method('addEventListener')
-            ->willReturnCallback(function ($name, $callable) {
+            ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $form = $this->createMock(FormInterface::class);
                 $event = new FormEvent($form, null);
                 $callable($event);
+
+                return $builder;
             });
 
         $builder->expects(self::any())
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
@@ -183,12 +189,14 @@ trait FormTestTrait
                 $dataMapper->mapDataToForms(null, $form);
                 $result = $this->getObject();
                 if ($result instanceof ImmutableInterface) {
-                    return;
+                    return $builder;
                 }
 
                 $result = null;
                 $dataMapper->mapFormsToData($form, $result);
                 self::assertEmpty($result);
+
+                return $builder;
             });
 
         self::assertInstanceOf(
@@ -225,21 +233,23 @@ trait FormTestTrait
                         $options['query_builder']($repository);
                     }
 
-                    return $this;
+                    return $builder;
                 }
             );
 
         $builder->expects(self::any())
             ->method('addEventListener')
-            ->willReturnCallback(function ($name, $callable) {
+            ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $form = $this->createMock(FormInterface::class);
                 $event = new FormEvent($form, $this->getObject());
                 $callable($event);
+
+                return $builder;
             });
 
         $builder->expects(self::any())
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
@@ -252,6 +262,8 @@ trait FormTestTrait
                 $result = $this->getObject();
                 $dataMapper->mapFormsToData($form, $result);
                 self::assertInstanceOf(ObjectInterface::class, $result);
+
+                return $builder;
             });
 
         self::assertInstanceOf(

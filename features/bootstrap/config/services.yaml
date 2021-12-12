@@ -64,3 +64,5 @@ services:
   twig:
     synthetic: true
     public: true
+
+  Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorageFactory: ~

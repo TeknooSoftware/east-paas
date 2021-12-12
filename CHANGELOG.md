@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.70] - 2021-12-12
+### Stable Release
+- Remove unused QA tool
+- Remove support of Symfony 5.3
+- Support Symfony 5.4 and 6.0+
+- 
 ## [0.0.69] - 2021-11-21
 ### Dev Release
 - Switch to PHPStan 1.1+
