@@ -35,5 +35,4 @@ use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
  */
 interface NewProjectEndPointStepsInterface extends AdditionalStepsInterface
 {
-
 }

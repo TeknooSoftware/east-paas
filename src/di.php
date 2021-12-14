@@ -413,7 +413,6 @@ return [
             $accessControl,
             $container->get(EditAccountEndPointStepsInterface::class)
         ) extends AbstractEditObjectEndPoint implements EditAccountEndPointInterface {
-
         };
     },
 
@@ -437,7 +436,6 @@ return [
             $accessControl,
             $container->get(EditProjectEndPointStepsInterface::class)
         ) extends AbstractEditObjectEndPoint implements EditProjectEndPointInterface {
-
         };
     },
 
