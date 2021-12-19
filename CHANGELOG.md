@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.71] - 2021-12-19
+### Stable Release
+- Fix some deprecation with PHP 8.1
+
 ## [0.0.70] - 2021-12-12
 ### Stable Release
 - Remove unused QA tool
