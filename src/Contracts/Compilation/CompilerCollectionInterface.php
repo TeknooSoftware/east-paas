@@ -39,7 +39,7 @@ use Traversable;
 interface CompilerCollectionInterface extends IteratorAggregate
 {
     /**
-     * @return iterable<CompilerInterface>
+     * @return Traversable<CompilerInterface>
      */
-    public function getIterator(): iterable;
+    public function getIterator(): Traversable;
 }

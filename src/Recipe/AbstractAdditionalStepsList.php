@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Recipe;
 
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\Recipe\Bowl\BowlInterface;
+use Traversable;
 
 use function ksort;
 
@@ -51,9 +52,9 @@ abstract class AbstractAdditionalStepsList implements AdditionalStepsInterface
     }
 
     /**
-     * @return iterable<BowlInterface|callable>
+     * @return Traversable<BowlInterface|callable>
      */
-    public function getIterator(): iterable
+    public function getIterator(): Traversable
     {
         $stepsList = $this->steps;
         ksort($stepsList);

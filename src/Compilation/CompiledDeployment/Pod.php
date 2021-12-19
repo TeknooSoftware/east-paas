@@ -29,6 +29,7 @@ use Generator;
 use IteratorAggregate;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
+use Traversable;
 
 /**
  * Immutable value object, representing a normalized Pod, depoyable unit, grouping at least one
@@ -77,9 +78,9 @@ class Pod implements ImmutableInterface, IteratorAggregate
     }
 
     /**
-     * @return iterable<Container>
+     * @return Traversable<Container>
      */
-    public function getIterator(): iterable
+    public function getIterator(): Traversable
     {
         yield from $this->containers;
     }

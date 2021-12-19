@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Recipe;
 
-use ArrayIterator;
 use IteratorAggregate;
+use Traversable;
 
 /**
  * To define a collection of steps in the DI to inject in some cookbook to custom behavior in your
@@ -40,7 +40,7 @@ use IteratorAggregate;
 interface AdditionalStepsInterface extends IteratorAggregate
 {
     /**
-     * @return iterable<callable>
+     * @return Traversable<callable>
      */
-    public function getIterator(): iterable;
+    public function getIterator(): Traversable;
 }

@@ -135,6 +135,7 @@ use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\Recipe;
 use Teknoo\Recipe\RecipeInterface as OriginalRecipeInterface;
+use Traversable;
 
 use function DI\get;
 use function DI\create;
@@ -210,7 +211,7 @@ return [
                 $this->collection[$pattern] = $compiler;
             }
 
-            public function getIterator(): iterable
+            public function getIterator(): Traversable
             {
                 yield from $this->collection;
             }

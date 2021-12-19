@@ -29,6 +29,7 @@ use IteratorAggregate;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
+use Traversable;
 
 /**
  * Immutable and iterable collections of cluster's drivers (adapter to use to connect to a cluster,
@@ -59,9 +60,9 @@ class Collection implements IteratorAggregate, ImmutableInterface
     }
 
     /**
-     * @return iterable<DriverInterface>
+     * @return Traversable<DriverInterface>
      */
-    public function getIterator(): iterable
+    public function getIterator(): Traversable
     {
         yield from $this->clients;
     }
