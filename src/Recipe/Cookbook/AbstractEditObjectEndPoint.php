@@ -60,7 +60,7 @@ abstract class AbstractEditObjectEndPoint extends EditContentEndPoint
         RenderFormInterface $renderForm,
         RenderError $renderError,
         ?ObjectAccessControlInterface $objectAccessControl = null,
-        iterable $additionalSteps,
+        iterable $additionalSteps = [],
     ) {
         parent::__construct(
             $recipe,
