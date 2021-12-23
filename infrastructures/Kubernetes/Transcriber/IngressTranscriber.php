@@ -42,6 +42,8 @@ use Throwable;
  */
 class IngressTranscriber implements ExposingInterface
 {
+    private const NAME_PREFIX = '-ingress';
+
     public function __construct(
         private ?string $defaultIngressClass,
         private ?string $defaultIngressService,
@@ -81,7 +83,7 @@ class IngressTranscriber implements ExposingInterface
 
         $specs = [
             'metadata' => [
-                'name' => $ingress->getName() . '-service',
+                'name' => $ingress->getName() . self::NAME_PREFIX,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $ingress->getName(),
@@ -129,7 +131,8 @@ class IngressTranscriber implements ExposingInterface
                     }
 
                     $ingressRepository = $client->ingresses();
-                    if ($ingressRepository->exists($kubIngress->getMetadata('name'))) {
+                    $name = $kubIngress->getMetadata('name') ?? $ingress->getName() . self::NAME_PREFIX;
+                    if ($ingressRepository->exists($name)) {
                         $result = $ingressRepository->update($kubIngress);
                     } else {
                         $result = $ingressRepository->create($kubIngress);

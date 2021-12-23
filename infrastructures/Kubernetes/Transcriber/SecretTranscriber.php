@@ -50,6 +50,7 @@ use function substr;
 class SecretTranscriber implements DeploymentInterface
 {
     private const BASE64_PREFIX = 'base64:';
+    private const NAME_PREFIX = '-secret';
 
     private static function isValid64(string $value): bool
     {
@@ -86,7 +87,7 @@ class SecretTranscriber implements DeploymentInterface
 
         return new KubeSecret([
             'metadata' => [
-                'name' => $secret->getName() . '-secret',
+                'name' => $secret->getName() . self::NAME_PREFIX,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $secret->getName(),
@@ -116,7 +117,8 @@ class SecretTranscriber implements DeploymentInterface
                     }
 
                     $sRepository = $client->secrets();
-                    if ($sRepository->exists($kubeSecret->getMetadata('name'))) {
+                    $name = $kubeSecret->getMetadata('name') ?? $secret->getName() . self::NAME_PREFIX;
+                    if ($sRepository->exists($name)) {
                         $result = $sRepository->update($kubeSecret);
                     } else {
                         $result = $sRepository->create($kubeSecret);

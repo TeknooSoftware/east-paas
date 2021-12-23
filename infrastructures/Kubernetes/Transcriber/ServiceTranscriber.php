@@ -42,6 +42,8 @@ use Throwable;
  */
 class ServiceTranscriber implements ExposingInterface
 {
+    private const NAME_PREFIX = '-service';
+
     private static function convertToService(Service $service, string $namespace): KubeService
     {
         $ports = [];
@@ -60,7 +62,7 @@ class ServiceTranscriber implements ExposingInterface
 
         $specs = [
             'metadata' => [
-                'name' => $service->getName() . '-service',
+                'name' => $service->getName() . self::NAME_PREFIX,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $service->getName(),
@@ -93,7 +95,8 @@ class ServiceTranscriber implements ExposingInterface
                     }
 
                     $serviceRepository = $client->services();
-                    if ($serviceRepository->exists($kubeService->getMetadata('name'))) {
+                    $name = $kubeService->getMetadata('name') ?? $service->getName() . self::NAME_PREFIX;
+                    if ($serviceRepository->exists($name)) {
                         $serviceRepository->delete($kubeService);
                     }
 

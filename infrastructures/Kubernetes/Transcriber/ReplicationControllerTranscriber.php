@@ -51,6 +51,8 @@ use function array_map;
  */
 class ReplicationControllerTranscriber implements DeploymentInterface
 {
+    private const NAME_PREFIX = '-replication-ctrl';
+
     /**
      * @param array<string, > $specs
      * @param array<string, array<string, Image>>|Image[][] $images
@@ -173,7 +175,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
     ): ReplicationController {
         $specs = [
             'metadata' => [
-                'name' => $pod->getName() . '-replication-ctrl',
+                'name' => $pod->getName() . self::NAME_PREFIX,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $pod->getName(),
@@ -217,7 +219,8 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     }
 
                     $rcRepository = $client->replicationControllers();
-                    if ($rcRepository->exists($kubeController->getMetadata('name'))) {
+                    $name = $kubeController->getMetadata('name') ?? $pod->getName() . self::NAME_PREFIX;
+                    if ($rcRepository->exists($name)) {
                         $result = $rcRepository->update($kubeController);
                     } else {
                         $result = $rcRepository->create($kubeController);
