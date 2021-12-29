@@ -22,9 +22,6 @@ parameters:
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
         -
-            message: '#expects int, mixed given#'
-            path: infrastructures/Laminas/Response/ErrorFactory.php
-        -
             message: '#ClassFinderDenormalizer::denormalize#'
             path: infrastructures/Symfony/Components/Normalizer/ClassFinderDenormalizer.php
         -
@@ -79,7 +76,7 @@ services:
         autowired: PHPStan\Analyser\NodeScopeResolver
         arguments:
             parser: @defaultAnalysisParser
-            classReflector: @nodeScopeResolverClassReflector
+            reflector: @nodeScopeResolverReflector
             polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
             polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
             earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
