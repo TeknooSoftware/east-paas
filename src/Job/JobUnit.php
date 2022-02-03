@@ -61,7 +61,7 @@ class JobUnit implements JobUnitInterface
     /**
      * @param array{id: string, name: string} $projectResume
      * @param Cluster[] $clusters
-     * @param array<string, mixed> $variables
+     * @param array<string, string> $variables
      * @param array<string, mixed> $extra
      */
     public function __construct(
@@ -198,7 +198,8 @@ class JobUnit implements JobUnitInterface
 
                 $value = preg_replace_callback(
                     $pattern,
-                    function ($matches) {
+                    /** @var callable(array<int|string, string>) $matches */
+                    function (array $matches): string {
                         $key = substr($matches[1], 2, -1);
                         if (!isset($this->variables[$key])) {
                             throw new DomainException("$key is not available into variables pass to job");
