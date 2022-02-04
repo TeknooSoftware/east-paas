@@ -64,8 +64,12 @@ class IngressTranscriber implements ExposingInterface
                 'path' => $path->getPath(),
                 'pathType' => 'Prefix',
                 'backend' => [
-                    'serviceName' => $path->getServiceName(),
-                    'servicePort' => $path->getServicePort(),
+                    'service' => [
+                        'name' => $path->getServiceName(),
+                        'port' => [
+                            'number' => $path->getServicePort(),
+                        ],
+                    ],
                 ]
             ];
         }
@@ -75,8 +79,12 @@ class IngressTranscriber implements ExposingInterface
                 'path' => '/',
                 'pathType' => 'Prefix',
                 'backend' => [
-                    'serviceName' => $ingress->getDefaultServiceName(),
-                    'servicePort' => $ingress->getDefaultServicePort(),
+                    'service' => [
+                        'name' => $ingress->getDefaultServiceName(),
+                        'port' => [
+                            'number' => $ingress->getDefaultServicePort(),
+                        ],
+                    ],
                 ]
             ];
         }
@@ -100,9 +108,11 @@ class IngressTranscriber implements ExposingInterface
         }
 
         if (null !== $this->defaultIngressService && null !== $this->defaultIngressPort) {
-            $specs['spec']['defaultBackend'] = [
-                'serviceName' => $this->defaultIngressService,
-                'servicePort' => $this->defaultIngressPort,
+            $specs['spec']['defaultBackend']['service'] = [
+                'name' => $this->defaultIngressService,
+                'port' => [
+                    'number' => $this->defaultIngressPort,
+                ],
             ];
         }
 
