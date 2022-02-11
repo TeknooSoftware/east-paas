@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.72] - 2022-02-11
+### Stable Release
+- Support Immutable 3.0
+- Support State 6.0
+- Support Recipe 4.0
+
 ## [0.0.71] - 2021-12-19
 ### Stable Release
 - Fix some deprecation with PHP 8.1

@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM;
 
 use Teknoo\East\Paas\Object\Project as BaseProject;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Doctrine\Document\StandardTrait;
+use Teknoo\States\Doctrine\StandardTrait;
 
 /**
  * Project specialization in doctrine as document.

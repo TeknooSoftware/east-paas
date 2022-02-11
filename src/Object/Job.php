@@ -61,7 +61,6 @@ use function is_callable;
  */
 class Job implements
     ObjectInterface,
-    ProxyInterface,
     AutomatedInterface,
     TimestampableInterface,
     NormalizableInterface

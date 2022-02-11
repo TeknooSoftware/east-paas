@@ -42,7 +42,6 @@ use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
 use function is_object;
@@ -60,7 +59,7 @@ use function sprintf;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class CloningAgent implements CloningAgentInterface, ProxyInterface, AutomatedInterface
+class CloningAgent implements CloningAgentInterface, AutomatedInterface
 {
     use ImmutableTrait;
     use ProxyTrait;

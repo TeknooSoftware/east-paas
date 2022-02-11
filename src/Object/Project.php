@@ -44,7 +44,6 @@ use Teknoo\States\Automated\Assertion\Property\IsInstanceOf;
 use Teknoo\States\Automated\Assertion\Property\CountsMore;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
 /**
@@ -57,7 +56,6 @@ use Teknoo\States\Proxy\ProxyTrait;
  */
 class Project implements
     ObjectInterface,
-    ProxyInterface,
     AutomatedInterface,
     TimestampableInterface,
     FormMappingInterface,

@@ -43,7 +43,6 @@ use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
 use function array_pop;
@@ -63,7 +62,7 @@ use function uniqid;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class BuilderWrapper implements BuilderInterface, ProxyInterface, AutomatedInterface
+class BuilderWrapper implements BuilderInterface, AutomatedInterface
 {
     use ProxyTrait;
     use AutomatedTrait {

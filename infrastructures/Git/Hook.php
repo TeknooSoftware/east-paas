@@ -40,7 +40,6 @@ use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
 /**
@@ -48,7 +47,7 @@ use Teknoo\States\Proxy\ProxyTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Hook implements HookInterface, HookAwareInterface, ProxyInterface, AutomatedInterface, ImmutableInterface
+class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, ImmutableInterface
 {
     use ImmutableTrait;
     use ProxyTrait;

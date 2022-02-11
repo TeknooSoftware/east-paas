@@ -13,9 +13,9 @@ all: clean depend
 ### Dependencies
 depend:
 ifeq ($(DEPENDENCIES), lowest)
-	COMPOSER_MEMORY_LIMIT=-1 ${COMPOSER} update --prefer-lowest --prefer-dist --no-interaction --ignore-platform-reqs;
+	COMPOSER_MEMORY_LIMIT=-1 ${COMPOSER} update --prefer-lowest --prefer-dist --no-interaction;
 else
-	COMPOSER_MEMORY_LIMIT=-1 ${COMPOSER} update --prefer-dist --no-interaction --ignore-platform-reqs;
+	COMPOSER_MEMORY_LIMIT=-1 ${COMPOSER} update --prefer-dist --no-interaction;
 endif
 
 .PHONY: depend

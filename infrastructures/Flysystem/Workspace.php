@@ -40,7 +40,6 @@ use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 use Throwable;
 
@@ -58,7 +57,7 @@ use function random_int;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Workspace implements JobWorkspaceInterface, ProxyInterface, AutomatedInterface
+class Workspace implements JobWorkspaceInterface, AutomatedInterface
 {
     use ImmutableTrait;
     use ProxyTrait;

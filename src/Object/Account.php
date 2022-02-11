@@ -51,7 +51,6 @@ use Teknoo\States\Proxy\ProxyTrait;
 class Account implements
     ObjectInterface,
     TimestampableInterface,
-    ProxyInterface,
     AutomatedInterface,
     DeletableInterface,
     FormMappingInterface
