@@ -35,9 +35,9 @@
         "psr/http-client": "~1.0",
         "teknoo/immutable": "^2.0.12||^3.0",
         "teknoo/states": "^5.1.9||^6.0",
-        "teknoo/recipe": "^3.4.5||^4.0",
-        "teknoo/east-foundation": "^5.3.11",
-        "teknoo/east-website": "^6.1.9"
+        "teknoo/recipe": "^3.4.5||^4.0.1",
+        "teknoo/east-foundation": "^5.3.11||^6.0.1",
+        "teknoo/east-website": "^6.1.10"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
