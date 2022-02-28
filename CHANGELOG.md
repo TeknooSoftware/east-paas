@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.73] - 2022-02-28
+### Stable Release
+- Support East Foundation 6.0
+- Support Recipe 4.0.1
+
 ## [0.0.72] - 2022-02-11
 ### Stable Release
 - Support Immutable 3.0
