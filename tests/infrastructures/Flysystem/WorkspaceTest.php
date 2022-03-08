@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Flysystem;
 
 use League\Flysystem\DirectoryListing;
 use League\Flysystem\StorageAttributes;
+use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;
@@ -118,7 +119,7 @@ class WorkspaceTest extends TestCase
         $file = $this->createMock(FileInterface::class);
         $file->expects(self::any())->method('getName')->willReturn($name = 'foo');
         $file->expects(self::any())->method('getContent')->willReturn($content = 'bar');
-        $file->expects(self::any())->method('getVisibility')->willReturn($v = FileInterface::VISIBILITY_PRIVATE);
+        $file->expects(self::any())->method('getVisibility')->willReturn($v = Visibility::Private);
 
         $this->getJobMock()
             ->expects(self::any())
@@ -139,7 +140,7 @@ class WorkspaceTest extends TestCase
         $file = $this->createMock(FileInterface::class);
         $file->expects(self::any())->method('getName')->willReturn($name = 'foo');
         $file->expects(self::any())->method('getContent')->willReturn($content = 'bar');
-        $file->expects(self::any())->method('getVisibility')->willReturn($v = FileInterface::VISIBILITY_PRIVATE);
+        $file->expects(self::any())->method('getVisibility')->willReturn($v = Visibility::Private);
 
         $this->getJobMock()
             ->expects(self::any())
@@ -168,7 +169,7 @@ class WorkspaceTest extends TestCase
         $file = $this->createMock(FileInterface::class);
         $file->expects(self::any())->method('getName')->willReturn($name = 'foo');
         $file->expects(self::any())->method('getContent')->willReturn($content = 'bar');
-        $file->expects(self::any())->method('getVisibility')->willReturn($v = FileInterface::VISIBILITY_PRIVATE);
+        $file->expects(self::any())->method('getVisibility')->willReturn($v = Visibility::Private);
 
         $this->getJobMock()
             ->expects(self::any())

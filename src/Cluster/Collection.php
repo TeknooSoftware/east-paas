@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -45,18 +45,12 @@ class Collection implements IteratorAggregate, ImmutableInterface
     use ImmutableTrait;
 
     /**
-     * @var iterable<int, DriverInterface>
-     */
-    private iterable $clients;
-
-    /**
      * @param iterable<int, DriverInterface> $clients
      */
-    public function __construct(iterable $clients)
-    {
+    public function __construct(
+        private readonly iterable $clients
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->clients = $clients;
     }
 
     /**

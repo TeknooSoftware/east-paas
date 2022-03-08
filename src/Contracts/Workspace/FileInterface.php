@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -38,16 +38,16 @@ interface FileInterface extends ImmutableInterface
     /**
      * @const  VISIBILITY_PUBLIC  public visibility
      */
-    public const VISIBILITY_PUBLIC = 'public';
+    final public const VISIBILITY_PUBLIC = 'public';
 
     /**
      * @const  VISIBILITY_PRIVATE  private visibility
      */
-    public const VISIBILITY_PRIVATE = 'private';
+    final public const VISIBILITY_PRIVATE = 'private';
 
     public function getName(): string;
 
-    public function getVisibility(): string;
+    public function getVisibility(): Visibility;
 
     public function getContent(): string;
 }

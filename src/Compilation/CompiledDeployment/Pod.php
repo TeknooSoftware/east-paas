@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
 
-use Generator;
 use IteratorAggregate;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
@@ -46,25 +45,15 @@ class Pod implements ImmutableInterface, IteratorAggregate
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    private int $replicas;
-
-    /**
-     * @var array<int, Container>
-     */
-    private array $containers;
-
     /**
      * @param array<int, Container> $containers
      */
-    public function __construct(string $name, int $replicas, array $containers)
-    {
+    public function __construct(
+        private readonly string $name,
+        private readonly int $replicas,
+        private readonly array $containers
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->replicas = $replicas;
-        $this->containers = $containers;
     }
 
     public function getName(): string

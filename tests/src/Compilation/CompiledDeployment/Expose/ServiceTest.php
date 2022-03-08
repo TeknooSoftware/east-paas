@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment\Expose;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -37,7 +38,7 @@ class ServiceTest extends TestCase
 {
     private function buildObject($internal = false): Service
     {
-        return new Service('foo', 'bar', [80 => 8080], 'TCP', $internal);
+        return new Service('foo', 'bar', [80 => 8080], Transport::Tcp, $internal);
     }
 
     public function testGetName()
@@ -67,7 +68,7 @@ class ServiceTest extends TestCase
     public function testGetProtocol()
     {
         self::assertEquals(
-            'TCP',
+            Transport::Tcp,
             $this->buildObject()->getProtocol()
         );
     }

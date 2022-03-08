@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Workspace;
 
+use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 
@@ -38,19 +39,12 @@ class File implements FileInterface
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    private string $visibility;
-
-    private string $content;
-
-    public function __construct(string $name, string $visibility, string $content)
-    {
+    public function __construct(
+        private readonly string $name,
+        private readonly Visibility $visibility,
+        private readonly string $content
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->visibility = $visibility;
-        $this->content = $content;
     }
 
     public function getName(): string
@@ -58,7 +52,7 @@ class File implements FileInterface
         return $this->name;
     }
 
-    public function getVisibility(): string
+    public function getVisibility(): Visibility
     {
         return $this->visibility;
     }

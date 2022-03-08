@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -41,33 +41,19 @@ class Image implements ImmutableInterface, BuildableInterface
 {
     use ImmutableTrait;
 
-    private string $name;
-
     private ?string $registry = null;
-
-    private string $path;
-
-    private bool $library;
-
-    private ?string $tag;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $variables;
 
     /**
      * @param array<string, mixed> $variables
      */
-    public function __construct(string $name, string $path, bool $library, ?string $tag, array $variables)
-    {
+    public function __construct(
+        private readonly string $name,
+        private readonly string $path,
+        private readonly bool $library,
+        private readonly ?string $tag,
+        private readonly array $variables
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->path = $path;
-        $this->library = $library;
-        $this->tag = $tag;
-        $this->variables = $variables;
     }
 
     public function getName(): string

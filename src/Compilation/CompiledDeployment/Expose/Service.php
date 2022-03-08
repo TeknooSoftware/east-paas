@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -39,9 +39,6 @@ class Service implements ImmutableInterface
 {
     use ImmutableTrait;
 
-    public const TCP = 'TCP';
-    public const UDP = 'UDP';
-
     private string $name;
 
     private string $podName;
@@ -51,14 +48,14 @@ class Service implements ImmutableInterface
      */
     private array $ports;
 
-    private string $protocol;
+    private Transport $protocol;
 
     private bool $internal;
 
     /**
      * @param array<int, int> $ports
      */
-    public function __construct(string $name, string $podName, array $ports, string $protocol, bool $internal)
+    public function __construct(string $name, string $podName, array $ports, Transport $protocol, bool $internal)
     {
         $this->uniqueConstructorCheck();
 
@@ -87,7 +84,7 @@ class Service implements ImmutableInterface
         return $this->ports;
     }
 
-    public function getProtocol(): string
+    public function getProtocol(): Transport
     {
         return $this->protocol;
     }

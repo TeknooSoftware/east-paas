@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -43,18 +43,12 @@ class HooksCollection implements HooksCollectionInterface, ImmutableInterface
     use ImmutableTrait;
 
     /**
-     * @var array<string, HookInterface>
-     */
-    private array $hooks;
-
-    /**
      * @param array<string, HookInterface> $hooks
      */
-    public function __construct(array $hooks)
-    {
+    public function __construct(
+        private readonly array $hooks
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->hooks = $hooks;
     }
 
     public function getIterator(): Traversable

@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\East\Paas\Workspace\File;
 use Teknoo\Tests\East\Website\Object\Traits\PopulateObjectTrait;
 
@@ -44,21 +45,21 @@ class FileTest extends TestCase
      */
     public function buildObject(): File
     {
-        return new File('fooName', 'fooBar', 'barFoo');
+        return new File('fooName', Visibility::Public, 'barFoo');
     }
 
     public function testGetName()
     {
         self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated(['name' => 'fooBar'])->getName()
+            'fooName',
+            $this->generateObjectPopulated()->getName()
         );
     }
 
     public function testGetVisibility()
     {
         self::assertEquals(
-            'fooBar',
+            Visibility::Public,
             $this->generateObjectPopulated()->getVisibility()
         );
     }

@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -48,56 +48,43 @@ class ClusterCredentials implements
     use ObjectTrait;
     use ImmutableTrait;
 
-    private ?string $serverCertificate = null;
-
-    private ?string $token = null;
-
-    private ?string $username = null;
-
-    private ?string $password = null;
-
     public function __construct(
-        string $serverCertificate = '',
-        string $token = '',
-        string $username = '',
-        string $password = ''
+        private readonly string $serverCertificate = '',
+        private readonly string $token = '',
+        private readonly string $username = '',
+        private readonly string $password = ''
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->serverCertificate = $serverCertificate;
-        $this->token = $token;
-        $this->username = $username;
-        $this->password = $password;
     }
 
     public function getName(): string
     {
-        return (string) $this->username;
+        return $this->username;
     }
 
     public function getServerCertificate(): string
     {
-        return (string) $this->serverCertificate;
+        return $this->serverCertificate;
     }
 
     public function __toString(): string
     {
-        return (string) $this->username;
+        return $this->username;
     }
 
     public function getToken(): string
     {
-        return (string) $this->token;
+        return $this->token;
     }
 
     public function getUsername(): string
     {
-        return (string) $this->username;
+        return $this->username;
     }
 
     public function getPassword(): string
     {
-        return (string) $this->password;
+        return $this->password;
     }
 
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface

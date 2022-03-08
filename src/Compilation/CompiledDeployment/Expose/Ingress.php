@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -43,14 +43,15 @@ class Ingress implements ImmutableInterface
      * @param array<integer, IngressPath> $paths
      */
     public function __construct(
-        private string $name,
-        private string $host,
-        private ?string $provider,
-        private ?string $defaultServiceName,
-        private ?int $defaultServicePort,
-        private array $paths,
-        private ?string $tlsSecret
+        private readonly string $name,
+        private readonly string $host,
+        private readonly ?string $provider,
+        private readonly ?string $defaultServiceName,
+        private readonly ?int $defaultServicePort,
+        private readonly array $paths,
+        private readonly ?string $tlsSecret
     ) {
+        $this->uniqueConstructorCheck();
     }
 
     public function getName(): string

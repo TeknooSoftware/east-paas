@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -39,19 +39,12 @@ class IngressPath implements ImmutableInterface
 {
     use ImmutableTrait;
 
-    private string $path;
-
-    private string $serviceName;
-
-    private int $servicePort;
-
-    public function __construct(string $path, string $serviceName, int $servicePort)
-    {
+    public function __construct(
+        private readonly string $path,
+        private readonly string $serviceName,
+        private readonly int $servicePort
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->path = $path;
-        $this->serviceName = $serviceName;
-        $this->servicePort = $servicePort;
     }
 
     public function getPath(): string

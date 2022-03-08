@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -48,30 +48,14 @@ class XRegistryAuth implements
     use ObjectTrait;
     use ImmutableTrait;
 
-    private ?string $username = null;
-
-    private ?string $password = null;
-
-    private ?string $email = null;
-
-    private ?string $auth = null;
-
-    private ?string $serverAddress = null;
-
     public function __construct(
-        string $username = '',
-        string $password = '',
-        string $email = '',
-        string $auth = '',
-        string $serverAddress = ''
+        private readonly string $username = '',
+        private readonly string $password = '',
+        private readonly string $email = '',
+        private readonly string $auth = '',
+        private readonly string $serverAddress = ''
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->username = $username;
-        $this->password = $password;
-        $this->email = $email;
-        $this->auth = $auth;
-        $this->serverAddress = $serverAddress;
     }
 
     public function getName(): string
@@ -86,27 +70,27 @@ class XRegistryAuth implements
 
     public function getUsername(): string
     {
-        return (string) $this->username;
+        return $this->username;
     }
 
     public function getPassword(): string
     {
-        return (string) $this->password;
+        return $this->password;
     }
 
     public function getEmail(): string
     {
-        return (string) $this->email;
+        return $this->email;
     }
 
     public function getAuth(): string
     {
-        return (string) $this->auth;
+        return $this->auth;
     }
 
     public function getServerAddress(): string
     {
-        return (string) $this->serverAddress;
+        return $this->serverAddress;
     }
 
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface

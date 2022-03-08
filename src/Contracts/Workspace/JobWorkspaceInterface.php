@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -40,7 +40,7 @@ use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
  */
 interface JobWorkspaceInterface extends ImmutableInterface
 {
-    public const CONFIGURATION_FILE = '.paas.yml';
+    final public const CONFIGURATION_FILE = '.paas.yml';
 
     public function setJob(JobUnitInterface $job): JobWorkspaceInterface;
 

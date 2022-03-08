@@ -1,5 +1,20 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.74] - 2022-03-08
+### Stable Release
+- Support States 6.0.1+
+- Support Recipe 4.1.1+
+- Support East Foundation 6.0.2+
+- Support East Website 7.0.2+
+- Remove support of `PHP 8.0`, support only `PHP 8.1+`
+- Remove support of `Symfony 5.4`, support only `Symfony 6.0+`
+- Public constant are finals
+- File's Visibility are Enums
+- Service's protocol Enums
+- Use readonly properties behaviors on Immutables
+- Use `(...)` notation instead array notation for callable
+- Enable fiber support in api endpoint
+
 ## [0.0.73] - 2022-02-28
 ### Stable Release
 - Support East Foundation 6.0

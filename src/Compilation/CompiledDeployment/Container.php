@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -42,48 +42,20 @@ class Container implements ImmutableInterface
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    private string $image;
-
-    private ?string $version;
-
-    /**
-     * @var int[]
-     */
-    private array $listen;
-
-    /**
-     * @var array<string, VolumeInterface>
-     */
-    private array $volumes;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $variables;
-
     /**
      * @param int[] $listen
      * @param array<string, VolumeInterface> $volumes
      * @param array<string, mixed> $variables
      */
     public function __construct(
-        string $name,
-        string $image,
-        ?string $version,
-        array $listen,
-        array $volumes,
-        array $variables
+        private readonly string $name,
+        private readonly string $image,
+        private readonly ?string $version,
+        private readonly array $listen,
+        private readonly array $volumes,
+        private readonly array $variables
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->image = $image;
-        $this->version = $version;
-        $this->listen = $listen;
-        $this->volumes = $volumes;
-        $this->variables = $variables;
     }
 
     public function getName(): string

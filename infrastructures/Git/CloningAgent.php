@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Git;
 use Symplify\GitWrapper\GitWrapper;
 use LogicException;
 use RuntimeException;
+use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running;
 use Teknoo\Immutable\ImmutableTrait;
@@ -74,22 +75,16 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     private ?JobWorkspaceInterface $workspace = null;
 
     /**
-     * @var GitWrapper
+     * @param GitWrapper $gitWrapper
      */
-    private $gitWrapper;
-
-    /**
-     * @param ?GitWrapper $gitWrapper
-     */
-    public function __construct($gitWrapper)
-    {
+    public function __construct(
+        private mixed $gitWrapper
+    ) {
         $this->uniqueConstructorCheck();
 
-        if (empty($gitWrapper)) {
+        if (empty($this->gitWrapper)) {
             throw new RuntimeException('Missing git wrapper tools injected in this agent');
         }
-
-        $this->gitWrapper = $gitWrapper;
 
         $this->initializeStateProxy();
         $this->updateStates();
@@ -167,7 +162,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     {
         $workspace = $this->getWorkspace();
         $workspace->writeFile(
-            new File('private.key', FileInterface::VISIBILITY_PRIVATE, $this->getSshIdentity()->getPrivateKey()),
+            new File('private.key', Visibility::Private, $this->getSshIdentity()->getPrivateKey()),
             function ($path) {
                 $this->gitWrapper->setPrivateKey($path);
             }

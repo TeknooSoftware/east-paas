@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 
 use Symplify\GitWrapper\GitWrapper;
+use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -161,7 +162,7 @@ class CloningAgentTest extends TestCase
             ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace, $pk) {
                 self::assertEquals('private.key', $file->getName());
                 self::assertEquals('fooBar', $file->getContent());
-                self::assertEquals(FileInterface::VISIBILITY_PRIVATE, $file->getVisibility());
+                self::assertEquals(Visibility::Private, $file->getVisibility());
                 
                 $return('/foo/bar/private.key');
 

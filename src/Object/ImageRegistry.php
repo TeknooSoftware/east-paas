@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -51,23 +51,16 @@ class ImageRegistry implements
     use ObjectTrait;
     use ImmutableTrait;
 
-    private ?string $apiUrl = null;
-
-    private ?IdentityInterface $identity = null;
-
     public function __construct(
-        string $apiUrl = '',
-        ?IdentityInterface $identity = null
+        private readonly string $apiUrl = '',
+        private readonly ?IdentityInterface $identity = null
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->apiUrl = $apiUrl;
-        $this->identity = $identity;
     }
 
     public function getApiUrl(): string
     {
-        return (string) $this->apiUrl;
+        return $this->apiUrl;
     }
 
     public function getIdentity(): ?IdentityInterface

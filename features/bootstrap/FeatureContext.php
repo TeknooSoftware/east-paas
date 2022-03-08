@@ -193,12 +193,6 @@ class FeatureContext implements Context
      */
     public function __construct()
     {
-        if (60000 <= BaseKernel::VERSION_ID) {
-            copy(__DIR__ . '/config/packages/framework.yaml.sf60', __DIR__ . '/config/packages/framework.yaml');
-        } else {
-            copy(__DIR__ . '/config/packages/framework.yaml.sf54', __DIR__ . '/config/packages/framework.yaml');
-        }
-
         $this->initiateSymfonyKernel();
     }
 

@@ -23,20 +23,15 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
+namespace Teknoo\East\Paas\Contracts\Workspace;
 
 /**
- * Extension of VolumeInterface to define volume with populated files and folders, copied from the source
- * repository.
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface PopulatedVolumeInterface extends VolumeInterface
+enum Visibility: string
 {
-    public function getLocalPath(): string;
+    case Public = 'public';
 
-    public function isEmbedded(): bool;
-
-    public function import(string $mountPath): PopulatedVolumeInterface;
+    case Private = 'private';
 }
