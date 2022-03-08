@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -39,25 +39,15 @@ class Secret implements ImmutableInterface
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    private string $provider;
-
-    /**
-     * @var array<string|int, mixed>
-     */
-    private array $options;
-
     /**
      * @param array<string|int, mixed> $options
      */
-    public function __construct(string $name, string $provider, array $options)
-    {
+    public function __construct(
+        private readonly string $name,
+        private readonly string $provider,
+        private readonly array $options
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->provider = $provider;
-        $this->options = $options;
     }
 
     public function getName(): string

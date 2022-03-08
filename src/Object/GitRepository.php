@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -51,32 +51,22 @@ class GitRepository implements
     use ObjectTrait;
     use ImmutableTrait;
 
-    private ?string $pullUrl = null;
-
-    private ?string $defaultBranch = null;
-
-    private ?IdentityInterface $identity = null;
-
     public function __construct(
-        string $pullUrl = '',
-        string $defaultBranch = 'master',
-        IdentityInterface $identity = null
+        private readonly string $pullUrl = '',
+        private readonly string $defaultBranch = 'master',
+        private readonly ?IdentityInterface $identity = null,
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->pullUrl = $pullUrl;
-        $this->defaultBranch = $defaultBranch;
-        $this->identity = $identity;
     }
 
     public function getPullUrl(): string
     {
-        return (string) $this->pullUrl;
+        return $this->pullUrl;
     }
 
     public function getDefaultBranch(): string
     {
-        return (string) $this->defaultBranch;
+        return $this->defaultBranch;
     }
 
     public function getIdentity(): ?IdentityInterface

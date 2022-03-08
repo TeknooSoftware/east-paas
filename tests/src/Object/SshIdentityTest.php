@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -50,16 +50,16 @@ class SshIdentityTest extends TestCase
     public function testGetName()
     {
         self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated(['name' => 'fooBar'])->getName()
+            'fooName',
+            $this->generateObjectPopulated()->getName()
         );
     }
 
     public function testToString()
     {
         self::assertEquals(
-            'fooBar',
-            (string) $this->generateObjectPopulated(['name' => 'fooBar'])
+            'fooName',
+            (string) $this->generateObjectPopulated()
         );
     }
 
@@ -104,20 +104,5 @@ class SshIdentityTest extends TestCase
                 ['foo' => 'bar']
             )
         );
-    }
-
-    public function testSetDeletedAt()
-    {
-        self::markTestSkipped('Not implemented');
-    }
-
-    public function testSetDeletedAtExceptionOnBadArgument()
-    {
-        self::markTestSkipped('Not implemented');
-    }
-
-    public function testDeletedAt()
-    {
-        self::markTestSkipped('Not implemented');
     }
 }

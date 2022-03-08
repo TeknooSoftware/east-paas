@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -55,11 +55,6 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
-    /**
-     * @var GitWrapper
-     */
-    private $gitWrapper;
-
     private ?string $path = null;
 
     /**
@@ -72,17 +67,16 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
     private ?JobWorkspaceInterface $workspace = null;
 
     /**
-     * @param ?GitWrapper $gitWrapper
+     * @param GitWrapper $gitWrapper
      */
-    public function __construct($gitWrapper)
-    {
+    public function __construct(
+        private mixed $gitWrapper
+    ) {
         $this->uniqueConstructorCheck();
 
-        if (empty($gitWrapper)) {
+        if (empty($this->gitWrapper)) {
             throw new RuntimeException('Missing git wrapper tools injected in this hook');
         }
-
-        $this->gitWrapper = $gitWrapper;
 
         $this->initializeStateProxy();
         $this->updateStates();

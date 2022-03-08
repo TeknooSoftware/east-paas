@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -51,23 +51,20 @@ class Environment implements
     use ObjectTrait;
     use ImmutableTrait;
 
-    private ?string $name = null;
-
-    public function __construct(string $name = '')
-    {
+    public function __construct(
+        private readonly string $name = ''
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
     }
 
     public function getName(): string
     {
-        return (string) $this->name;
+        return $this->name;
     }
 
     public function __toString(): string
     {
-        return (string) $this->name;
+        return $this->name;
     }
 
     public function isEqualTo(mixed $object, PromiseInterface $promise): EqualityInterface

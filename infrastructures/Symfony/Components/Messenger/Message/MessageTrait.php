@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -37,26 +37,13 @@ trait MessageTrait
 {
     use ImmutableTrait;
 
-    private string $projectId;
-
-    private string $environment;
-
-    private string $jobId;
-
-    private string $message;
-
     public function __construct(
-        string $projectId,
-        string $environment,
-        string $jobId,
-        string $message
+        private readonly string $projectId,
+        private readonly string $environment,
+        private readonly string $jobId,
+        private readonly string $message
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->projectId = $projectId;
-        $this->environment = $environment;
-        $this->jobId = $jobId;
-        $this->message = $message;
     }
 
     public function getProjectId(): string

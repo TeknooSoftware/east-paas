@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -39,16 +39,11 @@ class Parameter implements ImmutableInterface, StampInterface
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    private string $value;
-
-    public function __construct(string $name, string $value)
-    {
+    public function __construct(
+        private readonly string $name,
+        private readonly string $value
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->value = $value;
     }
 
     public function getName(): string

@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -43,38 +43,19 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    /**
-     * @var string[]
-     */
-    private array $paths;
-
-    private string $localPath;
-
-    private string $mountPath;
-
-    private bool $isEmbedded = false;
-
     private ?string $registry = null;
 
     /**
      * @param string[] $paths
      */
     public function __construct(
-        string $name,
-        array $paths,
-        string $localPath,
-        string $mountPath,
-        bool $isEmbedded = false
+        private readonly string $name,
+        private readonly array $paths,
+        private readonly string $localPath,
+        private string $mountPath,
+        private readonly bool $isEmbedded = false
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->paths = $paths;
-        $this->localPath = $localPath;
-        $this->mountPath = $mountPath;
-        $this->isEmbedded = $isEmbedded;
     }
 
     public function getName(): string

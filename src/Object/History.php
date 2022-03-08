@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -46,38 +46,19 @@ class History implements ObjectInterface, ImmutableInterface, JsonSerializable
     /**
      * Format to serialize date :)
      */
-    public const DATE_FORMAT = 'Y-m-d H:i:s e';
-
-    private ?History $previous = null;
-
-    private ?string $message = null;
-
-    private DateTimeInterface $date;
-
-    private bool $isFinal = false;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $extra = [];
+    final public const DATE_FORMAT = 'Y-m-d H:i:s e';
 
     /**
      * @param array<string, mixed> $extra
      */
     public function __construct(
-        ?History $previous,
-        string $message,
-        DateTimeInterface $date,
-        bool $isFinal = false,
-        array $extra = []
+        private ?History $previous,
+        private readonly string $message,
+        private DateTimeInterface $date,
+        private readonly bool $isFinal = false,
+        private readonly array $extra = []
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->previous = $previous;
-        $this->message = $message;
-        $this->date = $date;
-        $this->isFinal = $isFinal;
-        $this->extra = $extra;
     }
 
     public function getPrevious(): ?History
@@ -87,7 +68,7 @@ class History implements ObjectInterface, ImmutableInterface, JsonSerializable
 
     public function getMessage(): string
     {
-        return (string) $this->message;
+        return $this->message;
     }
 
     public function getDate(): DateTimeInterface
@@ -97,7 +78,7 @@ class History implements ObjectInterface, ImmutableInterface, JsonSerializable
 
     public function isFinal(): bool
     {
-        return (bool) $this->isFinal;
+        return $this->isFinal;
     }
 
     /**

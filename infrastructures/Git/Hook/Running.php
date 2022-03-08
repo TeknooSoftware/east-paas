@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Git\Hook;
 
 use Closure;
+use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -79,7 +80,7 @@ class Running implements StateInterface
             $workspace = $this->getWorkspace();
 
             $workspace->writeFile(
-                new File('private.key', FileInterface::VISIBILITY_PRIVATE, $this->options['key']),
+                new File('private.key', Visibility::Private, $this->options['key']),
                 function ($path) use ($promise) {
                     $this->gitWrapper->setPrivateKey($path);
 

@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -51,24 +51,24 @@ class XRegistryAuthTest extends TestCase
     public function testGetName()
     {
         self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated(['username' => 'fooBar'])->getName()
+            'fooName',
+            $this->generateObjectPopulated()->getName()
         );
     }
 
     public function testToString()
     {
         self::assertEquals(
-            'fooBar',
-            (string) $this->generateObjectPopulated(['username' => 'fooBar'])
+            'fooName',
+            (string) $this->generateObjectPopulated()
         );
     }
 
     public function testGetUsername()
     {
         self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated(['username' => 'fooBar'])->getUsername()
+            'fooName',
+            $this->generateObjectPopulated()->getUsername()
         );
     }
 
@@ -76,15 +76,15 @@ class XRegistryAuthTest extends TestCase
     {
         self::assertEquals(
             'fooBar',
-            $this->generateObjectPopulated(['password' => 'fooBar'])->getPassword()
+            $this->generateObjectPopulated()->getPassword()
         );
     }
 
     public function testGetEmail()
     {
         self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated(['email' => 'fooBar'])->getEmail()
+            'barFoo',
+            $this->generateObjectPopulated()->getEmail()
         );
     }
 
@@ -92,15 +92,15 @@ class XRegistryAuthTest extends TestCase
     {
         self::assertEquals(
             'fooBar',
-            $this->generateObjectPopulated(['auth' => 'fooBar'])->getAuth()
+            $this->generateObjectPopulated()->getAuth()
         );
     }
 
     public function testGetServerAddress()
     {
         self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated(['serverAddress' => 'fooBar'])->getServerAddress()
+            'barFoo',
+            $this->generateObjectPopulated()->getServerAddress()
         );
     }
 
@@ -141,20 +141,5 @@ class XRegistryAuthTest extends TestCase
                 ['foo' => 'bar']
             )
         );
-    }
-
-    public function testSetDeletedAt()
-    {
-        self::markTestSkipped('Not implemented');
-    }
-
-    public function testSetDeletedAtExceptionOnBadArgument()
-    {
-        self::markTestSkipped('Not implemented');
-    }
-
-    public function testDeletedAt()
-    {
-        self::markTestSkipped('Not implemented');
     }
 }

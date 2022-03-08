@@ -1,6 +1,9 @@
 parameters:
     ignoreErrors:
         -
+            message: '#\$gitWrapper \(Symplify\\GitWrapper\\GitWrapper\) in empty#'
+            path:  infrastructures/
+        -
             message: '#mixed#'
             path:  infrastructures/BuildKit/di.php
         -

@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
@@ -66,7 +67,7 @@ class ServiceCompiler implements CompilerInterface
                     $name,
                     $config[self::KEY_POD_NAME] ?? $name,
                     $ports,
-                    $config[self::KEY_PROTOCOL] ?? Service::TCP,
+                    Transport::from($config[self::KEY_PROTOCOL] ?? Transport::Tcp->value),
                     !empty($config[self::KEY_INTERNAL])
                 )
             );

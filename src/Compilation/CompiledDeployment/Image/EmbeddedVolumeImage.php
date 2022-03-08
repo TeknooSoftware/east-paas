@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -44,34 +44,18 @@ class EmbeddedVolumeImage implements ImmutableInterface, BuildableInterface
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    private ?string $tag;
-
     private ?string $registry = null;
-
-    private string $originalName;
-
-    /**
-     * @var VolumeInterface[]
-     */
-    private array $volumes;
 
     /**
      * @param VolumeInterface[] $volumes
      */
     public function __construct(
-        string $name,
-        string $tag,
-        string $originalName,
-        array $volumes
+        private readonly string $name,
+        private readonly string $tag,
+        private readonly string $originalName,
+        private readonly array $volumes
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->tag = $tag;
-        $this->originalName = $originalName;
-        $this->volumes = $volumes;
     }
 
     public function getName(): string

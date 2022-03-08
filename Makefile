@@ -34,7 +34,7 @@ phpstan:
 	${PHP} -d memory_limit=256M vendor/bin/phpstan analyse src infrastructures --level max
 
 phpcs:
-	${PHP} vendor/bin/phpcs --standard=PSR12 --extensions=php src/ infrastructures/
+	${PHP} vendor/bin/phpcs --standard=PSR12 --ignore=src/Contracts/Workspace/Visibility.php,src/Compilation/CompiledDeployment/Expose/Transport.php --extensions=php src/ infrastructures/
 
 phpcpd:
 	${PHP} vendor/bin/phpcpd --exclude */di.php src/ infrastructures/

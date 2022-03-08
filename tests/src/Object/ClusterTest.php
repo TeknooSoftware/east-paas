@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -379,21 +379,6 @@ class ClusterTest extends TestCase
     {
         $this->expectException(\Throwable::class);
         $this->buildObject()->prepareJobForEnvironment($this->createMock(Job::class), new \stdClass());
-    }
-
-    public function testSetDeletedAt()
-    {
-        self::markTestSkipped('Not implemented');
-    }
-
-    public function testSetDeletedAtExceptionOnBadArgument()
-    {
-        self::markTestSkipped('Not implemented');
-    }
-
-    public function testDeletedAt()
-    {
-        self::markTestSkipped('Not implemented');
     }
 
     public function testSelectClusterBadDirectory()

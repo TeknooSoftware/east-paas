@@ -14,8 +14,8 @@ declare(strict_types=1);
  * to richarddeloge@gmail.com so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) 2009-2021 EIRL Richard Déloge (richarddeloge@gmail.com)
- * @copyright   Copyright (c) 2020-2021 SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
  *
@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 use Maclof\Kubernetes\Client as KubeClient;
 use Maclof\Kubernetes\Repositories\ServiceRepository;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -55,11 +56,11 @@ class ServiceTranscriberTest extends TestCase
             ->method('foreachService')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(
-                    new Service('foo', 'foo', [80 => 8080], 'TCP', false),
+                    new Service('foo', 'foo', [80 => 8080], Transport::Udp, false),
                     'default_namespace'
                 );
                 $callback(
-                    new Service('foo', 'foo', [81 => 8081], 'TCP', true),
+                    new Service('foo', 'foo', [81 => 8081], Transport::Tcp, true),
                     'default_namespace'
                 );
                 return $cd;
@@ -108,11 +109,11 @@ class ServiceTranscriberTest extends TestCase
             ->method('foreachService')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(
-                    new Service('foo', 'foo', [80 => 8080], 'TCP', false),
+                    new Service('foo', 'foo', [80 => 8080], Transport::Tcp, false),
                     'default_namespace'
                 );
                 $callback(
-                    new Service('foo', 'foo', [81 => 8081], 'TCP', true),
+                    new Service('foo', 'foo', [81 => 8081], Transport::Tcp, true),
                     'default_namespace'
                 );
                 return $cd;
