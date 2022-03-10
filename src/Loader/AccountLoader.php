@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Loader;
 
+use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Website\Loader\LoaderInterface;
 use Teknoo\East\Website\Loader\LoaderTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
@@ -35,9 +36,14 @@ use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ *
+ * @implements LoaderInterface<Account>
  */
 class AccountLoader implements LoaderInterface
 {
+    /**
+     * @use LoaderTrait<Account>
+     */
     use LoaderTrait;
 
     public function __construct(AccountRepositoryInterface $repository)

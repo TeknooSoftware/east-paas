@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Loader;
 
+use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Website\Loader\LoaderInterface;
 use Teknoo\East\Website\Loader\LoaderTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
@@ -35,9 +36,14 @@ use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ *
+ * @implements LoaderInterface<Job>
  */
 class JobLoader implements LoaderInterface
 {
+    /**
+     * @use LoaderTrait<Job>
+     */
     use LoaderTrait;
 
     public function __construct(JobRepositoryInterface $repository)

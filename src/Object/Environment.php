@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
+use LogicException;
 use Teknoo\East\Foundation\Conditionals\EqualityInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
@@ -67,12 +68,15 @@ class Environment implements
         return $this->name;
     }
 
+    /**
+     * @param PromiseInterface<Environment, mixed> $promise
+     */
     public function isEqualTo(mixed $object, PromiseInterface $promise): EqualityInterface
     {
         if ($object instanceof Environment && $object->getName() === $this->name) {
             $promise->success($object);
         } else {
-            $promise->fail(new \LogicException('teknoo.east.paas.error.environment.not_equal'));
+            $promise->fail(new LogicException('teknoo.east.paas.error.environment.not_equal'));
         }
 
         return $this;

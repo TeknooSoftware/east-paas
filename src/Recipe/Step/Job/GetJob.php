@@ -49,18 +49,21 @@ class GetJob
 
     public function __invoke(string $jobId, ManagerInterface $manager, ClientInterface $client): self
     {
+        /** @var Promise<Job, mixed, mixed> $fetchedPromise */
+        $fetchedPromise = new Promise(
+            static function (Job $job) use ($manager) {
+                $manager->updateWorkPlan([Job::class => $job]);
+            },
+            fn (Throwable $error) => throw new DomainException(
+                'teknoo.east.paas.error.recipe.job.not_found',
+                404,
+                $error
+            )
+        );
+
         $this->jobLoader->load(
             $jobId,
-            new Promise(
-                static function (Job $job) use ($manager) {
-                    $manager->updateWorkPlan([Job::class => $job]);
-                },
-                fn (Throwable $error) => throw new DomainException(
-                    'teknoo.east.paas.error.recipe.job.not_found',
-                    404,
-                    $error
-                )
-            )
+            $fetchedPromise
         );
 
         return $this;

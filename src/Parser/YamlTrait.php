@@ -45,6 +45,9 @@ trait YamlTrait
         return $this;
     }
 
+    /**
+     * @param PromiseInterface<array<string, mixed>, mixed, mixed> $promise
+     */
     private function parseYaml(string &$configuration, PromiseInterface $promise): void
     {
         $this->parser->parse(

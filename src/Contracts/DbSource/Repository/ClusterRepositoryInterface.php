@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\DbSource\Repository;
 
+use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Website\DBSource\RepositoryInterface;
 
 /**
@@ -32,6 +33,8 @@ use Teknoo\East\Website\DBSource\RepositoryInterface;
  *
  *@license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ *
+ * @extends RepositoryInterface<Cluster>
  */
 interface ClusterRepositoryInterface extends RepositoryInterface
 {

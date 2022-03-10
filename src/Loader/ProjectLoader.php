@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Loader;
 
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Loader\LoaderInterface;
 use Teknoo\East\Website\Loader\LoaderTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ProjectRepositoryInterface;
@@ -35,9 +36,14 @@ use Teknoo\East\Paas\Contracts\DbSource\Repository\ProjectRepositoryInterface;
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ *
+ * @implements LoaderInterface<Project>
  */
 class ProjectLoader implements LoaderInterface
 {
+    /**
+     * @use LoaderTrait<Project>
+     */
     use LoaderTrait;
 
     public function __construct(ProjectRepositoryInterface $repository)

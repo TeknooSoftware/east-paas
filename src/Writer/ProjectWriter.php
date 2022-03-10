@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Writer;
 
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Website\Contracts\ObjectInterface;
 use Teknoo\East\Website\Writer\PersistTrait;
 use Teknoo\East\Website\Writer\WriterInterface;
@@ -38,9 +39,14 @@ use Teknoo\East\Website\Writer\WriterInterface;
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ *
+ * @implements WriterInterface<Project>
  */
 class ProjectWriter implements WriterInterface
 {
+    /**
+     * @use PersistTrait<Project>
+     */
     use PersistTrait;
 
     public function save(ObjectInterface $object, PromiseInterface $promise = null): WriterInterface

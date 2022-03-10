@@ -25,8 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Doctrine\Repository\ODM;
 
-use Teknoo\East\Website\Doctrine\DBSource\ODM\RepositoryTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
+use Teknoo\East\Paas\Object\Account;
+use Teknoo\East\Website\Doctrine\DBSource\ODM\RepositoryTrait;
 
 /**
  * ODM optimised implementation of `AccountRepositoryInterface` for Doctrine's ODM repositories
@@ -37,5 +38,8 @@ use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
  */
 class AccountRepository implements AccountRepositoryInterface
 {
+    /**
+     * @use RepositoryTrait<Account>
+     */
     use RepositoryTrait;
 }

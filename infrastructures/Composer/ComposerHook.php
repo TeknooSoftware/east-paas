@@ -120,6 +120,7 @@ class ComposerHook implements HookInterface
 
     /**
      * @param array<string, scalar> $options
+     * @param PromiseInterface<mixed, mixed> $promise
      */
     public function setOptions(array $options, PromiseInterface $promise): HookInterface
     {
@@ -138,6 +139,9 @@ class ComposerHook implements HookInterface
         return $this;
     }
 
+    /**
+     * @param PromiseInterface<string, mixed> $promise
+     */
     public function run(PromiseInterface $promise): HookInterface
     {
         $command = ($this->factory)([$this->binary, ...$this->options], $this->path);

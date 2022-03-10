@@ -47,16 +47,19 @@ class SaveJob
 
     public function __invoke(Job $job, ChefInterface $chef, ClientInterface $client): self
     {
+        /** @var Promise<Job, mixed, mixed> $savedPromise */
+        $savedPromise = new Promise(
+            null,
+            static function (Throwable $error) use ($client, $chef) {
+                $client->errorInRequest($error);
+
+                $chef->finish($error);
+            }
+        );
+
         $this->jobWriter->save(
             $job,
-            new Promise(
-                null,
-                static function (Throwable $error) use ($client, $chef) {
-                    $client->errorInRequest($error);
-
-                    $chef->finish($error);
-                }
-            )
+            $savedPromise
         );
 
         return $this;

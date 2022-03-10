@@ -2,22 +2,13 @@ parameters:
     ignoreErrors:
         -
             message: '#\$gitWrapper \(Symplify\\GitWrapper\\GitWrapper\) in empty#'
-            path:  infrastructures/
-        -
-            message: '#mixed#'
-            path:  infrastructures/BuildKit/di.php
-        -
-            message: '#mixed given#'
-            path:  infrastructures/Doctrine/Form/Type/AccountType.php
-        -
-            message: '#mixed given#'
-            path:  infrastructures/Symfony/Components/Form/Type/
-        -
-            message: '#cast mixed to#'
-            path:  infrastructures/Symfony/Components/Form/Type/
+            path: infrastructures/
         -
             message: '#Anonymous function should return [a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
-            path:  infrastructures/
+            path: infrastructures/
+        -
+            message: '#mixed#'
+            path: infrastructures/BuildKit/di.php
         -
             message: '#Cannot access an offset on mixed#'
             path: infrastructures/Kubernetes/Transcriber/ReplicationControllerTranscriber.php
@@ -25,17 +16,26 @@ parameters:
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
         -
+            message: '#mixed given#'
+            path: infrastructures/Doctrine/Form/Type/AccountType.php
+        -
+            message: '#mixed given#'
+            path: infrastructures/Symfony/Components/Form/Type/
+        -
+            message: '#cast mixed to#'
+            path: infrastructures/Symfony/Components/Form/Type/
+        -
             message: '#ClassFinderDenormalizer::denormalize#'
             path: infrastructures/Symfony/Components/Normalizer/ClassFinderDenormalizer.php
+        -
+            message: '#mixed#' #array validated by validation schema
+            path:  src/Compilation/
         -
             message: '#version is never read, only written#'
             path:  src/Compilation/CompiledDeployment.php
         -
             message: '#project is never read, only written#'
             path:  src/Object/Cluster.php
-        -
-            message: '#mixed#' #array validated by validation schema
-            path:  src/Compilation/
         -
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
             path:  src/Object/Job.php

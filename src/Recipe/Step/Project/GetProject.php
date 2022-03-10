@@ -49,18 +49,21 @@ class GetProject
 
     public function __invoke(string $projectId, ManagerInterface $manager, ClientInterface $client): self
     {
+        /** @var Promise<Project, mixed, mixed> $fetchedPromise */
+        $fetchedPromise = new Promise(
+            static function (Project $project) use ($manager) {
+                $manager->updateWorkPlan([Project::class => $project]);
+            },
+            fn (Throwable $error) => throw new DomainException(
+                'teknoo.east.paas.error.recipe.project.not_found',
+                404,
+                $error
+            )
+        );
+
         $this->projectLoader->load(
             $projectId,
-            new Promise(
-                static function (Project $project) use ($manager) {
-                    $manager->updateWorkPlan([Project::class => $project]);
-                },
-                fn (Throwable $error) => throw new DomainException(
-                    'teknoo.east.paas.error.recipe.project.not_found',
-                    404,
-                    $error
-                )
-            )
+            $fetchedPromise
         );
 
         return $this;

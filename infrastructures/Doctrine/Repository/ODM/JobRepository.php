@@ -25,8 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Doctrine\Repository\ODM;
 
-use Teknoo\East\Website\Doctrine\DBSource\ODM\RepositoryTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
+use Teknoo\East\Paas\Object\Job;
+use Teknoo\East\Website\Doctrine\DBSource\ODM\RepositoryTrait;
 
 /**
  * ODM optimised implementation of `JobRepositoryInterface` for Doctrine's ODM repositories
@@ -37,5 +38,8 @@ use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
  */
 class JobRepository implements JobRepositoryInterface
 {
+    /**
+     * @use RepositoryTrait<Job>
+     */
     use RepositoryTrait;
 }

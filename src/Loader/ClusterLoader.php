@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Loader;
 
+use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Website\Loader\LoaderInterface;
 use Teknoo\East\Website\Loader\LoaderTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
@@ -35,9 +36,14 @@ use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ *
+ * @implements LoaderInterface<Cluster>
  */
 class ClusterLoader implements LoaderInterface
 {
+    /**
+     * @use LoaderTrait<Cluster>
+     */
     use LoaderTrait;
 
     public function __construct(ClusterRepositoryInterface $repository)

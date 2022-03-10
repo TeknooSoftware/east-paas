@@ -198,6 +198,9 @@ class Cluster implements
         return $this;
     }
 
+    /**
+     * @param PromiseInterface<DriverInterface, mixed> $promise
+     */
     public function selectCluster(Directory $clientsDirectory, PromiseInterface $promise): self
     {
         $clientsDirectory->require((string) $this->getType(), $this, $promise);
@@ -205,6 +208,9 @@ class Cluster implements
         return $this;
     }
 
+    /**
+     * @param PromiseInterface<DriverInterface, mixed> $promise
+     */
     public function configureCluster(DriverInterface $client, PromiseInterface $promise): self
     {
         try {

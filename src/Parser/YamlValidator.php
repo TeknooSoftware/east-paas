@@ -177,6 +177,7 @@ class YamlValidator
 
     /**
      * @param array<mixed, mixed> $values
+     * @param PromiseInterface<array<int|string, mixed>, mixed> $promise
      */
     public function validate(array $values, string $schema, PromiseInterface $promise): self
     {
