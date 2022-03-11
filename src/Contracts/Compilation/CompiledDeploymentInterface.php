@@ -49,6 +49,9 @@ interface CompiledDeploymentInterface
 
     public function addVolume(string $name, VolumeInterface $volume): CompiledDeploymentInterface;
 
+    /**
+     * @param PromiseInterface<VolumeInterface, mixed> $promise
+     */
     public function importVolume(
         string $volumeFrom,
         string $mountPath,

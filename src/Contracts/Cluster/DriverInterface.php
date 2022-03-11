@@ -40,7 +40,13 @@ interface DriverInterface
 {
     public function configure(string $url, ?IdentityInterface $identity): DriverInterface;
 
+    /**
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
+     */
     public function deploy(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): DriverInterface;
 
+    /**
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
+     */
     public function expose(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): DriverInterface;
 }

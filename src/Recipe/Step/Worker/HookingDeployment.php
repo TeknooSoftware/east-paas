@@ -59,33 +59,33 @@ class HookingDeployment
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
+        /** @var Promise<string, mixed, mixed> $promise */
+        $promise = new Promise(
+            function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
+                ($this->dispatchHistory)(
+                    $projectId,
+                    $envName,
+                    $jobUnit->getId(),
+                    self::class . ':Result',
+                    ['hook_output' => $buildSuccess]
+                );
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.hook.building_error',
+                500,
+                $error
+            )
+        );
+
         $workspace->runInRoot(
             function (
                 $path
             ) use (
                 $compiledDeployment,
-                $projectId,
-                $envName,
+                $promise,
                 $jobUnit,
                 $workspace,
             ) {
-                $promise = new Promise(
-                    function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
-                        ($this->dispatchHistory)(
-                            $projectId,
-                            $envName,
-                            $jobUnit->getId(),
-                            self::class . ':Result',
-                            ['hook_output' => $buildSuccess]
-                        );
-                    },
-                    fn (Throwable $error) => throw new RuntimeException(
-                        'teknoo.east.paas.error.recipe.hook.building_error',
-                        500,
-                        $error
-                    )
-                );
-
                 $compiledDeployment->foreachHook(
                     static function (HookInterface $hook) use ($path, $promise, $jobUnit, $workspace) {
                         if ($hook instanceof HookAwareInterface) {

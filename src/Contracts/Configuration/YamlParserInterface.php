@@ -36,5 +36,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  */
 interface YamlParserInterface
 {
+    /**
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
+     */
     public function parse(string $value, PromiseInterface $promise, int $flags = 0): YamlParserInterface;
 }

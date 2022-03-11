@@ -40,12 +40,18 @@ interface BuilderInterface
 {
     public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface;
 
+    /**
+     * @param PromiseInterface<string, mixed> $promise
+     */
     public function buildImages(
         CompiledDeploymentInterface $compiledDeployment,
         string $workingPath,
         PromiseInterface $promise
     ): BuilderInterface;
 
+    /**
+     * @param PromiseInterface<string, mixed> $promise
+     */
     public function buildVolumes(
         CompiledDeploymentInterface $compiledDeployment,
         string $workingPath,

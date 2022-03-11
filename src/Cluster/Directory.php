@@ -51,6 +51,9 @@ class Directory
         return $this;
     }
 
+    /**
+     * @param PromiseInterface<DriverInterface, mixed> $promise
+     */
     public function require(string $type, Cluster $cluster, PromiseInterface $promise): self
     {
         if (!isset($this->clients[$type])) {

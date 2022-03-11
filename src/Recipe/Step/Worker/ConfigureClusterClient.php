@@ -53,23 +53,23 @@ class ConfigureClusterClient
         EastClient $eastClient,
         ManagerInterface $manager
     ): self {
-        $job->configureCluster(
-            $this->clientsDirectory,
-            new Promise(
-                static function (Collection $clients) use ($manager) {
-                    $manager->updateWorkPlan(
-                        [
-                            Collection::class => $clients
-                        ]
-                    );
-                },
-                fn (Throwable $error) => throw new RuntimeException(
-                    'teknoo.east.paas.error.recipe.cluster.configuration_error',
-                    500,
-                    $error
-                )
+        /** @var Promise<Collection, mixed, mixed> $promise */
+        $promise = new Promise(
+            static function (Collection $clients) use ($manager) {
+                $manager->updateWorkPlan(
+                    [
+                        Collection::class => $clients
+                    ]
+                );
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.cluster.configuration_error',
+                500,
+                $error
             )
         );
+
+        $job->configureCluster($this->clientsDirectory, $promise);
 
         return $this;
     }

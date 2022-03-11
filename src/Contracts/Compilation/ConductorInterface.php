@@ -44,10 +44,16 @@ interface ConductorInterface
         JobWorkspaceInterface $workspace
     ): ConductorInterface;
 
+    /**
+     * @param PromiseInterface<string, mixed> $promise
+     */
     public function prepare(
         string $configuration,
         PromiseInterface $promise
     ): ConductorInterface;
 
+    /**
+     * @param PromiseInterface<CompiledDeploymentInterface, mixed> $promise
+     */
     public function compileDeployment(PromiseInterface $promise, ?string $storageIdentifier = null): ConductorInterface;
 }

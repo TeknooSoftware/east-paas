@@ -48,17 +48,17 @@ class ReadDeploymentConfiguration
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
-        $workspace->loadDeploymentIntoConductor(
-            $conductor,
-            new Promise(
-                null,
-                fn (Throwable $error) => throw new RuntimeException(
-                    'teknoo.east.paas.error.recipe.configuration.read_error',
-                    500,
-                    $error
-                )
+        /** @var Promise<string, mixed, mixed> $promise */
+        $promise = new Promise(
+            null,
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.configuration.read_error',
+                500,
+                $error
             )
         );
+
+        $workspace->loadDeploymentIntoConductor($conductor, $promise);
 
         return $this;
     }

@@ -36,6 +36,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 interface NormalizerInterface
 {
     /**
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
      * @param array<string, mixed> $context
      */
     public function normalize(

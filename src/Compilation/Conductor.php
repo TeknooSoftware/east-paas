@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation;
 
 use RuntimeException;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Compilation\Conductor\Generator;
 use Teknoo\East\Paas\Compilation\Conductor\Running;
@@ -138,6 +139,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
     public function prepare(string $configuration, PromiseInterface $promise): ConductorInterface
     {
         try {
+            /** @var Promise<array<string, mixed>, mixed, array<string, mixed>> $configurationPromise */
             $configurationPromise = new Promise(
                 function ($result, PromiseInterface $next) {
                     $this->configuration = $result;
@@ -148,6 +150,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                 true
             );
 
+            /** @var Promise<array<int|string, mixed>, mixed, array<string, mixed>> $validatorPromise */
             $validatorPromise = new Promise(
                 fn ($result, PromiseInterface $next) => $this->getJob()->updateVariablesIn(
                     $result,
@@ -157,6 +160,13 @@ class Conductor implements ConductorInterface, AutomatedInterface
                 true
             );
 
+            /**
+             * @var Promise<
+             *     array<mixed, mixed>,
+             *     mixed,
+             *     PromiseInterface<array<int|string, mixed>, mixed>
+             * > $parsedPromise
+             */
             $parsedPromise = new Promise(
                 fn ($result, PromiseInterface $next) => $this->validator->validate(
                     $result,

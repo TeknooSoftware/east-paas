@@ -41,6 +41,8 @@ use Teknoo\Immutable\ImmutableTrait;
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ *
+ * @implements EqualityInterface<Environment, mixed>
  */
 class Environment implements
     ObjectInterface,

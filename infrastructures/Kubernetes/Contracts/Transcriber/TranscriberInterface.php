@@ -38,6 +38,9 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
  */
 interface TranscriberInterface
 {
+    /**
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
+     */
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,

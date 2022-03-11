@@ -173,11 +173,14 @@ class Cluster implements
             return $this;
         }
 
+        /** @var Promise<Environment, mixed, mixed> $equalPromise */
+        $equalPromise = new Promise(
+            fn () => $job->addCluster($this)
+        );
+
         $environment->isEqualTo(
             $embeddedEnv,
-            new Promise(
-                fn () => $job->addCluster($this)
-            )
+            $equalPromise
         );
 
         return $this;

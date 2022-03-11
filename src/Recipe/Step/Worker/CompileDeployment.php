@@ -47,19 +47,22 @@ class CompileDeployment
         ConductorInterface $conductor,
         ?string $storageIdentifier = null
     ): self {
+        /** @var Promise<CompiledDeploymentInterface, mixed, mixed> $promise */
+        $promise = new Promise(
+            static function (CompiledDeploymentInterface $deployment) use ($manager) {
+                $manager->updateWorkPlan([
+                    CompiledDeploymentInterface::class => $deployment,
+                ]);
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.configuration.compilation_error',
+                500,
+                $error
+            )
+        );
+
         $conductor->compileDeployment(
-            new Promise(
-                static function (CompiledDeploymentInterface $deployment) use ($manager) {
-                    $manager->updateWorkPlan([
-                        CompiledDeploymentInterface::class => $deployment,
-                    ]);
-                },
-                fn (Throwable $error) => throw new RuntimeException(
-                    'teknoo.east.paas.error.recipe.configuration.compilation_error',
-                    500,
-                    $error
-                )
-            ),
+            $promise,
             $storageIdentifier
         );
 

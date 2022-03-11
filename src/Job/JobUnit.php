@@ -127,16 +127,16 @@ class JobUnit implements JobUnitInterface
     ): JobUnitInterface {
         try {
             $selectedClients = [];
+            /** @var Promise<ClusterClientInterface, mixed, mixed> $clusterPromise */
+            $clusterPromise = new Promise(
+                static function (ClusterClientInterface $client) use (&$selectedClients) {
+                    $selectedClients[] = $client;
+                },
+                fn (Throwable $error) => throw $error,
+            );
+
             foreach ($this->clusters as $cluster) {
-                $cluster->selectCluster(
-                    $clientsDirectory,
-                    new Promise(
-                        static function (ClusterClientInterface $client) use (&$selectedClients) {
-                            $selectedClients[] = $client;
-                        },
-                        fn (Throwable $error) => throw $error,
-                    )
-                );
+                $cluster->selectCluster($clientsDirectory, $clusterPromise);
             }
 
             $promise->success(new ClusterCollection($selectedClients));
@@ -183,6 +183,7 @@ class JobUnit implements JobUnitInterface
 
     /**
      * @param array<string, mixed> $values
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
      */
     private function updateVariables(array &$values, PromiseInterface $promise): void
     {

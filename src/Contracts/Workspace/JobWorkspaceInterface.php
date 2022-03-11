@@ -50,11 +50,17 @@ interface JobWorkspaceInterface extends ImmutableInterface
 
     public function prepareRepository(CloningAgentInterface $cloningAgent): JobWorkspaceInterface;
 
+    /**
+     * @param PromiseInterface<string, mixed> $promise
+     */
     public function loadDeploymentIntoConductor(
         ConductorInterface $conductor,
         PromiseInterface $promise
     ): JobWorkspaceInterface;
 
+    /**
+     * @param PromiseInterface<mixed, mixed> $promise
+     */
     public function hasDirectory(string $path, PromiseInterface $promise): JobWorkspaceInterface;
 
     public function runInRoot(callable $callback): JobWorkspaceInterface;

@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.75] - 2022-03-11
+### Stable Release
+- Require Recipe 4.1.2+ or later
+- Improve PHPStan analyse
+
 ## [0.0.74] - 2022-03-08
 ### Stable Release
 - Support States 6.0.1+

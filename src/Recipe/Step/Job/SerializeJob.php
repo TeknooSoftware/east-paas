@@ -53,27 +53,28 @@ class SerializeJob
      */
     public function __invoke(Job $job, ManagerInterface $manager, ClientInterface $client, array $envVars = []): self
     {
+        /** @var Promise<string, mixed, mixed> $serializedPromise */
+        $serializedPromise = new Promise(
+            static function (string $jobSerialized) use ($manager) {
+                $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.job.serialization_error',
+                500,
+                $error
+            )
+        );
+
         $this->serializer->serialize(
             $job,
             'json',
-            new Promise(
-                static function (string $jobSerialized) use ($manager) {
-                    $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
-                },
-                fn (Throwable $error) => throw new RuntimeException(
-                    'teknoo.east.paas.error.recipe.job.serialization_error',
-                    500,
-                    $error
-                )
-            ),
+            $serializedPromise,
             [
                 'add' => [
                     'variables' => $envVars,
                 ],
             ]
         );
-
-
 
         return $this;
     }

@@ -69,25 +69,22 @@ class Running implements StateInterface
         ): void {
             $client = $this->getClient();
 
-            $promise = new Promise(
-                $mainPromise->success(...),
-                static function (Throwable $error) {
-                    //To break the foreach loop
-                    throw $error;
-                }
-            );
-
             try {
+                /** @var Promise<array<string, mixed>, mixed, mixed> $promise */
+                $promise = new Promise(
+                    $mainPromise->success(...),
+                    static function (Throwable $error) {
+                        //To break the foreach loop
+                        throw $error;
+                    }
+                );
+
                 foreach ($this->transcribers as $transcriber) {
                     if (
                         ($runDeployment && $transcriber instanceof DeploymentInterface)
                         || ($runExposing && $transcriber instanceof ExposingInterface)
                     ) {
-                        $transcriber->transcribe(
-                            $compiledDeployment,
-                            $client,
-                            $promise
-                        );
+                        $transcriber->transcribe($compiledDeployment, $client, $promise);
                     }
                 }
             } catch (Throwable $error) {

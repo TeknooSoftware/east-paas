@@ -55,19 +55,22 @@ class ConfigureCloningAgent
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
+        /** @var Promise<CloningAgentInterface, mixed, mixed> $promise */
+        $promise = new Promise(
+            static function (CloningAgentInterface $agent) use ($manager) {
+                $manager->updateWorkPlan([CloningAgentInterface::class => $agent]);
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.agent.configuration_error',
+                500,
+                $error
+            )
+        );
+
         $job->configureCloningAgent(
             $this->agent,
             $workspace,
-            new Promise(
-                static function (CloningAgentInterface $agent) use ($manager) {
-                    $manager->updateWorkPlan([CloningAgentInterface::class => $agent]);
-                },
-                fn (Throwable $error) => throw new RuntimeException(
-                    'teknoo.east.paas.error.recipe.agent.configuration_error',
-                    500,
-                    $error
-                )
-            )
+            $promise
         );
 
         return $this;

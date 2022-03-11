@@ -74,40 +74,43 @@ class PushResult implements DispatchResultInterface
     ): void {
         $this->dateTimeService->passMeTheDate(
             function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $result, $manager, $extra) {
+                /** @var Promise<array<string, mixed>, mixed, mixed> $promise */
+                $promise = new Promise(
+                    function ($normalizedResult) use ($projectId, $envName, $jobId, $manager, $now, $extra) {
+                        $history = new History(
+                            null,
+                            DispatchResultInterface::class,
+                            $now,
+                            true,
+                            ['result' => $normalizedResult] + $extra
+                        );
+
+                        $manager->updateWorkPlan([
+                            History::class => $history,
+                            'historySerialized' => json_encode($history),
+                        ]);
+
+                        $this->bus->dispatch(
+                            new Envelope(
+                                new JobDone(
+                                    $projectId,
+                                    $envName,
+                                    $jobId,
+                                    (string) json_encode($history)
+                                ),
+                                [
+                                    new Parameter('projectId', $projectId),
+                                    new Parameter('envName', $envName),
+                                    new Parameter('jobId', $jobId)
+                                ]
+                            )
+                        );
+                    }
+                );
+
                 $this->normalizer->normalize(
                     $result,
-                    new Promise(
-                        function ($normalizedResult) use ($projectId, $envName, $jobId, $manager, $now, $extra) {
-                            $history = new History(
-                                null,
-                                DispatchResultInterface::class,
-                                $now,
-                                true,
-                                ['result' => $normalizedResult] + $extra
-                            );
-
-                            $manager->updateWorkPlan([
-                                History::class => $history,
-                                'historySerialized' => json_encode($history),
-                            ]);
-
-                            $this->bus->dispatch(
-                                new Envelope(
-                                    new JobDone(
-                                        $projectId,
-                                        $envName,
-                                        $jobId,
-                                        (string) json_encode($history)
-                                    ),
-                                    [
-                                        new Parameter('projectId', $projectId),
-                                        new Parameter('envName', $envName),
-                                        new Parameter('jobId', $jobId)
-                                    ]
-                                )
-                            );
-                        }
-                    ),
+                    $promise,
                     'json'
                 );
             },

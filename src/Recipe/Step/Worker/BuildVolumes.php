@@ -60,35 +60,37 @@ class BuildVolumes
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
+        /** @var Promise<string, mixed, mixed> $promise */
+        $promise = new Promise(
+            function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
+                ($this->dispatchHistory)(
+                    $projectId,
+                    $envName,
+                    $jobUnit->getId(),
+                    self::class . ':Result',
+                    ['build_output' => $buildSuccess]
+                );
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.volumes.building_error',
+                500,
+                $error
+            )
+        );
+
         $workspace->runInRoot(
             function (
                 string $root
             ) use (
                 $builder,
                 $compiledDeployment,
-                $projectId,
-                $envName,
-                $jobUnit,
+                $promise,
             ) {
+
                 $builder->buildVolumes(
                     $compiledDeployment,
                     $root,
-                    new Promise(
-                        function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
-                            ($this->dispatchHistory)(
-                                $projectId,
-                                $envName,
-                                $jobUnit->getId(),
-                                self::class . ':Result',
-                                ['build_output' => $buildSuccess]
-                            );
-                        },
-                        fn (Throwable $error) => throw new RuntimeException(
-                            'teknoo.east.paas.error.recipe.volumes.building_error',
-                            500,
-                            $error
-                        )
-                    )
+                    $promise
                 );
             }
         );

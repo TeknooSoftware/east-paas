@@ -140,9 +140,6 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
         return $that;
     }
 
-    /**
-     * @param PromiseInterface<string, mixed> $promise
-     */
     public function buildImages(
         CompiledDeploymentInterface $compiledDeployment,
         string $workingPath,
@@ -214,9 +211,6 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
         return $this;
     }
 
-    /**
-     * @param PromiseInterface<string, mixed> $promise
-     */
     public function buildVolumes(
         CompiledDeploymentInterface $compiledDeployment,
         string $workingPath,

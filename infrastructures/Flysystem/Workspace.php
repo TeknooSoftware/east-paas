@@ -187,7 +187,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
         $repositoryPath = $this->getRepositoryPath();
 
         $conductor->prepare(
-            (string) $this->filesystem->read($repositoryPath . self::CONFIGURATION_FILE),
+            $this->filesystem->read($repositoryPath . self::CONFIGURATION_FILE),
             $promise
         );
 

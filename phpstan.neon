@@ -16,8 +16,14 @@ parameters:
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
         -
+            message: '#mixed#'
+            path: infrastructures/Kubernetes/Driver.php
+        -
             message: '#mixed given#'
             path: infrastructures/Doctrine/Form/Type/AccountType.php
+        -
+            message: '# expects array<string, mixed>\|null, mixed given#'
+            path: infrastructures/Symfony/Components/Configuration/YamlParser.php
         -
             message: '#mixed given#'
             path: infrastructures/Symfony/Components/Form/Type/
@@ -27,6 +33,9 @@ parameters:
         -
             message: '#ClassFinderDenormalizer::denormalize#'
             path: infrastructures/Symfony/Components/Normalizer/ClassFinderDenormalizer.php
+        -
+            message: '# expects array<string, mixed>\|null, array\|ArrayObject\|bool\|float\|int\|string\|null given#'
+            path: infrastructures/Symfony/Components/Serializing/Normalizer.php
         -
             message: '#mixed#' #array validated by validation schema
             path:  src/Compilation/

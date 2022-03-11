@@ -62,27 +62,27 @@ class Deploying
         string $envName,
         JobUnitInterface $jobUnit
     ): self {
+        /** @var Promise<array<string, mixed>, mixed, mixed> $promise */
+        $promise = new Promise(
+            function (array $result) use ($projectId, $envName, $jobUnit) {
+                ($this->dispatchHistory)(
+                    $projectId,
+                    $envName,
+                    $jobUnit->getId(),
+                    self::class . ':Result',
+                    $result
+                );
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.cluster.deployment_error',
+                500,
+                $error
+            )
+        );
+
         /** @var DriverInterface $client */
         foreach ($clustersClients as $client) {
-            $client->deploy(
-                $compiledDeployment,
-                new Promise(
-                    function (array $result) use ($projectId, $envName, $jobUnit) {
-                        ($this->dispatchHistory)(
-                            $projectId,
-                            $envName,
-                            $jobUnit->getId(),
-                            self::class . ':Result',
-                            $result
-                        );
-                    },
-                    fn (Throwable $error) => throw new RuntimeException(
-                        'teknoo.east.paas.error.recipe.cluster.deployment_error',
-                        500,
-                        $error
-                    )
-                )
-            );
+            $client->deploy($compiledDeployment, $promise);
         }
 
         return $this;

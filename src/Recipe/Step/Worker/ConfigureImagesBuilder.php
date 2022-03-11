@@ -52,19 +52,19 @@ class ConfigureImagesBuilder
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
-        $jobUnit->configureImageBuilder(
-            $this->builder,
-            new Promise(
-                static function (ImageBuilder $builder) use ($manager) {
-                    $manager->updateWorkPlan([ImageBuilder::class => $builder]);
-                },
-                fn (Throwable $error) => throw new RuntimeException(
-                    'teknoo.east.paas.error.recipe.images.configuration_error',
-                    500,
-                    $error
-                )
+        /** @var Promise<ImageBuilder, mixed, mixed> $promise */
+        $promise = new Promise(
+            static function (ImageBuilder $builder) use ($manager) {
+                $manager->updateWorkPlan([ImageBuilder::class => $builder]);
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                'teknoo.east.paas.error.recipe.images.configuration_error',
+                500,
+                $error
             )
         );
+
+        $jobUnit->configureImageBuilder($this->builder, $promise);
 
         return $this;
     }

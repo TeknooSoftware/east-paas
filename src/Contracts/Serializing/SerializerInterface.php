@@ -36,6 +36,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 interface SerializerInterface
 {
     /**
+     * @param PromiseInterface<string, mixed> $promise
      * @param array<string, mixed> $context
      */
     public function serialize(
