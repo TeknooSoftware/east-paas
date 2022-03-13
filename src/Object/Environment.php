@@ -54,10 +54,14 @@ class Environment implements
     use ObjectTrait;
     use ImmutableTrait;
 
+    private string $name = '';
+
     public function __construct(
-        private readonly string $name = ''
+        string $name = '',
     ) {
         $this->uniqueConstructorCheck();
+
+        $this->name = $name;
     }
 
     public function getName(): string

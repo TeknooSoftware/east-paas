@@ -48,13 +48,26 @@ class ClusterCredentials implements
     use ObjectTrait;
     use ImmutableTrait;
 
+    private string $serverCertificate = '';
+
+    private string $token = '';
+
+    private string $username = '';
+
+    private string $password = '';
+
     public function __construct(
-        private readonly string $serverCertificate = '',
-        private readonly string $token = '',
-        private readonly string $username = '',
-        private readonly string $password = ''
+        string $serverCertificate = '',
+        string $token = '',
+        string $username = '',
+        string $password = '',
     ) {
         $this->uniqueConstructorCheck();
+
+        $this->serverCertificate = $serverCertificate;
+        $this->token = $token;
+        $this->username = $username;
+        $this->password = $password;
     }
 
     public function getName(): string

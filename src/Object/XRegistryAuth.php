@@ -48,14 +48,30 @@ class XRegistryAuth implements
     use ObjectTrait;
     use ImmutableTrait;
 
+    private string $username = '';
+
+    private string $password = '';
+
+    private string $email = '';
+
+    private string $auth = '';
+
+    private string $serverAddress = '';
+
     public function __construct(
-        private readonly string $username = '',
-        private readonly string $password = '',
-        private readonly string $email = '',
-        private readonly string $auth = '',
-        private readonly string $serverAddress = ''
+        string $username = '',
+        string $password = '',
+        string $email = '',
+        string $auth = '',
+        string $serverAddress = '',
     ) {
         $this->uniqueConstructorCheck();
+
+        $this->username = $username;
+        $this->password = $password;
+        $this->email = $email;
+        $this->auth = $auth;
+        $this->serverAddress = $serverAddress;
     }
 
     public function getName(): string

@@ -51,11 +51,18 @@ class ImageRegistry implements
     use ObjectTrait;
     use ImmutableTrait;
 
+    private string $apiUrl = '';
+
+    private ?IdentityInterface $identity = null;
+
     public function __construct(
-        private readonly string $apiUrl = '',
-        private readonly ?IdentityInterface $identity = null
+        string $apiUrl = '',
+        ?IdentityInterface $identity = null,
     ) {
         $this->uniqueConstructorCheck();
+
+        $this->apiUrl = $apiUrl;
+        $this->identity = $identity;
     }
 
     public function getApiUrl(): string

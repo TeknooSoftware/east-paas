@@ -523,7 +523,7 @@ class FeatureContext implements Context
     "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\GitRepository",
     "id": "42c6351ad59a37409cc1192d57287437",
     "pull_url": "fooBar",
-    "default_branch": "master",
+    "default_branch": "main",
     "identity": {
       "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\SshIdentity",
       "id": "df02b84131663568b62750e4d6b71922",
@@ -622,7 +622,7 @@ EOF;
                 '@class' => GitRepository::class,
                 'id' => 'git-id',
                 'pull_url' => $this->repositoryUrl,
-                'default_branch' => 'master',
+                'default_branch' => 'main',
                 'identity' => null,
             ],
             'images_repository' => [

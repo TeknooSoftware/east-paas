@@ -48,11 +48,18 @@ class SshIdentity implements
     use ObjectTrait;
     use ImmutableTrait;
 
+    private string $name = '';
+
+    private string $privateKey = '';
+
     public function __construct(
-        private readonly string $name = '',
-        private readonly string $privateKey = ''
+        string $name = '',
+        string $privateKey = '',
     ) {
         $this->uniqueConstructorCheck();
+
+        $this->name = $name;
+        $this->privateKey = $privateKey;
     }
 
     public function getName(): string

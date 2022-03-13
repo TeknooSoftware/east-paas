@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.76] - 2022-03-13
+### Stable Release
+- Rollback on some imutable object, readonly is not compliant with doctrine dbal/mongodb
+
 ## [0.0.75] - 2022-03-11
 ### Stable Release
 - Require Recipe 4.1.2+ or later

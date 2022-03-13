@@ -51,12 +51,22 @@ class GitRepository implements
     use ObjectTrait;
     use ImmutableTrait;
 
+    private string $pullUrl = '';
+
+    private string $defaultBranch = 'main';
+
+    private ?IdentityInterface $identity = null;
+
     public function __construct(
-        private readonly string $pullUrl = '',
-        private readonly string $defaultBranch = 'master',
-        private readonly ?IdentityInterface $identity = null,
+        string $pullUrl = '',
+        string $defaultBranch = 'main',
+        ?IdentityInterface $identity = null,
     ) {
         $this->uniqueConstructorCheck();
+
+        $this->pullUrl = $pullUrl;
+        $this->defaultBranch = $defaultBranch;
+        $this->identity = $identity;
     }
 
     public function getPullUrl(): string

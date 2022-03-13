@@ -48,17 +48,36 @@ class History implements ObjectInterface, ImmutableInterface, JsonSerializable
      */
     final public const DATE_FORMAT = 'Y-m-d H:i:s e';
 
+    private ?History $previous;
+
+    private string $message;
+
+    private DateTimeInterface $date;
+
+    private bool $isFinal = false;
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $extra = [];
+
     /**
      * @param array<string, mixed> $extra
      */
     public function __construct(
-        private ?History $previous,
-        private readonly string $message,
-        private DateTimeInterface $date,
-        private readonly bool $isFinal = false,
-        private readonly array $extra = []
+        ?History $previous,
+        string $message,
+        DateTimeInterface $date,
+        bool $isFinal = false,
+        array $extra = [],
     ) {
         $this->uniqueConstructorCheck();
+
+        $this->previous = $previous;
+        $this->message = $message;
+        $this->date = $date;
+        $this->isFinal = $isFinal;
+        $this->extra = $extra;
     }
 
     public function getPrevious(): ?History
