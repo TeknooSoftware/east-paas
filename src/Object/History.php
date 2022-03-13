@@ -48,7 +48,7 @@ class History implements ObjectInterface, ImmutableInterface, JsonSerializable
      */
     final public const DATE_FORMAT = 'Y-m-d H:i:s e';
 
-    private ?History $previous;
+    private ?History $previous = null;
 
     private string $message;
 
