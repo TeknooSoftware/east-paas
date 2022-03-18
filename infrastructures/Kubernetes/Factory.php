@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
 use Maclof\Kubernetes\Client as KubClient;
 use Maclof\Kubernetes\RepositoryRegistry;
+use Psr\Http\Client\ClientInterface;
 use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
@@ -54,7 +55,7 @@ class Factory implements ClientFactoryInterface
 
     public function __construct(
         private string $tmpDir,
-        private bool $verify,
+        private ?ClientInterface $httpClient = null,
     ) {
     }
 
@@ -67,19 +68,7 @@ class Factory implements ClientFactoryInterface
             'master' => $master,
         ];
 
-        if (null !== $this->verify) {
-            $options['verify'] = $this->verify;
-        }
-
         if (null !== $credentials) {
-            if (!empty($content = $credentials->getServerCertificate())) {
-                $options['ca_cert'] = $this->write($content);
-
-                if (!empty($options['verify'])) {
-                    unset($options['verify']);
-                }
-            }
-
             if (!empty($content = $credentials->getToken())) {
                 $options['token'] = $this->write($content);
             }
@@ -93,7 +82,11 @@ class Factory implements ClientFactoryInterface
             }
         }
 
-        return new KubClient($options, $repositoryRegistry);
+        return new KubClient(
+            $options,
+            $repositoryRegistry,
+            $this->httpClient,
+        );
     }
 
     private function write(string $value): string

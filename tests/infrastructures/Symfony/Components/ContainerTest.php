@@ -27,8 +27,10 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony;
 
 use DI\Container;
 use DI\ContainerBuilder;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Symfony\Component\HttpClient\HttplugClient;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
 use Symfony\Component\Yaml\Parser;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
@@ -210,6 +212,17 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             RunJobCommand::class,
             $container->get(RunJobCommand::class)
+        );
+    }
+
+    public function testHttplugClient()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.symfony.http.client.ssl.verify', true);
+
+        self::assertInstanceOf(
+            ClientInterface::class,
+            $container->get('teknoo.east.paas.kubernetes.http.client')
         );
     }
 }

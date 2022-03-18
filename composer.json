@@ -68,6 +68,7 @@
         "symfony/console": "^6.0",
         "symfony/dependency-injection": "^6.0",
         "symfony/form": "^6.0",
+        "symfony/http-client": "^6.0",
         "symfony/http-kernel": "^6.0",
         "symfony/messenger": "^6.0",
         "symfony/options-resolver": "^6.0",

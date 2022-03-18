@@ -1,5 +1,13 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.77] - 2022-03-18
+### Stable Release
+- Remove `teknoo.east.paas.kubernetes.ssl.verify` and replace by `teknoo.east.paas.symfony.http.client`
+- Kubernetes HTTP Client can be injected via the DI key `teknoo.east.paas.symfony.http.client`, else
+  HttpPlug will be automatically detect and load the first client found
+- `teknoo.east.paas.kubernetes.http.client` is by default created in the DI definitions provided with Symfony integration
+  if `HttplugClient` is available.
+
 ## [0.0.76] - 2022-03-13
 ### Stable Release
 - Rollback on some imutable object, readonly is not compliant with doctrine dbal/mongodb

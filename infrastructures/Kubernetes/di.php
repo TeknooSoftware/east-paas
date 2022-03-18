@@ -46,12 +46,12 @@ return [
             $tempDir = $container->get('teknoo.east.paas.worker.tmp_dir');
         }
 
-        $verify = true;
-        if ($container->has('teknoo.east.paas.kubernetes.ssl.verify')) {
-            $verify = (bool) $container->get('teknoo.east.paas.kubernetes.ssl.verify');
+        $client = null;
+        if ($container->has('teknoo.east.paas.kubernetes.http.client')) {
+            $client = $container->get('teknoo.east.paas.kubernetes.http.client');
         }
 
-        return new Factory($tempDir, $verify);
+        return new Factory($tempDir, $client);
     },
 
     IngressTranscriber::class => static function (ContainerInterface $container): IngressTranscriber {

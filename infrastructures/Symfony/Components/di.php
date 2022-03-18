@@ -25,7 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony;
 
+use Psr\Container\ContainerInterface;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpClient\HttplugClient;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Foundation\Manager\Manager;
 use Teknoo\East\FoundationBundle\Command\Client;
@@ -52,11 +56,12 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 
+use function class_exists;
 use function DI\create;
 use function DI\get;
 use function DI\value;
 
-return [
+$entries = [
     'teknoo.east.paas.symfony.command.run_job.name' => value('teknoo:paas:run_job'),
     'teknoo.east.paas.symfony.command.run_job.description' => value(
         'Run job manually from json file, without PaaS server'
@@ -97,3 +102,25 @@ return [
     DispatchResultInterface::class => get(PushResult::class),
     DispatchHistoryInterface::class => get(SendHistory::class),
 ];
+
+if (class_exists(HttplugClient::class)) {
+    $entries['teknoo.east.paas.kubernetes.http.client'] = static function (
+        ContainerInterface $container
+    ): ClientInterface {
+        $verify = true;
+        if ($container->has('teknoo.east.paas.symfony.http.client.ssl.verify')) {
+            $verify = (bool) $container->get('teknoo.east.paas.symfony.http.client.ssl.verify');
+        }
+
+        return new HttplugClient(
+            HttpClient::create(
+                [
+                    'verify_host' => $verify,
+                    'verify_peer' => $verify,
+                ]
+            )
+        );
+    };
+}
+
+return $entries;
