@@ -16,9 +16,6 @@ parameters:
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
         -
-            message: '#mixed#'
-            path: infrastructures/Kubernetes/Driver.php
-        -
             message: '#mixed given#'
             path: infrastructures/Doctrine/Form/Type/AccountType.php
         -

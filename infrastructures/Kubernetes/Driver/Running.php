@@ -70,7 +70,7 @@ class Running implements StateInterface
             $client = $this->getClient();
 
             try {
-                /** @var Promise<array<string, mixed>, mixed, mixed> $promise */
+                /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>, mixed, mixed> $promise */
                 $promise = new Promise(
                     $mainPromise->success(...),
                     static function (Throwable $error) {

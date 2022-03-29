@@ -86,9 +86,9 @@
         "symfony/psr-http-message-bridge": "^2.1",
         "symfony/framework-bundle": "^6.0",
         "teknoo/bridge-phpdi-symfony": "^5.0.7",
-        "illuminate/collections": "^8.83.4",
-        "illuminate/contracts": "^8.83.4",
-        "illuminate/support": "^8.83.4",
+        "illuminate/collections": "^9.6.0",
+        "illuminate/contracts": "^9.6.0",
+        "illuminate/support": "^9.6.0",
         "nikic/php-parser": "^v4.13.2"
     },
     "autoload": {
