@@ -70,7 +70,6 @@ class Running implements StateInterface
             $client = $this->getClient();
 
             try {
-                /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>, mixed, mixed> $promise */
                 $promise = new Promise(
                     $mainPromise->success(...),
                     static function (Throwable $error) {
@@ -84,6 +83,7 @@ class Running implements StateInterface
                         ($runDeployment && $transcriber instanceof DeploymentInterface)
                         || ($runExposing && $transcriber instanceof ExposingInterface)
                     ) {
+                        /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>, mixed, mixed> $promise */
                         $transcriber->transcribe($compiledDeployment, $client, $promise);
                     }
                 }

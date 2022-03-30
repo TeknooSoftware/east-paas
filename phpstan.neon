@@ -10,6 +10,9 @@ parameters:
             message: '#mixed#'
             path: infrastructures/BuildKit/di.php
         -
+            message: '#mixed#'
+            path: infrastructures/Kubernetes/Driver.php
+        -
             message: '#Cannot access an offset on mixed#'
             path: infrastructures/Kubernetes/Transcriber/ReplicationControllerTranscriber.php
         -

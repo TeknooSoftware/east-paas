@@ -31,7 +31,7 @@ phploc:
 	${PHP} vendor/bin/phploc src infrastructures
 
 phpstan:
-	rm -rf /tmp/phpstan/* ; ${PHP} -d memory_limit=256M vendor/bin/phpstan analyse src infrastructures --level max
+	${PHP} -d memory_limit=256M vendor/bin/phpstan analyse src infrastructures --level max
 
 phpcs:
 	${PHP} vendor/bin/phpcs --standard=PSR12 --ignore=src/Contracts/Workspace/Visibility.php,src/Compilation/CompiledDeployment/Expose/Transport.php --extensions=php src/ infrastructures/
