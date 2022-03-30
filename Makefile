@@ -12,7 +12,7 @@ all: clean depend
 
 ### Dependencies
 depend:
-    rm -rf /tmp/phpstan/*
+    rm -rf /tmp/phpstan/*;
 ifeq ($(DEPENDENCIES), lowest)
 	COMPOSER_MEMORY_LIMIT=-1 ${COMPOSER} update --prefer-lowest --prefer-dist --no-interaction;
 else
