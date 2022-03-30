@@ -12,7 +12,6 @@ all: clean depend
 
 ### Dependencies
 depend:
-    rm -rf /tmp/phpstan/*;
 ifeq ($(DEPENDENCIES), lowest)
 	COMPOSER_MEMORY_LIMIT=-1 ${COMPOSER} update --prefer-lowest --prefer-dist --no-interaction;
 else
@@ -32,7 +31,7 @@ phploc:
 	${PHP} vendor/bin/phploc src infrastructures
 
 phpstan:
-	${PHP} -d memory_limit=256M vendor/bin/phpstan analyse src infrastructures --level max
+	rm -rf /tmp/phpstan/* ; ${PHP} -d memory_limit=256M vendor/bin/phpstan analyse src infrastructures --level max
 
 phpcs:
 	${PHP} vendor/bin/phpcs --standard=PSR12 --ignore=src/Contracts/Workspace/Visibility.php,src/Compilation/CompiledDeployment/Expose/Transport.php --extensions=php src/ infrastructures/
@@ -53,6 +52,5 @@ test:
 ### Cleaning
 clean:
 	rm -rf vendor
-	rm -rf /tmp/phpstan/*
 
 .PHONY: clean
