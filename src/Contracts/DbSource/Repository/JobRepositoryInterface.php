@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\DbSource\Repository;
 
 use Teknoo\East\Paas\Object\Job;
-use Teknoo\East\Website\DBSource\RepositoryInterface;
+use Teknoo\East\Common\Contracts\DBSource\RepositoryInterface;
 
 /**
  * Interface to define repository in charge of object `Teknoo\East\Paas\Object\Job`.

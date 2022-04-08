@@ -28,7 +28,7 @@ namespace Teknoo\Tests\East\Paas\Object;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
-use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
+use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
 /**
  * @author      Richard Déloge <richarddeloge@gmail.com>

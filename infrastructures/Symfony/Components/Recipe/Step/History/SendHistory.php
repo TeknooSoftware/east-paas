@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Website\Service\DatesService;
+use Teknoo\East\Common\Service\DatesService;
 
 use function json_encode;
 

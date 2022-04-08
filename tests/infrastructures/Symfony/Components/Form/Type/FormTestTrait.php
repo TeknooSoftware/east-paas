@@ -33,7 +33,7 @@ use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormInterface;
-use Teknoo\East\Website\Object\ObjectInterface;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\Immutable\ImmutableInterface;
 
 /**
@@ -113,7 +113,7 @@ trait FormTestTrait
                 $dataMapper->mapDataToForms(null, $form);
                 $result = $this->getObject();
                 $dataMapper->mapFormsToData($form, $result);
-                self::assertInstanceOf(ObjectInterface::class, $result);
+                self::assertInstanceOf(IdentifiedObjectInterface::class, $result);
 
                 return $builder;
             });
@@ -261,7 +261,7 @@ trait FormTestTrait
                 $dataMapper->mapDataToForms($this->getObject(), $form);
                 $result = $this->getObject();
                 $dataMapper->mapFormsToData($form, $result);
-                self::assertInstanceOf(ObjectInterface::class, $result);
+                self::assertInstanceOf(IdentifiedObjectInterface::class, $result);
 
                 return $builder;
             });

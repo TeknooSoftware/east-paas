@@ -28,9 +28,9 @@ namespace Teknoo\East\Paas\Object;
 use DateTimeInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
-use Teknoo\East\Website\Object\ObjectInterface;
-use Teknoo\East\Website\Object\ObjectTrait;
-use Teknoo\East\Website\Object\TimestampableInterface;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
+use Teknoo\East\Common\Object\ObjectTrait;
+use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Job\Executing;
@@ -60,7 +60,7 @@ use function is_callable;
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class Job implements
-    ObjectInterface,
+    IdentifiedObjectInterface,
     AutomatedInterface,
     TimestampableInterface,
     NormalizableInterface

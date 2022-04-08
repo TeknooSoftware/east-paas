@@ -29,9 +29,9 @@ use DateTimeInterface;
 use RuntimeException;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
-use Teknoo\East\Website\Object\ObjectInterface;
-use Teknoo\East\Website\Object\ObjectTrait;
-use Teknoo\East\Website\Object\TimestampableInterface;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
+use Teknoo\East\Common\Object\ObjectTrait;
+use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
@@ -55,7 +55,7 @@ use Teknoo\States\Proxy\ProxyTrait;
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class Project implements
-    ObjectInterface,
+    IdentifiedObjectInterface,
     AutomatedInterface,
     TimestampableInterface,
     FormMappingInterface,

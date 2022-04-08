@@ -26,15 +26,15 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
 use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
-use Teknoo\East\Website\Contracts\Recipe\Step\FormHandlingInterface;
-use Teknoo\East\Website\Contracts\Recipe\Step\FormProcessingInterface;
-use Teknoo\East\Website\Contracts\Recipe\Step\ObjectAccessControlInterface;
-use Teknoo\East\Website\Contracts\Recipe\Step\RenderFormInterface;
-use Teknoo\East\Website\Recipe\Cookbook\EditContentEndPoint;
-use Teknoo\East\Website\Recipe\Step\LoadObject;
-use Teknoo\East\Website\Recipe\Step\RenderError;
-use Teknoo\East\Website\Recipe\Step\SaveObject;
-use Teknoo\East\Website\Recipe\Step\SlugPreparation;
+use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
+use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
+use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
+use Teknoo\East\Common\Contracts\Recipe\Step\RenderFormInterface;
+use Teknoo\East\Common\Recipe\Cookbook\EditObjectEndPoint;
+use Teknoo\East\Common\Recipe\Step\LoadObject;
+use Teknoo\East\Common\Recipe\Step\RenderError;
+use Teknoo\East\Common\Recipe\Step\SaveObject;
+use Teknoo\East\Common\Recipe\Step\SlugPreparation;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
@@ -43,7 +43,7 @@ use Teknoo\Recipe\RecipeInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-abstract class AbstractEditObjectEndPoint extends EditContentEndPoint
+abstract class AbstractEditObjectEndPoint extends EditObjectEndPoint
 {
     use AdditionalStepsTrait;
 

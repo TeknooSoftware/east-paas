@@ -37,7 +37,7 @@ use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
+use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

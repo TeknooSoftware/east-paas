@@ -17,7 +17,7 @@
                 <all/>
             </cascade>
         </reference-many>
-        <reference-many field="users" target-document="Teknoo\East\Website\Object\User">
+        <reference-many field="users" target-document="Teknoo\East\Common\Object\User">
             <cascade>
                 <all/>
             </cascade>

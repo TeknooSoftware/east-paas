@@ -31,9 +31,9 @@ use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Website\Object\User as BaseUser;
+use Teknoo\East\Common\Object\User as BaseUser;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\Tests\East\Website\Object\Traits\ObjectTestTrait;
+use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

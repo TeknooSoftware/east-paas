@@ -27,8 +27,8 @@ namespace Teknoo\East\Paas\Object;
 
 use DateTimeInterface;
 use JsonSerializable;
-use Teknoo\East\Website\Object\ObjectInterface;
-use Teknoo\East\Website\Object\ObjectTrait;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
+use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -38,7 +38,7 @@ use Teknoo\Immutable\ImmutableTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class History implements ObjectInterface, ImmutableInterface, JsonSerializable
+class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSerializable
 {
     use ObjectTrait;
     use ImmutableTrait;

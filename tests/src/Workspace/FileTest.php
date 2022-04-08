@@ -28,7 +28,7 @@ namespace Teknoo\Tests\East\Paas\Object;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\East\Paas\Workspace\File;
-use Teknoo\Tests\East\Website\Object\Traits\PopulateObjectTrait;
+use Teknoo\Tests\East\Common\Object\Traits\PopulateObjectTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

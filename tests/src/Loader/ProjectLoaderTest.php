@@ -28,15 +28,13 @@ namespace Teknoo\Tests\East\Paas\Loader;
 use PHPUnit\Framework\TestCase;
 use Doctrine\Persistence\ObjectRepository;
 use Doctrine\ODM\MongoDB\DocumentRepository;
-use Teknoo\East\Website\DBSource\RepositoryInterface;
-use Teknoo\East\Website\Loader\MongoDbCollectionLoaderTrait;
-use Teknoo\East\Website\Loader\LoaderInterface;
-use Teknoo\East\Website\Loader\TypeLoader;
+use Teknoo\East\Common\Contracts\DBSource\RepositoryInterface;
+use Teknoo\East\Common\Contracts\Loader\LoaderInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ProjectRepositoryInterface;
 use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Project;
-use Teknoo\Tests\East\Website\Loader\LoaderTestTrait;
+use Teknoo\Tests\East\Common\Loader\LoaderTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

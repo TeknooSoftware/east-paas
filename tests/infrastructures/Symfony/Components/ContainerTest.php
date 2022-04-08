@@ -51,7 +51,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer;
-use Teknoo\East\Website\Service\DatesService;
+use Teknoo\East\Common\Service\DatesService;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

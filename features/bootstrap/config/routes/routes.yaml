@@ -1,6 +1,3 @@
-website:
-  resource: '@TeknooEastWebsiteBundle/Resources/config/routing.yml'
-
 teknoo_paas_job_new:
   path: '/project/{projectId}/environment/{envName}/job/create'
   methods:  ['GET', 'POST', 'PUT']

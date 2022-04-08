@@ -26,8 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Loader;
 
 use Teknoo\East\Paas\Object\Job;
-use Teknoo\East\Website\Loader\LoaderInterface;
-use Teknoo\East\Website\Loader\LoaderTrait;
+use Teknoo\East\Common\Contracts\Loader\LoaderInterface;
+use Teknoo\East\Common\Loader\LoaderTrait;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\JobRepositoryInterface;
 
 /**

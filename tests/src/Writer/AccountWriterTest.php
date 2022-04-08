@@ -26,10 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Writer;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Website\Writer\WriterInterface;
+use Teknoo\East\Common\Contracts\Writer\WriterInterface;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Writer\AccountWriter;
-use Teknoo\Tests\East\Website\Writer\PersistTestTrait;
+use Teknoo\Tests\East\Common\Writer\PersistTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

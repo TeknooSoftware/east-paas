@@ -55,7 +55,7 @@ Example with Symfony
     ...
     Teknoo\DI\SymfonyBridge\DIBridgeBundle::class => ['all' => true],
     Teknoo\East\FoundationBundle\EastFoundationBundle::class => ['all' => true],
-    Teknoo\East\WebsiteBundle\TeknooEastWebsiteBundle::class => ['all' => true],
+    Teknoo\East\CommonBundle\TeknooEastCommonBundle::class => ['all' => true],
     Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle::class => ['all' => true],
     
     //In doctrine config

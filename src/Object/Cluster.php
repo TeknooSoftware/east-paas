@@ -29,9 +29,9 @@ use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
-use Teknoo\East\Website\Object\ObjectInterface;
-use Teknoo\East\Website\Object\ObjectTrait;
-use Teknoo\East\Website\Object\TimestampableInterface;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
+use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
+use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -45,7 +45,7 @@ use Throwable;
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class Cluster implements
-    ObjectInterface,
+    IdentifiedObjectInterface,
     TimestampableInterface,
     FormMappingInterface,
     NormalizableInterface

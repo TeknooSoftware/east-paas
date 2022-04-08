@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.78] - 2022-04-08
+### Stable Release
+- Switch from `East Website` to `East Common`
+
 ## [0.0.77] - 2022-03-18
 ### Stable Release
 - Remove `teknoo.east.paas.kubernetes.ssl.verify` and replace by `teknoo.east.paas.symfony.http.client`

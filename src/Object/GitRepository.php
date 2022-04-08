@@ -27,9 +27,9 @@ namespace Teknoo\East\Paas\Object;
 
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
-use Teknoo\East\Website\Object\ObjectInterface;
-use Teknoo\East\Website\Object\ObjectTrait;
-use Teknoo\East\Website\Object\TimestampableInterface;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
+use Teknoo\East\Common\Object\ObjectTrait;
+use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -42,7 +42,7 @@ use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class GitRepository implements
-    ObjectInterface,
+    IdentifiedObjectInterface,
     ImmutableInterface,
     SourceRepositoryInterface,
     NormalizableInterface,

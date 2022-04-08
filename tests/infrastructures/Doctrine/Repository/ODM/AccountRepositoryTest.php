@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Doctrine\Repository\ODM;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Website\DBSource\RepositoryInterface;
+use Teknoo\East\Common\Contracts\DBSource\RepositoryInterface;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Repository\ODM\AccountRepository;
-use Teknoo\Tests\East\Website\Doctrine\DBSource\ODM\RepositoryTestTrait;
+use Teknoo\Tests\East\Common\Doctrine\DBSource\ODM\RepositoryTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

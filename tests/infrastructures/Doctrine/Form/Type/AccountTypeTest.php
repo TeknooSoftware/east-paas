@@ -31,7 +31,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType;
 use Teknoo\East\Paas\Object\Account;
-use Teknoo\East\Website\Object\User as BaseUser;
+use Teknoo\East\Common\Object\User as BaseUser;
 use Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type\FormTestTrait;
 
 /**

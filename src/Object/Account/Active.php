@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Website\Object\User;
+use Teknoo\East\Common\Object\User;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;

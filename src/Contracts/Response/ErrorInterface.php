@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Contracts\Response;
 
 use Teknoo\East\Foundation\Client\ResponseInterface as EastResponse;
-use Teknoo\East\Website\Contracts\ObjectInterface;
+use Teknoo\East\Common\Contracts\Object\ObjectInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Throwable;
 

@@ -30,9 +30,9 @@ use Teknoo\East\Foundation\Conditionals\EqualityInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Website\Object\ObjectInterface;
-use Teknoo\East\Website\Object\ObjectTrait;
-use Teknoo\East\Website\Object\TimestampableInterface;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
+use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
+use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -45,7 +45,7 @@ use Teknoo\Immutable\ImmutableTrait;
  * @implements EqualityInterface<Environment, mixed>
  */
 class Environment implements
-    ObjectInterface,
+    IdentifiedObjectInterface,
     ImmutableInterface,
     EqualityInterface,
     NormalizableInterface,

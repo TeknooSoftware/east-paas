@@ -25,11 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
-use Teknoo\East\Website\Object\DeletableInterface;
-use Teknoo\East\Website\Object\ObjectInterface;
-use Teknoo\East\Website\Object\ObjectTrait;
-use Teknoo\East\Website\Object\TimestampableInterface;
-use Teknoo\East\Website\Object\User as BaseUser;
+use Teknoo\East\Common\Contracts\Object\DeletableInterface;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
+use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
+use Teknoo\East\Common\Object\ObjectTrait;
+use Teknoo\East\Common\Object\User as BaseUser;
 use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
 use Teknoo\East\Paas\Object\Account\Active;
 use Teknoo\East\Paas\Object\Account\Inactive;
@@ -49,7 +49,7 @@ use Teknoo\States\Proxy\ProxyTrait;
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 class Account implements
-    ObjectInterface,
+    IdentifiedObjectInterface,
     TimestampableInterface,
     AutomatedInterface,
     DeletableInterface,
