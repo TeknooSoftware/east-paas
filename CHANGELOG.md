@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.79] - 2022-04-08
+### Stable Release
+- Fix return type in `JobUnitDenormalizer`
+- Fix `routing_admin_account.yml`
+
 ## [0.0.78] - 2022-04-08
 ### Stable Release
 - Switch from `East Website` to `East Common`

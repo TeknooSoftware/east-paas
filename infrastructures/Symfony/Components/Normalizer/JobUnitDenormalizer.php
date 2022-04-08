@@ -57,7 +57,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
     /**
      * @param array<string, mixed> $context
      */
-    public function denormalize($data, $class, $format = null, array $context = array())
+    public function denormalize($data, $class, $format = null, array $context = array()): JobUnit
     {
         if (!is_array($data) || JobUnitInterface::class !== $class) {
             throw new RuntimeException('Error, this object is not managed by this denormalizer');
