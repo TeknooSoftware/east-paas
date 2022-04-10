@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.80] - 2022-04-10
+### Stable Release
+- Fix `routing_admin_account.yml`
+- Fix `routing_admin_job.yml`
+- Fix `routing_admin_project.yml`
+
 ## [0.0.79] - 2022-04-08
 ### Stable Release
 - Fix return type in `JobUnitDenormalizer`

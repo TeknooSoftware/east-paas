@@ -2,7 +2,7 @@ _teknoo_paas_admin_project_list:
     path: '/projects/'
     methods:  ['GET']
     defaults:
-        _controller: 'teknoo.east.website.endpoint.crud.list'
+        _controller: 'teknoo.east.common.endpoint.crud.list'
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         defaultOrderDirection: 'ASC'
         itemsPerPage: 20
@@ -41,7 +41,7 @@ _teknoo_paas_admin_project_delete:
     path: '/project/delete/{id}'
     methods:  ['GET']
     defaults:
-        _controller: 'teknoo.east.website.endpoint.crud.delete'
+        _controller: 'teknoo.east.common.endpoint.crud.delete'
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         deleter: '@teknoo.east.paas.deleting.project'
         route: '_teknoo_paas_admin_project_list'

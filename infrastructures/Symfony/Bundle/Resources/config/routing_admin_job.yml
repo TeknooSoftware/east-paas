@@ -2,7 +2,7 @@ _teknoo_paas_admin_job_list:
     path: '/jobs'
     methods: ['GET']
     defaults:
-        _controller: 'teknoo.east.website.endpoint.crud.list'
+        _controller: 'teknoo.east.common.endpoint.crud.list'
         loader: '@Teknoo\East\Paas\Loader\JobLoader'
         defaultOrderDirection: 'ASC'
         itemsPerPage: 20
@@ -13,7 +13,7 @@ _teknoo_paas_admin_job_delete:
     path: '/job/delete/{id}'
     methods:  ['GET']
     defaults:
-        _controller: 'teknoo.east.website.endpoint.crud.delete'
+        _controller: 'teknoo.east.common.endpoint.crud.delete'
         nextRoute: 'admin_job_list'
         loader: '@Teknoo\East\Paas\Loader\JobLoader'
         deleter: '@teknoo.east.paas.deleting.job'
