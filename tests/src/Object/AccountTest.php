@@ -137,6 +137,37 @@ class AccountTest extends TestCase
     /**
      * @throws \Teknoo\States\Proxy\Exception\StateNotFound
      */
+    public function testNamespaceIsItDefined()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            \get_class($object),
+            $object->setNamespace('fooBar')
+        );
+
+        $called = false;
+        self::assertInstanceOf(
+            Account::class,
+            $object->namespaceIsItDefined(
+                function ($namespace) use (&$called) {
+                    $called = true;
+                    self::assertEquals('fooBar', $namespace);
+                }
+            )
+        );
+
+        self::assertTrue($called);
+    }
+
+    public function testNamespaceIsItDefinedOnBadArgument()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->namespaceIsItDefined(new \stdClass());
+    }
+
+    /**
+     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     */
     public function testSetProjects()
     {
         $object = $this->buildObject();

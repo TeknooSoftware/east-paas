@@ -136,6 +136,15 @@ class Account implements
         return $this;
     }
 
+    public function namespaceIsItDefined(callable $callback): Account
+    {
+        if ($namespace = $this->getNamespace()) {
+            $callback($namespace);
+        }
+
+        return $this;
+    }
+
     /**
      * @param iterable<Project> $projects
      */
