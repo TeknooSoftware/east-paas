@@ -85,21 +85,21 @@ Example with Symfony
                         is_bundle: false
                         prefix: 'App\Object\Persisted'
 
-    //In security.yml
+    //In security.yaml
     security:
       //..
       providers:
         main:
           id: 'teknoo.east.website.bundle.user_provider'
 
-    //In routing.yml
+    //In routing.yaml
     paas_admin_account:
-        resource: '@TeknooEastPaasBundle/Resources/config/routing_admin_account.yml'
+        resource: '@TeknooEastPaasBundle/Resources/config/routing_admin_account.yaml'
         prefix: '/admin'
         schemes:    [https]
     
     paas_admin_job:
-        resource: '@TeknooEastPaasBundle/Resources/config/routing_admin_job.yml'
+        resource: '@TeknooEastPaasBundle/Resources/config/routing_admin_job.yaml'
         prefix: '/admin'
         schemes:    [https]
 
@@ -131,7 +131,7 @@ Example with Symfony
         'teknoo.east.paas.kubernetes.ssl.verify' => ...,
     ];
 
-Example of **.paas.yml** configuration file present into git repository to deploy
+Example of **.paas.yaml** configuration file present into git repository to deploy
 ---------------------------------------------------------------------------------
 
 Project demo available [here](https://github.com/TeknooSoftware/east-paas-project-demo).
@@ -169,10 +169,10 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
     volumes:
       extra: #Name of the volume
         local-path: "/foo/bar" #optional local path where store data in the volume
-        add: #folder or file, from .paas.yml where is located to add to the volume
+        add: #folder or file, from .paas.yaml where is located to add to the volume
           - 'extra'
       other_name: #Name of the volume
-        add: #folder or file, from .paas.yml where is located to add to the volume
+        add: #folder or file, from .paas.yaml where is located to add to the volume
           - 'vendor'
     
     #Pods (set of container)
@@ -191,7 +191,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                 mount-path: '/opt/extra' #Path where volume will be mount
               app:
                 mount-path: '/opt/app' #Path where data will be stored
-                add: #folder or file, from .paas.yml where is located to add to the volume
+                add: #folder or file, from .paas.yaml where is located to add to the volume
                   - 'src'
                   - 'vendor'
                   - 'composer.json'

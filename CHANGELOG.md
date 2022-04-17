@@ -1,22 +1,27 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.81] - 2022-04-17
+### Dev Release
+- Rename `.yml` files to `.yaml`
+- Add Account::namespaceIsItDefined
+
 ## [0.0.80] - 2022-04-10
-### Stable Release
+### Dev Release
 - Fix `routing_admin_account.yml`
 - Fix `routing_admin_job.yml`
 - Fix `routing_admin_project.yml`
 
 ## [0.0.79] - 2022-04-08
-### Stable Release
+### Dev Release
 - Fix return type in `JobUnitDenormalizer`
 - Fix `routing_admin_account.yml`
 
 ## [0.0.78] - 2022-04-08
-### Stable Release
+### Dev Release
 - Switch from `East Website` to `East Common`
 
 ## [0.0.77] - 2022-03-18
-### Stable Release
+### Dev Release
 - Remove `teknoo.east.paas.kubernetes.ssl.verify` and replace by `teknoo.east.paas.symfony.http.client`
 - Kubernetes HTTP Client can be injected via the DI key `teknoo.east.paas.symfony.http.client`, else
   HttpPlug will be automatically detect and load the first client found
@@ -24,16 +29,16 @@
   if `HttplugClient` is available.
 
 ## [0.0.76] - 2022-03-13
-### Stable Release
+### Dev Release
 - Rollback on some imutable object, readonly is not compliant with doctrine dbal/mongodb
 
 ## [0.0.75] - 2022-03-11
-### Stable Release
+### Dev Release
 - Require Recipe 4.1.2+ or later
 - Improve PHPStan analyse
 
 ## [0.0.74] - 2022-03-08
-### Stable Release
+### Dev Release
 - Support States 6.0.1+
 - Support Recipe 4.1.1+
 - Support East Foundation 6.0.2+
@@ -48,22 +53,22 @@
 - Enable fiber support in api endpoint
 
 ## [0.0.73] - 2022-02-28
-### Stable Release
+### Dev Release
 - Support East Foundation 6.0
 - Support Recipe 4.0.1
 
 ## [0.0.72] - 2022-02-11
-### Stable Release
+### Dev Release
 - Support Immutable 3.0
 - Support State 6.0
 - Support Recipe 4.0
 
 ## [0.0.71] - 2021-12-19
-### Stable Release
+### Dev Release
 - Fix some deprecation with PHP 8.1
 
 ## [0.0.70] - 2021-12-12
-### Stable Release
+### Dev Release
 - Remove unused QA tool
 - Remove support of Symfony 5.3
 - Support Symfony 5.4 and 6.0+

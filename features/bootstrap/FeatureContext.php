@@ -182,7 +182,7 @@ class FeatureContext implements Context
      *
      * Every scenario gets its own context instance.
      * You can also pass arbitrary arguments to the
-     * context constructor through behat.yml.
+     * context constructor through behat.yaml.
      *
      * @param KernelInterface $kernel
      * @param Container $container
@@ -820,10 +820,10 @@ builds:
 volumes:
   extra: #Name of the volume
     local-path: "/foo/bar" #optional local path where store data in the volume
-    add: #folder or file, from .paas.yml where is located to add to the volume
+    add: #folder or file, from .paas.yaml where is located to add to the volume
       - 'extra'
   other_name: #Name of the volume
-    add: #folder or file, from .paas.yml where is located to add to the volume
+    add: #folder or file, from .paas.yaml where is located to add to the volume
       - 'vendor'
 
 #Pods (set of container)
@@ -842,7 +842,7 @@ pods:
             mount-path: '/opt/extra' #Path where volume will be mount
           app:
             mount-path: '/opt/app' #Path where data will be stored
-            add: #folder or file, from .paas.yml where is located to add to the volume
+            add: #folder or file, from .paas.yaml where is located to add to the volume
               - 'src'
               - 'vendor'
               - 'composer.json'
