@@ -76,7 +76,6 @@ use Teknoo\East\Common\Recipe\Step\CreateObject;
 use Teknoo\East\Common\Recipe\Step\LoadObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
-use Teknoo\East\Common\Recipe\Step\SlugPreparation;
 use Teknoo\East\Common\Service\DeletingService;
 use Teknoo\East\Paas\Compilation\Conductor;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
@@ -603,7 +602,6 @@ class ContainerTest extends TestCase
         $container->set(CreateObject::class, $this->createMock(CreateObject::class));
         $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
         $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
-        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
         $container->set(SaveObject::class, $this->createMock(SaveObject::class));
         $container->set(RedirectClientInterface::class, $this->createMock(RedirectClientInterface::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
@@ -628,7 +626,6 @@ class ContainerTest extends TestCase
         $container->set(CreateObject::class, $this->createMock(CreateObject::class));
         $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
         $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
-        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
         $container->set(SaveObject::class, $this->createMock(SaveObject::class));
         $container->set(RedirectClientInterface::class, $this->createMock(RedirectClientInterface::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
@@ -653,7 +650,6 @@ class ContainerTest extends TestCase
         $container->set(ObjectAccessControlInterface::class, $this->createMock(ObjectAccessControlInterface::class));
         $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
         $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
-        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
         $container->set(SaveObject::class, $this->createMock(SaveObject::class));
         $container->set(RedirectClientInterface::class, $this->createMock(RedirectClientInterface::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
@@ -677,7 +673,6 @@ class ContainerTest extends TestCase
         $container->set(LoadObject::class, $this->createMock(LoadObject::class));
         $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
         $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
-        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
         $container->set(SaveObject::class, $this->createMock(SaveObject::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
         $container->set(RenderError::class, $this->createMock(RenderError::class));
@@ -701,7 +696,6 @@ class ContainerTest extends TestCase
         $container->set(LoadObject::class, $this->createMock(LoadObject::class));
         $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
         $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
-        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
         $container->set(SaveObject::class, $this->createMock(SaveObject::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
         $container->set(RenderError::class, $this->createMock(RenderError::class));
@@ -726,7 +720,6 @@ class ContainerTest extends TestCase
         $container->set(LoadObject::class, $this->createMock(LoadObject::class));
         $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
         $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
-        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
         $container->set(SaveObject::class, $this->createMock(SaveObject::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
         $container->set(RenderError::class, $this->createMock(RenderError::class));
@@ -750,7 +743,6 @@ class ContainerTest extends TestCase
         $container->set(LoadObject::class, $this->createMock(LoadObject::class));
         $container->set(FormHandlingInterface::class, $this->createMock(FormHandlingInterface::class));
         $container->set(FormProcessingInterface::class, $this->createMock(FormProcessingInterface::class));
-        $container->set(SlugPreparation::class, $this->createMock(SlugPreparation::class));
         $container->set(SaveObject::class, $this->createMock(SaveObject::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
         $container->set(RenderError::class, $this->createMock(RenderError::class));

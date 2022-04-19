@@ -37,7 +37,6 @@ use Teknoo\East\Common\Recipe\Step\CreateObject;
 use Teknoo\East\Common\Recipe\Step\LoadObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
-use Teknoo\East\Common\Recipe\Step\SlugPreparation;
 use Teknoo\Recipe\RecipeInterface;
 use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 
@@ -62,8 +61,6 @@ class NewProjectEndPointTest extends TestCase
     private ?CreateObject $createObject = null;
 
     private ?FormProcessingInterface $formProcessing = null;
-
-    private ?SlugPreparation $slugPreparation = null;
 
     private ?SaveObject $saveObject = null;
 
@@ -146,18 +143,6 @@ class NewProjectEndPointTest extends TestCase
     }
 
     /**
-     * @return SlugPreparation|MockObject
-     */
-    public function getSlugPreparation(): SlugPreparation
-    {
-        if (null === $this->slugPreparation) {
-            $this->slugPreparation = $this->createMock(SlugPreparation::class);
-        }
-
-        return $this->slugPreparation;
-    }
-
-    /**
      * @return SaveObject|MockObject
      */
     public function getSaveObject(): SaveObject
@@ -214,7 +199,6 @@ class NewProjectEndPointTest extends TestCase
             $this->getCreateObject(),
             $this->getFormHandling(),
             $this->getFormProcessing(),
-            $this->getSlugPreparation(),
             $this->getSaveObject(),
             $this->getRedirectClient(),
             $this->getRenderForm(),

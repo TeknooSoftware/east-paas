@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.82] - 2022-04-19
+### Dev Release
+- Fix `NewProjectEndPoint` to implement the good interface
+- Require `East Common` `1.0.4`
+- Accounts and projects endpoints does not require slugs
+
 ## [0.0.81] - 2022-04-17
 ### Dev Release
 - Rename `.yml` files to `.yaml`

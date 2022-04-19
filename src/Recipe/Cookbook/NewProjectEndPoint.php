@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface;
 use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
@@ -47,7 +47,7 @@ use Teknoo\Recipe\RecipeInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class NewProjectEndPoint extends CreateObjectEndPoint implements NewAccountEndPointInterface
+class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPointInterface
 {
     use AdditionalStepsTrait;
 
@@ -63,7 +63,6 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewAccountEndPo
         CreateObject $createObject,
         FormHandlingInterface $formHandling,
         FormProcessingInterface $formProcessing,
-        SlugPreparation $slugPreparation,
         SaveObject $saveObject,
         RedirectClientInterface $redirectClient,
         RenderFormInterface $renderForm,
@@ -75,7 +74,7 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewAccountEndPo
             $createObject,
             $formHandling,
             $formProcessing,
-            $slugPreparation,
+            null,
             $saveObject,
             $redirectClient,
             $renderForm,

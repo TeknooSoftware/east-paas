@@ -81,7 +81,6 @@ use Teknoo\East\Common\Recipe\Step\CreateObject;
 use Teknoo\East\Common\Recipe\Step\LoadObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
-use Teknoo\East\Common\Recipe\Step\SlugPreparation;
 use Teknoo\East\Common\Service\DatesService;
 use Teknoo\East\Common\Service\DeletingService;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
@@ -386,7 +385,6 @@ return [
             get(CreateObject::class),
             get(FormHandlingInterface::class),
             get(FormProcessingInterface::class),
-            get(SlugPreparation::class),
             get(SaveObject::class),
             get(RedirectClientInterface::class),
             get(RenderFormInterface::class),
@@ -407,7 +405,6 @@ return [
             $container->get(LoadObject::class),
             $container->get(FormHandlingInterface::class),
             $container->get(FormProcessingInterface::class),
-            $container->get(SlugPreparation::class),
             $container->get(SaveObject::class),
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
@@ -430,7 +427,6 @@ return [
             $container->get(LoadObject::class),
             $container->get(FormHandlingInterface::class),
             $container->get(FormProcessingInterface::class),
-            $container->get(SlugPreparation::class),
             $container->get(SaveObject::class),
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
@@ -454,7 +450,6 @@ return [
             $container->get(CreateObject::class),
             $container->get(FormHandlingInterface::class),
             $container->get(FormProcessingInterface::class),
-            $container->get(SlugPreparation::class),
             $container->get(SaveObject::class),
             $container->get(RedirectClientInterface::class),
             $container->get(RenderFormInterface::class),
