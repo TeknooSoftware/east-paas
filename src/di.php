@@ -379,18 +379,33 @@ return [
     },
 
     NewAccountEndPointInterface::class => get(NewAccountEndPoint::class),
-    NewAccountEndPoint::class => create()
-        ->constructor(
-            get(OriginalRecipeInterface::class),
-            get(CreateObject::class),
-            get(FormHandlingInterface::class),
-            get(FormProcessingInterface::class),
-            get(SaveObject::class),
-            get(RedirectClientInterface::class),
-            get(RenderFormInterface::class),
-            get(RenderError::class),
-            get(NewAccountEndPointStepsInterface::class)
-        ),
+    NewAccountEndPoint::class => static function (
+        ContainerInterface $container
+    ): NewAccountEndPoint {
+        $accessControl = null;
+        if ($container->has(ObjectAccessControlInterface::class)) {
+            $accessControl = $container->get(ObjectAccessControlInterface::class);
+        }
+
+        $defaultErrorMapping = null;
+        if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
+            $defaultErrorMapping = $container->get('teknoo.east.common.cookbook.default_error_template');
+        }
+
+        return new NewAccountEndPoint(
+            $container->get(OriginalRecipeInterface::class),
+            $container->get(CreateObject::class),
+            $container->get(FormHandlingInterface::class),
+            $container->get(FormProcessingInterface::class),
+            $container->get(SaveObject::class),
+            $container->get(RedirectClientInterface::class),
+            $container->get(RenderFormInterface::class),
+            $container->get(RenderError::class),
+            $container->get(NewAccountEndPointStepsInterface::class),
+            $accessControl,
+            $defaultErrorMapping,
+        );
+    },
 
     EditAccountEndPointInterface::class => static function (
         ContainerInterface $container
@@ -398,6 +413,11 @@ return [
         $accessControl = null;
         if ($container->has(ObjectAccessControlInterface::class)) {
             $accessControl = $container->get(ObjectAccessControlInterface::class);
+        }
+
+        $defaultErrorMapping = null;
+        if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
+            $defaultErrorMapping = $container->get('teknoo.east.common.cookbook.default_error_template');
         }
 
         return new class (
@@ -422,6 +442,11 @@ return [
             $accessControl = $container->get(ObjectAccessControlInterface::class);
         }
 
+        $defaultErrorMapping = null;
+        if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
+            $defaultErrorMapping = $container->get('teknoo.east.common.cookbook.default_error_template');
+        }
+
         return new class (
             $container->get(OriginalRecipeInterface::class),
             $container->get(LoadObject::class),
@@ -431,7 +456,8 @@ return [
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
             $accessControl,
-            $container->get(EditProjectEndPointStepsInterface::class)
+            $container->get(EditProjectEndPointStepsInterface::class),
+            $defaultErrorMapping
         ) extends AbstractEditObjectEndPoint implements EditProjectEndPointInterface {
         };
     },
@@ -441,6 +467,11 @@ return [
         $accessControl = null;
         if ($container->has(ObjectAccessControlInterface::class)) {
             $accessControl = $container->get(ObjectAccessControlInterface::class);
+        }
+
+        $defaultErrorMapping = null;
+        if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
+            $defaultErrorMapping = $container->get('teknoo.east.common.cookbook.default_error_template');
         }
 
         return new NewProjectEndPoint(
@@ -454,7 +485,8 @@ return [
             $container->get(RedirectClientInterface::class),
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
-            $container->get(NewProjectEndPointStepsInterface::class)
+            $container->get(NewProjectEndPointStepsInterface::class),
+            $defaultErrorMapping,
         );
     },
 

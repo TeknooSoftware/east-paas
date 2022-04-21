@@ -60,6 +60,8 @@ abstract class AbstractEditObjectEndPoint extends EditObjectEndPoint
         RenderError $renderError,
         ?ObjectAccessControlInterface $objectAccessControl = null,
         iterable $additionalSteps = [],
+        ?string $defaultErrorTemplate = null,
+        array $loadObjectWiths = [],
     ) {
         parent::__construct(
             $recipe,
@@ -70,7 +72,9 @@ abstract class AbstractEditObjectEndPoint extends EditObjectEndPoint
             $saveObject,
             $renderForm,
             $renderError,
-            $objectAccessControl
+            $objectAccessControl,
+            $defaultErrorTemplate,
+            $loadObjectWiths,
         );
 
         $this->additionalSteps = $additionalSteps;

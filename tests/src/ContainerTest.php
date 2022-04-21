@@ -611,6 +611,14 @@ class ContainerTest extends TestCase
             NewAccountEndPointStepsInterface::class,
             $this->createMock(AdditionalStepsInterface::class)
         );
+        $container->set(
+            ObjectAccessControlInterface::class,
+            $this->createMock(ObjectAccessControlInterface::class)
+        );
+        $container->set(
+            'teknoo.east.common.cookbook.default_error_template',
+            'foo.template',
+        );
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -633,6 +641,10 @@ class ContainerTest extends TestCase
         $container->set(
             NewProjectEndPointStepsInterface::class,
             $this->createMock(AdditionalStepsInterface::class)
+        );
+        $container->set(
+            'teknoo.east.common.cookbook.default_error_template',
+            'foo.template',
         );
 
         self::assertInstanceOf(
@@ -681,6 +693,10 @@ class ContainerTest extends TestCase
             EditAccountEndPointStepsInterface::class,
             $this->createMock(AdditionalStepsInterface::class)
         );
+        $container->set(
+            'teknoo.east.common.cookbook.default_error_template',
+            'foo.template',
+        );
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -727,6 +743,10 @@ class ContainerTest extends TestCase
         $container->set(
             EditProjectEndPointStepsInterface::class,
             $this->createMock(AdditionalStepsInterface::class)
+        );
+        $container->set(
+            'teknoo.east.common.cookbook.default_error_template',
+            'foo.template',
         );
 
         self::assertInstanceOf(

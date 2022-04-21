@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
+use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface;
 use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
@@ -61,6 +62,9 @@ class NewAccountEndPoint extends CreateObjectEndPoint implements NewAccountEndPo
         RenderFormInterface $renderForm,
         RenderError $renderError,
         iterable $additionalSteps,
+        ?ObjectAccessControlInterface $objectAccessControl = null,
+        ?string $defaultErrorTemplate = null,
+        array $createObjectWiths = [],
     ) {
         parent::__construct(
             $recipe,
@@ -71,7 +75,10 @@ class NewAccountEndPoint extends CreateObjectEndPoint implements NewAccountEndPo
             $saveObject,
             $redirectClient,
             $renderForm,
-            $renderError
+            $renderError,
+            $objectAccessControl,
+            $defaultErrorTemplate,
+            $createObjectWiths,
         );
 
         $this->additionalSteps = $additionalSteps;

@@ -68,6 +68,8 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPo
         RenderFormInterface $renderForm,
         RenderError $renderError,
         iterable $additionalSteps,
+        ?string $defaultErrorTemplate = null,
+        array $createObjectWiths = [],
     ) {
         parent::__construct(
             $recipe,
@@ -79,7 +81,9 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPo
             $redirectClient,
             $renderForm,
             $renderError,
-            $objectAccessControl
+            $objectAccessControl,
+            $defaultErrorTemplate,
+            $createObjectWiths,
         );
 
         $this->loadObject = $loadObject;

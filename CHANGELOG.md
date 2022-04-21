@@ -1,5 +1,14 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.83] - 2022-04-21
+### Dev Release
+- Cookbooks `NewAcccountEndPoint`, `NewProjectEndPoint` and `AbstractEditObjectEndPoint` accepts a new argument in constructorm called `defaultErrorTemplate` to set in the
+  initial workplan the `errorTemplate` ingredient to avoid to set for each use.
+- This variable can be set in the DI via the special key `teknoo.east.common.cookbook.default_error_template`
+- `AbstractEditObjectEndPoint` accepts `$loadObjectWiths` in constructor to define mapping for `LoadObject` step.
+- `NewAcccountEndPoint` accepts `$createObjectWiths` in constructor to define mapping for `CreateObject` step.
+- `NewProjectEndPoint` accepts `$createObjectWiths` in constructor to define mapping for `CreateObject` step.
+
 ## [0.0.82] - 2022-04-19
 ### Dev Release
 - Fix `NewProjectEndPoint` to implement the good interface
