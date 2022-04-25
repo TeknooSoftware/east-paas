@@ -40,5 +40,9 @@ return [
         ->constructor(get(LocalFilesystemAdapter::class)),
     JobWorkspaceInterface::class => get(Workspace::class),
     Workspace::class => create()
-        ->constructor(get(Filesystem::class), string('{teknoo.east.paas.worker.tmp_dir}')),
+        ->constructor(
+            get(Filesystem::class),
+            string('{teknoo.east.paas.worker.tmp_dir}'),
+            string('{teknoo.east.paas.project_configuration_filename}'),
+        ),
 ];

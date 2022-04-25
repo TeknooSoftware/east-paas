@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.84] - 2022-04-25
+### Dev Release
+- Configuration file in project repository is not mandatory `.paas.yaml` and msut be
+  defined in the DI under the key `teknoo.east.paas.project_configuration_filename`.
+
 ## [0.0.83] - 2022-04-21
 ### Dev Release
 - Cookbooks `NewAcccountEndPoint`, `NewProjectEndPoint` and `AbstractEditObjectEndPoint` accepts a new argument in constructorm called `defaultErrorTemplate` to set in the

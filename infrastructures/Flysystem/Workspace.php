@@ -71,7 +71,8 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
 
     public function __construct(
         private Filesystem $filesystem,
-        private readonly string $rootPath
+        private readonly string $rootPath,
+        private readonly string $configurationFileName,
     ) {
         $this->uniqueConstructorCheck();
 
@@ -187,7 +188,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
         $repositoryPath = $this->getRepositoryPath();
 
         $conductor->prepare(
-            $this->filesystem->read($repositoryPath . self::CONFIGURATION_FILE),
+            $this->filesystem->read($repositoryPath . $this->configurationFileName),
             $promise
         );
 

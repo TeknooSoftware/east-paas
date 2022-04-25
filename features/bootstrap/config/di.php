@@ -22,6 +22,7 @@ return [
         'ROOT' => \dirname(__DIR__)
     ],
     'teknoo.east.paas.root_dir' => __DIR__ . '../../',
+    'teknoo.east.paas.project_configuration_filename' => '.paas.yaml',
     'teknoo.east.paas.conductor.images_library' => [
         'php-run-74' => [
             'build-name' => 'php-run',

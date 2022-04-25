@@ -40,8 +40,6 @@ use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
  */
 interface JobWorkspaceInterface extends ImmutableInterface
 {
-    final public const CONFIGURATION_FILE = '.paas.yaml';
-
     public function setJob(JobUnitInterface $job): JobWorkspaceInterface;
 
     public function clean(): JobWorkspaceInterface;

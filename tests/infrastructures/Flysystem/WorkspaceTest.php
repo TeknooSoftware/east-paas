@@ -83,7 +83,11 @@ class WorkspaceTest extends TestCase
 
     public function buildJobWorkspace(): Workspace
     {
-        return new Workspace($this->getFilesystemMock(), '/path/root');
+        return new Workspace(
+            $this->getFilesystemMock(),
+            '/path/root',
+            '.paas.yaml',
+        );
     }
 
     public function testSetJobBadJob()
@@ -281,7 +285,7 @@ class WorkspaceTest extends TestCase
             ->with($this->callback(
                 function ($value) use (&$path) {
                     $path=$value;
-                    return 1 === \preg_match('#/fooBar[0-9]{7}/repository/'.Workspace::CONFIGURATION_FILE.'#iS', $value);
+                    return 1 === \preg_match('#/fooBar[0-9]{7}/repository/\.paas\.yaml#iS', $value);
                 }
             ))
             ->willReturn($content);

@@ -76,6 +76,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
+        $container->set('teknoo.east.paas.project_configuration_filename', '.paas.yaml');
 
         self::assertInstanceOf(
             JobWorkspaceInterface::class,
@@ -87,6 +88,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
+        $container->set('teknoo.east.paas.project_configuration_filename', '.paas.yaml');
 
         self::assertInstanceOf(
             Workspace::class,
