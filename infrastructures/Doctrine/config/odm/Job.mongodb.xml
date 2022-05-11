@@ -5,7 +5,7 @@
                         xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
                                             http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
 
-    <document name="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job" collection="job">
+    <document name="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job" collection="jobs">
         <reference-one field="project" target-document="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project" inversed-by="jobs">
             <cascade />
         </reference-one>
