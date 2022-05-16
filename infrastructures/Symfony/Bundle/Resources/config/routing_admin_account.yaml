@@ -1,6 +1,6 @@
 ##Account
 _teknoo_paas_admin_account_list:
-    path: '/accounts/'
+    path: '/accounts'
     methods:  ['GET']
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.list'
