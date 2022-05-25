@@ -55,9 +55,7 @@ parameters:
         -
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
             path:  src/Object/Job.php
-        -
-            message: '#\?string, string\|null#'
-            path:  src/Object/Account.php
+        - '#\?string, string\|null#'
         -
             message: '#RuntimeException constructor expects int, mixed given#'
             path:  src/Object/Job.php
