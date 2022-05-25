@@ -8,8 +8,14 @@ parameters:
             message: '#Anonymous function should return [a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
             path: infrastructures/
         -
+            message: '#uninitialized readonly property#'
+            path: infrastructures/
+        -
             message: '#mixed#'
             path: infrastructures/BuildKit/di.php
+        -
+            message: '#Hook::update#'
+            path: infrastructures/Git/
         -
             message: '#mixed#'
             path: infrastructures/Kubernetes/Driver.php
@@ -49,6 +55,9 @@ parameters:
         -
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
             path:  src/Object/Job.php
+        -
+            message: '#\?string, string\|null#'
+            path:  src/Object/Account.php
         -
             message: '#RuntimeException constructor expects int, mixed given#'
             path:  src/Object/Job.php
