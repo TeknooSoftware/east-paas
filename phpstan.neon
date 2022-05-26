@@ -1,5 +1,4 @@
 parameters:
-    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         -
             message: '#\$gitWrapper \(Symplify\\GitWrapper\\GitWrapper\) in empty#'
@@ -13,12 +12,6 @@ parameters:
         -
             message: '#mixed#'
             path: infrastructures/BuildKit/di.php
-        -
-            message: '#Hook::update#'
-            path: infrastructures/Git/
-        -
-            message: '#mixed#'
-            path: infrastructures/Kubernetes/Driver.php
         -
             message: '#Cannot access an offset on mixed#'
             path: infrastructures/Kubernetes/Transcriber/ReplicationControllerTranscriber.php
@@ -55,7 +48,6 @@ parameters:
         -
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
             path:  src/Object/Job.php
-        - '#\?string, string\|null#'
         -
             message: '#RuntimeException constructor expects int, mixed given#'
             path:  src/Object/Job.php
