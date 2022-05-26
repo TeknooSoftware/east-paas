@@ -1,4 +1,5 @@
 parameters:
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         -
             message: '#\$gitWrapper \(Symplify\\GitWrapper\\GitWrapper\) in empty#'
