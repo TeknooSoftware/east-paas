@@ -71,10 +71,12 @@ class BuildImages
                     ['build_output' => $buildSuccess]
                 );
             },
-            fn (Throwable $error) => throw new RuntimeException(
-                'teknoo.east.paas.error.recipe.images.building_error',
-                500,
-                $error
+            fn (Throwable $error) => $manager->error(
+                new RuntimeException(
+                    'teknoo.east.paas.error.recipe.images.building_error',
+                    500,
+                    $error
+                )
             )
         );
 

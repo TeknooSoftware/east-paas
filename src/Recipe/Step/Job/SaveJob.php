@@ -50,11 +50,7 @@ class SaveJob
         /** @var Promise<Job, mixed, mixed> $savedPromise */
         $savedPromise = new Promise(
             null,
-            static function (Throwable $error) use ($client, $chef) {
-                $client->errorInRequest($error);
-
-                $chef->finish($error);
-            }
+            $chef->error(...)
         );
 
         $this->jobWriter->save(

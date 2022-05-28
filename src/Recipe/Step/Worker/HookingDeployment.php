@@ -70,11 +70,7 @@ class HookingDeployment
                     ['hook_output' => $buildSuccess]
                 );
             },
-            fn (Throwable $error) => throw new RuntimeException(
-                'teknoo.east.paas.error.recipe.hook.building_error',
-                500,
-                $error
-            )
+            fn (Throwable $error) => throw $error,
         );
 
         $workspace->runInRoot(
@@ -85,17 +81,28 @@ class HookingDeployment
                 $promise,
                 $jobUnit,
                 $workspace,
+                $manager,
             ) {
-                $compiledDeployment->foreachHook(
-                    static function (HookInterface $hook) use ($path, $promise, $jobUnit, $workspace) {
-                        if ($hook instanceof HookAwareInterface) {
-                            $hook->setContext($jobUnit, $workspace);
-                        }
+                try {
+                    $compiledDeployment->foreachHook(
+                        static function (HookInterface $hook) use ($path, $promise, $jobUnit, $workspace) {
+                            if ($hook instanceof HookAwareInterface) {
+                                $hook->setContext($jobUnit, $workspace);
+                            }
 
-                        $hook->setPath($path);
-                        $hook->run($promise);
-                    }
-                );
+                            $hook->setPath($path);
+                            $hook->run($promise);
+                        }
+                    );
+                } catch (Throwable $error) {
+                    $manager->error(
+                        new RuntimeException(
+                            'teknoo.east.paas.error.recipe.hook.building_error',
+                            500,
+                            $error
+                        )
+                    );
+                }
             }
         );
 

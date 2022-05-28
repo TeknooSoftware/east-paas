@@ -54,10 +54,12 @@ class GetProject
             static function (Project $project) use ($manager) {
                 $manager->updateWorkPlan([Project::class => $project]);
             },
-            fn (Throwable $error) => throw new DomainException(
-                'teknoo.east.paas.error.recipe.project.not_found',
-                404,
-                $error
+            fn (Throwable $error) => $manager->error(
+                new DomainException(
+                    'teknoo.east.paas.error.recipe.project.not_found',
+                    404,
+                    $error
+                )
             )
         );
 

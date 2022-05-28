@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.85] - 2022-05-28
+### Dev Release
+- Improve errors handling in Recipe's steps.
+
 ## [0.0.84] - 2022-04-25
 ### Dev Release
 - Configuration file in project repository is not mandatory `.paas.yaml` and msut be

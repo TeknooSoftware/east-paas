@@ -57,10 +57,12 @@ class ConfigureImagesBuilder
             static function (ImageBuilder $builder) use ($manager) {
                 $manager->updateWorkPlan([ImageBuilder::class => $builder]);
             },
-            fn (Throwable $error) => throw new RuntimeException(
-                'teknoo.east.paas.error.recipe.images.configuration_error',
-                500,
-                $error
+            fn (Throwable $error) => $manager->error(
+                new RuntimeException(
+                    'teknoo.east.paas.error.recipe.images.configuration_error',
+                    500,
+                    $error
+                )
             )
         );
 

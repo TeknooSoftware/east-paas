@@ -63,10 +63,12 @@ class DeserializeJob
                     $manager->updateWorkPlan([JobUnitInterface::class => $jobUnit]);
                     $jobUnit->runWithExtra(fn ($extra) => $manager->updateWorkPlan(['extra' => $extra]));
                 },
-                fn (Throwable $error) => throw new RuntimeException(
-                    'teknoo.east.paas.error.recipe.job.mal_formed',
-                    400,
-                    $error
+                fn (Throwable $error) => $manager->error(
+                    new RuntimeException(
+                        'teknoo.east.paas.error.recipe.job.mal_formed',
+                        400,
+                        $error
+                    )
                 )
             ),
             [

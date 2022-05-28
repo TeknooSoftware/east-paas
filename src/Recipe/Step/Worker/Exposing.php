@@ -72,10 +72,12 @@ class Exposing
                     $result
                 );
             },
-            fn (Throwable $error) => throw new RuntimeException(
-                'teknoo.east.paas.error.recipe.cluster.exposing_error',
-                500,
-                $error
+            fn (Throwable $error) => $manager->error(
+                new RuntimeException(
+                    'teknoo.east.paas.error.recipe.cluster.exposing_error',
+                    500,
+                    $error
+                )
             )
         );
 

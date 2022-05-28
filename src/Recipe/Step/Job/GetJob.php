@@ -54,10 +54,12 @@ class GetJob
             static function (Job $job) use ($manager) {
                 $manager->updateWorkPlan([Job::class => $job]);
             },
-            fn (Throwable $error) => throw new DomainException(
-                'teknoo.east.paas.error.recipe.job.not_found',
-                404,
-                $error
+            fn (Throwable $error) => $manager->error(
+                throw new DomainException(
+                    'teknoo.east.paas.error.recipe.job.not_found',
+                    404,
+                    $error
+                )
             )
         );
 

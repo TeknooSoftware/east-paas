@@ -39,7 +39,7 @@ use Throwable;
  */
 class ErrorFactory implements ErrorFactoryInterface
 {
-    public function buildFailurePromise(
+    public function buildFailureHandler(
         ClientInterface $client,
         ManagerInterface $manager,
         int $statusCode,

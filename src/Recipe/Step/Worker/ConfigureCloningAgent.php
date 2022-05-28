@@ -60,10 +60,12 @@ class ConfigureCloningAgent
             static function (CloningAgentInterface $agent) use ($manager) {
                 $manager->updateWorkPlan([CloningAgentInterface::class => $agent]);
             },
-            fn (Throwable $error) => throw new RuntimeException(
-                'teknoo.east.paas.error.recipe.agent.configuration_error',
-                500,
-                $error
+            fn (Throwable $error) => $manager->error(
+                new RuntimeException(
+                    'teknoo.east.paas.error.recipe.agent.configuration_error',
+                    500,
+                    $error
+                )
             )
         );
 

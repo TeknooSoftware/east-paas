@@ -88,7 +88,8 @@ class ReadDeploymentConfigurationTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $this->expectException(\RuntimeException::class);
+        $manager->expects(self::once())
+            ->method('error');
 
         self::assertInstanceOf(
             ReadDeploymentConfiguration::class,

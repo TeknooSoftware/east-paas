@@ -37,7 +37,7 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
  */
 interface ErrorFactoryInterface
 {
-    public function buildFailurePromise(
+    public function buildFailureHandler(
         ClientInterface $client,
         ManagerInterface $manager,
         int $statusCode,

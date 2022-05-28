@@ -135,7 +135,7 @@ class PushResult implements DispatchResultInterface
             $result = [];
         }
 
-        $failure = $this->errorFactory->buildFailurePromise($client, $manager, 500, null);
+        $failure = $this->errorFactory->buildFailureHandler($client, $manager, 500, null);
 
         if (null !== $exception) {
             $result = [];

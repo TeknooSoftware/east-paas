@@ -73,7 +73,7 @@ class PrepareJob
                 $job->isRunnable(
                     new Promise(
                         null,
-                        $errorFactory->buildFailurePromise(
+                        $errorFactory->buildFailureHandler(
                             $client,
                             $manager,
                             500,

@@ -96,7 +96,6 @@ class SaveJobTest extends TestCase
         $client = $this->createMock(ClientInterface::class);
         $job = $this->createMock(Job::class);
 
-        $projectId = 'dev';
         $exception = new \DomainException();
 
         $this->getjobWriterMock()
@@ -109,13 +108,8 @@ class SaveJobTest extends TestCase
                 return $this->getjobWriterMock();
             });
 
-        $client->expects(self::once())
-            ->method('errorInRequest')
-            ->with($exception);
-
         $chef->expects(self::once())
-            ->method('finish')
-            ->with($exception);
+            ->method('error');
 
         self::assertInstanceOf(
             SaveJob::class,

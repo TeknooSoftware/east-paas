@@ -45,7 +45,7 @@ class DispatchError
 
     public function __invoke(ManagerInterface $manager, ClientInterface $client, Throwable $exception): self
     {
-        $this->errorFactory->buildFailurePromise($client, $manager, 500, null)($exception);
+        $this->errorFactory->buildFailureHandler($client, $manager, 500, null)($exception);
 
         $manager->stopErrorReporting();
 

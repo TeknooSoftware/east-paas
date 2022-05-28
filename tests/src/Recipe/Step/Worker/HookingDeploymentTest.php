@@ -192,7 +192,8 @@ class HookingDeploymentTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $this->expectException(\RuntimeException::class);
+        $manager->expects(self::once())
+            ->method('error');
 
         self::assertInstanceOf(
             HookingDeployment::class,
@@ -267,7 +268,8 @@ class HookingDeploymentTest extends TestCase
         $manager->expects(self::never())
             ->method('updateWorkPlan');
 
-        $this->expectException(\RuntimeException::class);
+        $manager->expects(self::once())
+            ->method('error');
 
         self::assertInstanceOf(
             HookingDeployment::class,

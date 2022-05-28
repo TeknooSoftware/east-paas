@@ -38,13 +38,13 @@ use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
  */
 class ErrorFactoryTest extends TestCase
 {
-    public function testBuildFailurePromiseWithReason()
+    public function testBuildFailureHandlerWithReason()
     {
         $factory = new ErrorFactory();
         $client = $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $callable = $factory->buildFailurePromise($client, $manager, 500, 'foo');
+        $callable = $factory->buildFailureHandler($client, $manager, 500, 'foo');
         self::assertIsCallable($callable);
 
         $client->expects(self::once())
@@ -61,13 +61,13 @@ class ErrorFactoryTest extends TestCase
         $callable(new \RuntimeException('bar', 501));
     }
 
-    public function testBuildFailurePromiseWithInvalidCode()
+    public function testBuildFailureHandlerWithInvalidCode()
     {
         $factory = new ErrorFactory();
         $client = $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $callable = $factory->buildFailurePromise($client, $manager, 500, null);
+        $callable = $factory->buildFailureHandler($client, $manager, 500, null);
         self::assertIsCallable($callable);
 
         $client->expects(self::once())
@@ -84,13 +84,13 @@ class ErrorFactoryTest extends TestCase
         $callable(new \RuntimeException('bar', 100));
     }
 
-    public function testBuildFailurePromiseWithNoReason()
+    public function testBuildFailureHandlerWithNoReason()
     {
         $factory = new ErrorFactory();
         $client = $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $callable = $factory->buildFailurePromise($client, $manager, 500, null);
+        $callable = $factory->buildFailureHandler($client, $manager, 500, null);
         self::assertIsCallable($callable);
 
         $client->expects(self::once())

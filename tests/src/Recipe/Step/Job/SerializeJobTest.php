@@ -127,7 +127,8 @@ class SerializeJobTest extends TestCase
 
         $client = $this->createMock(ClientInterface::class);
 
-        $this->expectException(\RuntimeException::class);
+        $chef->expects(self::once())
+            ->method('error');
 
         self::assertInstanceOf(
             SerializeJob::class,

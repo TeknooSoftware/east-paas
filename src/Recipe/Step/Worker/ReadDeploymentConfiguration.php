@@ -51,10 +51,12 @@ class ReadDeploymentConfiguration
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
             null,
-            fn (Throwable $error) => throw new RuntimeException(
-                'teknoo.east.paas.error.recipe.configuration.read_error',
-                500,
-                $error
+            fn (Throwable $error) => $manager->error(
+                new RuntimeException(
+                    'teknoo.east.paas.error.recipe.configuration.read_error',
+                    500,
+                    $error
+                )
             )
         );
 

@@ -113,7 +113,8 @@ class GetProjectTest extends TestCase
         $chef->expects(self::never())
             ->method('updateWorkPlan');
 
-        $this->expectException(\DomainException::class);
+        $chef->expects(self::once())
+            ->method('error');
 
         self::assertInstanceOf(
             GetProject::class,

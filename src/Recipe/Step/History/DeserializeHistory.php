@@ -57,10 +57,12 @@ class DeserializeHistory
                 static function (History $history) use ($manager) {
                     $manager->updateWorkPlan([History::class => $history]);
                 },
-                fn (Throwable $error) => throw new RuntimeException(
-                    'teknoo.east.paas.error.recipe.history.mal_formed',
-                    400,
-                    $error
+                fn (Throwable $error) => $manager->error(
+                    new RuntimeException(
+                        'teknoo.east.paas.error.recipe.history.mal_formed',
+                        400,
+                        $error
+                    )
                 )
             )
         );

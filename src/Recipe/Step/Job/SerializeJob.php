@@ -58,10 +58,12 @@ class SerializeJob
             static function (string $jobSerialized) use ($manager) {
                 $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
             },
-            fn (Throwable $error) => throw new RuntimeException(
-                'teknoo.east.paas.error.recipe.job.serialization_error',
-                500,
-                $error
+            fn (Throwable $error) => $manager->error(
+                new RuntimeException(
+                    'teknoo.east.paas.error.recipe.job.serialization_error',
+                    500,
+                    $error
+                )
             )
         );
 

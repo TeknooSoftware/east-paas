@@ -71,10 +71,12 @@ class BuildVolumes
                     ['build_output' => $buildSuccess]
                 );
             },
-            fn (Throwable $error) => throw new RuntimeException(
-                'teknoo.east.paas.error.recipe.volumes.building_error',
-                500,
-                $error
+            fn (Throwable $error) => $manager->error(
+                new RuntimeException(
+                    'teknoo.east.paas.error.recipe.volumes.building_error',
+                    500,
+                    $error
+                )
             )
         );
 
