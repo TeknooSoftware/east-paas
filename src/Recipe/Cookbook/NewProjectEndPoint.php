@@ -37,7 +37,6 @@ use Teknoo\East\Common\Recipe\Step\CreateObject;
 use Teknoo\East\Common\Recipe\Step\LoadObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
-use Teknoo\East\Common\Recipe\Step\SlugPreparation;
 use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
