@@ -54,6 +54,7 @@ class NewJob implements NewJobInterface
 
     /**
      * @param iterable<int, callable> $additionalSteps
+     * @param iterable<callable> $additionalErrorHandlers
      */
     public function __construct(
         RecipeInterface $recipe,
@@ -68,8 +69,10 @@ class NewJob implements NewJobInterface
         private DispatchJobInterface $stepDispatchJob,
         private SendJobInterface $stepSendJob,
         private DispatchError $stepDispatchError,
+        iterable $additionalErrorHandlers,
     ) {
         $this->additionalSteps = $additionalSteps;
+        $this->additionalErrorHandlers = $additionalErrorHandlers;
         $this->fill($recipe);
     }
 
@@ -93,6 +96,8 @@ class NewJob implements NewJobInterface
         );
 
         $recipe = $recipe->cook($this->stepSendJob, SendJobInterface::class, [], 100);
+
+        $recipe = $this->registerAdditionalErrorHandler($recipe, $this->additionalErrorHandlers);
 
         $recipe = $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
 

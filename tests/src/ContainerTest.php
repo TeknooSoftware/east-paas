@@ -56,6 +56,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\AddHistoryStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditAccountEndPointStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditProjectEndPointStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewAccountEndPointStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobErrorsHandlersInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
@@ -1248,6 +1249,26 @@ class ContainerTest extends TestCase
 
         self::assertInstanceOf(
             AdditionalStepsInterface::class,
+            $steps->add(1, function () {})
+        );
+
+        self::assertInstanceOf(
+            \Traversable::class,
+            $steps->getIterator()
+        );
+    }
+
+    public function testNewJobErrorsHandlersInterface()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            NewJobErrorsHandlersInterface::class,
+            $steps = $container->get(NewJobErrorsHandlersInterface::class)
+        );
+
+        self::assertInstanceOf(
+            NewJobErrorsHandlersInterface::class,
             $steps->add(1, function () {})
         );
 

@@ -53,6 +53,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\AddHistoryStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditAccountEndPointStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditProjectEndPointStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewAccountEndPointStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobErrorsHandlersInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
@@ -373,6 +374,10 @@ return [
         return new class extends AbstractAdditionalStepsList implements NewJobStepsInterface {
         };
     },
+    NewJobErrorsHandlersInterface::class => static function (): NewJobErrorsHandlersInterface {
+        return new class extends AbstractAdditionalStepsList implements NewJobErrorsHandlersInterface {
+        };
+    },
     RunJobStepsInterface::class => static function (): RunJobStepsInterface {
         return new class extends AbstractAdditionalStepsList implements RunJobStepsInterface {
         };
@@ -505,6 +510,7 @@ return [
             get(DispatchJobInterface::class),
             get(SendJobInterface::class),
             get(DispatchError::class),
+            get(NewJobErrorsHandlersInterface::class),
         ),
 
     AddHistoryInterface::class => get(AddHistory::class),

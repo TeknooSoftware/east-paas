@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Traits;
 
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
+use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
@@ -43,12 +44,29 @@ trait AdditionalStepsTrait
     private iterable $additionalSteps;
 
     /**
+     * @var iterable<callable>
+     */
+    private iterable $additionalErrorHandlers = [];
+
+    /**
      * @param iterable<int, callable> $steps
      */
     private function registerAdditionalSteps(RecipeInterface $recipe, iterable $steps): RecipeInterface
     {
         foreach ($steps as $position => $step) {
             $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], (int) $position);
+        }
+
+        return $recipe;
+    }
+
+    /**
+     * @param iterable<callable> $handlers
+     */
+    private function registerAdditionalErrorHandler(RecipeInterface $recipe, iterable $handlers): RecipeInterface
+    {
+        foreach ($handlers as $handler) {
+            $recipe = $recipe->onError(new Bowl($handler, ['result' => 'exception']));
         }
 
         return $recipe;

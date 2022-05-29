@@ -28,7 +28,7 @@ namespace Teknoo\East\Paas\Contracts\Recipe\Step\Additional;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 
 /**
- * To define additionals steps in EditAccountEndPoint Cookbook.
+ * To define additional steps in EditAccountEndPoint Cookbook.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

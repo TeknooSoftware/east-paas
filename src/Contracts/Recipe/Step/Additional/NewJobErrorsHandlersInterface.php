@@ -28,11 +28,11 @@ namespace Teknoo\East\Paas\Contracts\Recipe\Step\Additional;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 
 /**
- * To define additional steps in EditProjectEndPoint Cookbook.
+ * To define additional error handlers steps in NewJob Cookbook.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface EditProjectEndPointStepsInterface extends AdditionalStepsInterface
+interface NewJobErrorsHandlersInterface extends AdditionalStepsInterface
 {
 }
