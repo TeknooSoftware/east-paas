@@ -18,4 +18,4 @@ framework:
 
     routing:
       # Route your messages to the transports
-      'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob': 'teknoo_paas_message_job'
+      'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob': 'teknoo_paas_message_job'

@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
-use Symplify\GitWrapper\GitWrapper;
+use Symfony\Component\Process\Process;
 use LogicException;
 use RuntimeException;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
@@ -37,7 +37,6 @@ use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\SshIdentity;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Workspace\File;
-use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
@@ -74,17 +73,11 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
 
     private ?JobWorkspaceInterface $workspace = null;
 
-    /**
-     * @param GitWrapper $gitWrapper
-     */
     public function __construct(
-        private mixed $gitWrapper
+        private Process $gitProcess,
+        private string $privateKeyFilename,
     ) {
         $this->uniqueConstructorCheck();
-
-        if (empty($this->gitWrapper)) {
-            throw new RuntimeException('Missing git wrapper tools injected in this agent');
-        }
 
         $this->initializeStateProxy();
         $this->updateStates();
@@ -123,7 +116,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         $this->sourceRepository = null;
         $this->workspace = null;
 
-        $this->gitWrapper = clone $this->gitWrapper;
+        $this->gitProcess = clone $this->gitProcess;
 
         $this->updateStates();
     }
@@ -162,9 +155,9 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     {
         $workspace = $this->getWorkspace();
         $workspace->writeFile(
-            new File('private.key', Visibility::Private, $this->getSshIdentity()->getPrivateKey()),
+            new File($this->privateKeyFilename, Visibility::Private, $this->getSshIdentity()->getPrivateKey()),
             function ($path) {
-                $this->gitWrapper->setPrivateKey($path);
+                $this->gitProcess->setWorkingDirectory($path);
             }
         );
 
@@ -176,14 +169,21 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     public function cloningIntoPath(string $path): CloningAgentInterface
     {
         $sourceRepository = $this->getSourceRepository();
-        $this->gitWrapper->cloneRepository(
-            $sourceRepository->getPullUrl(),
-            $path,
-            [
-                'recurse-submodules' => true,
-                'branch' => $sourceRepository->getDefaultBranch()
-            ]
-        );
+
+        $this->gitProcess->setEnv([
+            'GIT_SSH_COMMAND' => "ssh -i {$this->privateKeyFilename} -o IdentitiesOnly=yes",
+            'JOB_CLONE_DESTINATION' => $path,
+            'JOB_REPOSITORY' => $sourceRepository->getPullUrl(),
+            'JOB_BRANCH' => $sourceRepository->getDefaultBranch(),
+        ]);
+
+        $this->gitProcess->run();
+
+        if (!$this->gitProcess->isSuccessFul()) {
+            throw new RuntimeException(
+                "Error while initializing repository: {$this->gitProcess->getErrorOutput()}"
+            );
+        }
 
         return $this;
     }

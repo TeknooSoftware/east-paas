@@ -25,20 +25,30 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
-use Symplify\GitWrapper\GitWrapper;
+use Gitonomy\Git\Admin;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 
 use function DI\get;
-use function DI\create;
 
 return [
-    GitWrapper::class => create()
-        ->constructor('git'),
-
     CloningAgentInterface::class => get(CloningAgent::class),
-    CloningAgent::class => create()
-        ->constructor(get(GitWrapper::class)),
+    CloningAgent::class => static function (ContainerInterface $container): CloningAgent {
+        return new CloningAgent(
+            Process::fromShellCommandline(
+                'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
+            ),
+            'private.key',
+        );
+    },
 
-    Hook::class => create()
-        ->constructor(get(GitWrapper::class)),
+    Hook::class => static function (ContainerInterface $container): Hook {
+        return new Hook(
+            Process::fromShellCommandline(
+                'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
+            ),
+            'private.key',
+        );
+    },
 ];

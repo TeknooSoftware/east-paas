@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use function strpos;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -133,7 +134,7 @@ class WorkspaceTest extends TestCase
         self::assertInstanceOf(
             JobWorkspaceInterface::class,
             $this->buildJobWorkspace()->writeFile($file, function ($name, $file) {
-                self::assertNotFalse(\strpos($name, '/foo'));
+                self::assertNotFalse(strpos($name, '/foo'));
                 self::assertInstanceOf(FileInterface::class, $file);
             })
         );
@@ -156,10 +157,10 @@ class WorkspaceTest extends TestCase
             ->method('write')
             ->with(
                 $this->callback(function ($name) {
-                    return false !== \strpos($name, '/foo');
+                    return false !== strpos($name, '/foo');
                 }),
                 $content,
-                ['visibility' => $v]
+                ['visibility' => $v->value]
             );
 
         self::assertInstanceOf(
@@ -185,16 +186,17 @@ class WorkspaceTest extends TestCase
             ->method('write')
             ->with(
                 $this->callback(function ($name) {
-                    return false !== \strpos($name, '/foo');
+                    return false !== strpos($name, '/foo');
                 }),
                 $content,
-                ['visibility' => $v]
+                ['visibility' => $v->value]
             );
 
         self::assertInstanceOf(
             JobWorkspaceInterface::class,
-            $this->buildJobWorkspace()->setJob($this->getJobMock())->writeFile($file, function ($name, $file) {
-                self::assertNotFalse(\strpos($name, '/foo'));
+            $this->buildJobWorkspace()->setJob($this->getJobMock())->writeFile($file, function ($path, $filename, $file) {
+                self::assertEquals($path, '/path/root');
+                self::assertNotFalse(strpos($filename, '/foo'));
                 self::assertInstanceOf(FileInterface::class, $file);
             })
         );
@@ -237,7 +239,7 @@ class WorkspaceTest extends TestCase
             ->expects(self::once())
             ->method('createDirectory')
             ->with($this->callback(function ($value) {
-                return 0 === \strpos($value, '/fooBar');
+                return 0 === strpos($value, '/fooBar');
             }));
 
         $this->buildJobWorkspace()->setJob($this->getJobMock())->prepareRepository($repository);

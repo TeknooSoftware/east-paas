@@ -25,7 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 
-use Symplify\GitWrapper\GitWrapper;
+use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -44,22 +45,22 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 class HookTest extends TestCase
 {
     /**
-     * @var GitWrapper
+     * @var Process
      */
-    private $gitWrapper;
+    private $process;
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|GitWrapper
-     */
-    public function getGitWrapperMock()
+    public function getProcessMock(bool $isSuccessFull = true): MockObject&Process
     {
-        if (!$this->gitWrapper instanceof \PHPUnit\Framework\MockObject\MockObject) {
-            $this->gitWrapper = $this->getMockBuilder(\stdClass::class)
-                ->addMethods(['setPrivateKey', 'cloneRepository'])
-                ->getMock();
+        if (!$this->process instanceof Process) {
+            $this->process = $this->createMock(Process::class);
+
+            $this->process
+                ->expects(self::any())
+                ->method('isSuccessFul')
+                ->willReturn($isSuccessFull);
         }
 
-        return $this->gitWrapper;
+        return $this->process;
     }
 
     /**
@@ -67,13 +68,10 @@ class HookTest extends TestCase
      */
     public function buildHook(): Hook
     {
-        return new Hook($this->getGitWrapperMock());
-    }
-
-    public function testMissingGitWrapper()
-    {
-        $this->expectException(\RuntimeException::class);
-        $a =  new Hook(null);
+        return new Hook(
+            $this->getProcessMock(),
+            'private.key',
+        );
     }
 
     public function testSetContextBadJobUnit()
@@ -172,15 +170,13 @@ class HookTest extends TestCase
                 return $workspace;
             });
 
-        $this->getGitWrapperMock()
+        $this->getProcessMock()
             ->expects(self::once())
-            ->method('setPrivateKey')
-            ->with('/foo/bar/private.key');
+            ->method('setWorkingDirectory');
 
-        $this->getGitWrapperMock()
+        $this->getProcessMock()
             ->expects(self::once())
-            ->method('cloneRepository')
-            ->with('https://bar.foo', $path = 'foo/bar');
+            ->method('run');
 
         self::assertInstanceOf(
             Hook::class,
@@ -207,9 +203,82 @@ class HookTest extends TestCase
             )
         );
 
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('fail');
+        $promise->expects(self::once())->method('success');
+
         self::assertInstanceOf(
             Hook::class,
-            $hook->run($this->createMock(PromiseInterface::class))
+            $hook->run($promise)
+        );
+    }
+
+    public function testRunWithError()
+    {
+        $this->getProcessMock(false);
+        $hook = $this->buildHook();
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+
+        $workspace->expects(self::once())
+            ->method('writeFile')
+            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace) {
+                self::assertEquals('private.key', $file->getName());
+                self::assertEquals('fooBar', $file->getContent());
+                self::assertEquals(Visibility::Private, $file->getVisibility());
+
+                $return('/foo/bar/private.key');
+
+                return $workspace;
+            });
+
+        $workspace->expects(self::once())
+            ->method('runInRoot')
+            ->willReturnCallback(function (callable $callback) use ($workspace) {
+                $callback('foo');
+
+                return $workspace;
+            });
+
+        $this->getProcessMock()
+            ->expects(self::once())
+            ->method('setWorkingDirectory');
+
+        $this->getProcessMock()
+            ->expects(self::once())
+            ->method('run');
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setOptions(
+                [
+                    'url' => 'https://bar.foo',
+                    'key' => 'fooBar',
+                    'path' => '/bar'
+                ],
+                $this->createMock(PromiseInterface::class)
+            )
+        );
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setPath('foo')
+        );
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setContext(
+                $this->createMock(JobUnitInterface::class),
+                $workspace
+            )
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('fail');
+        $promise->expects(self::never())->method('success');
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook->run($promise)
         );
     }
 
@@ -218,9 +287,9 @@ class HookTest extends TestCase
         $hook = $this->buildHook();
         $hook2 = clone $hook;
 
-        $rp = new \ReflectionProperty(Hook::class, 'gitWrapper');
+        $rp = new \ReflectionProperty(Hook::class, 'gitProcess');
         $rp->setAccessible(true);
-        self::assertNotSame($this->getGitWrapperMock(), $rp->getValue($hook2));
-        self::assertSame($this->getGitWrapperMock(), $rp->getValue($hook));
+        self::assertNotSame($this->getProcessMock(), $rp->getValue($hook2));
+        self::assertSame($this->getProcessMock(), $rp->getValue($hook));
     }
 }
