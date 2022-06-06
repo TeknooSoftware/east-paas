@@ -152,12 +152,12 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
             $name,
             $file->getContent(),
             [
-                'visibility' => $file->getVisibility(),
+                'visibility' => $file->getVisibility()->value,
             ]
         );
 
         if (is_callable($return)) {
-            $return($this->rootPath . $name, $file);
+            $return($this->rootPath, $name, $file);
         }
 
         return $this;

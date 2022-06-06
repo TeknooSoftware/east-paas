@@ -25,8 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
-use RuntimeException;
-use Symplify\GitWrapper\GitWrapper;
+use Symfony\Component\Process\Process;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
@@ -66,17 +65,11 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
 
     private ?JobWorkspaceInterface $workspace = null;
 
-    /**
-     * @param GitWrapper $gitWrapper
-     */
     public function __construct(
-        private mixed $gitWrapper
+        private Process $gitProcess,
+        private string $privateKeyFilename,
     ) {
         $this->uniqueConstructorCheck();
-
-        if (empty($this->gitWrapper)) {
-            throw new RuntimeException('Missing git wrapper tools injected in this hook');
-        }
 
         $this->initializeStateProxy();
         $this->updateStates();
@@ -132,7 +125,7 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
         $this->jobUnit = null;
         $this->workspace = null;
 
-        $this->gitWrapper = clone $this->gitWrapper;
+        $this->gitProcess = clone $this->gitProcess;
 
         $this->updateStates();
     }

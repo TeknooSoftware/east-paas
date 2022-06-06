@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob as JobMessage;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob as JobMessage;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;

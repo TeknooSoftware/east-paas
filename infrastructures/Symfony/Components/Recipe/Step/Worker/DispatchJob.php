@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob as MessageJob;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;

@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Git\Hook;
 
 use Closure;
+use RuntimeException;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Infrastructures\Git\Hook;
 use Teknoo\East\Paas\Workspace\File;
@@ -58,16 +58,24 @@ class Running implements StateInterface
             $options = $this->options;
 
             $this->getWorkspace()->runInRoot(function ($path) use ($options, $promise) {
-                $this->gitWrapper->cloneRepository(
-                    $options['url'],
-                    $path . $options['path'],
-                    [
-                      'recurse-submodules' => true,
-                      'branch' => $options['branch'] ?? 'master'
-                    ]
-                );
+                $this->gitProcess->setEnv([
+                    'GIT_SSH_COMMAND' => "ssh -i {$this->privateKeyFilename} -o IdentitiesOnly=yes",
+                    'JOB_CLONE_DESTINATION' => $path . $options['path'],
+                    'JOB_REPOSITORY' => $options['url'],
+                    'JOB_BRANCH' => ($options['branch'] ?? 'main'),
+                ]);
 
-                $promise->success();
+                $this->gitProcess->run();
+
+                if (!$this->gitProcess->isSuccessFul()) {
+                    $promise->fail(
+                        new RuntimeException(
+                            "Error while initializing repository: {$this->gitProcess->getErrorOutput()}"
+                        )
+                    );
+                } else {
+                    $promise->success();
+                }
             });
 
             return $this;
@@ -80,9 +88,9 @@ class Running implements StateInterface
             $workspace = $this->getWorkspace();
 
             $workspace->writeFile(
-                new File('private.key', Visibility::Private, $this->options['key']),
+                new File($this->privateKeyFilename, Visibility::Private, $this->options['key']),
                 function ($path) use ($promise) {
-                    $this->gitWrapper->setPrivateKey($path);
+                    $this->gitProcess->setWorkingDirectory($path);
 
                     $this->clone($promise);
                 }

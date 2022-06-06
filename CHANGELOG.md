@@ -1,5 +1,13 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.86] - 2022-06-06
+### Dev Release
+- Remove Simplify/git-wrapper
+- Switch to Symfony Process + direct call git CLI tools (To manage easily ssh keys per project via env vars, 
+  without additional tools, gitlib is not usable with dynamic privates keys)
+- Update `Infrastructure\Git\CloningAgent` and `Infrastructure\Git\Hook` with `Symfony Process`
+- Rename `DispatchJob` message to `MessageJob`
+
 ## [0.0.85] - 2022-05-28
 ### Dev Release
 - Improve errors handling in Recipe's steps.
