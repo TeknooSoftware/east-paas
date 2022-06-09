@@ -137,6 +137,92 @@ class HistoryTest extends TestCase
         $cloned = $history->clone($parent);
 
         self::assertNotSame($history, $cloned);
+        self::assertNotSame($parent, $cloned);
+        self::assertEquals($expected, $cloned);
+    }
+
+    public function testCloneWithoutParentWithMoreRecent()
+    {
+        $recent = new History(null, 'bar', new \DateTime('2019-10-25'));
+        $history = new History(null, 'foo', new \DateTime('2018-11-25'));
+        $expected = new History(
+            $history,
+            'bar',
+            new \DateTime('2019-10-25'),
+        );
+
+        $cloned = $history->clone($recent);
+
+        self::assertNotSame($history, $cloned);
+        self::assertNotSame($recent, $cloned);
+        self::assertEquals($expected, $cloned);
+    }
+
+    public function testCloneWithNewHistoryToInsert()
+    {
+        $newHistory = new History(null, 'bar', new \DateTime('2019-10-25'));
+        $history1 = new History(null, 'foo1', new \DateTime('2017-11-25'));
+        $history2 = new History($history1, 'foo2', new \DateTime('2018-11-25'));
+        $history3 = new History($history2, 'foo3', new \DateTime('2020-11-25'));
+
+        $expected = new History(
+            new History(
+                new History(
+                    new History(
+                        null,
+                        'foo1',
+                        new \DateTime('2017-11-25'),
+                    ),
+                    'foo2',
+                    new \DateTime('2018-11-25'),
+                ),
+                'bar',
+                new \DateTime('2019-10-25'),
+            ),
+            'foo3',
+            new \DateTime('2020-11-25'),
+        );
+
+        $cloned = $history3->clone($newHistory);
+
+        self::assertNotSame($history1, $cloned);
+        self::assertNotSame($history2, $cloned);
+        self::assertNotSame($history3, $cloned);
+        self::assertNotSame($newHistory, $cloned);
+        self::assertEquals($expected, $cloned);
+    }
+
+    public function testCloneWithNewHistoryToInsert2()
+    {
+        $newHistory = new History(null, 'bar', new \DateTime('2018-10-25'));
+        $history1 = new History(null, 'foo1', new \DateTime('2017-11-25'));
+        $history2 = new History($history1, 'foo2', new \DateTime('2019-11-25'));
+        $history3 = new History($history2, 'foo3', new \DateTime('2020-11-25'));
+
+        $expected = new History(
+            new History(
+                new History(
+                    new History(
+                        null,
+                        'foo1',
+                        new \DateTime('2017-11-25'),
+                    ),
+                    'bar',
+                    new \DateTime('2018-10-25'),
+                ),
+                'foo2',
+                new \DateTime('2019-11-25'),
+            ),
+            'foo3',
+            new \DateTime('2020-11-25'),
+        );
+
+        $cloned = $history3->clone($newHistory);
+
+        self::assertNotSame($history1, $cloned);
+        self::assertNotSame($history2, $cloned);
+        self::assertNotSame($history3, $cloned);
+        self::assertNotSame($newHistory, $cloned);
         self::assertEquals($expected, $cloned);
     }
 }
