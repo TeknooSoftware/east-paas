@@ -40,7 +40,7 @@ use Throwable;
 class YamlParser implements YamlParserInterface
 {
     public function __construct(
-        private Parser $parser
+        private readonly Parser $parser
     ) {
     }
 

@@ -63,7 +63,7 @@ class HistoryTest extends TestCase
                 'extra' => [],
                 'previous' => null,
             ],
-            \json_decode(\json_encode($this->build()), true)
+            \json_decode(\json_encode($this->build(), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR)
         );
     }
 

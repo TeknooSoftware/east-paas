@@ -29,6 +29,7 @@ use JsonSerializable;
 use Laminas\Diactoros\MessageTrait;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
 use Psr\Http\Message\StreamInterface;
+use Stringable;
 use Teknoo\East\Paas\Contracts\Response\HistoryInterface;
 use Teknoo\East\Paas\Object\History as BaseHistory;
 use Teknoo\Immutable\ImmutableTrait;
@@ -45,35 +46,26 @@ use function json_encode;
 class History implements
     HistoryInterface,
     JsonSerializable,
-    PsrResponse
+    PsrResponse,
+    Stringable
 {
     use ImmutableTrait;
     use MessageTrait;
-
-    private int $statusCode;
-
-    private string $reasonPhrase;
-
-    private BaseHistory $history;
 
     /**
      * @param array<string, mixed> $headers
      */
     public function __construct(
-        int $statusCode,
-        string $reasonPhrase,
-        BaseHistory $history,
+        private int $statusCode,
+        private string $reasonPhrase,
+        private readonly BaseHistory $history,
         string|StreamInterface $body = 'php://memory',
         array $headers = []
     ) {
         $this->uniqueConstructorCheck();
 
-        $this->reasonPhrase = $reasonPhrase;
-        $this->statusCode = $statusCode;
-        $this->history = $history;
-
         $this->stream = $this->getStream($body, 'wb+');
-        $this->stream->write((string) json_encode($this->history));
+        $this->stream->write((string) json_encode($this->history, JSON_THROW_ON_ERROR));
 
         $headers['Content-Type'] = ['application/json'];
         $this->setHeaders($headers);

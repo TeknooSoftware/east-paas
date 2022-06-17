@@ -68,7 +68,7 @@ class SerializeJobTest extends TestCase
     {
         $job = $this->createMock(Job::class);
 
-        $sJob = \json_encode($job);
+        $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
 
         $this->getSerializerInterfaceMock()
             ->expects(self::once())

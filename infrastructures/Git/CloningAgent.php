@@ -75,7 +75,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
 
     public function __construct(
         private Process $gitProcess,
-        private string $privateKeyFilename,
+        private readonly string $privateKeyFilename,
     ) {
         $this->uniqueConstructorCheck();
 

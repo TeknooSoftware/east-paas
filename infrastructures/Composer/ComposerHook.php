@@ -69,7 +69,7 @@ class ComposerHook implements HookInterface
     private array $options = [];
 
     public function __construct(
-        private string $binary,
+        private readonly string $binary,
         callable $factory,
     ) {
         $this->factory = $factory;

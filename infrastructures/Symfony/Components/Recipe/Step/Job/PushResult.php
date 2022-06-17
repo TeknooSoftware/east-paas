@@ -53,11 +53,11 @@ use function json_encode;
 class PushResult implements DispatchResultInterface
 {
     public function __construct(
-        private DatesService $dateTimeService,
-        private MessageBusInterface $bus,
-        private NormalizerInterface $normalizer,
-        private ErrorFactoryInterface $errorFactory,
-        private bool $preferRealDate = false,
+        private readonly DatesService $dateTimeService,
+        private readonly MessageBusInterface $bus,
+        private readonly NormalizerInterface $normalizer,
+        private readonly ErrorFactoryInterface $errorFactory,
+        private readonly bool $preferRealDate = false,
     ) {
     }
 
@@ -87,7 +87,7 @@ class PushResult implements DispatchResultInterface
 
                         $manager->updateWorkPlan([
                             History::class => $history,
-                            'historySerialized' => json_encode($history),
+                            'historySerialized' => json_encode($history, JSON_THROW_ON_ERROR),
                         ]);
 
                         $this->bus->dispatch(
@@ -96,7 +96,7 @@ class PushResult implements DispatchResultInterface
                                     $projectId,
                                     $envName,
                                     $jobId,
-                                    (string) json_encode($history)
+                                    (string) json_encode($history, JSON_THROW_ON_ERROR)
                                 ),
                                 [
                                     new Parameter('projectId', $projectId),

@@ -83,12 +83,12 @@ class Conductor implements ConductorInterface, AutomatedInterface
      * @param array<string, CompilerInterface> $compilers
      */
     public function __construct(
-        private CompiledDeploymentFactoryInterface $factory,
+        private readonly CompiledDeploymentFactoryInterface $factory,
         PropertyAccessorInterface $propertyAccessor,
         YamlParserInterface $parser,
-        private YamlValidator $validator,
-        private iterable $compilers,
-        private ?string $storageIdentifier
+        private readonly YamlValidator $validator,
+        private readonly iterable $compilers,
+        private readonly ?string $storageIdentifier
     ) {
         $this->setPropertyAccessor($propertyAccessor);
         $this->setParser($parser);

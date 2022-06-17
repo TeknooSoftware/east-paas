@@ -86,8 +86,8 @@ class CompiledDeployment implements CompiledDeploymentInterface
     private array $ingresses = [];
 
     public function __construct(
-        private int $version,
-        private string $namespace
+        private readonly int $version,
+        private readonly string $namespace
     ) {
     }
 

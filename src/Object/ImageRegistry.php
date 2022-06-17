@@ -54,7 +54,6 @@ class ImageRegistry implements
     private string $apiUrl = '';
 
     private ?IdentityInterface $identity = null;
-
     public function __construct(
         string $apiUrl = '',
         ?IdentityInterface $identity = null,

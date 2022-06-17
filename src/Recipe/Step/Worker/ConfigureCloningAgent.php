@@ -45,7 +45,7 @@ use Throwable;
 class ConfigureCloningAgent
 {
     public function __construct(
-        private CloningAgentInterface $agent,
+        private readonly CloningAgentInterface $agent,
     ) {
     }
 

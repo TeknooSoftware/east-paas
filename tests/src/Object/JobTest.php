@@ -71,7 +71,7 @@ class JobTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setProject($argument)
         );
 
@@ -110,7 +110,7 @@ class JobTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setBaseNamespace('foo')
         );
 
@@ -126,7 +126,7 @@ class JobTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->addToHistory('foo', new \DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo'])
         );
 
@@ -138,7 +138,7 @@ class JobTest extends TestCase
         );
 
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->addToHistory('foo2', new \DateTimeImmutable('2018-05-01'))
         );
 
@@ -158,7 +158,7 @@ class JobTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->addFromHistory(
                 new History(null, 'foo', new \DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo'])
             )
@@ -172,7 +172,7 @@ class JobTest extends TestCase
         );
 
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->addFromHistory(
                 new History(null, 'foo2', new \DateTimeImmutable('2018-05-01'))
             )
@@ -196,7 +196,7 @@ class JobTest extends TestCase
             $called = true;
         };
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->addFromHistory(
                 new History(null, 'foo', new \DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']),
                 $callback
@@ -220,7 +220,7 @@ class JobTest extends TestCase
             $called = true;
         };
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->addFromHistory(
                 new History(null, 'foo2', new \DateTimeImmutable('2018-05-01')),
                 $callback
@@ -256,7 +256,7 @@ class JobTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setHistory(new History(null, 'foo', new \DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']))
         );
 
@@ -286,7 +286,7 @@ class JobTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setExtra(['foo'])
         );
     }
@@ -297,7 +297,7 @@ class JobTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setEnvironment($argument)
         );
     }
@@ -317,7 +317,7 @@ class JobTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setSourceRepository($argument)
         );
     }
@@ -337,12 +337,12 @@ class JobTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->addCluster($argument)
         );
 
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->addCluster($argument)
         );
     }
@@ -353,7 +353,7 @@ class JobTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setClusters([$argument])
         );
 
@@ -371,7 +371,7 @@ class JobTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setClusters(new ArrayCollection([$argument]))
         );
 

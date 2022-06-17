@@ -44,7 +44,7 @@ use Throwable;
 class ConfigureClusterClient
 {
     public function __construct(
-        private Directory $clientsDirectory,
+        private readonly Directory $clientsDirectory,
     ) {
     }
 

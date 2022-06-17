@@ -43,7 +43,7 @@ use Throwable;
 class ConfigureImagesBuilder
 {
     public function __construct(
-        private ImageBuilder $builder,
+        private readonly ImageBuilder $builder,
     ) {
     }
 

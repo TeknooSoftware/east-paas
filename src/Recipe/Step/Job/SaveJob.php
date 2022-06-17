@@ -41,7 +41,7 @@ use Throwable;
 class SaveJob
 {
     public function __construct(
-        private JobWriter $jobWriter,
+        private readonly JobWriter $jobWriter,
     ) {
     }
 

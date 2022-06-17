@@ -361,7 +361,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error) {
+                    function (\Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -401,7 +401,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error) {
+                    function (\Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -428,7 +428,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error) {
+                    function (\Throwable  $error): never {
                         throw $error;
                     }
                 )

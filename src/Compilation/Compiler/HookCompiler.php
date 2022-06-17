@@ -58,11 +58,7 @@ class HookCompiler implements CompilerInterface
      */
     public function __construct(iterable $hooksLibrary)
     {
-        if (is_array($hooksLibrary)) {
-            $this->hooksLibrary = $hooksLibrary;
-        } else {
-            $this->hooksLibrary = iterator_to_array($hooksLibrary);
-        }
+        $this->hooksLibrary = is_array($hooksLibrary) ? $hooksLibrary : iterator_to_array($hooksLibrary);
     }
 
     public function compile(
@@ -83,7 +79,7 @@ class HookCompiler implements CompilerInterface
                     (array) $configuration,
                     new Promise(
                         null,
-                        static function (Throwable $error) {
+                        static function (Throwable $error): never {
                             throw $error;
                         }
                     )

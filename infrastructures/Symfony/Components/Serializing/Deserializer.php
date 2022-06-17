@@ -39,7 +39,7 @@ use Throwable;
 class Deserializer implements DeserializerInterface
 {
     public function __construct(
-        private SymfonySerializerInterface $serializer,
+        private readonly SymfonySerializerInterface $serializer,
     ) {
     }
 

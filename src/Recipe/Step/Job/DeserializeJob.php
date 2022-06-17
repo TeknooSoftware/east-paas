@@ -47,8 +47,8 @@ class DeserializeJob
      * @param array<string, mixed> $variables
      */
     public function __construct(
-        private DeserializerInterface $deserializer,
-        private array $variables,
+        private readonly DeserializerInterface $deserializer,
+        private readonly array $variables,
     ) {
     }
 

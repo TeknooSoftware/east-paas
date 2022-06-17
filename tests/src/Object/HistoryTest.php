@@ -109,7 +109,7 @@ class HistoryTest extends TestCase
                     'bar',
                     new \DateTimeImmutable('2018-05-01'),
                     true
-                )
+                ), JSON_THROW_ON_ERROR
             )
         );
     }

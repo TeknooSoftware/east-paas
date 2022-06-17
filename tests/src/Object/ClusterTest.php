@@ -87,7 +87,7 @@ class ClusterTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setName('fooBar')
         );
 
@@ -120,7 +120,7 @@ class ClusterTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setProject($argument)
         );
 
@@ -159,7 +159,7 @@ class ClusterTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setAddress('fooBar')
         );
 
@@ -196,7 +196,7 @@ class ClusterTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setType('fooBar')
         );
 
@@ -217,7 +217,7 @@ class ClusterTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setEnvironment(
                 $argument = $this->createMock(Environment::class)
             )
@@ -262,7 +262,7 @@ class ClusterTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setIdentity($argument)
         );
 

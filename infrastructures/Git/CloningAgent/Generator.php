@@ -48,14 +48,14 @@ class Generator implements StateInterface
 
     private function getWorkspace(): Closure
     {
-        return function (): JobWorkspaceInterface {
+        return function (): never {
             throw new RuntimeException('Agent is in generator state');
         };
     }
 
     private function getSourceRepository(): Closure
     {
-        return function (): GitRepository {
+        return function (): never {
             throw new RuntimeException('Agent is in generator state');
         };
     }

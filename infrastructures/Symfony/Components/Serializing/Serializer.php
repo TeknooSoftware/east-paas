@@ -39,7 +39,7 @@ use Throwable;
 class Serializer implements SerializerInterface
 {
     public function __construct(
-        private SymfonySerializerInterface $serializer,
+        private readonly SymfonySerializerInterface $serializer,
     ) {
     }
 

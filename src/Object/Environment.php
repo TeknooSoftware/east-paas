@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Object;
 
 use LogicException;
+use Stringable;
 use Teknoo\East\Foundation\Conditionals\EqualityInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
@@ -49,18 +50,17 @@ class Environment implements
     ImmutableInterface,
     EqualityInterface,
     NormalizableInterface,
-    TimestampableInterface
+    TimestampableInterface,
+    Stringable
 {
     use ObjectTrait;
     use ImmutableTrait;
 
     private string $name = '';
-
     public function __construct(
         string $name = '',
     ) {
         $this->uniqueConstructorCheck();
-
         $this->name = $name;
     }
 

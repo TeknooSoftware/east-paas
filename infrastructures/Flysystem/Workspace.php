@@ -166,7 +166,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
     private function getRand(): int
     {
         if (null === $this->rand) {
-            $this->rand = random_int(1000000, 9999999);
+            $this->rand = random_int(1_000_000, 9_999_999);
         }
 
         return $this->rand;

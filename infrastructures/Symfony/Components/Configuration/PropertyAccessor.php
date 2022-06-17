@@ -38,7 +38,7 @@ use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 class PropertyAccessor implements PropertyAccessorInterface
 {
     public function __construct(
-        private SymfonyPropertyAccessor $propertyAccessor,
+        private readonly SymfonyPropertyAccessor $propertyAccessor,
     ) {
     }
 

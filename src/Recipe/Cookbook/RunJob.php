@@ -66,25 +66,25 @@ class RunJob implements RunJobInterface
      */
     public function __construct(
         RecipeInterface $recipe,
-        private DispatchHistoryInterface $stepDispatchHistory,
-        private ReceiveJob $stepReceiveJob,
-        private DeserializeJob $stepDeserializeJob,
-        private PrepareWorkspace $stepPrepareWorkspace,
-        private ConfigureCloningAgent $stepConfigureCloningAgent,
-        private CloneRepository $stepCloneRepository,
-        private ConfigureConductor $stepConfigureConductor,
-        private ReadDeploymentConfiguration $stepReadDeploymentConfiguration,
-        private CompileDeployment $stepCompileDeployment,
-        private HookingDeployment $stepHookingDeployment,
-        private ConfigureImagesBuilder $stepConfigureImagesBuilder,
-        private BuildImages $stepBuildImages,
-        private BuildVolumes $stepBuildVolumes,
-        private ConfigureClusterClient $stepConfigureClusterClient,
-        private Deploying $stepDeploying,
-        private Exposing $stepExposing,
+        private readonly DispatchHistoryInterface $stepDispatchHistory,
+        private readonly ReceiveJob $stepReceiveJob,
+        private readonly DeserializeJob $stepDeserializeJob,
+        private readonly PrepareWorkspace $stepPrepareWorkspace,
+        private readonly ConfigureCloningAgent $stepConfigureCloningAgent,
+        private readonly CloneRepository $stepCloneRepository,
+        private readonly ConfigureConductor $stepConfigureConductor,
+        private readonly ReadDeploymentConfiguration $stepReadDeploymentConfiguration,
+        private readonly CompileDeployment $stepCompileDeployment,
+        private readonly HookingDeployment $stepHookingDeployment,
+        private readonly ConfigureImagesBuilder $stepConfigureImagesBuilder,
+        private readonly BuildImages $stepBuildImages,
+        private readonly BuildVolumes $stepBuildVolumes,
+        private readonly ConfigureClusterClient $stepConfigureClusterClient,
+        private readonly Deploying $stepDeploying,
+        private readonly Exposing $stepExposing,
         iterable $additionalSteps,
-        private DispatchResultInterface $stepDispatchResult,
-        private SendHistoryInterface $stepSendHistoryInterface,
+        private readonly DispatchResultInterface $stepDispatchResult,
+        private readonly SendHistoryInterface $stepSendHistoryInterface,
     ) {
         $this->additionalSteps = $additionalSteps;
         $this->fill($recipe);
@@ -301,8 +301,6 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_SEND_HISTORY
         );
 
-        $recipe = $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
-
-        return $recipe;
+        return $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
     }
 }

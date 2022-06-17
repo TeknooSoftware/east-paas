@@ -29,6 +29,7 @@ use JsonSerializable;
 use Laminas\Diactoros\MessageTrait;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
 use Psr\Http\Message\StreamInterface;
+use Stringable;
 use Teknoo\East\Paas\Contracts\Response\ErrorInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Throwable;
@@ -47,35 +48,26 @@ use function json_encode;
 class Error implements
     ErrorInterface,
     JsonSerializable,
-    PsrResponse
+    PsrResponse,
+    Stringable
 {
     use ImmutableTrait;
     use MessageTrait;
-
-    private int $statusCode;
-
-    private string $reasonPhrase;
-
-    private Throwable $error;
 
     /**
      * @param array<string, mixed> $headers
      */
     public function __construct(
-        int $statusCode,
-        string $reasonPhrase,
-        Throwable $error,
+        private int $statusCode,
+        private string $reasonPhrase,
+        private readonly Throwable $error,
         string|StreamInterface $body = 'php://memory',
         array $headers = []
     ) {
         $this->uniqueConstructorCheck();
 
-        $this->reasonPhrase = $reasonPhrase;
-        $this->statusCode = $statusCode;
-        $this->error = $error;
-
         $this->stream = $this->getStream($body, 'wb+');
-        $this->stream->write((string) json_encode($this));
+        $this->stream->write((string) json_encode($this, JSON_THROW_ON_ERROR));
 
         $headers['Content-Type'] = ['application/problem+json'];
         $this->setHeaders($headers);

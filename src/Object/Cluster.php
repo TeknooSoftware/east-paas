@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
+use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\Recipe\Promise\Promise;
@@ -48,7 +49,8 @@ class Cluster implements
     IdentifiedObjectInterface,
     TimestampableInterface,
     FormMappingInterface,
-    NormalizableInterface
+    NormalizableInterface,
+    Stringable
 {
     use ObjectTrait;
 

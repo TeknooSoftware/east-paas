@@ -53,7 +53,6 @@ class BuilderWrapperTest extends TestCase
 
     protected function tearDown(): void
     {
-        parent::tearDown();
         \set_time_limit(0);
     }
 
@@ -214,7 +213,7 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::exactly(2))
             ->method('updateBuildable')
             ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd) {
-                self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
+                self::assertEquals(0, \strpos((string) $image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
             });
@@ -280,7 +279,7 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::exactly(2))
             ->method('updateBuildable')
             ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd) {
-                self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
+                self::assertEquals(0, \strpos((string) $image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
             });
@@ -338,7 +337,7 @@ class BuilderWrapperTest extends TestCase
         $cd->expects(self::exactly(2))
             ->method('updateBuildable')
             ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd) {
-                self::assertEquals(0, \strpos($image->getUrl(), 'repository.teknoo.run'));
+                self::assertEquals(0, \strpos((string) $image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
             });
@@ -430,7 +429,7 @@ class BuilderWrapperTest extends TestCase
                 ['bar']
             )
             ->willReturnCallback(function ($name, Volume $volume) use ($cd) {
-                self::assertEquals(0, \strpos($volume->getUrl(), 'repository.teknoo.run'));
+                self::assertEquals(0, \strpos((string) $volume->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
             });
@@ -496,7 +495,7 @@ class BuilderWrapperTest extends TestCase
                 ['bar']
             )
             ->willReturnCallback(function ($name, Volume $volume) use ($cd) {
-                self::assertEquals(0, \strpos($volume->getUrl(), 'repository.teknoo.run'));
+                self::assertEquals(0, \strpos((string) $volume->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
             });

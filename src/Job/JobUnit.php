@@ -65,16 +65,16 @@ class JobUnit implements JobUnitInterface
      * @param array<string, mixed> $extra
      */
     public function __construct(
-        private string $id,
-        private array $projectResume,
-        private Environment $environment,
-        private ?string $baseNamespace,
-        private SourceRepositoryInterface $sourceRepository,
-        private ImageRegistryInterface $imagesRegistry,
-        private array $clusters,
-        private array $variables,
-        private History $history,
-        private array $extra = [],
+        private readonly string $id,
+        private readonly array $projectResume,
+        private readonly Environment $environment,
+        private readonly ?string $baseNamespace,
+        private readonly SourceRepositoryInterface $sourceRepository,
+        private readonly ImageRegistryInterface $imagesRegistry,
+        private readonly array $clusters,
+        private readonly array $variables,
+        private readonly History $history,
+        private readonly array $extra = [],
     ) {
     }
 
@@ -187,7 +187,7 @@ class JobUnit implements JobUnitInterface
      */
     private function updateVariables(array &$values, PromiseInterface $promise): void
     {
-        $pattern = '#(\$\{[A-Za-z][A-Za-z0-9_]*\})#iS';
+        $pattern = '#(\$\{[A-Za-z]\w*\})#iS';
 
         $updateClosure = function (&$values, callable $recursive) use ($pattern) {
             foreach ($values as $name => &$value) {

@@ -184,7 +184,7 @@ class PodCompiler implements CompilerInterface
                 $mountPath,
                 new Promise(
                     fn (VolumeInterface $volume) => $containerVolumes[(string) $volumeName] = $volume,
-                    static function (Throwable $error) {
+                    static function (Throwable $error): never {
                         throw $error;
                     }
                 )
@@ -228,7 +228,7 @@ class PodCompiler implements CompilerInterface
     {
         if (isset($variables[self::KEY_FROM_SECRETS])) {
             foreach ($variables[self::KEY_FROM_SECRETS] as $varName => $key) {
-                $variables[(string) $varName] = new SecretReference(...explode('.', $key));
+                $variables[(string) $varName] = new SecretReference(...explode('.', (string) $key));
             }
             unset($variables[self::KEY_FROM_SECRETS]);
         }

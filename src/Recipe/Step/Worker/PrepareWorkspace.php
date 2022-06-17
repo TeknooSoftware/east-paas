@@ -38,7 +38,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 class PrepareWorkspace
 {
     public function __construct(
-        private JobWorkspaceInterface $workspace,
+        private readonly JobWorkspaceInterface $workspace,
     ) {
     }
 

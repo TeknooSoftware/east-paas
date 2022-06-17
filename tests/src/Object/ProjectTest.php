@@ -121,7 +121,7 @@ class ProjectTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setName('fooBar')
         );
 
@@ -169,7 +169,7 @@ class ProjectTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setSourceRepository($argument)
         );
 
@@ -215,7 +215,7 @@ class ProjectTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setImagesRegistry($argument)
         );
 
@@ -260,7 +260,7 @@ class ProjectTest extends TestCase
         $object = $this->buildObject();
         $argument = [new Cluster()];
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setClusters($argument)
         );
 
@@ -285,7 +285,7 @@ class ProjectTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->updateClusters()
         );
     }

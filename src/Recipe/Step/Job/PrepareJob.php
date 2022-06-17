@@ -45,8 +45,8 @@ use Teknoo\Recipe\Promise\Promise;
 class PrepareJob
 {
     public function __construct(
-        private DatesService $dateTimeService,
-        private ErrorFactoryInterface $errorFactory,
+        private readonly DatesService $dateTimeService,
+        private readonly ErrorFactoryInterface $errorFactory,
     ) {
     }
 

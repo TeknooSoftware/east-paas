@@ -71,7 +71,7 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
 
     private const GRACEFUL_TIME = 30;
 
-    private ?string $projectId;
+    private ?string $projectId = null;
 
     private ?string $url = null;
 
@@ -81,12 +81,12 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
      * @param array<string, string> $templates
      */
     public function __construct(
-        private string $binary,
-        private array $templates,
-        private ProcessFactoryInterface $processFactory,
-        private string $builderName,
-        private string $platforms,
-        private ?int $timeout,
+        private readonly string $binary,
+        private readonly array $templates,
+        private readonly ProcessFactoryInterface $processFactory,
+        private readonly string $builderName,
+        private readonly string $platforms,
+        private readonly ?int $timeout,
     ) {
         foreach (['image', 'embedded-volume-image', 'volume'] as $entry) {
             if (empty($this->templates[$entry])) {

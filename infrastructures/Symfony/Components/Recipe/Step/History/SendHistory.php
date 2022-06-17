@@ -45,9 +45,9 @@ use function json_encode;
 class SendHistory implements DispatchHistoryInterface
 {
     public function __construct(
-        private DatesService $dateTimeService,
-        private MessageBusInterface $bus,
-        private bool $preferRealDate = false,
+        private readonly DatesService $dateTimeService,
+        private readonly MessageBusInterface $bus,
+        private readonly bool $preferRealDate = false,
     ) {
     }
 
@@ -77,7 +77,7 @@ class SendHistory implements DispatchHistoryInterface
                             $projectId,
                             $envName,
                             $jobId,
-                            (string) json_encode($history)
+                            (string) json_encode($history, JSON_THROW_ON_ERROR)
                         ),
                         [
                             new Parameter('projectId', $projectId),

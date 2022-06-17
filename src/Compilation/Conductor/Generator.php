@@ -47,7 +47,7 @@ class Generator implements StateInterface
 
     private function getJob(): Closure
     {
-        return function (): JobUnitInterface {
+        return function (): never {
             throw new RuntimeException('Conductor is in generator state');
         };
     }

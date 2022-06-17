@@ -47,9 +47,7 @@ class Running implements StateInterface
 
     private function getWorkspace(): Closure
     {
-        return function (): JobWorkspaceInterface {
-            return $this->workspace;
-        };
+        return fn(): JobWorkspaceInterface => $this->workspace;
     }
 
     private function clone(): Closure

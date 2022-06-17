@@ -46,7 +46,7 @@ use Throwable;
 class BuildVolumes
 {
     public function __construct(
-        private DispatchHistoryInterface $dispatchHistory,
+        private readonly DispatchHistoryInterface $dispatchHistory,
     ) {
     }
 

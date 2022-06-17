@@ -85,7 +85,7 @@ class AccountTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setName('fooBar')
         );
 
@@ -113,7 +113,7 @@ class AccountTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setNamespace('fooBar')
         );
 
@@ -141,7 +141,7 @@ class AccountTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setNamespace('fooBar')
         );
 
@@ -172,7 +172,7 @@ class AccountTest extends TestCase
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setProjects([new Project($this->createMock(Account::class))])
         );
     }
@@ -211,7 +211,7 @@ class AccountTest extends TestCase
 
         $object = $this->buildObject();
         self::assertInstanceOf(
-            \get_class($object),
+            $object::class,
             $object->setUsers($argument)
         );
 

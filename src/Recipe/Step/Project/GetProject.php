@@ -43,7 +43,7 @@ use Throwable;
 class GetProject
 {
     public function __construct(
-        private ProjectLoader $projectLoader,
+        private readonly ProjectLoader $projectLoader,
     ) {
     }
 

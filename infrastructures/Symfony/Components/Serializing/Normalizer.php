@@ -39,7 +39,7 @@ use Throwable;
 class Normalizer implements NormalizerInterface
 {
     public function __construct(
-        private SymfonyNormalizerInterface $normalizer,
+        private readonly SymfonyNormalizerInterface $normalizer,
     ) {
     }
 

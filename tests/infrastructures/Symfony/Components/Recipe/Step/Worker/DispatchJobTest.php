@@ -72,7 +72,7 @@ class DispatchJobTest extends TestCase
         $job->expects(self::any())->method('getId')->willReturn('bar');
         $env = new Environment('prod');
 
-        $sJob = \json_encode($job);
+        $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
 
         $this->getMessageBusInterfaceMock()
             ->expects(self::once())

@@ -46,7 +46,7 @@ use Throwable;
 class Deploying
 {
     public function __construct(
-        private DispatchHistoryInterface $dispatchHistory,
+        private readonly DispatchHistoryInterface $dispatchHistory,
     ) {
     }
 

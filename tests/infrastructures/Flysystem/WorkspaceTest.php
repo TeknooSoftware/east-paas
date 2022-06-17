@@ -134,7 +134,7 @@ class WorkspaceTest extends TestCase
         self::assertInstanceOf(
             JobWorkspaceInterface::class,
             $this->buildJobWorkspace()->writeFile($file, function ($name, $file) {
-                self::assertNotFalse(strpos($name, '/foo'));
+                self::assertNotFalse(strpos((string) $name, '/foo'));
                 self::assertInstanceOf(FileInterface::class, $file);
             })
         );
@@ -156,9 +156,7 @@ class WorkspaceTest extends TestCase
             ->expects(self::once())
             ->method('write')
             ->with(
-                $this->callback(function ($name) {
-                    return false !== strpos($name, '/foo');
-                }),
+                $this->callback(fn($name) => str_contains((string) $name, '/foo')),
                 $content,
                 ['visibility' => $v->value]
             );
@@ -185,9 +183,7 @@ class WorkspaceTest extends TestCase
             ->expects(self::once())
             ->method('write')
             ->with(
-                $this->callback(function ($name) {
-                    return false !== strpos($name, '/foo');
-                }),
+                $this->callback(fn($name) => str_contains((string) $name, '/foo')),
                 $content,
                 ['visibility' => $v->value]
             );
@@ -238,9 +234,7 @@ class WorkspaceTest extends TestCase
         $this->getFilesystemMock()
             ->expects(self::once())
             ->method('createDirectory')
-            ->with($this->callback(function ($value) {
-                return 0 === strpos($value, '/fooBar');
-            }));
+            ->with($this->callback(fn($value) => str_starts_with($value, '/fooBar')));
 
         $this->buildJobWorkspace()->setJob($this->getJobMock())->prepareRepository($repository);
     }
@@ -287,7 +281,7 @@ class WorkspaceTest extends TestCase
             ->with($this->callback(
                 function ($value) use (&$path) {
                     $path=$value;
-                    return 1 === \preg_match('#/fooBar[0-9]{7}/repository/\.paas\.yaml#iS', $value);
+                    return 1 === \preg_match('#/fooBar\d{7}/repository/\.paas\.yaml#iS', $value);
                 }
             ))
             ->willReturn($content);

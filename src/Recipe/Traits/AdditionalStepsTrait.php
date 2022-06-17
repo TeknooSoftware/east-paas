@@ -76,8 +76,6 @@ trait AdditionalStepsTrait
     {
         $recipe = parent::populateRecipe($recipe);
 
-        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
-
-        return $recipe;
+        return $this->registerAdditionalSteps($recipe, $this->additionalSteps);
     }
 }

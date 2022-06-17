@@ -44,7 +44,7 @@ use Throwable;
 class SerializeJob
 {
     public function __construct(
-        private SerializerInterface $serializer,
+        private readonly SerializerInterface $serializer,
     ) {
     }
 

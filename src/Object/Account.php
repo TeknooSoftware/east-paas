@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
+use Stringable;
 use Teknoo\East\Common\Contracts\Object\DeletableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
@@ -39,7 +40,6 @@ use Teknoo\States\Automated\Assertion\Property\IsEmpty;
 use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
 /**
@@ -53,7 +53,8 @@ class Account implements
     TimestampableInterface,
     AutomatedInterface,
     DeletableInterface,
-    FormMappingInterface
+    FormMappingInterface,
+    Stringable
 {
     use ObjectTrait;
     use ProxyTrait;

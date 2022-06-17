@@ -43,7 +43,7 @@ use Throwable;
 class GetJob
 {
     public function __construct(
-        private JobLoader $jobLoader,
+        private readonly JobLoader $jobLoader,
     ) {
     }
 

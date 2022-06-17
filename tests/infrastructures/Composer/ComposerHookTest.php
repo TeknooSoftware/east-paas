@@ -125,9 +125,7 @@ class ComposerHookTest extends TestCase
     {
         $hook = new ComposerHook(
             __DIR__ . '/../../../composer.phar',
-            static function () {
-                return new \stdClass();
-            }
+            static fn() => new \stdClass()
         );
 
         $promise = $this->createMock(PromiseInterface::class);

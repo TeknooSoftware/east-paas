@@ -45,7 +45,7 @@ use Throwable;
 class Exposing
 {
     public function __construct(
-        private DispatchHistoryInterface $dispatchHistory,
+        private readonly DispatchHistoryInterface $dispatchHistory,
     ) {
     }
 

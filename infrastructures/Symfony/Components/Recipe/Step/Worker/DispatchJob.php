@@ -44,7 +44,7 @@ use Teknoo\East\Paas\Object\Project;
 class DispatchJob implements DispatchJobInterface
 {
     public function __construct(
-        private MessageBusInterface $bus,
+        private readonly MessageBusInterface $bus,
     ) {
     }
 

@@ -58,17 +58,17 @@ class NewJob implements NewJobInterface
      */
     public function __construct(
         RecipeInterface $recipe,
-        private GetProject $stepGetProject,
-        private GetEnvironment $stepGetEnvironment,
-        private GetVariables $stepGetVariables,
-        private CreateNewJob $stepCreateNewJob,
-        private PrepareJob $stepPrepareJob,
-        private SaveJob $stepSaveJob,
-        private SerializeJob $stepSerializeJob,
+        private readonly GetProject $stepGetProject,
+        private readonly GetEnvironment $stepGetEnvironment,
+        private readonly GetVariables $stepGetVariables,
+        private readonly CreateNewJob $stepCreateNewJob,
+        private readonly PrepareJob $stepPrepareJob,
+        private readonly SaveJob $stepSaveJob,
+        private readonly SerializeJob $stepSerializeJob,
         iterable $additionalSteps,
-        private DispatchJobInterface $stepDispatchJob,
-        private SendJobInterface $stepSendJob,
-        private DispatchError $stepDispatchError,
+        private readonly DispatchJobInterface $stepDispatchJob,
+        private readonly SendJobInterface $stepSendJob,
+        private readonly DispatchError $stepDispatchError,
         iterable $additionalErrorHandlers,
     ) {
         $this->additionalSteps = $additionalSteps;
@@ -99,8 +99,6 @@ class NewJob implements NewJobInterface
 
         $recipe = $this->registerAdditionalErrorHandler($recipe, $this->additionalErrorHandlers);
 
-        $recipe = $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
-
-        return $recipe;
+        return $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
     }
 }

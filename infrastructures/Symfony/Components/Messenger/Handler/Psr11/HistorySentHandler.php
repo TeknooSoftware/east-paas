@@ -46,8 +46,8 @@ class HistorySentHandler implements HistorySentHandlerInterface, MessageHandlerI
     use RequestTrait;
 
     public function __construct(
-        private string $urlPattern,
-        private string $method,
+        private readonly string $urlPattern,
+        private readonly string $method,
         UriFactoryInterface $uriFactory,
         RequestFactoryInterface $requestFactory,
         StreamFactoryInterface $streamFactory,

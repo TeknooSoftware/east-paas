@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
+use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
@@ -43,7 +44,8 @@ class SshIdentity implements
     IdentifiedObjectInterface,
     IdentityInterface,
     NormalizableInterface,
-    TimestampableInterface
+    TimestampableInterface,
+    Stringable
 {
     use ObjectTrait;
     use ImmutableTrait;
@@ -51,7 +53,6 @@ class SshIdentity implements
     private string $name = '';
 
     private string $privateKey = '';
-
     public function __construct(
         string $name = '',
         string $privateKey = '',

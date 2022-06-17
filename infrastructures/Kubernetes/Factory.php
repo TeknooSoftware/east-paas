@@ -54,8 +54,8 @@ class Factory implements ClientFactoryInterface
     private array $files = [];
 
     public function __construct(
-        private string $tmpDir,
-        private ?ClientInterface $httpClient = null,
+        private readonly string $tmpDir,
+        private readonly ?ClientInterface $httpClient = null,
     ) {
     }
 

@@ -68,8 +68,8 @@ class Driver implements DriverInterface, AutomatedInterface
 
 
     public function __construct(
-        private ClientFactoryInterface $clientFactory,
-        private TranscriberCollectionInterface $transcribers,
+        private readonly ClientFactoryInterface $clientFactory,
+        private readonly TranscriberCollectionInterface $transcribers,
     ) {
         $this->initializeStateProxy();
         $this->updateStates();

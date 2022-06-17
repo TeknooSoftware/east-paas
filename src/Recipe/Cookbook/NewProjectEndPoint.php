@@ -50,14 +50,12 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPo
 {
     use AdditionalStepsTrait;
 
-    private LoadObject $loadObject;
-
     /**
      * @param iterable<int, callable> $additionalSteps
      */
     public function __construct(
         RecipeInterface $recipe,
-        LoadObject $loadObject,
+        private readonly LoadObject $loadObject,
         ?ObjectAccessControlInterface $objectAccessControl,
         CreateObject $createObject,
         FormHandlingInterface $formHandling,
@@ -84,8 +82,6 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPo
             $defaultErrorTemplate,
             $createObjectWiths,
         );
-
-        $this->loadObject = $loadObject;
 
         $this->additionalSteps = $additionalSteps;
     }

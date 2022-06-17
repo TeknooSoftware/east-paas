@@ -41,7 +41,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 class ConfigureConductor
 {
     public function __construct(
-        private ConductorInterface $conductor,
+        private readonly ConductorInterface $conductor,
     ) {
     }
 

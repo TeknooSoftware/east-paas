@@ -55,15 +55,15 @@ class AddHistory implements AddHistoryInterface
      */
     public function __construct(
         RecipeInterface $recipe,
-        private ReceiveHistory $stepReceiveHistory,
-        private DeserializeHistory $stepDeserializeHistory,
-        private GetProject $stepGetProject,
-        private GetJob $stepGetJob,
-        private StepAddHistory $stepAddHistory,
-        private SaveJob $stepSaveJob,
+        private readonly ReceiveHistory $stepReceiveHistory,
+        private readonly DeserializeHistory $stepDeserializeHistory,
+        private readonly GetProject $stepGetProject,
+        private readonly GetJob $stepGetJob,
+        private readonly StepAddHistory $stepAddHistory,
+        private readonly SaveJob $stepSaveJob,
         iterable $additionalSteps,
-        private SendHistoryInterface $stepSendHistoryInterface,
-        private DispatchError $stepDispatchError,
+        private readonly SendHistoryInterface $stepSendHistoryInterface,
+        private readonly DispatchError $stepDispatchError,
     ) {
         $this->additionalSteps = $additionalSteps;
         $this->fill($recipe);
@@ -82,8 +82,6 @@ class AddHistory implements AddHistoryInterface
 
         $recipe = $recipe->cook($this->stepSendHistoryInterface, SendHistoryInterface::class, [], 80);
 
-        $recipe = $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
-
-        return $recipe;
+        return $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
     }
 }

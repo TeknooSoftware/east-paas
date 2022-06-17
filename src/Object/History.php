@@ -60,7 +60,6 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
      * @var array<string, mixed>
      */
     private array $extra = [];
-
     /**
      * @param array<string, mixed> $extra
      */

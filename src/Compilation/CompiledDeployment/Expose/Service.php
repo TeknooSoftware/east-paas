@@ -39,31 +39,17 @@ class Service implements ImmutableInterface
 {
     use ImmutableTrait;
 
-    private string $name;
-
-    private string $podName;
-
-    /**
-     * @var array<int, int>
-     */
-    private array $ports;
-
-    private Transport $protocol;
-
-    private bool $internal;
-
     /**
      * @param array<int, int> $ports
      */
-    public function __construct(string $name, string $podName, array $ports, Transport $protocol, bool $internal)
-    {
+    public function __construct(
+        private readonly string $name,
+        private readonly string $podName,
+        private readonly array $ports,
+        private readonly Transport $protocol,
+        private readonly bool $internal
+    ) {
         $this->uniqueConstructorCheck();
-
-        $this->name = $name;
-        $this->podName = $podName;
-        $this->ports = $ports;
-        $this->protocol = $protocol;
-        $this->internal = $internal;
     }
 
     public function getName(): string

@@ -45,9 +45,9 @@ class IngressTranscriber implements ExposingInterface
     private const NAME_PREFIX = '-ingress';
 
     public function __construct(
-        private ?string $defaultIngressClass,
-        private ?string $defaultIngressService,
-        private ?int $defaultIngressPort,
+        private readonly ?string $defaultIngressClass,
+        private readonly ?string $defaultIngressService,
+        private readonly ?int $defaultIngressPort,
     ) {
     }
 

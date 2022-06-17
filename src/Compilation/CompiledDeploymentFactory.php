@@ -43,8 +43,8 @@ class CompiledDeploymentFactory implements CompiledDeploymentFactoryInterface
      * @param 'Teknoo\East\Paas\Compilation\CompiledDeployment' $className
      */
     public function __construct(
-        private string $className,
-        private string $xsdSchema
+        private readonly string $className,
+        private readonly string $xsdSchema
     ) {
         if (!class_exists($this->className)) {
             throw new RuntimeException("Error, $className is not a valid CompiledDeploymentInterface class");

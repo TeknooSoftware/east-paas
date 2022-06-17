@@ -55,16 +55,12 @@ class Running implements StateInterface
 
     private function getUrl(): Closure
     {
-        return function (): string {
-            return (string) $this->url;
-        };
+        return fn(): string => (string) $this->url;
     }
 
     private function getAuth(): Closure
     {
-        return function (): ?XRegistryAuth {
-            return $this->auth;
-        };
+        return fn(): ?XRegistryAuth => $this->auth;
     }
 
     private function hash(): Closure
@@ -102,7 +98,7 @@ class Running implements StateInterface
                 $buildsArgs = implode(' --build-arg', $variablesList);
             }
 
-            $scriptContent = str_replace(
+            return str_replace(
                 [
                     '{% imagePath %}',
                     '{% binary %}',
@@ -119,8 +115,6 @@ class Running implements StateInterface
                 ],
                 $this->templates[$template]
             );
-
-            return $scriptContent;
         };
     }
 

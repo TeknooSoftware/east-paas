@@ -51,12 +51,10 @@ class Running implements StateInterface
 
     private function getClient(): Closure
     {
-        return function (): KubernetesClient {
-            return $this->client ?? ($this->clientFactory)(
-                (string) $this->master,
-                $this->credentials
-            );
-        };
+        return fn(): KubernetesClient => $this->client ?? ($this->clientFactory)(
+            (string) $this->master,
+            $this->credentials
+        );
     }
 
     private function runTranscriber(): Closure
@@ -72,7 +70,7 @@ class Running implements StateInterface
             try {
                 $promise = new Promise(
                     $mainPromise->success(...),
-                    static function (Throwable $error) {
+                    static function (Throwable $error): never {
                         //To break the foreach loop
                         throw $error;
                     }

@@ -39,7 +39,7 @@ use Throwable;
 class DispatchError
 {
     public function __construct(
-        private ErrorFactoryInterface $errorFactory,
+        private readonly ErrorFactoryInterface $errorFactory,
     ) {
     }
 

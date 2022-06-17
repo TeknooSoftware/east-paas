@@ -98,7 +98,7 @@ class YamlValidator
     ];
 
     public function __construct(
-        private string $rootName
+        private readonly string $rootName
     ) {
     }
 
@@ -147,7 +147,7 @@ class YamlValidator
                 );
             }
 
-            if (false === $isStatic) {
+            if (!$isStatic) {
                 $newNode->setAttribute('name', $name);
             }
 

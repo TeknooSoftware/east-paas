@@ -46,7 +46,7 @@ use Throwable;
 class BuildImages
 {
     public function __construct(
-        private DispatchHistoryInterface $dispatchHistory,
+        private readonly DispatchHistoryInterface $dispatchHistory,
     ) {
     }
 

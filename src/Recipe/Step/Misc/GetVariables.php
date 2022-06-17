@@ -42,7 +42,7 @@ use function json_decode;
 class GetVariables
 {
     public function __construct(
-        private string $jsonContentType = 'application/json',
+        private readonly string $jsonContentType = 'application/json',
     ) {
     }
 
@@ -60,7 +60,7 @@ class GetVariables
 
         $manager->updateWorkPlan(
             [
-                'envVars' => json_decode((string) $message->getBody(), true)
+                'envVars' => json_decode((string) $message->getBody(), true, 512, JSON_THROW_ON_ERROR)
             ]
         );
 

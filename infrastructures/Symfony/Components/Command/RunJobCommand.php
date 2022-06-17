@@ -55,13 +55,13 @@ class RunJobCommand extends Command
     public function __construct(
         string $name,
         string $description,
-        private ManagerInterface $manager,
-        private Client $client,
-        private RunJobInterface $runJob,
-        private MessageFactoryInterface $messageFactory,
-        private StreamFactoryInterface $streamFactory,
-        private DisplayHistoryHandler $displayHistoryHandler,
-        private DisplayResultHandler $displayResultHandler
+        private readonly ManagerInterface $manager,
+        private readonly Client $client,
+        private readonly RunJobInterface $runJob,
+        private readonly MessageFactoryInterface $messageFactory,
+        private readonly StreamFactoryInterface $streamFactory,
+        private readonly DisplayHistoryHandler $displayHistoryHandler,
+        private readonly DisplayResultHandler $displayResultHandler
     ) {
         $this->setDescription($description);
 

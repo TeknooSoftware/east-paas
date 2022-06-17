@@ -52,7 +52,7 @@ class ClusterType extends AbstractType
      * @param array<string, string> $clustersTypes
      */
     public function __construct(
-        private array $clustersTypes,
+        private readonly array $clustersTypes,
     ) {
     }
 

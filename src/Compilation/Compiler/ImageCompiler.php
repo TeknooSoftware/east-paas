@@ -55,7 +55,7 @@ class ImageCompiler implements CompilerInterface
      * @param array<string, string|array<string, mixed>> $imagesLibrary
      */
     public function __construct(
-        private array $imagesLibrary
+        private readonly array $imagesLibrary
     ) {
     }
 
@@ -99,7 +99,7 @@ class ImageCompiler implements CompilerInterface
                 $tag,
                 $variables
             ) {
-                $parts = explode('/', $buildName);
+                $parts = explode('/', (string) $buildName);
                 $imageName = array_pop($parts);
 
                 $image = new Image(

@@ -67,7 +67,7 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
 
     public function __construct(
         private Process $gitProcess,
-        private string $privateKeyFilename,
+        private readonly string $privateKeyFilename,
     ) {
         $this->uniqueConstructorCheck();
 

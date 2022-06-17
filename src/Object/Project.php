@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Object;
 
 use DateTimeInterface;
 use RuntimeException;
+use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
@@ -59,7 +60,8 @@ class Project implements
     AutomatedInterface,
     TimestampableInterface,
     FormMappingInterface,
-    NormalizableInterface
+    NormalizableInterface,
+    Stringable
 {
     use ObjectTrait;
     use ProxyTrait;

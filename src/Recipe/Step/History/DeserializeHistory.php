@@ -43,7 +43,7 @@ use Throwable;
 class DeserializeHistory
 {
     public function __construct(
-        private DeserializerInterface $deserializer,
+        private readonly DeserializerInterface $deserializer,
     ) {
     }
 

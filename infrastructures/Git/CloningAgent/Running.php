@@ -47,22 +47,16 @@ class Running implements StateInterface
 
     private function getWorkspace(): Closure
     {
-        return function (): JobWorkspaceInterface {
-            return $this->workspace;
-        };
+        return fn(): JobWorkspaceInterface => $this->workspace;
     }
 
     private function getSshIdentity(): Closure
     {
-        return function (): SshIdentity {
-            return $this->sshIdentity;
-        };
+        return fn(): SshIdentity => $this->sshIdentity;
     }
 
     private function getSourceRepository(): Closure
     {
-        return function (): GitRepository {
-            return $this->sourceRepository;
-        };
+        return fn(): GitRepository => $this->sourceRepository;
     }
 }

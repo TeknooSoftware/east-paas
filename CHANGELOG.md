@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.88] - 2022-06-17
+### Dev Release
+- Clean code and test thanks to Rector
+- Update libs requirements
+
 ## [0.0.87] - 2022-06-06
 ### Dev Release
 - `History::clone` is able to sort new history in correct time order to avoid a later update erase the final update

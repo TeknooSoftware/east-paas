@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
 use Laminas\Diactoros\MessageTrait;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
 use Psr\Http\Message\StreamInterface;
+use Stringable;
 use Teknoo\East\Paas\Contracts\Response\JobInterface;
 use Teknoo\East\Paas\Object\Job as BaseJob;
 use Teknoo\Immutable\ImmutableTrait;
@@ -41,36 +42,24 @@ use Teknoo\Immutable\ImmutableTrait;
  */
 class Job implements
     JobInterface,
-    PsrResponse
+    PsrResponse,
+    Stringable
 {
     use ImmutableTrait;
     use MessageTrait;
-
-    private int $statusCode;
-
-    private string $reasonPhrase;
-
-    private BaseJob $job;
-
-    private string $jobSerialized;
 
     /**
      * @param array<string, mixed> $headers
      */
     public function __construct(
-        int $statusCode,
-        string $reasonPhrase,
-        BaseJob $job,
-        string $jobSerialized,
+        private int $statusCode,
+        private string $reasonPhrase,
+        private readonly BaseJob $job,
+        private readonly string $jobSerialized,
         string|StreamInterface $body = 'php://memory',
         array $headers = []
     ) {
         $this->uniqueConstructorCheck();
-
-        $this->reasonPhrase = $reasonPhrase;
-        $this->statusCode = $statusCode;
-        $this->job = $job;
-        $this->jobSerialized = $jobSerialized;
 
         $this->stream = $this->getStream($body, 'wb+');
         $this->stream->write($this->jobSerialized);
