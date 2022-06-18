@@ -60,7 +60,7 @@ class Inactive implements StateInterface
     {
         return function (User $user, PromiseInterface $promise): Account {
             $promise->fail(
-                new RuntimeException('teknoo.east.paas.error.account.inactive')
+                new RuntimeException('teknoo.east.paas.error.account.inactive', 403)
             );
 
             return $this;

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.89] - 2022-06-18
+### Dev Release
+- Define exception code
+
 ## [0.0.88] - 2022-06-17
 ### Dev Release
 - Clean code and test thanks to Rector

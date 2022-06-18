@@ -75,7 +75,7 @@ class Active implements StateInterface
             }
 
             $promise->fail(
-                new RuntimeException('teknoo.east.paas.error.account.inactive')
+                new RuntimeException('teknoo.east.paas.error.account.inactive', 403)
             );
 
             return $this;

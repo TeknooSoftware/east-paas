@@ -138,7 +138,9 @@ class CompiledDeployment implements CompiledDeploymentInterface
         PromiseInterface $promise
     ): CompiledDeploymentInterface {
         if (!isset($this->volumes[$volumeFrom]) || !$this->volumes[$volumeFrom] instanceof Volume) {
-            $promise->fail(new DomainException("Volume called $volumeFrom was not found volumes definition"));
+            $promise->fail(
+                new DomainException("Volume called $volumeFrom was not found volumes definition", 400)
+            );
 
             return $this;
         }

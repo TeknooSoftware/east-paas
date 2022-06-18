@@ -113,7 +113,7 @@ class Pending implements StateInterface
     public function isRunnable(): Closure
     {
         return function (PromiseInterface $promise): Job {
-            $promise->fail(new RuntimeException('teknoo.east.paas.error.job.not_runnable', 500));
+            $promise->fail(new RuntimeException('teknoo.east.paas.error.job.not_runnable', 400));
 
             return $this;
         };

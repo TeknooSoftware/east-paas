@@ -57,7 +57,7 @@ class Directory
     public function require(string $type, Cluster $cluster, PromiseInterface $promise): self
     {
         if (!isset($this->clients[$type])) {
-            $promise->fail(new DomainException("No available client for $type"));
+            $promise->fail(new DomainException("No available client for $type", 500));
 
             return $this;
         }
