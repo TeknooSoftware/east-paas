@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.90] - 2022-06-19
+### Dev Release
+- Fix SaveJob error handler
+
 ## [0.0.89] - 2022-06-18
 ### Dev Release
 - Define exception code

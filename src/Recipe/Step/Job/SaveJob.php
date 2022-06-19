@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Object\Job;
@@ -50,7 +51,13 @@ class SaveJob
         /** @var Promise<Job, mixed, mixed> $savedPromise */
         $savedPromise = new Promise(
             null,
-            $chef->error(...)
+            static fn (Throwable $error) => $chef->error(
+                new RuntimeException(
+                    message: 'teknoo.east.paas.job.save_error',
+                    code: 500,
+                    previous: $error,
+                )
+            ),
         );
 
         $this->jobWriter->save(
