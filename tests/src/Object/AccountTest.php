@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
+use Teknoo\East\Paas\Contracts\Object\Account\AccountAwareInterface;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
@@ -383,6 +384,28 @@ class AccountTest extends TestCase
                 ->setNamespace('bar')
                 ->setUsers([$user])
                 ->verifyAccessToUser($user, $promise)
+        );
+    }
+
+    public function testRequireAccountNamespace()
+    {
+        self::assertInstanceOf(
+            Account::class,
+            $this->generateObjectPopulated(['name' => 'fooBar', 'namespace' => 'barFoo'])
+                ->requireAccountNamespace(
+                    new class implements AccountAwareInterface {
+                        public function passAccountNamespace(
+                            Account $account,
+                            ?string $name,
+                            ?string $namespace,
+                        ): AccountAwareInterface {
+                            AccountTest::assertEquals('fooBar', $name);
+                            AccountTest::assertEquals('barFoo', $namespace);
+
+                            return $this;
+                        }
+                    }
+                )
         );
     }
 }

@@ -31,6 +31,7 @@ use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Object\User as BaseUser;
+use Teknoo\East\Paas\Contracts\Object\Account\AccountAwareInterface;
 use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
 use Teknoo\East\Paas\Object\Account\Active;
 use Teknoo\East\Paas\Object\Account\Inactive;
@@ -187,6 +188,17 @@ class Account implements
         if (isset($forms['users'])) {
             $forms['users']->setData($this->getUsers());
         }
+
+        return $this;
+    }
+
+    public function requireAccountNamespace(AccountAwareInterface $accountAware): Account
+    {
+        $accountAware->passAccountNamespace(
+            $this,
+            $this->name,
+            $this->namespace,
+        );
 
         return $this;
     }

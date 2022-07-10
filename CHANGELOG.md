@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.91] - 2022-07-10
+### Dev Release
+- Add `AccountAwareInterface` to extract account's data for external operations
+
 ## [0.0.90] - 2022-06-19
 ### Dev Release
 - Fix SaveJob error handler
