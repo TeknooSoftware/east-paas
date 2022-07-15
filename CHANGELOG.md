@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.92] - 2022-07-15
+### Dev Release
+- Fix Cascade in mapping
+
 ## [0.0.91] - 2022-07-10
 ### Dev Release
 - Add `AccountAwareInterface` to extract account's data for external operations

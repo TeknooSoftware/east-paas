@@ -17,7 +17,10 @@
         <embed-one field="imagesRegistry" target-document="Teknoo\East\Paas\Object\ImageRegistry" nullable="false"/>
         <embed-many field="clusters" target-document="Teknoo\East\Paas\Object\Cluster" nullable="false"/>
         <reference-one field="project" target-document="Teknoo\East\Paas\Object\Project" inversed-by="jobs">
-            <cascade />
+            <cascade>
+                <remove/>
+                <refresh/>
+            </cascade>
         </reference-one>
     </document>
 </doctrine-mongo-mapping>
