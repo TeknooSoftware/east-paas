@@ -16,8 +16,7 @@
         <embed-one field="environment" target-document="Teknoo\East\Paas\Object\Environment" nullable="false"/>
         <reference-one field="project" target-document="Teknoo\East\Paas\Object\Project" mapped-by="clusters">
             <cascade>
-                <remove/>
-                <refresh/>
+                <all/>
             </cascade>
         </reference-one>
     </document>

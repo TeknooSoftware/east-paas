@@ -17,14 +17,12 @@
         </reference-one>
         <reference-many field="clusters" target-document="Teknoo\East\Paas\Object\Cluster" inversed-by="project">
             <cascade>
-                <remove/>
-                <refresh/>
+                <all/>
             </cascade>
         </reference-many>
         <reference-many field="jobs" target-document="Teknoo\East\Paas\Object\Job" inversed-by="project">
             <cascade>
-                <remove/>
-                <refresh/>
+                <all/>
             </cascade>
         </reference-many>
     </document>

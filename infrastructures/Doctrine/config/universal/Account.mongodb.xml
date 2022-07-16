@@ -14,8 +14,7 @@
         <field field-name="deletedAt" name="deleted_at" type="date" nullable="true" index="true" />
         <reference-many field="projects" target-document="Teknoo\East\Paas\Object\Project" mapped-by="account">
             <cascade>
-                <remove/>
-                <refresh/>
+                <all/>
             </cascade>
         </reference-many>
         <reference-many field="users" target-document="Teknoo\East\Common\Object\User">
