@@ -34,6 +34,8 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingIn
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
+use function strtolower;
+
 /**
  * Exposing Transcriber to translate CompiledDeployment's services to Kubernetes Services manifest.
  *
@@ -49,6 +51,7 @@ class ServiceTranscriber implements ExposingInterface
         $ports = [];
         foreach ($service->getPorts() as $listen => $target) {
             $ports[] = [
+                'name' => strtolower($service->getName() . '-' . $listen),
                 'protocol' => $service->getProtocol(),
                 'port' => $listen,
                 'targetPort' => $target,
