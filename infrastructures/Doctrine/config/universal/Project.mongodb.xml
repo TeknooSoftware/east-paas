@@ -21,8 +21,8 @@
             </cascade>
         </reference-many>
         <reference-many field="jobs" target-document="Teknoo\East\Paas\Object\Job" inversed-by="project">
-            <cascade>
-                <all/>
+            <cascade >
+                <remove />
             </cascade>
         </reference-many>
     </document>

@@ -8,7 +8,7 @@
     <document name="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job" collection="jobs">
         <reference-one field="project" target-document="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project" inversed-by="jobs">
             <cascade>
-                <all/>
+                <remove />
             </cascade>
         </reference-one>
         <lifecycle-callbacks>
