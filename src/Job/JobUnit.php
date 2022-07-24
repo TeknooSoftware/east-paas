@@ -48,6 +48,7 @@ use Throwable;
 use function is_array;
 use function preg_replace_callback;
 use function substr;
+use function strtolower;
 
 /**
  * Unit representing the current deployment execution' called a job.
@@ -170,10 +171,10 @@ class JobUnit implements JobUnitInterface
      */
     private function updateNamespace(array &$values): void
     {
-        $namespace = ($values['paas']['namespace'] ?? $this->projectResume['name']);
+        $namespace = strtolower((string) ($values['paas']['namespace'] ?? $this->projectResume['name']));
 
         if (!empty($this->baseNamespace)) {
-            $namespace = $this->baseNamespace . '/' . $namespace;
+            $namespace = $this->baseNamespace . '-' . $namespace;
         }
 
         if (!empty($namespace)) {

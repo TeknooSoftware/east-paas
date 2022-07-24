@@ -107,7 +107,7 @@ class SecretTranscriber implements DeploymentInterface
             static function (Secret $secret, string $namespace) use ($client, $promise) {
                 $kubeSecret = self::convertToSecret($secret, $namespace);
 
-                if (!$kubeSecret instanceof \Maclof\Kubernetes\Models\Secret) {
+                if (!$kubeSecret instanceof KubeSecret) {
                     return;
                 }
 

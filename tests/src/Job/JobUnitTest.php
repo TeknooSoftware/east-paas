@@ -355,7 +355,7 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo/hello'
+                                    'namespace' => 'foo-hello'
                                 ]
                             ],
                             $result
