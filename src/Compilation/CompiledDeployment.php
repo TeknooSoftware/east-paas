@@ -195,6 +195,13 @@ class CompiledDeployment implements CompiledDeploymentInterface
         return $this;
     }
 
+    public function forNamespace(callable $callback): CompiledDeploymentInterface
+    {
+        $callback($this->namespace);
+
+        return $this;
+    }
+
     public function foreachHook(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->hooks as $hook) {

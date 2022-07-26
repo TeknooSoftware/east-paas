@@ -30,6 +30,7 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
@@ -78,12 +79,14 @@ return [
         );
     },
     ReplicationControllerTranscriber::class => create(),
+    NamespaceTranscriber::class => create(),
     SecretTranscriber::class => create(),
     ServiceTranscriber::class => create(),
 
     TranscriberCollectionInterface::class => get(TranscriberCollection::class),
     TranscriberCollection::class => static function (ContainerInterface $container): TranscriberCollection {
         $collection = new TranscriberCollection();
+        $collection->add(5, $container->get(NamespaceTranscriber::class));
         $collection->add(10, $container->get(SecretTranscriber::class));
         $collection->add(20, $container->get(ReplicationControllerTranscriber::class));
         $collection->add(30, $container->get(ServiceTranscriber::class));

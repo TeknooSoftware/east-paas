@@ -68,6 +68,8 @@ interface CompiledDeploymentInterface
 
     public function addIngress(string $name, Ingress $ingress): CompiledDeploymentInterface;
 
+    public function forNamespace(callable $callback): CompiledDeploymentInterface;
+
     public function foreachHook(callable $callback): CompiledDeploymentInterface;
 
     public function foreachVolume(callable $callback): CompiledDeploymentInterface;

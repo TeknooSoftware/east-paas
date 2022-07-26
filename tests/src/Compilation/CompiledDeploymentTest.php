@@ -349,6 +349,30 @@ class CompiledDeploymentTest extends TestCase
         );
     }
 
+    public function testForNamespaceBadCallback()
+    {
+        $this->expectException(\TypeError::class);
+
+        $this->buildObject()->forNamespace(new \stdClass());
+    }
+
+    public function testForNamespace()
+    {
+        $cd = $this->buildObject();
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->forNamespace(function ($namespace,) use (&$count) {
+                self::assertEquals('default_namespace', $namespace);
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(1, $count);
+    }
+
     public function testForeachHookBadCallback()
     {
         $this->expectException(\TypeError::class);

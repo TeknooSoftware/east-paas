@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.95] - 2022-07-26
+### Dev Release
+- Add `CompiledDeploymentInterface::forNamespace` to perform some operation with the deployment`s namespace
+- Add transcriber to create namespace before other kubernetes transcriber
+- Fix some bug on secret transcriber and namespace management
+- fix service transcriber
+
 ## [0.0.94] - 2022-07-17
 ### Dev Release
 - Fix Cascade in mapping
