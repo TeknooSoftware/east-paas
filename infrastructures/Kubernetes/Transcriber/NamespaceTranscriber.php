@@ -30,6 +30,7 @@ use Maclof\Kubernetes\Models\NamespaceModel as KubeNamespace;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\GenericTranscriberInterface;
 use Throwable;
 
 use function strtolower;
@@ -40,7 +41,7 @@ use function strtolower;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class NamespaceTranscriber implements TranscriberInterface
+class NamespaceTranscriber implements GenericTranscriberInterface
 {
     private static function convertToNamespace(string $namespace): KubeNamespace
     {
