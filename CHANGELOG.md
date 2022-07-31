@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.96] - 2022-xx-xx
+### Dev Release
+- Add `GenericTranscriberInterface` for Kubernetes transcriber to always run
+
 ## [0.0.95] - 2022-07-26
 ### Dev Release
 - Add `CompiledDeploymentInterface::forNamespace` to perform some operation with the deployment`s namespace
