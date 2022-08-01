@@ -21,6 +21,7 @@ parameters:
   teknoo_website_hostname: 'localhost'
 
   teknoo.east.paas.symfony.history.prefer-real-date: false
+  teknoo.east.paas.symfony.prepare-job.prefer-real-date: false
 
 services:
   Doctrine\Persistence\ObjectRepository:

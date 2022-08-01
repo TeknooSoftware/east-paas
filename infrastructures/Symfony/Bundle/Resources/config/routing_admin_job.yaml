@@ -4,7 +4,8 @@ _teknoo_paas_admin_job_list:
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.list'
         loader: '@Teknoo\East\Paas\Loader\JobLoader'
-        defaultOrderDirection: 'ASC'
+        defaultOrderDirection: 'DESC'
+        defaultOrderColumn: 'updatedAt'
         itemsPerPage: 20
         template: '@@TeknooEastWebsite/AdminJob/list.html.twig'
         errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'

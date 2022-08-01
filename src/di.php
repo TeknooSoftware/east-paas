@@ -139,6 +139,7 @@ use Traversable;
 
 use function DI\get;
 use function DI\create;
+use function DI\value;
 use function file_get_contents;
 use function is_dir;
 
@@ -276,11 +277,19 @@ return [
         ->constructor(
             get(JobLoader::class),
         ),
-    PrepareJob::class => create()
-        ->constructor(
-            get(DatesService::class),
-            get(ErrorFactoryInterface::class),
-        ),
+    PrepareJob::class => static function (ContainerInterface $container): PrepareJob {
+        $prefereRealDate = true;
+        if (true === $container->has('teknoo.east.paas.symfony.prepare-job.prefer-real-date')) {
+            $prefereRealDate = (bool) $container->get('teknoo.east.paas.symfony.prepare-job.prefer-real-date');
+        }
+
+        return new PrepareJob(
+            dateTimeService: $container->get(DatesService::class),
+            errorFactory: $container->get(ErrorFactoryInterface::class),
+            preferRealDate: $prefereRealDate,
+        );
+    },
+
     ReceiveJob::class => create(),
     SaveJob::class => create()
         ->constructor(get(JobWriter::class)),

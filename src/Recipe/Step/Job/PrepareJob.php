@@ -47,6 +47,7 @@ class PrepareJob
     public function __construct(
         private readonly DatesService $dateTimeService,
         private readonly ErrorFactoryInterface $errorFactory,
+        private readonly bool $preferRealDate = false,
     ) {
     }
 
@@ -81,7 +82,8 @@ class PrepareJob
                         )
                     )
                 );
-            }
+            },
+            $this->preferRealDate,
         );
 
         return $this;

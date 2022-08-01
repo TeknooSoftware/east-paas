@@ -523,6 +523,18 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testPrepareJobNotPrefereRealDate()
+    {
+        $container = $this->buildContainer();
+        $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
+        $container->set('teknoo.east.paas.symfony.prepare-job.prefer-real-date', false);
+
+        self::assertInstanceOf(
+            PrepareJob::class,
+            $container->get(PrepareJob::class)
+        );
+    }
+
     public function testPrepareWorkspace()
     {
         $container = $this->buildContainer();

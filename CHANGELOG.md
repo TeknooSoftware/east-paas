@@ -1,8 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
-## [0.0.96] - 2022-xx-xx
+## [0.0.96] - 2022-08-01
 ### Dev Release
 - Add `GenericTranscriberInterface` for Kubernetes transcriber to always run
+- Fix job list, sort by last updated as first
+- By default, the PrepareJob test claim an updated date instance
+- Add 'teknoo.east.paas.symfony.prepare-job.prefer-real-date' to allow to disable this behavior
 
 ## [0.0.95] - 2022-07-26
 ### Dev Release
