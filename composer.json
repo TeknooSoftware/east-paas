@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Universal package, following the #East programming philosophy, build on Teknoo/East-Foundation (and Teknoo/Recipe) to implement a custom PaaS manager like platform.sh, compatible with Docker and Kubernetes",
     "keywords": ["east","paas","buildkit","containerd","oci","docker","kubernetes","platform","service","ci", "cd","continuous delivery","platform.sh","heroku"],
-    "homepage": "http://teknoo.software/paas",
+    "homepage": "http://teknoo.software/east/paas",
     "license": "MIT",
     "authors": [
         {

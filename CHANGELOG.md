@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.97] - 2022-08-06
+### Dev Release
+- Fix composer.job
+
 ## [0.0.96] - 2022-08-01
 ### Dev Release
 - Add `GenericTranscriberInterface` for Kubernetes transcriber to always run
