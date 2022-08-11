@@ -69,6 +69,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
     private const CONFIG_PAAS = '[paas]';
     private const CONFIG_KEY_VERSION = 'version';
     private const CONFIG_KEY_NAMESPACE = 'namespace';
+    private const CONFIG_KEY_HNC = 'hierarchical_namespaces';
 
     private JobUnitInterface $job;
 
@@ -213,9 +214,10 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
                 $version = (int) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
                 $namespace = $paas[self::CONFIG_KEY_NAMESPACE] ?? 'default';
+                $hierarchicalNamespaces = $paas[self::CONFIG_KEY_HNC] ?? false;
 
                 try {
-                    $compiledDeployment = $this->factory->build($version, $namespace);
+                    $compiledDeployment = $this->factory->build($version, $namespace, !empty($hierarchicalNamespaces));
 
                     $this->extractAndCompile($compiledDeployment, $storageIdentifier ?? $this->storageIdentifier);
 

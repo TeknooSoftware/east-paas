@@ -2,3 +2,5 @@ Teknoo\East\Paas\Job\JobUnit:
     attributes:
         baseNamespace:
             serialized_name: base_namespace
+        hierarchicalNamespaces:
+            serialized_name: hierarchical_namespaces

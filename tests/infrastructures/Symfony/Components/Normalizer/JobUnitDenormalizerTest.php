@@ -405,4 +405,180 @@ class JobUnitDenormalizerTest extends TestCase
                 ->denormalize($jobNormalized, JobUnitInterface::class)
         );
     }
+
+    public function testDenormalizeWithHierarchicalNS()
+    {
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::exactly(5))
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $env = $this->createMock(Environment::class),
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "base_namespace" => 'fooBar',
+            "hierarchical_namespaces" => true,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $jobUnit = new JobUnit(
+            id: $id,
+            projectResume: $project,
+            environment: $env,
+            baseNamespace: 'fooBar',
+            hierarchicalNamespaces: true,
+            sourceRepository: $srepo,
+            imagesRegistry: $irepo,
+            clusters: $clusters,
+            variables: ['foo' => 'bar'],
+            history: $history,
+        );
+        self::assertEquals(
+            $jobUnit,
+            $this->buildNormalizer()->setDenormalizer($denormalizer)
+                ->denormalize($jobNormalized, JobUnitInterface::class)
+        );
+    }
+
+    public function testDenormalizeWithHierarchicalNSInContext()
+    {
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::exactly(5))
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $env = $this->createMock(Environment::class),
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "base_namespace" => 'fooBar',
+            "hierarchical_namespaces" => true,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $jobUnit = new JobUnit(
+            id: $id,
+            projectResume: $project,
+            environment: $env,
+            baseNamespace: 'fooBar',
+            hierarchicalNamespaces: true,
+            sourceRepository: $srepo,
+            imagesRegistry: $irepo,
+            clusters: $clusters,
+            variables: ['foo' => 'bar'],
+            history: $history,
+        );
+        self::assertEquals(
+            $jobUnit,
+            $this->buildNormalizer()->setDenormalizer($denormalizer)
+                ->denormalize($jobNormalized, JobUnitInterface::class, null, ['hierarchical_namespaces' => false])
+        );
+    }
+
+    public function testDenormalizeWithHierarchicalNSInContextAtTrue()
+    {
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects(self::exactly(5))
+            ->method('denormalize')
+            ->withConsecutive(
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $env = $this->createMock(Environment::class),
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "base_namespace" => 'fooBar',
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+        ];
+
+        $jobUnit = new JobUnit(
+            id: $id,
+            projectResume: $project,
+            environment: $env,
+            baseNamespace: 'fooBar',
+            hierarchicalNamespaces: true,
+            sourceRepository: $srepo,
+            imagesRegistry: $irepo,
+            clusters: $clusters,
+            variables: ['foo' => 'bar'],
+            history: $history,
+        );
+        self::assertEquals(
+            $jobUnit,
+            $this->buildNormalizer()->setDenormalizer($denormalizer)
+                ->denormalize($jobNormalized, JobUnitInterface::class, null, ['hierarchical_namespaces' => true])
+        );
+    }
 }

@@ -2,6 +2,7 @@ parameters:
     teknoo.east.symfony.normalizer.east_normalizer.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer'
     teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
     teknoo.east.paas.symfony.history.prefer-real-date: true
+    teknoo.east.paas.job_unit.use_hierarchical_namespaces: false
 
 services:
     teknoo.east.paas.symfony.property_accessor:
@@ -31,6 +32,8 @@ services:
 
     Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer'
+        arguments:
+            - '%teknoo.east.paas.job_unit.use_hierarchical_namespaces%'
         calls:
             - ['setDenormalizer', ['@serializer']]
         tags:

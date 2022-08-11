@@ -87,7 +87,8 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
     public function __construct(
         private readonly int $version,
-        private readonly string $namespace
+        private readonly string $namespace,
+        private readonly bool $hierarchicalNamespaces,
     ) {
     }
 
@@ -197,7 +198,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
     public function forNamespace(callable $callback): CompiledDeploymentInterface
     {
-        $callback($this->namespace);
+        $callback($this->namespace, $this->hierarchicalNamespaces);
 
         return $this;
     }

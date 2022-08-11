@@ -110,6 +110,34 @@ class AccountTest extends TestCase
     /**
      * @throws \Teknoo\States\Proxy\Exception\StateNotFound
      */
+    public function testSetUseHierarchicalNamespaces()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->setUseHierarchicalNamespaces(true)
+        );
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with(true);
+
+        self::assertInstanceOf(
+            Account::class,
+            $object->injectDataInto(['use_hierarchical_namespaces' => $form])
+        );
+    }
+
+    public function testSetUseHierarchicalNamespacesExceptionOnBadArgument()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->setUseHierarchicalNamespaces(new \stdClass());
+    }
+
+    /**
+     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     */
     public function testSetNamespace()
     {
         $object = $this->buildObject();
@@ -283,7 +311,7 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, 'bar']);
+        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, 'bar', false]);
         $project->expects(self::never())->method('refuseExecution');
 
         self::assertInstanceOf(
@@ -291,6 +319,25 @@ class AccountTest extends TestCase
             $this->buildObject()
                 ->setName('foo')
                 ->setNamespace('bar')
+                ->canIPrepareNewJob($project, $job, $date, $env)
+        );
+    }
+
+    public function testCanIPrepareNewJobActiveWithHierarchicalNamespace()
+    {
+        $job = $this->createMock(Job::class);
+        $env = $this->createMock(Environment::class);
+
+        $project = $this->createMock(Project::class);
+        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, 'bar', true]);
+        $project->expects(self::never())->method('refuseExecution');
+
+        self::assertInstanceOf(
+            Account::class,
+            $this->buildObject()
+                ->setName('foo')
+                ->setNamespace('bar')
+                ->setUseHierarchicalNamespaces(true)
                 ->canIPrepareNewJob($project, $job, $date, $env)
         );
     }
@@ -398,6 +445,7 @@ class AccountTest extends TestCase
                             Account $account,
                             ?string $name,
                             ?string $namespace,
+                            bool $useHierarchicalNamespaces,
                         ): AccountAwareInterface {
                             AccountTest::assertEquals('fooBar', $name);
                             AccountTest::assertEquals('barFoo', $namespace);

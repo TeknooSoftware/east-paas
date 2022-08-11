@@ -27,12 +27,16 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Maclof\Kubernetes\Models\NamespaceModel as KubeNamespace;
+use Maclof\Kubernetes\Models\SubnamespaceAnchor;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\GenericTranscriberInterface;
 use Throwable;
 
+use function array_pop;
+use function explode;
+use function implode;
 use function strtolower;
 
 /**
@@ -57,21 +61,47 @@ class NamespaceTranscriber implements GenericTranscriberInterface
         return new KubeNamespace($specs);
     }
 
+    private static function convertToSubnamespace(string $namespace): SubnamespaceAnchor
+    {
+        $parts = explode('-', $namespace);
+        $namespaceChild = array_pop($parts);
+        $namespaceParent = implode('-', $parts);
+
+        $specs = [
+            'metadata' => [
+                'name' => $namespaceChild,
+                'namespace' => $namespaceParent,
+                'labels' => [
+                    'name' => $namespace,
+                ],
+            ],
+        ];
+
+        return new SubnamespaceAnchor($specs);
+    }
+
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->forNamespace(
-            static function (string $namespace) use ($client, $promise) {
+            static function (string $namespace, bool $hierarchicalNamespaces) use ($client, $promise) {
                 $namespace = strtolower($namespace);
-                $kubeNamespace = self::convertToNamespace($namespace);
 
                 try {
                     $namespaceRepository = $client->namespaces();
+                    if (true === $hierarchicalNamespaces) {
+                        $subnamespacesAnchorsRepository = $client->subnamespacesAnchors();
+                    }
+
                     $result = null;
                     if (!$namespaceRepository->exists($namespace)) {
-                        $result = $namespaceRepository->create($kubeNamespace);
+                        if (true === $hierarchicalNamespaces) {
+                            $result = $subnamespacesAnchorsRepository->create(self::convertToSubnamespace($namespace));
+                        } else {
+                            $result = $namespaceRepository->create(self::convertToNamespace($namespace));
+                        }
                     }
 
                     $promise->success($result);

@@ -177,6 +177,8 @@ class FeatureContext implements Context
      */
     private $requestBody;
 
+    private $useHnc = false;
+
     /**
      * Initializes context.
      *
@@ -390,6 +392,7 @@ class FeatureContext implements Context
         $this->buildRepository(Type::class);
         $this->buildRepository(User::class);
 
+        $this->useHnc = false;
         $this->sfContainer->get(DatesService::class)
             ->setCurrentDate(new \DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
     }
@@ -405,6 +408,7 @@ class FeatureContext implements Context
             $this->account = (new Account())->setId($this->accountId)
                 ->setName('Consumer Account')
                 ->setNamespace('behat-test')
+                ->setUseHierarchicalNamespaces($this->useHnc)
         );
     }
 
@@ -599,7 +603,7 @@ EOF;
         Assert::assertEquals($expected, $actual);
     }
 
-    private function getNormalizedJob(array $variables = []): array
+    private function getNormalizedJob(array $variables = [], bool $hnc = false): array
     {
         return [
             '@class' => OriJob::class,
@@ -610,6 +614,7 @@ EOF;
                 'name' => $this->projectName,
             ],
             'base_namespace' => 'behat-test',
+            'hierarchical_namespaces' => $hnc,
             'environment' => [
                 '@class' => Environment::class,
                 'name' => $this->envName,
@@ -687,11 +692,41 @@ EOF;
         }
     }
 
+    /**
+     * @Then with the job normalized with hnc in the body.
+     */
+    public function withTheJobNormalizedWithHncInTheBody()
+    {
+        $job = $this->getNormalizedJob([], true);
+
+        $content = \json_decode($this->response->getContent(), true);
+        try {
+            Assert::assertEquals(
+                $job,
+                $content
+            );
+        } catch (ExpectationFailedException $error) {
+            throw new \RuntimeException((string) $error, $error->getCode(), $error);
+        }
+    }
 
     /**
-     * @Given a job with the id :id at date :date
+     * @Then with the job normalized with hnc in the body with variables :variables
      */
-    public function aJobWithTheIdAtDate($id, $date)
+    public function withTheJobNormalizedWithHncInTheBodyWithVariables($variables)
+    {
+        $job = $this->getNormalizedJob(\json_decode($variables, true), true);
+
+        $content = \json_decode($this->response->getContent(), true);
+
+        try {
+            Assert::assertEquals($job, $content);
+        } catch (ExpectationFailedException $error) {
+            throw new \RuntimeException((string) $error, $error->getCode(), $error);
+        }
+    }
+
+    private function setAJobWithTheIdAtDate(mixed $id, string $date, bool $hnc)
     {
         $this->jobId = $id;
         $this->jobDate = $date;
@@ -702,12 +737,29 @@ EOF;
             ->setClusters([$this->cluster])
             ->setEnvironment($this->environment)
             ->setExtra(['foo' => 'bar'])
+            ->useHierarchicalNamespaces($hnc)
             ->addToHistory('teknoo.east.paas.jobs.configured', new \DateTime($this->jobDate));
 
         $this->repositories[Job::class]->register(
             $id,
             $this->job
         );
+    }
+
+    /**
+     * @Given a job with the id :id at date :date
+     */
+    public function aJobWithTheIdAtDate($id, $date)
+    {
+        $this->setAJobWithTheIdAtDate($id, $date, false);
+    }
+
+    /**
+     * @Given a job with the id :id at date :date and HNC
+     */
+    public function aJobWithTheIdAtDateAndHnc($id, $date)
+    {
+        $this->setAJobWithTheIdAtDate($id, $date, true);
     }
 
     /**
@@ -1090,5 +1142,13 @@ EOF;
         };
 
         $this->sfContainer->get(Directory::class)->register('behat', $client);
+    }
+
+    /**
+     * @Given a cluster supporting hierarchical namespace
+     */
+    public function aClusterSupportingHierarchicalNamespace()
+    {
+        $this->useHnc = true;
     }
 }

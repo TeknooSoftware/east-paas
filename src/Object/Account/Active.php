@@ -53,7 +53,13 @@ class Active implements StateInterface
     public function canIPrepareNewJob(): Closure
     {
         return function (Project $project, Job $job, DateTimeInterface $date, Environment $environment): Account {
-            $project->configure($job, $date, $environment, $this->getNamespace());
+            $project->configure(
+                $job,
+                $date,
+                $environment,
+                $this->getNamespace(),
+                $this->isUseHierarchicalNamespaces()
+            );
 
             return $this;
         };

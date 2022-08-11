@@ -65,6 +65,7 @@ class AccountTypeTest extends TestCase
         return [
             'name' => 'fooBar',
             'namespace' => 'barFoo',
+            'use_hierarchical_namespaces' => false,
             'users' => [new BaseUser()],
         ];
     }

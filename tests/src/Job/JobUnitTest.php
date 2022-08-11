@@ -109,7 +109,7 @@ class JobUnitTest extends TestCase
         return $this->cluster;
     }
 
-    private function buildObject(?string $namespace = 'foo', array $extra = [])
+    private function buildObject(?string $namespace = 'foo', array $extra = [], bool $hierarchicalNS = false,)
     {
         return (new JobUnit(
             'test',
@@ -124,7 +124,8 @@ class JobUnitTest extends TestCase
                 'bar' => 'FOO',
             ],
             new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),
-            $extra
+            $extra,
+            $hierarchicalNS,
         ));
     }
 
@@ -313,6 +314,7 @@ class JobUnitTest extends TestCase
                 'project' => ['@class' => Project::class,'id' => 'bar', 'name' => 'hello'],
                 'environment' => new Environment('foo'),
                 'base_namespace' => 'foo',
+                'hierarchical_namespaces' => false,
                 'source_repository' => $this->getSourceRepositoryMock(),
                 'images_repository' => $this->getImagesRegistryMock(),
                 'clusters' => [$this->getClusterMock()],
@@ -329,7 +331,7 @@ class JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesIn()
+    public function testUpdateVariablesInWithoutHirerachicalNS()
     {
         $ori = [
             'foo' => 'foo',
@@ -342,7 +344,7 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $this->buildObject()->updateVariablesIn(
+            $this->buildObject(hierarchicalNS: false)->updateVariablesIn(
                 $ori,
                 new Promise(
                     function (array $result) {
@@ -355,7 +357,8 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo-hello'
+                                    'namespace' => 'foo',
+                                    'hierarchical_namespaces' => false,
                                 ]
                             ],
                             $result
@@ -369,7 +372,48 @@ class JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithNoNamespave()
+    public function testUpdateVariablesInWithHirerachicalNS()
+    {
+        $ori = [
+            'foo' => 'foo',
+            'bar' => [
+                '${foo}',
+                '${foo} text ${bar}',
+            ],
+            '${foo}' => 'text'
+        ];
+
+        self::assertInstanceOf(
+            JobUnit::class,
+            $this->buildObject(hierarchicalNS: true)->updateVariablesIn(
+                $ori,
+                new Promise(
+                    function (array $result) {
+                        self::assertEquals(
+                            [
+                                'foo' => 'foo',
+                                'bar' => [
+                                    'bar',
+                                    'bar text FOO',
+                                ],
+                                '${foo}' => 'text',
+                                'paas' => [
+                                    'namespace' => 'foo-hello',
+                                    'hierarchical_namespaces' => true,
+                                ]
+                            ],
+                            $result
+                        );
+                    },
+                    function (\Throwable  $error): never {
+                        throw $error;
+                    }
+                )
+            )
+        );
+    }
+
+    public function testUpdateVariablesInWithoutNamespaceAlreadyDefinedAndNonHierarchicalNS()
     {
         $ori = [
             'foo' => 'foo',
@@ -395,7 +439,8 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'hello'
+                                    'namespace' => 'hello',
+                                    'hierarchical_namespaces' => false,
                                 ]
                             ],
                             $result
@@ -422,7 +467,8 @@ class JobUnitTest extends TestCase
                         self::assertEquals(
                             [
                                 'paas' => [
-                                    'namespace' => 'hello'
+                                    'namespace' => 'hello',
+                                    'hierarchical_namespaces' => false,
                                 ]
                             ],
                             $result

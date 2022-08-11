@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -60,6 +61,17 @@ class AccountType extends AbstractType
         $builder->add(
             'namespace',
             TextType::class,
+            [
+                'required' => false,
+                'attr' => [
+                    'readonly' => !empty($options['namespace_in_readonly']),
+                ],
+            ]
+        );
+
+        $builder->add(
+            'use_hierarchical_namespaces',
+            CheckboxType::class,
             [
                 'required' => false,
                 'attr' => [
@@ -106,6 +118,7 @@ class AccountType extends AbstractType
                 $forms = iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
                 $data->setNamespace($forms['namespace']->getData());
+                $data->setUseHierarchicalNamespaces($forms['use_hierarchical_namespaces']->getData());
                 $data->setUsers($forms['users']->getData());
             }
         });

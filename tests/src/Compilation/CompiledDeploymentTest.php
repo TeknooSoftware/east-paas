@@ -49,7 +49,7 @@ class CompiledDeploymentTest extends TestCase
 {
     private function buildObject(): CompiledDeployment
     {
-        return new CompiledDeployment(1, 'default_namespace');
+        return new CompiledDeployment(1, 'default_namespace', true);
     }
 
     public function testAddBuildableWrongBuildable()
@@ -363,8 +363,9 @@ class CompiledDeploymentTest extends TestCase
         $count = 0;
         self::assertInstanceOf(
             CompiledDeployment::class,
-            $cd->forNamespace(function ($namespace,) use (&$count) {
+            $cd->forNamespace(function ($namespace, $hnc) use (&$count) {
                 self::assertEquals('default_namespace', $namespace);
+                self::assertTrue($hnc);
 
                 $count++;
             })

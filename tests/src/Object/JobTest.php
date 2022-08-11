@@ -106,7 +106,7 @@ class JobTest extends TestCase
         $this->buildObject()->setBaseNamespace(new \stdClass());
     }
 
-    public function testSetBaseName()
+    public function testSetBaseNamespace()
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
@@ -118,6 +118,28 @@ class JobTest extends TestCase
         $rP->setAccessible(true);
         self::assertEquals(
             'foo',
+            $rP->getValue($object)
+        );
+    }
+
+    public function testUseHierarchicalNamespacesBadArgument()
+    {
+        $this->expectException(\Throwable::class);
+        $this->buildObject()->useHierarchicalNamespaces(new \stdClass());
+    }
+
+    public function testUseHierarchicalNamespaces()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->useHierarchicalNamespaces(true)
+        );
+
+        $rP = new \ReflectionProperty($object, 'hierarchicalNamespaces');
+        $rP->setAccessible(true);
+        self::assertEquals(
+            true,
             $rP->getValue($object)
         );
     }
@@ -440,6 +462,7 @@ class JobTest extends TestCase
                 'clusters' => [],
                 'history' => null,
                 'base_namespace' => 'foo',
+                'hierarchical_namespaces' => false,
                 'extra' => ['foo' => 'bar'],
             ]);
 

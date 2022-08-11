@@ -77,6 +77,8 @@ class Job implements
 
     protected ?string $baseNamespace = null;
 
+    protected bool $hierarchicalNamespaces = false;
+
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
     protected ?ImageRegistryInterface $imagesRegistry = null;
@@ -168,6 +170,13 @@ class Job implements
         return $this;
     }
 
+    public function useHierarchicalNamespaces(bool $hierarchicalNamespaces): Job
+    {
+        $this->hierarchicalNamespaces = $hierarchicalNamespaces;
+
+        return $this;
+    }
+
     public function addFromHistory(History $history, ?callable $callback = null): Job
     {
         $history = $history->clone($this->history);
@@ -216,6 +225,7 @@ class Job implements
             'id' => $this->getId(),
             'project' => $this->project,
             'base_namespace' => $this->baseNamespace,
+            'hierarchical_namespaces' => $this->hierarchicalNamespaces,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
             'images_repository' => $this->imagesRegistry,

@@ -45,6 +45,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
+use function implode;
 use function is_array;
 use function preg_replace_callback;
 use function substr;
@@ -76,6 +77,7 @@ class JobUnit implements JobUnitInterface
         private readonly array $variables,
         private readonly History $history,
         private readonly array $extra = [],
+        private readonly bool $hierarchicalNamespaces = false,
     ) {
     }
 
@@ -155,6 +157,7 @@ class JobUnit implements JobUnitInterface
             'id' => $this->getId(),
             'project' => $this->projectResume,
             'base_namespace' => $this->baseNamespace,
+            'hierarchical_namespaces' => $this->hierarchicalNamespaces,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
             'images_repository' => $this->imagesRegistry,
@@ -171,15 +174,17 @@ class JobUnit implements JobUnitInterface
      */
     private function updateNamespace(array &$values): void
     {
-        $namespace = strtolower((string) ($values['paas']['namespace'] ?? $this->projectResume['name']));
-
+        $parts = [];
         if (!empty($this->baseNamespace)) {
-            $namespace = $this->baseNamespace . '-' . $namespace;
+            $parts[] = $this->baseNamespace;
         }
 
-        if (!empty($namespace)) {
-            $values['paas']['namespace'] = $namespace;
+        if (empty($parts) || true === $this->hierarchicalNamespaces) {
+            $parts[] = strtolower((string) ($values['paas']['namespace'] ?? $this->projectResume['name']));
         }
+
+        $values['paas']['namespace'] = implode('-', $parts);
+        $values['paas']['hierarchical_namespaces'] = $this->hierarchicalNamespaces;
     }
 
     /**

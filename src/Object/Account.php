@@ -67,6 +67,8 @@ class Account implements
 
     protected ?string $namespace = null;
 
+    protected bool $useHierarchicalNamespaces = false;
+
     /**
      * @var Project[]
      */
@@ -138,6 +140,18 @@ class Account implements
         return $this;
     }
 
+    private function isUseHierarchicalNamespaces(): bool
+    {
+        return $this->useHierarchicalNamespaces;
+    }
+
+    public function setUseHierarchicalNamespaces(bool $useHierarchicalNamespaces): self
+    {
+        $this->useHierarchicalNamespaces = $useHierarchicalNamespaces;
+
+        return $this;
+    }
+
     public function namespaceIsItDefined(callable $callback): Account
     {
         if ($namespace = $this->getNamespace()) {
@@ -185,6 +199,10 @@ class Account implements
             $forms['namespace']->setData($this->getNamespace());
         }
 
+        if (isset($forms['use_hierarchical_namespaces'])) {
+            $forms['use_hierarchical_namespaces']->setData($this->isUseHierarchicalNamespaces());
+        }
+
         if (isset($forms['users'])) {
             $forms['users']->setData($this->getUsers());
         }
@@ -198,6 +216,7 @@ class Account implements
             $this,
             $this->name,
             $this->namespace,
+            $this->useHierarchicalNamespaces,
         );
 
         return $this;

@@ -47,6 +47,11 @@ class JobUnitDenormalizer implements DenormalizerInterface
 {
     private DenormalizerInterface $denormalizer;
 
+    public function __construct(
+        private bool $hierarchicalNamespacesDefaultValue = false,
+    ) {
+    }
+
     public function setDenormalizer(DenormalizerInterface $denormalizer): self
     {
         $this->denormalizer = $denormalizer;
@@ -63,9 +68,11 @@ class JobUnitDenormalizer implements DenormalizerInterface
             throw new RuntimeException('Error, this object is not managed by this denormalizer');
         }
 
+        $hierarchicalNSDefaultValue = $context['hierarchical_namespaces'] ?? $this->hierarchicalNamespacesDefaultValue;
         $jobId = $data['id'];
         $projectResume = $data['project'];
         $baseNamespace = $data['base_namespace'] ?? null;
+        $hierarchicalNamespaces = $data['hierarchical_namespaces'] ?? $hierarchicalNSDefaultValue;
         $denormalizer = $this->denormalizer;
         $sourceRepository = $denormalizer->denormalize(
             $data['source_repository'],
@@ -118,16 +125,17 @@ class JobUnitDenormalizer implements DenormalizerInterface
         $variables = ($data['variables'] ?? []) + ($context['variables'] ?? []);
 
         return new JobUnit(
-            $jobId,
-            $projectResume,
-            $environment,
-            $baseNamespace,
-            $sourceRepository,
-            $imagesRegistry,
-            $clusters,
-            $variables,
-            $history,
-            $data['extra'] ?? [],
+            id: $jobId,
+            projectResume: $projectResume,
+            environment: $environment,
+            baseNamespace: $baseNamespace,
+            sourceRepository: $sourceRepository,
+            imagesRegistry: $imagesRegistry,
+            clusters: $clusters,
+            variables: $variables,
+            history: $history,
+            extra: $data['extra'] ?? [],
+            hierarchicalNamespaces: $hierarchicalNamespaces,
         );
     }
 

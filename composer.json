@@ -5,6 +5,12 @@
     "keywords": ["east","paas","buildkit","containerd","oci","docker","kubernetes","platform","service","ci", "cd","continuous delivery","platform.sh","heroku"],
     "homepage": "http://teknoo.software/east/paas",
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/frenchcomp/kubernetes-client.git"
+        }
+    ],
     "authors": [
         {
             "name": "Richard Déloge",
@@ -54,7 +60,7 @@
         "php-http/discovery": "^1.14.2",
         "php-http/guzzle7-adapter": "^1.0",
         "league/flysystem": "^3.1",
-        "maclof/kubernetes-client": "^0.26.0",
+        "maclof/kubernetes-client": "dev-feature-fix-put-certificate",
         "psr/http-message":"^1.0.1",
         "psr/http-factory":"^1.0.1",
         "psr/http-client":"^1.0.1",
