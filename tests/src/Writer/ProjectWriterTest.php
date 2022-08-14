@@ -41,9 +41,9 @@ class ProjectWriterTest extends TestCase
 {
     use PersistTestTrait;
 
-    public function buildWriter(): WriterInterface
+    public function buildWriter(bool $prefereRealDateOnUpdate = false,): WriterInterface
     {
-        return new ProjectWriter($this->getObjectManager());
+        return new ProjectWriter(manager: $this->getObjectManager(), prefereRealDateOnUpdate: $prefereRealDateOnUpdate);
     }
 
     /**

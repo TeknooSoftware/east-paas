@@ -74,6 +74,9 @@ parameters:
             message: '#\$message on LibXMLError\|false#'
             path:  src/Parser/YamlValidator.php
         -
+            message: '#is never read, only written#'
+            path:  src/Writer/JobWriter.php
+        -
             message: '#mixed#'
             path:  */di.php
 

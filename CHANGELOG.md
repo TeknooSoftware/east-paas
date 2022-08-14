@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.98] - 2022-08-14
+### Stable Release
+- Support last version of `Teknoo East Common`
+- Update writers to support `prefereRealDateOnUpdate` behavior
+
 ## [0.0.97] - 2022-08-06
 ### Dev Release
 - Fix composer.job

@@ -40,9 +40,9 @@ class AccountWriterTest extends TestCase
 {
     use PersistTestTrait;
 
-    public function buildWriter(): WriterInterface
+    public function buildWriter(bool $prefereRealDateOnUpdate = false,): WriterInterface
     {
-        return new AccountWriter($this->getObjectManager());
+        return new AccountWriter(manager: $this->getObjectManager(), prefereRealDateOnUpdate: $prefereRealDateOnUpdate);
     }
 
     /**

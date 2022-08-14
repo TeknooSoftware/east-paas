@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Writer;
 
+use Teknoo\East\Common\Contracts\DBSource\ManagerInterface;
+use Teknoo\East\Common\Service\DatesService;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
@@ -49,9 +51,19 @@ class JobWriter implements WriterInterface
      */
     use PersistTrait;
 
-    public function save(ObjectInterface $object, PromiseInterface $promise = null): WriterInterface
-    {
-        $this->persist($object, $promise);
+    public function __construct(
+        private ManagerInterface $manager,
+        private ?DatesService $datesService = null,
+        protected bool $prefereRealDateOnUpdate = true,
+    ) {
+    }
+
+    public function save(
+        ObjectInterface $object,
+        PromiseInterface $promise = null,
+        ?bool $prefereRealDateOnUpdate = null,
+    ): WriterInterface {
+        $this->persist($object, $promise, $prefereRealDateOnUpdate);
 
         return $this;
     }
