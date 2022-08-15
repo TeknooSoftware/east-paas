@@ -70,6 +70,17 @@ class AccountType extends AbstractType
         );
 
         $builder->add(
+            'prefix_namespace',
+            TextType::class,
+            [
+                'required' => false,
+                'attr' => [
+                    'readonly' => !empty($options['namespace_in_readonly']),
+                ],
+            ]
+        );
+
+        $builder->add(
             'use_hierarchical_namespaces',
             CheckboxType::class,
             [
@@ -118,6 +129,7 @@ class AccountType extends AbstractType
                 $forms = iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
                 $data->setNamespace($forms['namespace']->getData());
+                $data->setPrefixNamespace($forms['prefix_namespace']->getData());
                 $data->setUseHierarchicalNamespaces($forms['use_hierarchical_namespaces']->getData());
                 $data->setUsers($forms['users']->getData());
             }

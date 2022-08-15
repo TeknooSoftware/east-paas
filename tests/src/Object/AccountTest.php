@@ -166,21 +166,69 @@ class AccountTest extends TestCase
     /**
      * @throws \Teknoo\States\Proxy\Exception\StateNotFound
      */
+    public function testSetPrefixNamespace()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->setPrefixNamespace('fooBar')
+        );
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with('fooBar');
+
+        self::assertInstanceOf(
+            Account::class,
+            $object->injectDataInto(['prefix_namespace' => $form])
+        );
+    }
+
+    public function testSetPrefixNamespaceExceptionOnBadArgument()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->setPrefixNamespace(new \stdClass());
+    }
+
+    /**
+     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     */
     public function testNamespaceIsItDefined()
     {
         $object = $this->buildObject();
         self::assertInstanceOf(
             $object::class,
-            $object->setNamespace('fooBar')
+            $object->setNamespace('foo')
         );
 
         $called = false;
         self::assertInstanceOf(
             Account::class,
             $object->namespaceIsItDefined(
-                function ($namespace) use (&$called) {
+                function ($namespace, $base) use (&$called) {
                     $called = true;
-                    self::assertEquals('fooBar', $namespace);
+                    self::assertEquals('foo', $namespace);
+                    self::assertNull($base);
+                }
+            )
+        );
+
+        self::assertTrue($called);
+
+        self::assertInstanceOf(
+            $object::class,
+            $object->setPrefixNamespace('bar')
+        );
+
+        $called = false;
+        self::assertInstanceOf(
+            Account::class,
+            $object->namespaceIsItDefined(
+                function ($namespace, $base) use (&$called) {
+                    $called = true;
+                    self::assertEquals('foo', $namespace);
+                    self::assertEquals('bar', $base);
                 }
             )
         );
@@ -305,13 +353,13 @@ class AccountTest extends TestCase
         $this->buildObject()->canIPrepareNewJob($project, $job, new \stdClass(), $env);
     }
 
-    public function testCanIPrepareNewJobActive()
+    public function testCanIPrepareNewJobActiveWithPrefixNameSpace()
     {
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, 'bar', false]);
+        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, 'foobar', false]);
         $project->expects(self::never())->method('refuseExecution');
 
         self::assertInstanceOf(
@@ -319,6 +367,24 @@ class AccountTest extends TestCase
             $this->buildObject()
                 ->setName('foo')
                 ->setNamespace('bar')
+                ->setPrefixNamespace('foo')
+                ->canIPrepareNewJob($project, $job, $date, $env)
+        );
+    }
+
+    public function testCanIPrepareNewJobActiveWithoutNameSpace()
+    {
+        $job = $this->createMock(Job::class);
+        $env = $this->createMock(Environment::class);
+
+        $project = $this->createMock(Project::class);
+        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, null, false]);
+        $project->expects(self::never())->method('refuseExecution');
+
+        self::assertInstanceOf(
+            Account::class,
+            $this->buildObject()
+                ->setName('foo')
                 ->canIPrepareNewJob($project, $job, $date, $env)
         );
     }
@@ -445,6 +511,7 @@ class AccountTest extends TestCase
                             Account $account,
                             ?string $name,
                             ?string $namespace,
+                            ?string $prefixNamespace,
                             bool $useHierarchicalNamespaces,
                         ): AccountAwareInterface {
                             AccountTest::assertEquals('fooBar', $name);

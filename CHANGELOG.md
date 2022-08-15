@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.99] - 2022-08-15
+### Stable Release
+- Add `Account::$prefixNamespace` property to help to manage shared clusters
+
 ## [0.0.98] - 2022-08-14
 ### Stable Release
 - Support last version of `Teknoo East Common`

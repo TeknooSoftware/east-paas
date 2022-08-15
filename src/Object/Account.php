@@ -67,6 +67,8 @@ class Account implements
 
     protected ?string $namespace = null;
 
+    protected ?string $prefixNamespace = null;
+
     protected bool $useHierarchicalNamespaces = false;
 
     /**
@@ -128,6 +130,15 @@ class Account implements
         return $this;
     }
 
+    private function getFullNamespace(): ?string
+    {
+        if (null === $this->namespace) {
+            return null;
+        }
+
+        return $this->prefixNamespace . $this->namespace;
+    }
+
     private function getNamespace(): ?string
     {
         return $this->namespace;
@@ -136,6 +147,18 @@ class Account implements
     public function setNamespace(?string $namespace): Account
     {
         $this->namespace = $namespace;
+
+        return $this;
+    }
+
+    private function getPrefixNamespace(): ?string
+    {
+        return $this->prefixNamespace;
+    }
+
+    public function setPrefixNamespace(?string $prefixNamespace): Account
+    {
+        $this->prefixNamespace = $prefixNamespace;
 
         return $this;
     }
@@ -155,7 +178,7 @@ class Account implements
     public function namespaceIsItDefined(callable $callback): Account
     {
         if ($namespace = $this->getNamespace()) {
-            $callback($namespace);
+            $callback($namespace, $this->getPrefixNamespace());
         }
 
         return $this;
@@ -199,6 +222,10 @@ class Account implements
             $forms['namespace']->setData($this->getNamespace());
         }
 
+        if (isset($forms['prefix_namespace'])) {
+            $forms['prefix_namespace']->setData($this->getPrefixNamespace());
+        }
+
         if (isset($forms['use_hierarchical_namespaces'])) {
             $forms['use_hierarchical_namespaces']->setData($this->isUseHierarchicalNamespaces());
         }
@@ -216,6 +243,7 @@ class Account implements
             $this,
             $this->name,
             $this->namespace,
+            $this->prefixNamespace,
             $this->useHierarchicalNamespaces,
         );
 
