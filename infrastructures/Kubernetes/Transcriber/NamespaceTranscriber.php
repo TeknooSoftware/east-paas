@@ -47,20 +47,6 @@ use function strtolower;
  */
 class NamespaceTranscriber implements GenericTranscriberInterface
 {
-    private static function convertToNamespace(string $namespace): KubeNamespace
-    {
-        $specs = [
-            'metadata' => [
-                'name' => $namespace,
-                'labels' => [
-                    'name' => $namespace,
-                ],
-            ]
-        ];
-
-        return new KubeNamespace($specs);
-    }
-
     private static function convertToSubnamespace(string $namespace): SubnamespaceAnchor
     {
         $parts = explode('-', $namespace);
@@ -88,7 +74,7 @@ class NamespaceTranscriber implements GenericTranscriberInterface
         $compiledDeployment->forNamespace(
             static function (string $namespace, bool $hierarchicalNamespaces) use ($client, $promise) {
                 if (false === $hierarchicalNamespaces) {
-                    $promise->success();
+                    $promise->success([]);
 
                     return;
                 }
