@@ -66,19 +66,17 @@ class NamespaceTranscriberTest extends TestCase
                 ['namespaces', [], $seRepo],
             ]);
 
-        $seRepo->expects(self::exactly(2))
-            ->method('exists')
-            ->willReturnOnConsecutiveCalls(false, true);
+        $seRepo->expects(self::never())
+            ->method('exists');
 
-        $seRepo->expects(self::once())
-            ->method('create')
-            ->willReturn(['foo']);
+        $seRepo->expects(self::never())
+            ->method('create');
 
         $seRepo->expects(self::never())
             ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->withConsecutive([['foo']],  [null]);
+        $promise->expects(self::exactly(2))->method('success')->withConsecutive([],  []);
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
@@ -130,42 +128,6 @@ class NamespaceTranscriberTest extends TestCase
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::exactly(2))->method('success')->withConsecutive([['foo']],  [null]);
         $promise->expects(self::never())->method('fail');
-
-        self::assertInstanceOf(
-            NamespaceTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
-        );
-    }
-
-    public function testError()
-    {
-        $kubeClient = $this->createMock(KubeClient::class);
-        $cd = $this->createMock(CompiledDeploymentInterface::class);
-
-        $cd->expects(self::once())
-            ->method('forNamespace')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('default_namespace', false);
-                return $cd;
-            });
-
-        $repo = $this->createMock(NamespaceRepository::class);
-        $kubeClient->expects(self::any())
-            ->method('__call')
-            ->with('namespaces')
-            ->willReturn($repo);
-
-        $repo->expects(self::exactly(1))
-            ->method('exists')
-            ->willReturnOnConsecutiveCalls(false);
-
-        $repo->expects(self::once())
-            ->method('create')
-            ->willThrowException(new \Exception());
-
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success')->with(['foo']);
-        $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,

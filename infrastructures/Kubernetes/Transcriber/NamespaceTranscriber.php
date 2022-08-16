@@ -87,21 +87,21 @@ class NamespaceTranscriber implements GenericTranscriberInterface
     ): TranscriberInterface {
         $compiledDeployment->forNamespace(
             static function (string $namespace, bool $hierarchicalNamespaces) use ($client, $promise) {
-                $namespace = strtolower($namespace);
+                if (false === $hierarchicalNamespaces) {
+                    $promise->success();
+
+                    return;
+                }
 
                 try {
+                    $namespace = strtolower($namespace);
+
                     $namespaceRepository = $client->namespaces();
-                    if (true === $hierarchicalNamespaces) {
-                        $subnamespacesAnchorsRepository = $client->subnamespacesAnchors();
-                    }
+                    $subnamespacesAnchorsRepository = $client->subnamespacesAnchors();
 
                     $result = null;
                     if (!$namespaceRepository->exists($namespace)) {
-                        if (true === $hierarchicalNamespaces) {
-                            $result = $subnamespacesAnchorsRepository->create(self::convertToSubnamespace($namespace));
-                        } else {
-                            $result = $namespaceRepository->create(self::convertToNamespace($namespace));
-                        }
+                        $result = $subnamespacesAnchorsRepository->create(self::convertToSubnamespace($namespace));
                     }
 
                     $promise->success($result);
