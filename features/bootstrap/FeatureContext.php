@@ -903,6 +903,7 @@ pods:
           data: #Persistent volume, can not be pre-populated
             mount-path: '/opt/data'
             persistent: true
+            storage-size: 2Gib
           vault:
             mount-path: '/vault'
             from-secret: 'volume_vault'

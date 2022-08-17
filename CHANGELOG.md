@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.100] - 2022-08-17
+### Stable Release
+- Add support of storage-size for persistent volume
+- Persistent volume are converted as PVC into kubernetes
+- Add Volume Transcriber for Kubernetes
+- Fix bad behavior with namespace transcriber, it must not create namespace when hierarchical NS are not supported
+
 ## [0.0.99] - 2022-08-15
 ### Stable Release
 - Add `Account::$prefixNamespace` property to help to manage shared clusters

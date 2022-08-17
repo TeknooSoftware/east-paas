@@ -209,7 +209,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                 self::CONFIG_KEY_VERSION => 'v1',
                 self::CONFIG_KEY_NAMESPACE => 'default',
             ],
-            function ($paas) use ($promise, $storageIdentifier): void {
+            function ($paas) use ($promise, $storageIdentifier, $storageSize): void {
                 if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
                     $promise->fail(new RuntimeException('Paas config file version not supported', 400));
 

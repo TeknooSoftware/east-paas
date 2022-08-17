@@ -116,8 +116,10 @@ class ConductorTest extends TestCase
         return $this->validator;
     }
 
-    public function buildConductor(?string $storageProvider = null): Conductor
-    {
+    public function buildConductor(
+        ?string $storageProvider = null,
+        ?string $storageSize = null,
+    ): Conductor {
         return new Conductor(
             $this->getCompiledDeploymentFactory(),
             $this->getPropertyAccessorMock(),
@@ -127,7 +129,8 @@ class ConductorTest extends TestCase
                 '[secrets]' => $this->createMock(CompilerInterface::class),
                 '[volumes]' => $this->createMock(CompilerInterface::class),
             ],
-            $storageProvider
+            $storageProvider,
+            $storageSize,
         );
     }
 
@@ -845,7 +848,8 @@ EOF;
                 '[secrets]' => $compiler,
                 '[volumes]' => $compiler,
             ],
-            'fooBar'
+            'fooBar',
+            'barFoo',
         );
         $conductor = $this->prepareTestForCompile($result, $conductor);
 

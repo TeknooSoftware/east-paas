@@ -34,9 +34,11 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
 /**
@@ -188,6 +190,24 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             ServiceTranscriber::class,
             $container->get(ServiceTranscriber::class)
+        );
+    }
+
+    public function testNamespaceTranscriber()
+    {
+        $container = $this->buildContainer();
+        self::assertInstanceOf(
+            NamespaceTranscriber::class,
+            $container->get(NamespaceTranscriber::class)
+        );
+    }
+
+    public function testVolumeTranscriber()
+    {
+        $container = $this->buildContainer();
+        self::assertInstanceOf(
+            VolumeTranscriber::class,
+            $container->get(VolumeTranscriber::class)
         );
     }
 }

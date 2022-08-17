@@ -129,7 +129,8 @@ class PodCompilerTest extends TestCase
                 $compiledDeployment,
                 $workspace,
                 $jobUnit,
-                'fooBar'
+                'fooBar',
+                'fooBar',
             )
         );
     }
@@ -163,7 +164,8 @@ class PodCompilerTest extends TestCase
                 $compiledDeployment,
                 $workspace,
                 $jobUnit,
-                'fooBar'
+                'fooBar',
+                'fooBar',
             )
         );
     }
@@ -196,7 +198,43 @@ class PodCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $workspace,
-                $jobUnit
+                $jobUnit,
+                null,
+                'fooBar',
+            )
+        );
+    }
+
+    public function testCompileWithoutStorageSizeInVolume()
+    {
+        $definitions = $this->getDefinitionsArray();
+        $builder = $this->buildCompiler();
+
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects(self::never())->method('addPod');
+        $compiledDeployment->expects(self::any())
+            ->method('importVolume')
+            ->willReturnCallback(
+                function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment) {
+                    $promise->fail(new \DomainException('foo'));
+
+                    return $compiledDeployment;
+                }
+            );
+
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $jobUnit = $this->createMock(JobUnitInterface::class );
+
+        $this->expectException(\RuntimeException::class);
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $builder->compile(
+                $definitions,
+                $compiledDeployment,
+                $workspace,
+                $jobUnit,
+                'fooBar',
             )
         );
     }
@@ -223,7 +261,9 @@ class PodCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $workspace,
-                $jobUnit
+                $jobUnit,
+                'fooBar',
+                'fooBar',
             )
         );
     }

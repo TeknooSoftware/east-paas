@@ -37,7 +37,7 @@ class PersistentVolumeTest extends TestCase
 {
     private function buildObject(): PersistentVolume
     {
-        return new PersistentVolume('foo', 'bar', 'foobar');
+        return new PersistentVolume('foo', 'bar', 'foobar', 'barfoo');
     }
 
     public function testGetName()
@@ -61,6 +61,14 @@ class PersistentVolumeTest extends TestCase
         self::assertEquals(
             'foobar',
             $this->buildObject()->getStorageIdentifier()
+        );
+    }
+
+    public function testGetStorageSize()
+    {
+        self::assertEquals(
+            'barfoo',
+            $this->buildObject()->getStorageSize()
         );
     }
 }

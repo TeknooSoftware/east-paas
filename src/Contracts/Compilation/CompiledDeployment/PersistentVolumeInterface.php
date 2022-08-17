@@ -34,4 +34,6 @@ namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
 interface PersistentVolumeInterface extends VolumeInterface
 {
     public function getStorageIdentifier(): ?string;
+
+    public function getStorageSize(): ?string;
 }

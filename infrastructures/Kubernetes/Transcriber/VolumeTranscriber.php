@@ -27,10 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Maclof\Kubernetes\Models\PersistentVolumeClaim;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
@@ -47,7 +47,7 @@ use function array_map;
 class VolumeTranscriber implements DeploymentInterface
 {
     private static function convertToPVC(
-        PersistentVolume $volume,
+        PersistentVolumeInterface $volume,
         string $namespace
     ): PersistentVolumeClaim {
         return new PersistentVolumeClaim([
@@ -78,10 +78,8 @@ class VolumeTranscriber implements DeploymentInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachVolume(
-            function (string $name, Volume $volume, string $namespace) use ($client, $promise) {
-                if (!$volume instanceof PersistentVolume) {
-                    $promise->success([]);
-
+            function (string $name, VolumeInterface $volume, string $namespace) use ($client, $promise) {
+                if (!$volume instanceof PersistentVolumeInterface) {
                     return;
                 }
 
