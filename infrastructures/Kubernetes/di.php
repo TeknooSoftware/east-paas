@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControlle
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
 use function DI\decorate;
 use function DI\create;
 use function DI\get;
@@ -78,19 +79,21 @@ return [
             $defaultServicePort
         );
     },
-    ReplicationControllerTranscriber::class => create(),
     NamespaceTranscriber::class => create(),
+    ReplicationControllerTranscriber::class => create(),
     SecretTranscriber::class => create(),
     ServiceTranscriber::class => create(),
+    VolumeTranscriber::class => create(),
 
     TranscriberCollectionInterface::class => get(TranscriberCollection::class),
     TranscriberCollection::class => static function (ContainerInterface $container): TranscriberCollection {
         $collection = new TranscriberCollection();
         $collection->add(5, $container->get(NamespaceTranscriber::class));
         $collection->add(10, $container->get(SecretTranscriber::class));
-        $collection->add(20, $container->get(ReplicationControllerTranscriber::class));
-        $collection->add(30, $container->get(ServiceTranscriber::class));
-        $collection->add(40, $container->get(IngressTranscriber::class));
+        $collection->add(10, $container->get(VolumeTranscriber::class));
+        $collection->add(30, $container->get(ReplicationControllerTranscriber::class));
+        $collection->add(40, $container->get(ServiceTranscriber::class));
+        $collection->add(50, $container->get(IngressTranscriber::class));
 
         return $collection;
     },

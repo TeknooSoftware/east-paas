@@ -51,7 +51,8 @@ use function array_map;
  */
 class ReplicationControllerTranscriber implements DeploymentInterface
 {
-    private const NAME_PREFIX = '-replication-ctrl';
+    private const NAME_SUFFIX = '-replication-ctrl';
+    private const VOLUME_SUFFIX = '-volume';
 
     /**
      * @param array<string, > $specs
@@ -100,7 +101,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
             $volumesMount = [];
             foreach ($container->getVolumes() as $volume) {
                 $volumesMount[] = [
-                    'name' => $volume->getName(),
+                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'mountPath' => $volume->getMountPath(),
                     'readOnly' => $volume instanceof PopulatedVolumeInterface,
                 ];
@@ -123,9 +124,9 @@ class ReplicationControllerTranscriber implements DeploymentInterface
         foreach ($volumes as $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
                 $specs['spec']['template']['spec']['volumes'][] = [
-                    'name' => $volume->getName(),
+                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'persistentVolumeClaim' => [
-                        'claimName' => $volume->getStorageIdentifier(),
+                        'claimName' => $volume->getName(),
                     ],
                 ];
 
@@ -134,7 +135,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
 
             if ($volume instanceof SecretVolume) {
                 $specs['spec']['template']['spec']['volumes'][] = [
-                    'name' => $volume->getName(),
+                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'secret' => [
                         'secretName' => $volume->getSecretIdentifier(),
                     ],
@@ -144,7 +145,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
             }
 
             $specs['spec']['template']['spec']['initContainers'][] = [
-                'name' => $volume->getName(),
+                'name' => $volume->getName() . self::VOLUME_SUFFIX,
                 'image' => $volume->getUrl(),
                 'imagePullPolicy' => 'Always',
                 'volumeMounts' => [
@@ -157,7 +158,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
             ];
 
             $specs['spec']['template']['spec']['volumes'][] = [
-                'name' => $volume->getName(),
+                'name' => $volume->getName() . self::VOLUME_SUFFIX,
                 'emptyDir' => []
             ];
         }
@@ -175,7 +176,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
     ): ReplicationController {
         $specs = [
             'metadata' => [
-                'name' => $pod->getName() . self::NAME_PREFIX,
+                'name' => $pod->getName() . self::NAME_SUFFIX,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $pod->getName(),
@@ -219,7 +220,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     }
 
                     $rcRepository = $client->replicationControllers();
-                    $name = $kubeController->getMetadata('name') ?? $pod->getName() . self::NAME_PREFIX;
+                    $name = $kubeController->getMetadata('name') ?? $pod->getName() . self::NAME_SUFFIX;
                     if ($rcRepository->exists($name)) {
                         $result = $rcRepository->update($kubeController);
                     } else {

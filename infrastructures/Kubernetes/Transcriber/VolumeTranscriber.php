@@ -26,61 +26,50 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\Models\Service as KubeService;
+use Maclof\Kubernetes\Models\PersistentVolumeClaim;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
-use function strtolower;
+use function array_map;
 
 /**
- * Exposing Transcriber to translate CompiledDeployment's services to Kubernetes Services manifest.
+ * Deployment Transcriber to translate CompiledDeployment's peristant volume to Kubernetes PVC
+ * manifest.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class ServiceTranscriber implements ExposingInterface
+class VolumeTranscriber implements DeploymentInterface
 {
-    private const NAME_SUFFIX = '-service';
-
-    private static function convertToService(Service $service, string $namespace): KubeService
-    {
-        $ports = [];
-        foreach ($service->getPorts() as $listen => $target) {
-            $ports[] = [
-                'name' => strtolower($service->getName() . '-' . $listen),
-                'protocol' => $service->getProtocol(),
-                'port' => $listen,
-                'targetPort' => $target,
-            ];
-        }
-
-        $type = 'LoadBalancer';
-        if ($service->isInternal()) {
-            $type = 'ClusterIP';
-        }
-
-        $specs = [
+    private static function convertToPVC(
+        PersistentVolume $volume,
+        string $namespace
+    ): PersistentVolumeClaim {
+        return new PersistentVolumeClaim([
             'metadata' => [
-                'name' => $service->getName() . self::NAME_SUFFIX,
+                'name' => $volume->getName(),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $service->getName(),
+                    'name' => $volume->getName(),
                 ],
             ],
             'spec' => [
-                'selector' => [
-                    'name' => $service->getPodName(),
+                'accessModes' => [
+                    'ReadWriteOnce'
                 ],
-                'type' => $type,
-                'ports' => $ports,
+                'storageClassName' => $volume->getStorageIdentifier(),
+                'resources' => [
+                    'requests' => [
+                        'storage' => $volume->getStorageSize()
+                    ]
+                ],
             ],
-        ];
-
-        return new KubeService($specs);
+        ]);
     }
 
     public function transcribe(
@@ -88,22 +77,27 @@ class ServiceTranscriber implements ExposingInterface
         KubernetesClient $client,
         PromiseInterface $promise
     ): TranscriberInterface {
-        $compiledDeployment->foreachService(
-            static function (Service $service, string $namespace) use ($client, $promise) {
-                $kubeService = self::convertToService($service, $namespace);
+        $compiledDeployment->foreachVolume(
+            function (string $name, Volume $volume, string $namespace) use ($client, $promise) {
+                if (!$volume instanceof PersistentVolume) {
+                    $promise->success([]);
+
+                    return;
+                }
+
+                $pvc = self::convertToPVC($volume, $namespace);
 
                 try {
                     if (!empty($namespace)) {
                         $client->setNamespace($namespace);
                     }
 
-                    $serviceRepository = $client->services();
-                    $name = $kubeService->getMetadata('name') ?? $service->getName() . self::NAME_SUFFIX;
-                    if ($serviceRepository->exists($name)) {
-                        $serviceRepository->delete($kubeService);
+                    $pvcRepository = $client->persistentVolumeClaims();
+                    if ($pvcRepository->exists($name = $pvc->getMetadata('name') ?? $volume->getName())) {
+                        $result = $pvcRepository->update($pvc);
+                    } else {
+                        $result = $pvcRepository->create($pvc);
                     }
-
-                    $result = $serviceRepository->create($kubeService);
 
                     $promise->success($result);
                 } catch (Throwable $error) {

@@ -45,6 +45,7 @@ interface CompilerInterface
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
         JobUnitInterface $job,
-        ?string $storageIdentifier = null
+        ?string $storageIdentifier = null,
+        ?string $defaultStorageSize = null,
     ): CompilerInterface;
 }

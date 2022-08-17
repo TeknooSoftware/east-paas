@@ -44,7 +44,8 @@ class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
     public function __construct(
         private readonly string $name,
         private readonly string $mountPath,
-        private readonly ?string $storageIdentifier = null
+        private readonly ?string $storageIdentifier = null,
+        private readonly ?string $storageSize = null,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -62,5 +63,10 @@ class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
     public function getStorageIdentifier(): ?string
     {
         return $this->storageIdentifier;
+    }
+
+    public function getStorageSize(): ?string
+    {
+        return $this->storageSize;
     }
 }

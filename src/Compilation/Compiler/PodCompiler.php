@@ -65,6 +65,7 @@ class PodCompiler implements CompilerInterface
     private const KEY_FROM_SECRET = 'from-secret';
     private const KEY_FROM_SECRETS = 'from-secrets';
     private const KEY_STORAGE_IDENTIFIER = 'storage-provider';
+    private const KEY_STORAGE_SIZE = 'storage-size';
     private const KEY_ADD = 'add';
     private const KEY_IMAGE = 'image';
     private const KEY_VERSION = 'version';
@@ -81,7 +82,8 @@ class PodCompiler implements CompilerInterface
         string $volumeName,
         string $mountPath,
         array &$volumeDefinition,
-        ?string $storageIdentifier
+        ?string $storageIdentifier,
+        ?string $defaultStorageSize,
     ): PersistentVolume {
         $identifier = $volumeDefinition[self::KEY_STORAGE_IDENTIFIER] ?? $storageIdentifier;
 
@@ -89,10 +91,17 @@ class PodCompiler implements CompilerInterface
             throw new RuntimeException("Missing 'storage-provider' in $volumeName pod volume definition");
         }
 
+        $storageSize = $volumeDefinition[self::KEY_STORAGE_SIZE] ?? $defaultStorageSize;
+
+        if (empty($storageSize)) {
+            throw new RuntimeException("Missing 'storage-size' in $volumeName pod volume definition");
+        }
+
         return new PersistentVolume(
             $volumeName,
             $mountPath,
-            $identifier
+            $identifier,
+            $storageSize,
         );
     }
 
@@ -138,7 +147,8 @@ class PodCompiler implements CompilerInterface
         array &$embeddedVolumes,
         array &$containerVolumes,
         CompiledDeploymentInterface $compiledDeployment,
-        ?string $storageIdentifier
+        ?string $storageIdentifier,
+        ?string $defaultStorageSize,
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
             if (empty($volumeDefinition[self::KEY_MOUNT_PATH])) {
@@ -152,7 +162,8 @@ class PodCompiler implements CompilerInterface
                     $volumeName,
                     $mountPath,
                     $volumeDefinition,
-                    $storageIdentifier
+                    $storageIdentifier,
+                    $defaultStorageSize,
                 );
 
                 continue;
@@ -241,7 +252,8 @@ class PodCompiler implements CompilerInterface
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
         JobUnitInterface $job,
-        ?string $storageIdentifier = null
+        ?string $storageIdentifier = null,
+        ?string $defaultStorageSize = null,
     ): CompilerInterface {
         foreach ($definitions as $nameSet => &$podsList) {
             $containers = [];
@@ -254,7 +266,8 @@ class PodCompiler implements CompilerInterface
                     $embeddedVolumes,
                     $containerVolumes,
                     $compiledDeployment,
-                    $storageIdentifier
+                    $storageIdentifier,
+                    $defaultStorageSize,
                 );
 
 

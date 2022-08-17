@@ -56,7 +56,8 @@ class IngressCompiler implements CompilerInterface
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
         JobUnitInterface $job,
-        ?string $storageIdentifier = null
+        ?string $storageIdentifier = null,
+        ?string $defaultStorageSize = null,
     ): CompilerInterface {
         foreach ($definitions as $name => &$config) {
             $paths = [];

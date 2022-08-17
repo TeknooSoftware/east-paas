@@ -49,12 +49,12 @@ use function substr;
  */
 class SecretTranscriber implements DeploymentInterface
 {
-    private const BASE64_PREFIX = 'base64:';
-    private const NAME_PREFIX = '-secret';
+    private const BASE64_SUFFIX = 'base64:';
+    private const NAME_SUFFIX = '-secret';
 
     private static function isValid64(string $value): bool
     {
-        return str_starts_with($value, self::BASE64_PREFIX);
+        return str_starts_with($value, self::BASE64_SUFFIX);
     }
 
     /**
@@ -75,7 +75,7 @@ class SecretTranscriber implements DeploymentInterface
             return base64_encode((string) $value);
         }
 
-        return substr($value, strlen(self::BASE64_PREFIX));
+        return substr($value, strlen(self::BASE64_SUFFIX));
     }
 
     private static function convertToSecret(Secret $secret, string $namespace): ?KubeSecret
@@ -87,7 +87,7 @@ class SecretTranscriber implements DeploymentInterface
 
         return new KubeSecret([
             'metadata' => [
-                'name' => $secret->getName() . self::NAME_PREFIX,
+                'name' => $secret->getName() . self::NAME_SUFFIX,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $secret->getName(),
@@ -117,7 +117,7 @@ class SecretTranscriber implements DeploymentInterface
                     }
 
                     $sRepository = $client->secrets();
-                    $name = $kubeSecret->getMetadata('name') ?? $secret->getName() . self::NAME_PREFIX;
+                    $name = $kubeSecret->getMetadata('name') ?? $secret->getName() . self::NAME_SUFFIX;
                     if ($sRepository->exists($name)) {
                         $result = $sRepository->update($kubeSecret);
                     } else {

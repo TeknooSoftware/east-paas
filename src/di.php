@@ -244,13 +244,19 @@ return [
             $storageProvider = $container->get('teknoo.east.paas.default_storage_provider');
         }
 
+        $storageSize = null;
+        if ($container->has('teknoo.east.paas.default_storage_size')) {
+            $storageSize = $container->get('teknoo.east.paas.default_storage_size');
+        }
+
         return new Conductor(
             $container->get(CompiledDeploymentFactoryInterface::class),
             $container->get(PropertyAccessorInterface::class),
             $container->get(YamlParserInterface::class),
             $container->get(YamlValidator::class),
             $container->get(CompilerCollectionInterface::class),
-            $storageProvider
+            $storageProvider,
+            $storageSize,
         );
     },
 

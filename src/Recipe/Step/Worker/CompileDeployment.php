@@ -45,7 +45,8 @@ class CompileDeployment
         ManagerInterface $manager,
         ClientInterface $client,
         ConductorInterface $conductor,
-        ?string $storageIdentifier = null
+        ?string $storageIdentifier = null,
+        ?string $storageSize = null,
     ): self {
         /** @var Promise<CompiledDeploymentInterface, mixed, mixed> $promise */
         $promise = new Promise(
@@ -65,7 +66,8 @@ class CompileDeployment
 
         $conductor->compileDeployment(
             $promise,
-            $storageIdentifier
+            $storageIdentifier,
+            $storageSize,
         );
 
         return $this;

@@ -69,7 +69,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
     private const CONFIG_PAAS = '[paas]';
     private const CONFIG_KEY_VERSION = 'version';
     private const CONFIG_KEY_NAMESPACE = 'namespace';
-    private const CONFIG_KEY_HNC = 'hierarchical_namespaces';
+    private const CONFIG_KEY_HNC = 'hierarchical-namespaces';
 
     private JobUnitInterface $job;
 
@@ -89,7 +89,8 @@ class Conductor implements ConductorInterface, AutomatedInterface
         YamlParserInterface $parser,
         private readonly YamlValidator $validator,
         private readonly iterable $compilers,
-        private readonly ?string $storageIdentifier
+        private readonly ?string $storageIdentifier,
+        private readonly ?string $storageSize,
     ) {
         $this->setPropertyAccessor($propertyAccessor);
         $this->setParser($parser);
@@ -196,8 +197,11 @@ class Conductor implements ConductorInterface, AutomatedInterface
     /**
      * @throws Throwable
      */
-    public function compileDeployment(PromiseInterface $promise, ?string $storageIdentifier = null): ConductorInterface
-    {
+    public function compileDeployment(
+        PromiseInterface $promise,
+        ?string $storageIdentifier = null,
+        ?string $storageSize = null,
+    ): ConductorInterface {
         $this->extract(
             $this->configuration,
             self::CONFIG_PAAS,
@@ -219,7 +223,11 @@ class Conductor implements ConductorInterface, AutomatedInterface
                 try {
                     $compiledDeployment = $this->factory->build($version, $namespace, !empty($hierarchicalNamespaces));
 
-                    $this->extractAndCompile($compiledDeployment, $storageIdentifier ?? $this->storageIdentifier);
+                    $this->extractAndCompile(
+                        $compiledDeployment,
+                        $storageIdentifier ?? $this->storageIdentifier,
+                        $storageSize ?? $this->storageSize,
+                    );
 
                     $promise->success($compiledDeployment);
                 } catch (Throwable $error) {

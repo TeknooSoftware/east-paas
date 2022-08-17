@@ -55,5 +55,9 @@ interface ConductorInterface
     /**
      * @param PromiseInterface<CompiledDeploymentInterface, mixed> $promise
      */
-    public function compileDeployment(PromiseInterface $promise, ?string $storageIdentifier = null): ConductorInterface;
+    public function compileDeployment(
+        PromiseInterface $promise,
+        ?string $storageIdentifier = null,
+        ?string $storageSize = null,
+    ): ConductorInterface;
 }

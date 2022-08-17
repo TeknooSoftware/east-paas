@@ -59,7 +59,11 @@ class Running implements StateInterface
 
     private function extractAndCompile(): Closure
     {
-        return function (CompiledDeploymentInterface $compiledDeployment, ?string $storageIdentifier): void {
+        return function (
+            CompiledDeploymentInterface $compiledDeployment,
+            ?string $storageIdentifier,
+            ?string $storageSize
+        ): void {
             $workspace = $this->getWorkspace();
             $job = $this->getJob();
 
@@ -75,14 +79,16 @@ class Running implements StateInterface
                         $compiler,
                         $workspace,
                         $job,
-                        $storageIdentifier
+                        $storageIdentifier,
+                        $storageSize,
                     ) {
                         $compiler->compile(
                             $configuration,
                             $compiledDeployment,
                             $workspace,
                             $job,
-                            $storageIdentifier
+                            $storageIdentifier,
+                            $storageSize,
                         );
                     }
                 );
