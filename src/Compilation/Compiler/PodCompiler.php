@@ -194,7 +194,9 @@ class PodCompiler implements CompilerInterface
                 $volumeFrom,
                 $mountPath,
                 new Promise(
-                    fn (VolumeInterface $volume) => $containerVolumes[(string) $volumeName] = $volume,
+                    static function (VolumeInterface $volume) use (&$containerVolumes, $volumeName) {
+                        $containerVolumes[(string) $volumeName] = $volume;
+                    },
                     static function (Throwable $error): never {
                         throw $error;
                     }
@@ -269,7 +271,6 @@ class PodCompiler implements CompilerInterface
                     $storageIdentifier,
                     $defaultStorageSize,
                 );
-
 
                 $image = $config[self::KEY_IMAGE];
                 $version = (string)($config[self::KEY_VERSION] ?? self::VALUE_LATEST);

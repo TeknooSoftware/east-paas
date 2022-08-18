@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -118,6 +119,19 @@ class PodCompilerTest extends TestCase
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects(self::exactly(1))->method('addPod');
+        $compiledDeployment->expects(self::exactly(1))
+            ->method('importVolume')
+            ->willReturnCallback(
+                function (
+                    string $volumeFrom,
+                    string $mountPath,
+                    PromiseInterface $promise,
+                ) use ($compiledDeployment) {
+                    $promise->success($this->createMock(VolumeInterface::class));
+
+                    return $compiledDeployment;
+                }
+            );
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class );

@@ -218,6 +218,14 @@ class CompiledDeployment implements CompiledDeploymentInterface
             $callback($name, $volume, $this->namespace);
         }
 
+        foreach ($this->pods as $pod) {
+            foreach ($pod as $container) {
+                foreach ($container->getVolumes() as $name => $volume) {
+                    $callback($name, $volume, $this->namespace);
+                }
+            }
+        }
+
         return $this;
     }
 

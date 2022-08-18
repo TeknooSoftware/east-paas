@@ -429,6 +429,30 @@ class CompiledDeploymentTest extends TestCase
             new Volume('foo2', [], 'bar', '/mount')
         );
 
+        $cd->addBuildable(
+            $img = (new Image('foo', 'bar', false, '1.2', ['foo' => 'bar']))
+        );
+
+        $cd->addPod(
+            'foo1',
+            new Pod(
+                'foo1',
+                1,
+                [
+                    new Container(
+                        'foo1',
+                        'foo',
+                        '1.2',
+                        [80],
+                        [
+                            'foo3' => new Volume('foo3', [], 'bar', '/mount')
+                        ],
+                        []
+                    )
+                ]
+            )
+        );
+
         $count = 0;
         self::assertInstanceOf(
             CompiledDeployment::class,
@@ -440,7 +464,7 @@ class CompiledDeploymentTest extends TestCase
             })
         );
 
-        self::assertEquals(2, $count);
+        self::assertEquals(3, $count);
     }
 
     public function testForeachBuildableBadCallback()
