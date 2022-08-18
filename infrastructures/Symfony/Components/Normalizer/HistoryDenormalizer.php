@@ -79,7 +79,10 @@ class HistoryDenormalizer implements DenormalizerInterface
         return new History($previous, $message, $date, $isFinal, $extra);
     }
 
-    public function supportsDenormalization($data, $type, $format = null): bool
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
         return is_array($data) && History::class === $type;
     }

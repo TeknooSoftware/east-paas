@@ -10,7 +10,7 @@
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
         <field field-name="updatedAt" name="updated_at" type="date" />
         <field field-name="baseNamespace" name="base_namespace" type="string" nullable="true"/>
-        <field field-name="hierarchicalNamespaces" name="hierarchical_namespaces" type="boolean" nullable="false"/>
+        <field field-name="hierarchicalNamespaces" name="hierarchical_namespaces" type="bool" nullable="false"/>
         <field field-name="extra" type="raw" />
         <embed-one field="history" target-document="Teknoo\East\Paas\Object\History" nullable="true" />
         <embed-one field="environment" target-document="Teknoo\East\Paas\Object\Environment" nullable="false"/>

@@ -74,7 +74,10 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
         return $this->denormalizer->denormalize($data, $class, $format, $context);
     }
 
-    public function supportsDenormalization($data, $type, $format = null): bool
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
         return $this->denormalizer instanceof DenormalizerInterface
             && is_array($data)
