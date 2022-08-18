@@ -266,8 +266,8 @@ class BuilderWrapperTest extends TestCase
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $volumes = [
-                    new Volume('v!', ['/bar'], '/volume', '/mount'),
                     new PersistentVolume('v!', '/bar', 'pv'),
+                    new Volume('v!', ['/bar'], '/volume', '/mount'),
                 ];
                 $image2 = new EmbeddedVolumeImage('bar1', 'bar', 'bar', $volumes);
 
@@ -482,9 +482,11 @@ class BuilderWrapperTest extends TestCase
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
                 $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
+                $volume3 = $this->createMock(PersistentVolume::class);
 
                 $callback('foo', $volume1);
                 $callback('bar', $volume2);
+                $callback('bar', $volume3);
                 return $cd;
             });
 

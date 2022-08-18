@@ -30,6 +30,7 @@ use RuntimeException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Generator;
 use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Running;
 use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
@@ -220,7 +221,11 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
 
         $processes = [];
         $compiledDeployment->foreachVolume(
-            function (string $name, Volume $volume) use (&$processes, $workingPath, $compiledDeployment) {
+            function (string $name, VolumeInterface $volume) use (&$processes, $workingPath, $compiledDeployment) {
+                if (!$volume instanceof Volume) {
+                    return;
+                }
+
                 $volumeUpdated = $volume->withRegistry((string) $this->getUrl());
                 $compiledDeployment->addVolume($name, $volumeUpdated);
 
