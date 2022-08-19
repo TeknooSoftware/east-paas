@@ -41,6 +41,8 @@ use function hash;
 use function str_replace;
 use function substr;
 
+use const PHP_EOL;
+
 /**
  * State for the class BuilderWrapper for the daughter instance present into the workplan
  *
@@ -191,7 +193,11 @@ class Running implements StateInterface
                 }
 
                 //Execute the promise with the process output to allow log it
-                $promise->success($process->getOutput());
+                $promise->success(
+                    $process->getOutput()
+                    . PHP_EOL
+                    . $process->getErrorOutput()
+                );
             }
 
             if (null !== $error) {

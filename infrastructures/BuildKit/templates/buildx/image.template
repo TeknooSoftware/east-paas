@@ -4,9 +4,7 @@ set -e
 
 echo "$PAAS_REGISTRY_PWD" | {% binary %} login --username=$PAAS_REGISTRY_USER --password-stdin $PAAS_REGISTRY_HOST
 
-export DOCKER_CLI_EXPERIMENTAL=enabled
-
 {% binary %} buildx use $PAAS_BUILDKIT_BUILDER_NAME
 
-{% binary %} buildx build --no-cache --platform $PAAS_BUILDKIT_PLATFORM {% buildsArgs %} ---force-rm --rm -t {% imageName %} --push {% imagePath %}
+{% binary %} buildx build --progress plain --no-cache --platform $PAAS_BUILDKIT_PLATFORM {% buildsArgs %} ---force-rm --rm -t {% imageName %} --push {% imagePath %}
 
