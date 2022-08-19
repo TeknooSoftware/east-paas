@@ -53,6 +53,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
 {
     private const NAME_SUFFIX = '-replication-ctrl';
     private const VOLUME_SUFFIX = '-volume';
+    private const SECRET_VOLUME_SUFFIX = '-secret';
 
     /**
      * @param array<string, > $specs
@@ -137,7 +138,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                 $specs['spec']['template']['spec']['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'secret' => [
-                        'secretName' => $volume->getSecretIdentifier(),
+                        'secretName' => $volume->getSecretIdentifier() . self::SECRET_VOLUME_SUFFIX,
                     ],
                 ];
 
