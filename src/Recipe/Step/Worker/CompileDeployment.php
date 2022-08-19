@@ -47,6 +47,7 @@ class CompileDeployment
         ConductorInterface $conductor,
         ?string $storageIdentifier = null,
         ?string $storageSize = null,
+        ?string $defaultOciRegistryConfig = null,
     ): self {
         /** @var Promise<CompiledDeploymentInterface, mixed, mixed> $promise */
         $promise = new Promise(
@@ -65,9 +66,10 @@ class CompileDeployment
         );
 
         $conductor->compileDeployment(
-            $promise,
-            $storageIdentifier,
-            $storageSize,
+            promise: $promise,
+            storageIdentifier: $storageIdentifier,
+            storageSize: $storageSize,
+            defaultOciRegistryConfig: $defaultOciRegistryConfig,
         );
 
         return $this;

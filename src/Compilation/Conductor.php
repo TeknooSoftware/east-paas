@@ -91,6 +91,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
         private readonly iterable $compilers,
         private readonly ?string $storageIdentifier,
         private readonly ?string $storageSize,
+        private readonly ?string $defaultOciRegistryConfig,
     ) {
         $this->setPropertyAccessor($propertyAccessor);
         $this->setParser($parser);
@@ -201,6 +202,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
         PromiseInterface $promise,
         ?string $storageIdentifier = null,
         ?string $storageSize = null,
+        ?string $defaultOciRegistryConfig = null,
     ): ConductorInterface {
         $this->extract(
             $this->configuration,
@@ -209,7 +211,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                 self::CONFIG_KEY_VERSION => 'v1',
                 self::CONFIG_KEY_NAMESPACE => 'default',
             ],
-            function ($paas) use ($promise, $storageIdentifier, $storageSize): void {
+            function ($paas) use ($promise, $storageIdentifier, $storageSize, $defaultOciRegistryConfig): void {
                 if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
                     $promise->fail(new RuntimeException('Paas config file version not supported', 400));
 
@@ -227,6 +229,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                         $compiledDeployment,
                         $storageIdentifier ?? $this->storageIdentifier,
                         $storageSize ?? $this->storageSize,
+                        $defaultOciRegistryConfig ?? $this->defaultOciRegistryConfig
                     );
 
                     $promise->success($compiledDeployment);

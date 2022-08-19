@@ -173,7 +173,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
         Pod $pod,
         array $images,
         array $volumes,
-        string $namespace
+        string $namespace,
     ): ReplicationController {
         $specs = [
             'metadata' => [
@@ -194,11 +194,17 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                         ],
                     ],
                     'spec' => [
-                        'containers' => []
+                        'containers' => [],
                     ],
                 ],
             ],
         ];
+
+        if (!empty($imagePullSecretsName = $pod->getOciRegistryConfigName())) {
+            $specs['spec']['template']['spec']['imagePullSecrets'] = [
+                'name' => $imagePullSecretsName,
+            ];
+        }
 
         self::convertToVolumes($specs, $volumes);
         self::convertToContainer($specs, $pod, $images);

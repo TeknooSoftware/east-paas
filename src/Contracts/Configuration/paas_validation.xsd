@@ -162,6 +162,7 @@
   <xs:complexType name="pod_node">
     <xs:all>
       <xs:element name="replicas" type="xs:int" minOccurs="0" />
+      <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
       <xs:element name="containers">
         <xs:complexType>
           <xs:choice>

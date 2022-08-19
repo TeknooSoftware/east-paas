@@ -58,6 +58,7 @@ use function explode;
 class PodCompiler implements CompilerInterface
 {
     private const KEY_CONTAINERS = 'containers';
+    private const KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
     private const KEY_VOLUMES = 'volumes';
     private const KEY_MOUNT_PATH = 'mount-path';
     private const KEY_FROM = 'from';
@@ -260,6 +261,7 @@ class PodCompiler implements CompilerInterface
         JobUnitInterface $job,
         ?string $storageIdentifier = null,
         ?string $defaultStorageSize = null,
+        ?string $defaultOciRegistryConfig = null,
     ): CompilerInterface {
         foreach ($definitions as $nameSet => &$podsList) {
             $containers = [];
@@ -303,7 +305,12 @@ class PodCompiler implements CompilerInterface
 
             $compiledDeployment->addPod(
                 $nameSet,
-                new Pod($nameSet, (int)($podsList[self::KEY_REPLICAS] ?? 1), $containers)
+                new Pod(
+                    name: $nameSet,
+                    replicas: (int) ($podsList[self::KEY_REPLICAS] ?? 1),
+                    containers: $containers,
+                    ociRegistryConfigName: $podsList[self::KEY_OCI_REGISTRY_CONFIG_NAME] ?? $defaultOciRegistryConfig,
+                )
             );
         }
 

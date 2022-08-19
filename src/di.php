@@ -249,6 +249,11 @@ return [
             $storageSize = $container->get('teknoo.east.paas.default_storage_size');
         }
 
+        $defaultOciRegistryConfig = null;
+        if ($container->has('teknoo.east.paas.default_oci_registry_config_name')) {
+            $defaultOciRegistryConfig = $container->get('teknoo.east.paas.default_oci_registry_config_name');
+        }
+
         return new Conductor(
             $container->get(CompiledDeploymentFactoryInterface::class),
             $container->get(PropertyAccessorInterface::class),
@@ -257,6 +262,7 @@ return [
             $container->get(CompilerCollectionInterface::class),
             $storageProvider,
             $storageSize,
+            $defaultOciRegistryConfig
         );
     },
 

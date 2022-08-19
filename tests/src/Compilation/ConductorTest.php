@@ -119,6 +119,7 @@ class ConductorTest extends TestCase
     public function buildConductor(
         ?string $storageProvider = null,
         ?string $storageSize = null,
+        ?string $defaultOciRegistryConfig = null,
     ): Conductor {
         return new Conductor(
             $this->getCompiledDeploymentFactory(),
@@ -131,6 +132,7 @@ class ConductorTest extends TestCase
             ],
             $storageProvider,
             $storageSize,
+            $defaultOciRegistryConfig,
         );
     }
 
@@ -850,6 +852,7 @@ EOF;
             ],
             'fooBar',
             'barFoo',
+            'foo',
         );
         $conductor = $this->prepareTestForCompile($result, $conductor);
 

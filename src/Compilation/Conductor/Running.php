@@ -62,7 +62,8 @@ class Running implements StateInterface
         return function (
             CompiledDeploymentInterface $compiledDeployment,
             ?string $storageIdentifier,
-            ?string $storageSize
+            ?string $storageSize,
+            ?string $defaultOciRegistryConfig = null,
         ): void {
             $workspace = $this->getWorkspace();
             $job = $this->getJob();
@@ -81,6 +82,7 @@ class Running implements StateInterface
                         $job,
                         $storageIdentifier,
                         $storageSize,
+                        $defaultOciRegistryConfig,
                     ) {
                         $compiler->compile(
                             $configuration,
@@ -89,6 +91,7 @@ class Running implements StateInterface
                             $job,
                             $storageIdentifier,
                             $storageSize,
+                            $defaultOciRegistryConfig,
                         );
                     }
                 );

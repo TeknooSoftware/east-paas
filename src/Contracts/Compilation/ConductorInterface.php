@@ -59,5 +59,6 @@ interface ConductorInterface
         PromiseInterface $promise,
         ?string $storageIdentifier = null,
         ?string $storageSize = null,
+        ?string $defaultOciRegistryConfig = null,
     ): ConductorInterface;
 }

@@ -58,6 +58,7 @@ class IngressCompiler implements CompilerInterface
         JobUnitInterface $job,
         ?string $storageIdentifier = null,
         ?string $defaultStorageSize = null,
+        ?string $defaultOciRegistryConfig = null,
     ): CompilerInterface {
         foreach ($definitions as $name => &$config) {
             $paths = [];

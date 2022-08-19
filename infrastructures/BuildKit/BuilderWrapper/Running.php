@@ -40,6 +40,7 @@ use function set_time_limit;
 use function hash;
 use function str_replace;
 use function substr;
+use function trim;
 
 use const PHP_EOL;
 
@@ -194,9 +195,11 @@ class Running implements StateInterface
 
                 //Execute the promise with the process output to allow log it
                 $promise->success(
-                    $process->getOutput()
-                    . PHP_EOL
-                    . $process->getErrorOutput()
+                    trim(
+                        $process->getOutput()
+                        . PHP_EOL
+                        . $process->getErrorOutput()
+                    )
                 );
             }
 

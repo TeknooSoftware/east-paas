@@ -77,6 +77,7 @@ class YamlValidator
         'port',
         'paths',
         'containers',
+        'oci-registry-config-name',
         'mount-path',
         'local-path',
         'from',

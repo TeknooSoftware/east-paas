@@ -51,7 +51,8 @@ class Pod implements ImmutableInterface, IteratorAggregate
     public function __construct(
         private readonly string $name,
         private readonly int $replicas,
-        private readonly array $containers
+        private readonly array $containers,
+        private readonly ?string $ociRegistryConfigName = null,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -72,5 +73,10 @@ class Pod implements ImmutableInterface, IteratorAggregate
     public function getIterator(): Traversable
     {
         yield from $this->containers;
+    }
+
+    public function getOciRegistryConfigName(): ?string
+    {
+        return $this->ociRegistryConfigName;
     }
 }

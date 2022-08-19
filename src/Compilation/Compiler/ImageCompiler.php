@@ -84,6 +84,7 @@ class ImageCompiler implements CompilerInterface
         JobUnitInterface $job,
         ?string $storageIdentifier = null,
         ?string $defaultStorageSize = null,
+        ?string $defaultOciRegistryConfig = null,
     ): CompilerInterface {
         $imagesConfigs = $this->mergeConfigurations($definitions, $this->imagesLibrary);
 
