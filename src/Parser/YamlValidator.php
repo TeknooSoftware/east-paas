@@ -81,6 +81,7 @@ class YamlValidator
         'local-path',
         'from',
         'persistent',
+        'reset-on-deployment',
         'from-secret',
         'from-secrets',
         'storage-provider',

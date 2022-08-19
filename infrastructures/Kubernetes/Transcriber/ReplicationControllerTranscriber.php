@@ -135,7 +135,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
 
             if ($volume instanceof SecretVolume) {
                 $specs['spec']['template']['spec']['volumes'][] = [
-                    'name' => $volume->getName(),
+                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'secret' => [
                         'secretName' => $volume->getSecretIdentifier(),
                     ],

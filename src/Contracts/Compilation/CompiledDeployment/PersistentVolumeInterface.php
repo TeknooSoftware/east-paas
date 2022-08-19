@@ -36,4 +36,6 @@ interface PersistentVolumeInterface extends VolumeInterface
     public function getStorageIdentifier(): ?string;
 
     public function getStorageSize(): ?string;
+
+    public function isResetOnDeployment(): bool;
 }

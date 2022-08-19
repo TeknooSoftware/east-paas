@@ -80,12 +80,11 @@ class VolumeTranscriberTest extends TestCase
             ->method('create')
             ->willReturn(['foo']);
 
-        $seRepo->expects(self::once())
-            ->method('update')
-            ->willReturn(['foo']);
+        $seRepo->expects(self::never())
+            ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->withConsecutive([['foo']], [['foo']]);
+        $promise->expects(self::exactly(2))->method('success')->withConsecutive([['foo']], [[]]);
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
@@ -103,7 +102,6 @@ class VolumeTranscriberTest extends TestCase
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace');
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace');
                 $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'default_namespace');
                 return $cd;
             });
@@ -114,20 +112,19 @@ class VolumeTranscriberTest extends TestCase
             ->with('persistentVolumeClaims')
             ->willReturn($repo);
 
-        $repo->expects(self::exactly(2))
+        $repo->expects(self::once())
             ->method('exists')
             ->willReturnOnConsecutiveCalls(false, true);
 
         $repo->expects(self::once())
             ->method('create')
-            ->willReturn(['foo']);
-
-        $repo->expects(self::once())
-            ->method('update')
             ->willThrowException(new \Exception());
 
+        $repo->expects(self::never())
+            ->method('update');
+
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->withConsecutive([['foo']]);
+        $promise->expects(self::never())->method('success');
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(

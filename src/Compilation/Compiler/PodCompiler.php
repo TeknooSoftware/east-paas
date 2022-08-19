@@ -62,6 +62,7 @@ class PodCompiler implements CompilerInterface
     private const KEY_MOUNT_PATH = 'mount-path';
     private const KEY_FROM = 'from';
     private const KEY_PERSISTENT = 'persistent';
+    private const KEY_RESET_ON_DEPLOYMENT = 'reset-on-deployment';
     private const KEY_FROM_SECRET = 'from-secret';
     private const KEY_FROM_SECRETS = 'from-secrets';
     private const KEY_STORAGE_IDENTIFIER = 'storage-provider';
@@ -84,6 +85,7 @@ class PodCompiler implements CompilerInterface
         array &$volumeDefinition,
         ?string $storageIdentifier,
         ?string $defaultStorageSize,
+        bool $resetOnDeployment,
     ): PersistentVolume {
         $identifier = $volumeDefinition[self::KEY_STORAGE_IDENTIFIER] ?? $storageIdentifier;
 
@@ -102,6 +104,7 @@ class PodCompiler implements CompilerInterface
             $mountPath,
             $identifier,
             $storageSize,
+            $resetOnDeployment
         );
     }
 
@@ -164,6 +167,7 @@ class PodCompiler implements CompilerInterface
                     $volumeDefinition,
                     $storageIdentifier,
                     $defaultStorageSize,
+                    !empty($volumeDefinition[self::KEY_RESET_ON_DEPLOYMENT] ?? false),
                 );
 
                 continue;

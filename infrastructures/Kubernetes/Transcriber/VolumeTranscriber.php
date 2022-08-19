@@ -91,11 +91,18 @@ class VolumeTranscriber implements DeploymentInterface
                     }
 
                     $pvcRepository = $client->persistentVolumeClaims();
-                    if ($pvcRepository->exists($name = $pvc->getMetadata('name') ?? $volume->getName())) {
-                        $result = $pvcRepository->update($pvc);
-                    } else {
-                        $result = $pvcRepository->create($pvc);
+                    $name = $pvc->getMetadata('name') ?? $volume->getName();
+                    if ($pvcRepository->exists($name)) {
+                        if (!$volume->isResetOnDeployment()) {
+                            $promise->success([]);
+
+                            return;
+                        }
+
+                        $pvcRepository->delete($pvc);
                     }
+
+                    $result = $pvcRepository->create($pvc);
 
                     $promise->success($result);
                 } catch (Throwable $error) {
