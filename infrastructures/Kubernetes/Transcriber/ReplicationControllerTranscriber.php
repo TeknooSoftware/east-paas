@@ -135,7 +135,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
 
             if ($volume instanceof SecretVolume) {
                 $specs['spec']['template']['spec']['volumes'][] = [
-                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
+                    'name' => $volume->getName(),
                     'secret' => [
                         'secretName' => $volume->getSecretIdentifier(),
                     ],
@@ -145,12 +145,12 @@ class ReplicationControllerTranscriber implements DeploymentInterface
             }
 
             $specs['spec']['template']['spec']['initContainers'][] = [
-                'name' => $volume->getName() . self::VOLUME_SUFFIX,
+                'name' => $volume->getName(),
                 'image' => $volume->getUrl(),
                 'imagePullPolicy' => 'Always',
                 'volumeMounts' => [
                     [
-                        'name' => $volume->getName(),
+                        'name' => $volume->getName() . self::VOLUME_SUFFIX,
                         'mountPath' => $volume->getMountPath(),
                         'readOnly' => false,
                     ]
