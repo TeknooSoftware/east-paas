@@ -31,6 +31,7 @@ use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
@@ -43,7 +44,7 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 class XRegistryAuth implements
     IdentifiedObjectInterface,
     NormalizableInterface,
-    IdentityInterface,
+    IdentityWithConfigNameInterface,
     TimestampableInterface,
     Stringable
 {
@@ -83,7 +84,7 @@ class XRegistryAuth implements
 
     public function __toString(): string
     {
-        return $this->getUsername();
+        return $this->getName();
     }
 
     public function getUsername(): string
@@ -99,6 +100,11 @@ class XRegistryAuth implements
     public function getEmail(): string
     {
         return $this->email;
+    }
+
+    public function getConfigName(): string
+    {
+        return $this->getAuth();
     }
 
     public function getAuth(): string

@@ -71,6 +71,11 @@ class Conductor implements ConductorInterface, AutomatedInterface
     private const CONFIG_KEY_NAMESPACE = 'namespace';
     private const CONFIG_KEY_HNC = 'hierarchical-namespaces';
 
+    private const CONFIG_DEFAULTS = '[defaults]';
+    private const CONFIG_KEY_STORAGE_PROVIDER = 'storage-provider';
+    private const CONFIG_KEY_STORAGE_SIZE = 'storage-size';
+    private const CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
+
     private JobUnitInterface $job;
 
     private JobWorkspaceInterface $workspace;
@@ -204,39 +209,59 @@ class Conductor implements ConductorInterface, AutomatedInterface
         ?string $storageSize = null,
         ?string $defaultOciRegistryConfig = null,
     ): ConductorInterface {
+
         $this->extract(
             $this->configuration,
-            self::CONFIG_PAAS,
+            self::CONFIG_DEFAULTS,
             [
-                self::CONFIG_KEY_VERSION => 'v1',
-                self::CONFIG_KEY_NAMESPACE => 'default',
+                self::CONFIG_KEY_STORAGE_PROVIDER => $storageIdentifier,
+                self::CONFIG_KEY_STORAGE_SIZE => $storageSize,
+                self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME => $defaultOciRegistryConfig,
             ],
-            function ($paas) use ($promise, $storageIdentifier, $storageSize, $defaultOciRegistryConfig): void {
-                if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
-                    $promise->fail(new RuntimeException('Paas config file version not supported', 400));
+            function ($defaults) use ($promise): void {
+                $storageIdentifier = $defaults[self::CONFIG_KEY_STORAGE_PROVIDER] ?? null;
+                $storageSize = $defaults[self::CONFIG_KEY_STORAGE_SIZE] ?? null;
+                $defaultOciRegistryConfig = $defaults[self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME] ?? null;
 
-                    return;
-                }
+                $this->extract(
+                    $this->configuration,
+                    self::CONFIG_PAAS,
+                    [
+                        self::CONFIG_KEY_VERSION => 'v1',
+                        self::CONFIG_KEY_NAMESPACE => 'default',
+                    ],
+                    function ($paas) use ($promise, $storageIdentifier, $storageSize, $defaultOciRegistryConfig): void {
+                        if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
+                            $promise->fail(new RuntimeException('Paas config file version not supported', 400));
 
-                $version = (int) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
-                $namespace = $paas[self::CONFIG_KEY_NAMESPACE] ?? 'default';
-                $hierarchicalNamespaces = $paas[self::CONFIG_KEY_HNC] ?? false;
+                            return;
+                        }
 
-                try {
-                    $compiledDeployment = $this->factory->build($version, $namespace, !empty($hierarchicalNamespaces));
+                        $version = (int) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
+                        $namespace = $paas[self::CONFIG_KEY_NAMESPACE] ?? 'default';
+                        $hierarchicalNamespaces = $paas[self::CONFIG_KEY_HNC] ?? false;
 
-                    $this->extractAndCompile(
-                        $compiledDeployment,
-                        $storageIdentifier ?? $this->storageIdentifier,
-                        $storageSize ?? $this->storageSize,
-                        $defaultOciRegistryConfig ?? $this->defaultOciRegistryConfig
-                    );
+                        try {
+                            $compiledDeployment = $this->factory->build(
+                                $version,
+                                $namespace,
+                                !empty($hierarchicalNamespaces)
+                            );
 
-                    $promise->success($compiledDeployment);
-                } catch (Throwable $error) {
-                    $promise->fail($error);
-                }
-            }
+                            $this->extractAndCompile(
+                                $compiledDeployment,
+                                $storageIdentifier ?? $this->storageIdentifier,
+                                $storageSize ?? $this->storageSize,
+                                $defaultOciRegistryConfig ?? $this->defaultOciRegistryConfig
+                            );
+
+                            $promise->success($compiledDeployment);
+                        } catch (Throwable $error) {
+                            $promise->fail($error);
+                        }
+                    }
+                );
+            },
         );
 
         return $this;

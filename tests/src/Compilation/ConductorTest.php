@@ -28,7 +28,6 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
-use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentFactoryInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -120,16 +119,21 @@ class ConductorTest extends TestCase
         ?string $storageProvider = null,
         ?string $storageSize = null,
         ?string $defaultOciRegistryConfig = null,
+        array $compilers = []
     ): Conductor {
+        if (empty($compilers)) {
+            $compilers = [
+                '[secrets]' => $this->createMock(CompilerInterface::class),
+                '[volumes]' => $this->createMock(CompilerInterface::class),
+            ];
+        }
+
         return new Conductor(
             $this->getCompiledDeploymentFactory(),
             $this->getPropertyAccessorMock(),
             $this->getYamlParser(),
             $this->getYamlValidator(),
-            [
-                '[secrets]' => $this->createMock(CompilerInterface::class),
-                '[volumes]' => $this->createMock(CompilerInterface::class),
-            ],
+            $compilers,
             $storageProvider,
             $storageSize,
             $defaultOciRegistryConfig,
@@ -790,6 +794,56 @@ EOF;
         $promise->expects(self::once())
             ->method('success')
             ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment($promise)
+        );
+    }
+
+    public function testCompileDeploymentWithDefaults()
+    {
+        $result = $this->getResultArray();
+        $result['defaults'] = [
+            'storage-provider' => 'fooProvider',
+            'storage-size' => 'fooSize',
+            'oci-registry-config-name' => 'ociConfigName',
+        ];
+
+        $compiler = $this->createMock(CompilerInterface::class);
+
+        $compiler->expects(self::once())
+            ->method('compile')
+            ->willReturnCallback(
+                function (
+                    array &$definitions,
+                    CompiledDeploymentInterface $compiledDeployment,
+                    JobWorkspaceInterface $workspace,
+                    JobUnitInterface $job,
+                    ?string $storageIdentifier = null,
+                    ?string $defaultStorageSize = null,
+                    ?string $defaultOciRegistryConfig = null,
+                ) use ($compiler) {
+                    self::assertEquals('fooProvider', $storageIdentifier);
+                    self::assertEquals('fooSize', $defaultStorageSize);
+                    self::assertEquals('ociConfigName', $defaultOciRegistryConfig);
+                    return $compiler;
+                }
+            );
+
+        $conductor = $this->buildConductor(compilers: ['[secrets]' => $compiler]);
+
+        $conductor = $this->prepareTestForCompile(
+            result: $result,
+            conductor: $conductor,
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
+
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(

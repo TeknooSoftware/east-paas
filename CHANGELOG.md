@@ -1,5 +1,15 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.102] - 2022-08-20
+### Dev Release
+- Add new entry in paas configuration :
+  * `.defaults.storage-provider`
+  * `.defaults.storage-size`
+  * `.defaults.oci-registry-config-name`
+  To allow developer to define defaults values when they are not defined into pods or volumes.
+- Add `IdentityWithConfigNameInterface` to create identity object with a config name to reference it into anothers
+  ressources, like for oci registries.
+
 ## [0.0.101] - 2022-08-20
 ### Dev Release
 - Fix kubernetes resource name

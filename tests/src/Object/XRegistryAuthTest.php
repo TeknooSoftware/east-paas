@@ -96,6 +96,14 @@ class XRegistryAuthTest extends TestCase
         );
     }
 
+    public function testGetConfigName()
+    {
+        self::assertEquals(
+            'fooBar',
+            $this->generateObjectPopulated()->getConfigName()
+        );
+    }
+
     public function testGetServerAddress()
     {
         self::assertEquals(

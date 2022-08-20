@@ -9,6 +9,7 @@
     <xs:complexType>
       <xs:all>
         <xs:element name="paas" type="epv:paas" minOccurs="0" />
+        <xs:element name="defaults" type="epv:defaults" minOccurs="0" />
         <xs:element name="secrets" type="epv:secrets" minOccurs="0" />
         <xs:element name="images" type="epv:images" minOccurs="0" />
         <xs:element name="builds" type="epv:builds" minOccurs="0" />
@@ -25,6 +26,14 @@
       <xs:element name="version" type="xs:string" minOccurs="0" />
       <xs:element name="namespace" type="xs:string" minOccurs="0" />
       <xs:element name="hierarchical-namespaces" type="xs:boolean" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="defaults">
+    <xs:all>
+      <xs:element name="storage-provider" type="xs:string" minOccurs="0"/>
+      <xs:element name="storage-size" type="xs:string" minOccurs="0"/>
+      <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 

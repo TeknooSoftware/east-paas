@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Job;
 use DomainException;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface as ClusterClientInterface;
@@ -184,7 +185,20 @@ class JobUnit implements JobUnitInterface
         }
 
         $values['paas']['namespace'] = implode('-', $parts);
-        $values['paas']['hierarchical_namespaces'] = $this->hierarchicalNamespaces;
+        $values['paas']['hierarchical-namespaces'] = $this->hierarchicalNamespaces;
+    }
+
+    /**
+     * @param array{paas: array<string, mixed>} $values
+     */
+    private function updateDefaults(array &$values): void
+    {
+        if (
+            !isset($values['defaults']['oci-registry-config-name'])
+            && (($identity = $this->imagesRegistry->getIdentity()) instanceof IdentityWithConfigNameInterface)
+        ) {
+            $values['defaults']['oci-registry-config-name'] = $identity->getConfigName();
+        }
     }
 
     /**
@@ -232,6 +246,7 @@ class JobUnit implements JobUnitInterface
         PromiseInterface $promise
     ): JobUnitInterface {
         $this->updateNamespace($values);
+        $this->updateDefaults($values);
 
         $this->updateVariables($values, $promise);
 

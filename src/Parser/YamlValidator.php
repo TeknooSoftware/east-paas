@@ -54,6 +54,7 @@ class YamlValidator
      */
     private static array $staticNodesNames = [
         'paas',
+        'defaults',
         'secrets',
         'volumes',
         'images',
