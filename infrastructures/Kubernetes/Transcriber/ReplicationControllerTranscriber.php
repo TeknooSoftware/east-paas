@@ -202,7 +202,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
 
         if (!empty($imagePullSecretsName = $pod->getOciRegistryConfigName())) {
             $specs['spec']['template']['spec']['imagePullSecrets'] = [
-                'name' => $imagePullSecretsName,
+                ['name' => $imagePullSecretsName,],
             ];
         }
 
