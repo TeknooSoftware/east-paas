@@ -1123,6 +1123,7 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.root_dir', '/foo');
         $container->set('teknoo.east.paas.default_storage_provider', 'foo');
         $container->set('teknoo.east.paas.default_storage_size', 'foo');
+        $container->set('teknoo.east.paas.default_oci_registry_config_name', 'foo');
 
         $container->set(
             'teknoo.east.paas.conductor.images_library',

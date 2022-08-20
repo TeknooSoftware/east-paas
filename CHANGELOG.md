@@ -1,18 +1,31 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.101] - 2022-08-20
+### Dev Release
+- Fix kubernetes resource name
+- Create persistents volumes in kubernetes before use it into pods
+- Persistent volume can be reseted (deleted and recreated) at each deployment by setting the option 
+ `reset-on-deployment` at true in the paas yaml file
+- Improve Buildkit output catching
+- Fixing issue of pod with a private OCI registry / docker hub, and secret passed into `imagePullSecrets`
+- Allow developpers to custom the secret name to use into pod by adding the option `oci-registry-config-name` in pod
+  definition in the paas yaml file.
+- Allow vendors to define a default `oci-registry-config-name` value thanks to DI parameter
+ `teknoo.east.paas.default_oci_registry_config_name`
+
 ## [0.0.100] - 2022-08-17
-### Stable Release
+### Dev Release
 - Add support of storage-size for persistent volume
 - Persistent volume are converted as PVC into kubernetes
 - Add Volume Transcriber for Kubernetes
 - Fix bad behavior with namespace transcriber, it must not create namespace when hierarchical NS are not supported
 
 ## [0.0.99] - 2022-08-15
-### Stable Release
+### Dev Release
 - Add `Account::$prefixNamespace` property to help to manage shared clusters
 
 ## [0.0.98] - 2022-08-14
-### Stable Release
+### Dev Release
 - Support last version of `Teknoo East Common`
 - Update writers to support `prefereRealDateOnUpdate` behavior
 

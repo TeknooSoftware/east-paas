@@ -38,7 +38,12 @@ class PodTest extends TestCase
 {
     private function buildObject(): Pod
     {
-        return new Pod('foo', 2, [$this->createMock(Container::class)]);
+        return new Pod(
+            'foo',
+            2,
+            [$this->createMock(Container::class)],
+            'bar'
+        );
     }
 
     public function testGetName()
@@ -54,6 +59,14 @@ class PodTest extends TestCase
         self::assertEquals(
             '2',
             $this->buildObject()->getReplicas()
+        );
+    }
+
+    public function testGetOciRegistryConfigName()
+    {
+        self::assertEquals(
+            'bar',
+            $this->buildObject()->getOciRegistryConfigName()
         );
     }
 

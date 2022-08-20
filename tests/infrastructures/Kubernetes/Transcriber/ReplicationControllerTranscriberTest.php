@@ -137,6 +137,93 @@ class ReplicationControllerTranscriberTest extends TestCase
         );
     }
 
+
+    public function testRunWithOciRegistryConfigName()
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects(self::once())
+            ->method('foreachPod')
+            ->willReturnCallback(function (callable $callback) use ($cd) {
+                $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
+                $image1 = $image1->withRegistry('repository.teknoo.run');
+                $image2 = new Image('bar', '/bar', true, '7.4', []);
+                $image2 = $image2->withRegistry('repository.teknoo.run');
+
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
+
+                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], ['foo' => 'bar', 'bar' => 'foo']);
+                $c2 = new Container(
+                    'c2',
+                    'bar',
+                    '7.4',
+                    [80],
+                    [
+                        'bar' => $volume2->import('/bar'),
+                        'data' => new PersistentVolume('foo', 'bar'),
+                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                    ],
+                    [
+                        'foo' => 'bar',
+                        'secret' => new SecretReference('foo', 'bar'),
+                    ]
+                );
+
+                $pod1 = new Pod('p1', 1, [$c1], 'foo');
+                $pod2 = new Pod('p2', 1, [$c2]);
+
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace');
+                $callback(
+                    $pod2,
+                    [
+                        'bar' => ['7.4' => $image2]
+                    ],
+                    [
+                        'bar' => $volume2,
+                        'data' => new PersistentVolume('foo', 'bar'),
+                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                    ],
+                    'default_namespace'
+                );
+                return $cd;
+            });
+
+        $srRepo = $this->createMock(ReplicationControllerRepository::class);
+
+        $kubeClient->expects(self::atLeastOnce())
+            ->method('setNamespace')
+            ->with('default_namespace');
+
+        $kubeClient->expects(self::any())
+            ->method('__call')
+            ->willReturnMap([
+                ['replicationControllers', [], $srRepo],
+            ]);
+
+        $srRepo->expects(self::exactly(2))
+            ->method('exists')
+            ->willReturnOnConsecutiveCalls(false, true);
+
+        $srRepo->expects(self::once())
+            ->method('create')
+            ->willReturn(['foo']);
+
+        $srRepo->expects(self::once())
+            ->method('update')
+            ->willReturn(['foo']);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ReplicationControllerTranscriber::class,
+            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+        );
+    }
+
     public function testError()
     {
         $kubeClient = $this->createMock(KubeClient::class);

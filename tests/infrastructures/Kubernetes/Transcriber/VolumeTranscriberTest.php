@@ -56,6 +56,7 @@ class VolumeTranscriberTest extends TestCase
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace');
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar', true), 'default_namespace');
                 $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'default_namespace');
                 return $cd;
             });
@@ -72,19 +73,22 @@ class VolumeTranscriberTest extends TestCase
                 ['persistentVolumeClaims', [], $seRepo],
             ]);
 
-        $seRepo->expects(self::exactly(2))
+        $seRepo->expects(self::exactly(3))
             ->method('exists')
-            ->willReturnOnConsecutiveCalls(false, true);
+            ->willReturnOnConsecutiveCalls(false, true, true);
 
-        $seRepo->expects(self::once())
+        $seRepo->expects(self::exactly(2))
             ->method('create')
             ->willReturn(['foo']);
+
+        $seRepo->expects(self::once())
+            ->method('delete');
 
         $seRepo->expects(self::never())
             ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->withConsecutive([['foo']], [[]]);
+        $promise->expects(self::exactly(3))->method('success')->withConsecutive([['foo']], [[]], [['foo']]);
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(

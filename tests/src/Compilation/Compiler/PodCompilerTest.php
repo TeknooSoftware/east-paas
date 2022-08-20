@@ -48,6 +48,18 @@ class PodCompilerTest extends TestCase
     private function getDefinitionsArray(): array
     {
         return [
+            'node-pod' => [
+                'replicas' => 1,
+                'oci-registry-config-name' => 'foo',
+                'containers' => [
+                    'node-react' => [
+                        'replicas' => 3,
+                        'image' => 'node-react',
+                        'version' => 123,
+                        'listen' => [8181]
+                    ],
+                ],
+            ],
             'php-pod' => [
                 'replicas' => 1,
                 'containers' => [
@@ -71,6 +83,11 @@ class PodCompilerTest extends TestCase
                             'persistent_volume' => [
                                 'persistent' => true,
                                 'mount-path' => '/app/persistent/',
+                            ],
+                            'resetable_persistent_volume' => [
+                                'persistent' => true,
+                                'mount-path' => '/app/persistent/',
+                                'reset-on-deployment' => true,
                             ],
                             'embedded' => [
                                 'add' => [
@@ -118,7 +135,7 @@ class PodCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(1))->method('addPod');
+        $compiledDeployment->expects(self::exactly(2))->method('addPod');
         $compiledDeployment->expects(self::exactly(1))
             ->method('importVolume')
             ->willReturnCallback(
@@ -152,6 +169,7 @@ class PodCompilerTest extends TestCase
     public function testCompileWithInvalidVolume()
     {
         $definitions = $this->getDefinitionsArray();
+        unset($definitions['node-pod']);
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
@@ -187,6 +205,7 @@ class PodCompilerTest extends TestCase
     public function testCompileWithoutStorageIdentifierInVolume()
     {
         $definitions = $this->getDefinitionsArray();
+        unset($definitions['node-pod']);
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
@@ -222,6 +241,7 @@ class PodCompilerTest extends TestCase
     public function testCompileWithoutStorageSizeInVolume()
     {
         $definitions = $this->getDefinitionsArray();
+        unset($definitions['node-pod']);
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
