@@ -80,7 +80,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                         'name' => $name,
                         'valueFrom' => [
                             'secretKeyRef' => [
-                                'name' => $value->getName(),
+                                'name' => $value->getName() . self::SECRET_VOLUME_SUFFIX,
                                 'key' => $value->getKey(),
                             ],
                         ],
