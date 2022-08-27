@@ -19,12 +19,14 @@ if (!\class_exists(Query::class, false)) {
         final public const HINT_READ_PREFERENCE = 3;
         final public const HINT_READ_ONLY       = 5;
 
+        public $resultToReturn = [];
+
         /**
          * @var iterable|int
          */
         public function execute()
         {
-            return [];
+            return $this->resultToReturn;
         }
 
         /**
@@ -32,7 +34,17 @@ if (!\class_exists(Query::class, false)) {
          */
         public function getSingleResult()
         {
+            if (empty($this->resultToReturn)) {
+                return null;
+            }
 
+            if (\is_iterable($this->resultToReturn)) {
+                foreach ($this->resultToReturn as $row) {
+                    return $row;
+                }
+            }
+
+            return $this->resultToReturn;
         }
 
         public function setHydrate(bool $hydrate) : void

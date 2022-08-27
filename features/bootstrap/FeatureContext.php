@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
+use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
+use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -191,6 +193,7 @@ class FeatureContext implements Context
      */
     public function __construct()
     {
+        include_once __DIR__ . '/../../tests/fakeQuery.php';
         $this->initiateSymfonyKernel();
     }
 
@@ -370,7 +373,53 @@ class FeatureContext implements Context
                 return ($this->getter)($this->className, $id);
             }
 
-            public function getClassName(): string {}
+            public function getClassName(): string {
+                return $this->className;
+            }
+
+            public function createQueryBuilder(): QueryBuilder
+            {
+                $qb = new class($this->getter, $this->className) extends QueryBuilder {
+                    private array $criteria;
+
+                    /**
+                     * @var callable
+                     */
+                    private $getter;
+
+                    public function __construct(
+                        callable $getter,
+                        private string $className,
+                    ) {
+                        $this->getter = $getter;
+                    }
+
+                    public function equals($value): QueryBuilder
+                    {
+                        $this->criteria = $value;
+
+                        return $this;
+                    }
+
+                    public function prime($primer = true): QueryBuilder
+                    {
+                        return $this;
+                    }
+
+                    public function getQuery(array $options = []): Query
+                    {
+                        $query = new Query();
+
+                        $id = $this->criteria['id'] ?? $this->criteria['_id'];
+                        $query->resultToReturn = ($this->getter)($this->className, $id);
+
+
+                        return $query;
+                    }
+                };
+
+                return $qb;
+            }
         };
 
         return $this->repositories[$className];

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.103] - 2022-08-27
+### Dev Release
+- Support East Common 1.4.1
+
 ## [0.0.102] - 2022-08-20
 ### Dev Release
 - Add new entry in paas configuration :
