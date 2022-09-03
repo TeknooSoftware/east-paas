@@ -1,5 +1,9 @@
 parameters:
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
+        -
+            message: '#mixed#'
+            path: infrastructures/Kubernetes/Driver.php
         -
             message: '#Anonymous function should return [a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
             path: infrastructures/
