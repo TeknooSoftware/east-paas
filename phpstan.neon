@@ -81,10 +81,10 @@ parameters:
             path:  */di.php
         -
             message: '#Unreachable statement - code above always terminates#'
-            path:  src/Compilation/
+            path:  src/
         -
             message: '#is never read, only written.#'
-            path:  src/Compilation/
+            path:  src/
 services:
     -
         class: Teknoo\States\PHPStan\MethodsClassExtension
