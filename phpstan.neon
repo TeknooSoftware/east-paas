@@ -79,12 +79,8 @@ parameters:
         -
             message: '#mixed#'
             path:  */di.php
-        -
-            message: '#Unreachable statement - code above always terminates#'
-            path:  src/
-        -
-            message: '#is never read, only written.#'
-            path:  src/
+        -   '#Unreachable statement - code above always terminates#'
+        -   '#is never read, only written.#'
 services:
     -
         class: Teknoo\States\PHPStan\MethodsClassExtension
