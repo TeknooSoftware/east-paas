@@ -1,14 +1,7 @@
 parameters:
-    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         -
-            message: '#\$gitWrapper \(Symplify\\GitWrapper\\GitWrapper\) in empty#'
-            path: infrastructures/
-        -
             message: '#Anonymous function should return [a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
-            path: infrastructures/
-        -
-            message: '#uninitialized readonly property#'
             path: infrastructures/
         -
             message: '#mixed#'
@@ -16,9 +9,6 @@ parameters:
         -
             message: '#mixed#'
             path: src/Job/JobUnit.php
-        -
-            message: '#mixed#'
-            path: infrastructures/Kubernetes/Driver.php
         -
             message: '#Cannot access an offset on mixed#'
             path: infrastructures/Kubernetes/Transcriber/ReplicationControllerTranscriber.php
