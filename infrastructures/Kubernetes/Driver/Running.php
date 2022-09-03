@@ -83,7 +83,7 @@ class Running implements StateInterface
                         || ($runDeployment && $transcriber instanceof DeploymentInterface)
                         || ($runExposing && $transcriber instanceof ExposingInterface)
                     ) {
-                        /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>, mixed, mixed> $promise */
+                        /** @var PromiseInterface<array<string, mixed>, mixed> $promise */
                         $transcriber->transcribe($compiledDeployment, $client, $promise);
                     }
                 }
