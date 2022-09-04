@@ -181,7 +181,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
         replicas: 2 #instance of pods
         containers:
           php-run: #Container name
-            image: registry.teknoo.io/php-run #Container image to use
+            image: registry.teknoo.software/php-run #Container image to use
             version: 7.4
             listen: #Port listen by the container
               - 8080
@@ -243,7 +243,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
     #Ingresses configuration
     ingresses:
       demo: #rule name
-        host: demo-paas.teknoo.io
+        host: demo-paas.teknoo.software
         tls:
           secret: "demo_vault" #Configure the orchestrator to fetch value from vault
         service: #default service

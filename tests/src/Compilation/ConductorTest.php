@@ -327,7 +327,7 @@ class ConductorTest extends TestCase
             ],
             'ingresses' => [
                 'demo' => [
-                    'host' => 'demo-paas.teknoo.io',
+                    'host' => 'demo-paas.teknoo.software',
                     'tls' => [
                         'cert' => 'foo',
                         'key' => 'bar',
