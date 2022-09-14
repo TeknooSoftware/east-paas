@@ -261,7 +261,7 @@ class PodCompiler implements CompilerInterface
         JobUnitInterface $job,
         ?string $storageIdentifier = null,
         ?string $defaultStorageSize = null,
-        ?string $defaultOciRegistryConfig = null,
+        ?string $ociRegistryConfig = null,
     ): CompilerInterface {
         foreach ($definitions as $nameSet => &$podsList) {
             $containers = [];
@@ -309,7 +309,7 @@ class PodCompiler implements CompilerInterface
                     name: $nameSet,
                     replicas: (int) ($podsList[self::KEY_REPLICAS] ?? 1),
                     containers: $containers,
-                    ociRegistryConfigName: $podsList[self::KEY_OCI_REGISTRY_CONFIG_NAME] ?? $defaultOciRegistryConfig,
+                    ociRegistryConfigName: $podsList[self::KEY_OCI_REGISTRY_CONFIG_NAME] ?? $ociRegistryConfig,
                 )
             );
         }

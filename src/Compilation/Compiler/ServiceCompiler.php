@@ -55,7 +55,7 @@ class ServiceCompiler implements CompilerInterface
         JobUnitInterface $job,
         ?string $storageIdentifier = null,
         ?string $defaultStorageSize = null,
-        ?string $defaultOciRegistryConfig = null,
+        ?string $ociRegistryConfig = null,
     ): CompilerInterface {
         foreach ($definitions as $name => &$config) {
             $ports = [];

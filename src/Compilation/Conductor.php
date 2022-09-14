@@ -207,7 +207,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
         PromiseInterface $promise,
         ?string $storageIdentifier = null,
         ?string $storageSize = null,
-        ?string $defaultOciRegistryConfig = null,
+        ?string $ociRegistryConfig = null,
     ): ConductorInterface {
 
         $this->extract(
@@ -216,12 +216,12 @@ class Conductor implements ConductorInterface, AutomatedInterface
             [
                 self::CONFIG_KEY_STORAGE_PROVIDER => $storageIdentifier,
                 self::CONFIG_KEY_STORAGE_SIZE => $storageSize,
-                self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME => $defaultOciRegistryConfig,
+                self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME => $ociRegistryConfig ?? $this->defaultOciRegistryConfig,
             ],
             function ($defaults) use ($promise): void {
                 $storageIdentifier = $defaults[self::CONFIG_KEY_STORAGE_PROVIDER] ?? null;
                 $storageSize = $defaults[self::CONFIG_KEY_STORAGE_SIZE] ?? null;
-                $defaultOciRegistryConfig = $defaults[self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME] ?? null;
+                $ociRegistryConfig = $defaults[self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME] ?? null;
 
                 $this->extract(
                     $this->configuration,
@@ -230,7 +230,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                         self::CONFIG_KEY_VERSION => 'v1',
                         self::CONFIG_KEY_NAMESPACE => 'default',
                     ],
-                    function ($paas) use ($promise, $storageIdentifier, $storageSize, $defaultOciRegistryConfig): void {
+                    function ($paas) use ($promise, $storageIdentifier, $storageSize, $ociRegistryConfig): void {
                         if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
                             $promise->fail(new RuntimeException('Paas config file version not supported', 400));
 
@@ -252,7 +252,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                                 $compiledDeployment,
                                 $storageIdentifier ?? $this->storageIdentifier,
                                 $storageSize ?? $this->storageSize,
-                                $defaultOciRegistryConfig ?? $this->defaultOciRegistryConfig
+                                $ociRegistryConfig ?? $this->defaultOciRegistryConfig
                             );
 
                             $promise->success($compiledDeployment);

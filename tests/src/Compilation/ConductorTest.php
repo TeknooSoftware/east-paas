@@ -823,11 +823,11 @@ EOF;
                     JobUnitInterface $job,
                     ?string $storageIdentifier = null,
                     ?string $defaultStorageSize = null,
-                    ?string $defaultOciRegistryConfig = null,
+                    ?string $ociRegistryConfig = null,
                 ) use ($compiler) {
                     self::assertEquals('fooProvider', $storageIdentifier);
                     self::assertEquals('fooSize', $defaultStorageSize);
-                    self::assertEquals('ociConfigName', $defaultOciRegistryConfig);
+                    self::assertEquals('ociConfigName', $ociRegistryConfig);
                     return $compiler;
                 }
             );

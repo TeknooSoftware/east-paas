@@ -47,6 +47,6 @@ interface CompilerInterface
         JobUnitInterface $job,
         ?string $storageIdentifier = null,
         ?string $defaultStorageSize = null,
-        ?string $defaultOciRegistryConfig = null,
+        ?string $ociRegistryConfig = null,
     ): CompilerInterface;
 }
