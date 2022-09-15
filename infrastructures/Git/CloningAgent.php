@@ -173,7 +173,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         $this->gitProcess->setEnv([
             'GIT_SSH_COMMAND' => "ssh -i {$this->privateKeyFilename} -o IdentitiesOnly=yes",
             'JOB_CLONE_DESTINATION' => $path,
-            'JOB_REPOSITORY' => $sourceRepository->getPullUrl(),
+            'JOB_REPOSITORY' => $this->getSshIdentity()->getName() . '@' . $sourceRepository->getPullUrl(),
             'JOB_BRANCH' => $sourceRepository->getDefaultBranch(),
         ]);
 
