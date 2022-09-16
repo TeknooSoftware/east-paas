@@ -94,6 +94,7 @@ class SshIdentityTest extends TestCase
             ->with([
                 '@class' => SshIdentity::class,
                 'id' => '123',
+                'name' => 'fooName',
                 'private_key' => 'barFoo',
             ]);
 

@@ -83,6 +83,7 @@ class SshIdentity implements
         $normalizer->injectData([
             '@class' => self::class,
             'id' => $this->getId(),
+            'name' => $this->getName(),
             'private_key' => $this->getPrivateKey(),
         ]);
 
