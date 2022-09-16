@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.105] - 2022-09-16
+### Dev Release
+- Fix Git CloningAgent to use the ssh identity user name, and support git repository address with a `git@`.
+
 ## [0.0.104] - 2022-09-14
 ### Dev Release
 - Reword `$defaultOciRegistryConfig` to `$$ociRegistryConfig`

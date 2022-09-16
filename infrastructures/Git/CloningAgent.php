@@ -44,6 +44,9 @@ use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
 
+use function array_pop;
+use function count;
+use function explode;
 use function is_object;
 use function sprintf;
 
@@ -170,10 +173,13 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     {
         $sourceRepository = $this->getSourceRepository();
 
+        $pullUrlParts = explode('@', $sourceRepository->getPullUrl());
+        $pullUrl = $this->getSshIdentity()->getName() . '@' . array_pop($pullUrlParts);
+
         $this->gitProcess->setEnv([
             'GIT_SSH_COMMAND' => "ssh -i {$this->privateKeyFilename} -o IdentitiesOnly=yes",
             'JOB_CLONE_DESTINATION' => $path,
-            'JOB_REPOSITORY' => $this->getSshIdentity()->getName() . '@' . $sourceRepository->getPullUrl(),
+            'JOB_REPOSITORY' => $pullUrl,
             'JOB_BRANCH' => $sourceRepository->getDefaultBranch(),
         ]);
 
