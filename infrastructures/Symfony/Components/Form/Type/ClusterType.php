@@ -35,7 +35,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Teknoo\East\Paas\Object\Cluster;
-use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 use Traversable;
 
 use function array_map;

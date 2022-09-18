@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.107] - 2022-09-18
+### Dev Release
+- Migrate `VisitableInterface` to East Common
+
 ## [0.0.106] - 2022-09-18
 ### Dev Release
 - Rename `FormMappingInterface` to `VisitableInterface`, and accept any callable instead of `FormInterface`.

@@ -33,7 +33,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Common\Object\User;
-use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 use Teknoo\East\Paas\Object\Account;
 use Traversable;
 
