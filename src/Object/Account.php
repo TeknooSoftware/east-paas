@@ -32,7 +32,7 @@ use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Object\User as BaseUser;
 use Teknoo\East\Paas\Contracts\Object\Account\AccountAwareInterface;
-use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
+use Teknoo\East\Paas\Contracts\Object\VisitableInterface;
 use Teknoo\East\Paas\Object\Account\Active;
 use Teknoo\East\Paas\Object\Account\Inactive;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
@@ -54,7 +54,7 @@ class Account implements
     TimestampableInterface,
     AutomatedInterface,
     DeletableInterface,
-    FormMappingInterface,
+    VisitableInterface,
     Stringable
 {
     use ObjectTrait;
@@ -212,26 +212,26 @@ class Account implements
         return $this;
     }
 
-    public function injectDataInto($forms): FormMappingInterface
+    public function visit($visitors): VisitableInterface
     {
-        if (isset($forms['name'])) {
-            $forms['name']->setData($this->getName());
+        if (isset($visitors['name'])) {
+            $visitors['name']($this->getName());
         }
 
-        if (isset($forms['namespace'])) {
-            $forms['namespace']->setData($this->getNamespace());
+        if (isset($visitors['namespace'])) {
+            $visitors['namespace']($this->getNamespace());
         }
 
-        if (isset($forms['prefix_namespace'])) {
-            $forms['prefix_namespace']->setData($this->getPrefixNamespace());
+        if (isset($visitors['prefix_namespace'])) {
+            $visitors['prefix_namespace']($this->getPrefixNamespace());
         }
 
-        if (isset($forms['use_hierarchical_namespaces'])) {
-            $forms['use_hierarchical_namespaces']->setData($this->isUseHierarchicalNamespaces());
+        if (isset($visitors['use_hierarchical_namespaces'])) {
+            $visitors['use_hierarchical_namespaces']($this->isUseHierarchicalNamespaces());
         }
 
-        if (isset($forms['users'])) {
-            $forms['users']->setData($this->getUsers());
+        if (isset($visitors['users'])) {
+            $visitors['users']($this->getUsers());
         }
 
         return $this;

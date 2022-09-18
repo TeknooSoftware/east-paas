@@ -67,7 +67,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['name' => $form])
+            $object->visit(['name' => $form->setData(...)])
         );
     }
 
@@ -97,7 +97,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['name' => $form])
+            $object->visit(['name' => $form->setData(...)])
         );
     }
 
@@ -125,7 +125,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['use_hierarchical_namespaces' => $form])
+            $object->visit(['use_hierarchical_namespaces' => $form->setData(...)])
         );
     }
 
@@ -153,7 +153,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['namespace' => $form])
+            $object->visit(['namespace' => $form->setData(...)])
         );
     }
 
@@ -181,7 +181,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['prefix_namespace' => $form])
+            $object->visit(['prefix_namespace' => $form->setData(...)])
         );
     }
 
@@ -275,7 +275,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['users' => $form])
+            $object->visit(['users' => $form->setData(...)])
         );
     }
 
@@ -299,7 +299,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->injectDataInto(['users' => $form])
+            $object->visit(['users' => $form->setData(...)])
         );
     }
 

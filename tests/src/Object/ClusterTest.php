@@ -68,7 +68,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['name' => $form])
+            $object->visit(['name' => $form->setData(...)])
         );
     }
 
@@ -101,7 +101,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['name' => $form])
+            $object->visit(['name' => $form->setData(...)])
         );
     }
 
@@ -151,7 +151,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['address' => $form])
+            $object->visit(['address' => $form->setData(...)])
         );
     }
 
@@ -172,7 +172,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['address' => $form])
+            $object->visit(['address' => $form->setData(...)])
         );
     }
 
@@ -188,7 +188,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['type' => $form])
+            $object->visit(['type' => $form->setData(...)])
         );
     }
 
@@ -209,7 +209,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['type' => $form])
+            $object->visit(['type' => $form->setData(...)])
         );
     }
 
@@ -230,7 +230,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['environment' => $form])
+            $object->visit(['environment' => $form->setData(...)])
         );
     }
 
@@ -252,7 +252,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['identity' => $form])
+            $object->visit(['identity' => $form->setData(...)])
         );
     }
 
@@ -273,7 +273,7 @@ class ClusterTest extends TestCase
 
         self::assertInstanceOf(
             Cluster::class,
-            $object->injectDataInto(['identity' => $form])
+            $object->visit(['identity' => $form->setData(...)])
         );
     }
 

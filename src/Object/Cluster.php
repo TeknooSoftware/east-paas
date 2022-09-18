@@ -34,7 +34,7 @@ use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
-use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
+use Teknoo\East\Paas\Contracts\Object\VisitableInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
@@ -48,7 +48,7 @@ use Throwable;
 class Cluster implements
     IdentifiedObjectInterface,
     TimestampableInterface,
-    FormMappingInterface,
+    VisitableInterface,
     NormalizableInterface,
     Stringable
 {
@@ -136,26 +136,26 @@ class Cluster implements
         return $this;
     }
 
-    public function injectDataInto($forms): FormMappingInterface
+    public function visit($visitors): VisitableInterface
     {
-        if (isset($forms['name'])) {
-            $forms['name']->setData($this->getName());
+        if (isset($visitors['name'])) {
+            $visitors['name']($this->getName());
         }
 
-        if (isset($forms['type'])) {
-            $forms['type']->setData($this->getType());
+        if (isset($visitors['type'])) {
+            $visitors['type']($this->getType());
         }
 
-        if (isset($forms['address'])) {
-            $forms['address']->setData($this->getAddress());
+        if (isset($visitors['address'])) {
+            $visitors['address']($this->getAddress());
         }
 
-        if (isset($forms['identity'])) {
-            $forms['identity']->setData($this->getIdentity());
+        if (isset($visitors['identity'])) {
+            $visitors['identity']($this->getIdentity());
         }
 
-        if (isset($forms['environment'])) {
-            $forms['environment']->setData($this->getEnvironment());
+        if (isset($visitors['environment'])) {
+            $visitors['environment']($this->getEnvironment());
         }
 
         return $this;

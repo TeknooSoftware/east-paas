@@ -102,7 +102,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['name' => $form])
+            $object->visit(['name' => $form->setData(...)])
         );
     }
 
@@ -134,7 +134,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['name' => $form])
+            $object->visit(['name' => $form->setData(...)])
         );
     }
 
@@ -156,7 +156,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['sourceRepository' => $form])
+            $object->visit(['sourceRepository' => $form->setData(...)])
         );
     }
 
@@ -180,7 +180,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['sourceRepository' => $form])
+            $object->visit(['sourceRepository' => $form->setData(...)])
         );
     }
 
@@ -202,7 +202,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['imagesRegistry' => $form])
+            $object->visit(['imagesRegistry' => $form->setData(...)])
         );
     }
 
@@ -226,7 +226,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['imagesRegistry' => $form])
+            $object->visit(['imagesRegistry' => $form->setData(...)])
         );
     }
 
@@ -248,7 +248,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['clusters' => $form])
+            $object->visit(['clusters' => $form->setData(...)])
         );
     }
 
@@ -271,7 +271,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->injectDataInto(['clusters' => $form])
+            $object->visit(['clusters' => $form->setData(...)])
         );
     }
 

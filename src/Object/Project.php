@@ -33,7 +33,7 @@ use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
-use Teknoo\East\Paas\Contracts\Object\FormMappingInterface;
+use Teknoo\East\Paas\Contracts\Object\VisitableInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Project\Draft;
@@ -59,7 +59,7 @@ class Project implements
     IdentifiedObjectInterface,
     AutomatedInterface,
     TimestampableInterface,
-    FormMappingInterface,
+    VisitableInterface,
     NormalizableInterface,
     Stringable
 {
@@ -208,22 +208,22 @@ class Project implements
         return $this;
     }
 
-    public function injectDataInto($forms): FormMappingInterface
+    public function visit($visitors): VisitableInterface
     {
-        if (isset($forms['name'])) {
-            $forms['name']->setData($this->getName());
+        if (isset($visitors['name'])) {
+            $visitors['name']($this->getName());
         }
 
-        if (isset($forms['sourceRepository'])) {
-            $forms['sourceRepository']->setData($this->getSourceRepository());
+        if (isset($visitors['sourceRepository'])) {
+            $visitors['sourceRepository']($this->getSourceRepository());
         }
 
-        if (isset($forms['imagesRegistry'])) {
-            $forms['imagesRegistry']->setData($this->getImagesRegistry());
+        if (isset($visitors['imagesRegistry'])) {
+            $visitors['imagesRegistry']($this->getImagesRegistry());
         }
 
-        if (isset($forms['clusters'])) {
-            $forms['clusters']->setData($this->getClusters());
+        if (isset($visitors['clusters'])) {
+            $visitors['clusters']($this->getClusters());
         }
 
         return $this;

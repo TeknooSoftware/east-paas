@@ -23,15 +23,20 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Form;
+namespace Teknoo\East\Paas\Contracts\Object;
+
+use Teknoo\East\Paas\Contracts\Form\FormInterface;
 
 /**
- * To define form abke to managed persisted object of this library
+ * Interface to define persisted object able to populate a FormInstance
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface FormInterface
+interface VisitableInterface
 {
-    public function setData(mixed $data): FormInterface;
+    /**
+     * @param array<string, callable> $visitors
+     */
+    public function visit($visitors): VisitableInterface;
 }

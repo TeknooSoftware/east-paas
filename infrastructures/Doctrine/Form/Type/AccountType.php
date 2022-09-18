@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Contracts\Form\FormInterface as PaasFormInterface;
 use Teknoo\East\Paas\Object\Account;
 use Traversable;
 
+use function array_map;
 use function iterator_to_array;
 
 /**
@@ -101,9 +102,9 @@ class AccountType extends AbstractType
             ]
         );
 
-        $builder->setDataMapper(new class implements DataMapperInterface {
+        $builder->setDataMapper(dataMapper: new class implements DataMapperInterface {
             /**
-             * @param Traversable<string, PaasFormInterface> $forms
+             * @param Traversable<string, FormInterface> $forms
              * @param ?Account $data
              */
             public function mapDataToForms($data, $forms): void
@@ -112,8 +113,11 @@ class AccountType extends AbstractType
                     return;
                 }
 
-                $forms = iterator_to_array($forms);
-                $data->injectDataInto($forms);
+                $visitors = array_map(
+                    fn (FormInterface $form): callable => $form->setData(...),
+                    iterator_to_array($forms)
+                );
+                $data->visit($visitors);
             }
 
             /**
