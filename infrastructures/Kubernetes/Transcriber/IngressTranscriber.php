@@ -44,10 +44,14 @@ class IngressTranscriber implements ExposingInterface
 {
     private const NAME_SUFFIX = '-ingress';
 
+    /**
+     * @param array<string, mixed> $defaultIngressAnnotations
+     */
     public function __construct(
         private readonly ?string $defaultIngressClass,
         private readonly ?string $defaultIngressService,
         private readonly ?int $defaultIngressPort,
+        private readonly array $defaultIngressAnnotations = [],
     ) {
     }
 
@@ -96,6 +100,7 @@ class IngressTranscriber implements ExposingInterface
                 'labels' => [
                     'name' => $ingress->getName(),
                 ],
+                'annotations' => $this->defaultIngressAnnotations,
             ],
             'spec' => [
                 'rules' => [$rule],
@@ -104,7 +109,7 @@ class IngressTranscriber implements ExposingInterface
 
         if (null !== $this->defaultIngressClass || null !== $ingress->getProvider()) {
             $provider = $ingress->getProvider() ?? $this->defaultIngressClass;
-            $specs['annotations']['kubernetes.io/ingress.class'] = $provider;
+            $specs['metadata']['annotations']['kubernetes.io/ingress.class'] = $provider;
         }
 
         if (null !== $this->defaultIngressService && null !== $this->defaultIngressPort) {

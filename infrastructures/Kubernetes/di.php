@@ -60,6 +60,7 @@ return [
         $defaultIngressClass = null;
         $defaultServiceName = null;
         $defaultServicePort = null;
+        $defaultAnnotations = null;
 
         if ($container->has('teknoo.east.paas.kubernetes.default_ingress_class')) {
             $defaultIngressClass = (string) $container->get('teknoo.east.paas.kubernetes.default_ingress_class');
@@ -71,6 +72,10 @@ return [
 
         if ($container->has('teknoo.east.paas.kubernetes.default_service.port')) {
             $defaultServicePort = (int) $container->get('teknoo.east.paas.kubernetes.default_service.port');
+        }
+
+        if ($container->has('teknoo.east.paas.kubernetes.default_annotations')) {
+            $defaultAnnotations = (array) $container->get('teknoo.east.paas.kubernetes.default_annotations');
         }
 
         return new IngressTranscriber(

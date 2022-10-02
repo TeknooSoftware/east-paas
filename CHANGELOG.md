@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.108] - 2022-10-02
+### Dev Release
+- Add `teknoo.east.paas.kubernetes.default_annotations` to add specific annotations to ingress
+- Fix ingress default class
+
 ## [0.0.107] - 2022-09-18
 ### Dev Release
 - Migrate `VisitableInterface` to East Common

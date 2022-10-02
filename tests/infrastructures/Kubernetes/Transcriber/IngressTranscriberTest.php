@@ -43,7 +43,7 @@ class IngressTranscriberTest extends TestCase
 {
     public function buildTranscriber(): IngressTranscriber
     {
-        return new IngressTranscriber('provider', 'foo', 80);
+        return new IngressTranscriber('provider', 'foo', 80, ['foo' => 'bar']);
     }
 
     public function testRun()

@@ -159,6 +159,7 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.kubernetes.default_ingress_class', 'foo');
         $container->set('teknoo.east.paas.kubernetes.default_service.name', 'foo');
         $container->set('teknoo.east.paas.kubernetes.default_service.port', 80);
+        $container->set('teknoo.east.paas.kubernetes.default_annotations', []);
 
         self::assertInstanceOf(
             IngressTranscriber::class,
