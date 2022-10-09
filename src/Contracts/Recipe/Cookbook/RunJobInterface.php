@@ -43,7 +43,6 @@ interface RunJobInterface extends CookbookInterface
     final public const STEP_PREPARE_WORKSPACE = 30;
     final public const STEP_CONFIGURE_CLONING_AGENT = 40;
     final public const STEP_CLONE_REPOSITORY = 50;
-    final public const STEP_CLONE_REPOSITORY_SUBMODULE = 60;
 
     //Configure Deployment
     final public const STEP_CONFIGURE_CONDUCTOR = 60;
