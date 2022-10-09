@@ -196,6 +196,7 @@ class JobUnit implements JobUnitInterface
         if (
             !isset($values['defaults']['oci-registry-config-name'])
             && (($identity = $this->imagesRegistry->getIdentity()) instanceof IdentityWithConfigNameInterface)
+            && !empty($identity->getConfigName())
         ) {
             $values['defaults']['oci-registry-config-name'] = $identity->getConfigName();
         }

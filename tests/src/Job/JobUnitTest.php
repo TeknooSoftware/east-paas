@@ -445,6 +445,56 @@ class JobUnitTest extends TestCase
         );
     }
 
+    public function testUpdateVariablesInWithDefaultsEmpty()
+    {
+        $ori = [
+            'foo' => 'foo',
+            'bar' => [
+                '${foo}',
+                '${foo} text ${bar}',
+            ],
+            '${foo}' => 'text',
+        ];
+
+        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity->expects(self::any())
+            ->method('getConfigName')
+            ->willReturn('');
+
+        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+
+        self::assertInstanceOf(
+            JobUnit::class,
+            $this->buildObject(imageRegistry: $imageRegistry)->updateVariablesIn(
+                $ori,
+                new Promise(
+                    function (array $result) {
+                        self::assertEquals(
+                            [
+                                'foo' => 'foo',
+                                'bar' => [
+                                    'bar',
+                                    'bar text FOO',
+                                ],
+                                '${foo}' => 'text',
+                                'paas' => [
+                                    'namespace' => 'foo',
+                                    'hierarchical-namespaces' => false,
+                                ],
+                            ],
+                            $result
+                        );
+                    },
+                    function (\Throwable  $error): never {
+                        throw $error;
+                    }
+                )
+            )
+        );
+    }
+
     public function testUpdateVariablesInWithoutHirerachicalNS()
     {
         $ori = [
