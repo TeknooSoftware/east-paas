@@ -284,7 +284,7 @@ class Job implements
      */
     public function setExtra(array $extra): Job
     {
-        $this->extra = $extra;
+        $this->extra += $extra;
 
         return $this;
     }

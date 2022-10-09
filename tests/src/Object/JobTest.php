@@ -309,7 +309,12 @@ class JobTest extends TestCase
         $object = $this->buildObject();
         self::assertInstanceOf(
             $object::class,
-            $object->setExtra(['foo'])
+            $object->setExtra(['foo' => 'bar'])
+        );
+
+        self::assertInstanceOf(
+            $object::class,
+            $object->setExtra(['bar' => 'foo'])
         );
     }
 
@@ -463,7 +468,7 @@ class JobTest extends TestCase
                 'history' => null,
                 'base_namespace' => 'foo',
                 'hierarchical_namespaces' => false,
-                'extra' => ['foo' => 'bar'],
+                'extra' => ['foo' => 'bar', 'bar' => 'foo'],
             ]);
 
         self::assertInstanceOf(
@@ -471,6 +476,7 @@ class JobTest extends TestCase
             $this->buildObject()->setId('123')
                 ->setBaseNamespace('foo')
                 ->setExtra(['foo' => 'bar'])
+                ->setExtra(['bar' => 'foo'])
                 ->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']
