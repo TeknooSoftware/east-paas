@@ -69,7 +69,7 @@ class IngressTranscriber implements ExposingInterface
                 'pathType' => 'Prefix',
                 'backend' => [
                     'service' => [
-                        'name' => $path->getServiceName(),
+                        'name' => $path->getServiceName() . ServiceTranscriber::NAME_SUFFIX,
                         'port' => [
                             'number' => $path->getServicePort(),
                         ],
@@ -84,7 +84,7 @@ class IngressTranscriber implements ExposingInterface
                 'pathType' => 'Prefix',
                 'backend' => [
                     'service' => [
-                        'name' => $ingress->getDefaultServiceName(),
+                        'name' => $ingress->getDefaultServiceName() . ServiceTranscriber::NAME_SUFFIX,
                         'port' => [
                             'number' => $ingress->getDefaultServicePort(),
                         ],

@@ -44,7 +44,7 @@ use function strtolower;
  */
 class ServiceTranscriber implements ExposingInterface
 {
-    private const NAME_SUFFIX = '-service';
+    public const NAME_SUFFIX = '-service';
 
     private static function convertToService(Service $service, string $namespace): KubeService
     {

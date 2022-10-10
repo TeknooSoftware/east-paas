@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.111] - 2022-10-10
+### Dev Release
+- Fix `IngressTranscriber` to use `ServiceTranscriber` suffix on service name
+
 ## [0.0.110] - 2022-10-09
 ### Dev Release
 - `JobUnit::updateDefaults` will not add an empty `oci-registry-config-name` when they is an empty value.
