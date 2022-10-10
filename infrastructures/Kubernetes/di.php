@@ -81,9 +81,10 @@ return [
         }
 
         return new IngressTranscriber(
-            $defaultIngressClass,
-            $defaultServiceName,
-            $defaultServicePort
+            defaultIngressClass: $defaultIngressClass,
+            defaultIngressService: $defaultServiceName,
+            defaultIngressPort: $defaultServicePort,
+            defaultIngressAnnotations: $defaultAnnotations,
         );
     },
     NamespaceTranscriber::class => create(),
