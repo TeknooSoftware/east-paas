@@ -60,7 +60,7 @@ return [
         $defaultIngressClass = null;
         $defaultServiceName = null;
         $defaultServicePort = null;
-        $defaultAnnotations = null;
+        $defaultAnnotations = [];
 
         if ($container->has('teknoo.east.paas.kubernetes.ingress.default_ingress_class')) {
             $defaultIngressClass = (string) $container->get(
