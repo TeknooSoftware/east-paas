@@ -31,7 +31,7 @@ return [
         ],
     ],
     'teknoo.east.paas.default_storage_provider' => 'nfs',
-    'teknoo.east.paas.kubernetes.default_annotations' => [
+    'teknoo.east.paas.kubernetes.ingress.default_annotations' => [
         'foo' => 'bar',
     ],
     UriFactoryInterface::class => get(UriFactory::class),
