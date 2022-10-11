@@ -61,7 +61,25 @@ class IngressTranscriber implements ExposingInterface
     ): KubeIngress {
         $rule = [
             'host' => $ingress->getHost(),
+            'http' => [
+                'paths' => [],
+            ],
         ];
+
+        if (!empty($ingress->getDefaultServiceName())) {
+            $rule['http']['paths'][] = [
+                'path' => '/',
+                'pathType' => 'Prefix',
+                'backend' => [
+                    'service' => [
+                        'name' => $ingress->getDefaultServiceName() . ServiceTranscriber::NAME_SUFFIX,
+                        'port' => [
+                            'number' => $ingress->getDefaultServicePort(),
+                        ],
+                    ],
+                ]
+            ];
+        }
 
         foreach ($ingress->getPaths() as $path) {
             $rule['http']['paths'][] = [
@@ -78,20 +96,6 @@ class IngressTranscriber implements ExposingInterface
             ];
         }
 
-        if (!empty($ingress->getDefaultServiceName())) {
-            $rule['http']['paths'][] = [
-                'path' => '/',
-                'pathType' => 'Prefix',
-                'backend' => [
-                    'service' => [
-                        'name' => $ingress->getDefaultServiceName() . ServiceTranscriber::NAME_SUFFIX,
-                        'port' => [
-                            'number' => $ingress->getDefaultServicePort(),
-                        ],
-                    ],
-                ]
-            ];
-        }
 
         $specs = [
             'metadata' => [
