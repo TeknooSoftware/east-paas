@@ -154,8 +154,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
                     $next->success($result);
                 },
-                fn (Throwable $error, PromiseInterface $next) => $next->fail($error),
-                true
+                allowNext: true
             );
 
             /** @var Promise<array<int|string, mixed>, mixed, array<string, mixed>> $validatorPromise */
@@ -164,8 +163,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                     $result,
                     $next
                 ),
-                fn (Throwable $error, PromiseInterface $next) => $next->fail($error),
-                true
+                allowNext: true
             );
 
             /**
@@ -181,17 +179,15 @@ class Conductor implements ConductorInterface, AutomatedInterface
                     $this->factory->getSchema(),
                     $next
                 ),
-                fn (Throwable $error, PromiseInterface $next) => $next->fail($error),
-                true
+                allowNext: true
             );
 
             $this->parseYaml(
                 $configuration,
-                $parsedPromise->next(
-                    $validatorPromise->next(
-                        $configurationPromise->next($promise)
-                    )
-                )
+                $parsedPromise
+                    ->next($validatorPromise, autoCall: true)
+                    ->next($configurationPromise, autoCall: true)
+                    ->next($promise, autoCall: true)
             );
         } catch (Throwable $error) {
             $promise->fail($error);

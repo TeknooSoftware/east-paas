@@ -38,10 +38,10 @@
         "php-di/php-di": "^6.4",
         "psr/http-client": "^1.0.1",
         "teknoo/immutable": "^3.0.1",
-        "teknoo/states": "^6.0.8",
-        "teknoo/recipe": "^4.1.4",
+        "teknoo/states": "^6.0.10",
+        "teknoo/recipe": "^4.2",
         "teknoo/east-foundation": "^6.0.7",
-        "teknoo/east-common": "^1.4.2"
+        "teknoo/east-common": "^1.4.3"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

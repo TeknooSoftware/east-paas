@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.113] - 2022-10-15
+### Dev Release
+- Support Recipe 4.2+
+
 ## [0.0.112] - 2022-10-10
 ### Dev Release
 - Fix `teknoo.east.paas.kubernetes.default*` to `teknoo.east.paas.kubernetes.ingress.default*`
