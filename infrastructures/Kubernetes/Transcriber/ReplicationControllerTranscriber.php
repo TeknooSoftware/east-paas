@@ -152,7 +152,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                 'volumeMounts' => [
                     [
                         'name' => $volume->getName() . self::VOLUME_SUFFIX,
-                        'mountPath' => $volume->getLocalPath(),
+                        'mountPath' => $volume->getMountPath(),
                         'readOnly' => false,
                     ]
                 ]

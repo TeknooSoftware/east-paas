@@ -252,7 +252,10 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
                     'PAAS_DOCKERFILE_CONTENT' => $this->generateDockerFile(
                         'alpine:latest',
                         $paths,
-                        'cp -rf ' . $volumeUpdated->getLocalPath() . '/. ' . $volumeUpdated->getMountPath()
+                        'cp -rf ' . $volumeUpdated->getLocalPath()
+                            . '/. '
+                            . $volumeUpdated->getMountPath()
+                            . '; sleep 120',
                     ),
                 ];
 
