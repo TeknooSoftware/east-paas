@@ -131,7 +131,7 @@ class Running implements StateInterface
             }
 
             if (!empty($command)) {
-                $output .= "CMD $command" . PHP_EOL;
+                $output .= "CMD /bin/sh -c '$command'" . PHP_EOL;
             }
 
             return $output . PHP_EOL;
