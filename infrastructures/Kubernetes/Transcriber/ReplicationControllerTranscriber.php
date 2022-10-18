@@ -181,7 +181,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
     ): ReplicationController {
         $specs = [
             'metadata' => [
-                'name' => $name . '-v' . $version,
+                'name' => $name . self::NAME_SUFFIX . '-v' . $version,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $pod->getName(),
@@ -231,7 +231,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                         $client->setNamespace($namespace);
                     }
 
-                    $name = $pod->getName() . self::NAME_SUFFIX;
+                    $name = $pod->getName();
                     $rcRepository = $client->replicationControllers();
 
                     $ctl = $rcRepository->setLabelSelector(['name' => $name])->first();
