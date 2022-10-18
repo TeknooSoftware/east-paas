@@ -41,6 +41,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Transcribe
 use Throwable;
 
 use function array_map;
+use function substr;
 
 /**
  * Deployment Transcriber to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsController
@@ -186,7 +187,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     'name' => $pod->getName(),
                 ],
                 'annotations' => [
-                    'teknoo.space.version' => $version,
+                    'teknoo.space.version' => 'v' . $version,
                 ],
             ],
             'spec' => [
@@ -236,7 +237,10 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     $ctl = $rcRepository->setLabelSelector(['name' => $name])->first();
                     $version = 1;
                     if (null !== $ctl) {
-                        $version = (int) ($ctl->toArray()['metadata']['annotations']['teknoo.space.version'] ?? 1);
+                        $version = (int) substr(
+                            string:($ctl->toArray()['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
+                            offset: 1,
+                        );
                     }
                 } catch (Throwable $error) {
                     $promise->fail($error);
