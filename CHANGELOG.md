@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.114] - 2022-10-17
+### Dev Release
+- Debug init container for prepopulated volume
+- Fix repication controller transcriber to run a new deployment instead of update
+  (will be improved later with a scale down before delete old RC)
+
 ## [0.0.113] - 2022-10-15
 ### Dev Release
 - Support Recipe 4.2+

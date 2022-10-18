@@ -51,7 +51,8 @@ use function array_map;
  */
 class ReplicationControllerTranscriber implements DeploymentInterface
 {
-    private const NAME_SUFFIX = '-replication-ctrl';
+    private const NAME_SUFFIX = '-ctrl';
+    private const POD_SUFFIX = '-pod';
     private const VOLUME_SUFFIX = '-volume';
     private const SECRET_VOLUME_SUFFIX = '-secret';
 
@@ -170,24 +171,29 @@ class ReplicationControllerTranscriber implements DeploymentInterface
      * @param array<string, Volume>|Volume[] $volumes
      */
     private static function convertToReplicationController(
+        string $name,
         Pod $pod,
         array $images,
         array $volumes,
         string $namespace,
+        int $version
     ): ReplicationController {
         $specs = [
             'metadata' => [
-                'name' => $pod->getName() . self::NAME_SUFFIX,
+                'name' => $name . '-v' . $version,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $pod->getName(),
+                ],
+                'annotations' => [
+                    'teknoo.space.version' => $version,
                 ],
             ],
             'spec' => [
                 'replicas' => $pod->getReplicas(),
                 'template' => [
                     'metadata' => [
-                        'name' => $pod->getName() . '-pod',
+                        'name' => $pod->getName() . self::POD_SUFFIX,
                         'namespace' => $namespace,
                         'labels' => [
                             'name' => $pod->getName(),
@@ -218,23 +224,43 @@ class ReplicationControllerTranscriber implements DeploymentInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachPod(
-            static function (Pod $pod, array $images, array $volumes, string $namespace) use ($client, $promise) {
-                $kubeController = self::convertToReplicationController($pod, $images, $volumes, $namespace);
-
+            static function (Pod $pod, array $images, array $volumes, string $namespace) use ($client, $promise): void {
                 try {
                     if (!empty($namespace)) {
                         $client->setNamespace($namespace);
                     }
 
+                    $name = $pod->getName() . self::NAME_SUFFIX;
                     $rcRepository = $client->replicationControllers();
-                    $name = $kubeController->getMetadata('name') ?? $pod->getName() . self::NAME_SUFFIX;
-                    if ($rcRepository->exists($name)) {
-                        $result = $rcRepository->update($kubeController);
-                    } else {
-                        $result = $rcRepository->create($kubeController);
+
+                    $ctl = $rcRepository->setLabelSelector(['name' => $name])->first();
+                    $version = 1;
+                    if (null !== $ctl) {
+                        $version = (int) ($ctl->toArray()['metadata']['annotations']['teknoo.space.version'] ?? 1);
                     }
+                } catch (Throwable $error) {
+                    $promise->fail($error);
+
+                    return;
+                }
+
+                $kubeController = self::convertToReplicationController(
+                    name: $name,
+                    pod: $pod,
+                    images: $images,
+                    volumes: $volumes,
+                    namespace: $namespace,
+                    version: $version,
+                );
+
+                try {
+                    $result = $rcRepository->create($kubeController);
 
                     $promise->success($result);
+
+                    if (null !== $ctl) {
+                        $rcRepository->delete($ctl);
+                    }
                 } catch (Throwable $error) {
                     $promise->fail($error);
                 }

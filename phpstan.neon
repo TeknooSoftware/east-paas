@@ -14,7 +14,7 @@ parameters:
             message: '#mixed#'
             path: src/Job/JobUnit.php
         -
-            message: '#Cannot access an offset on mixed#'
+            message: '#mixed#'
             path: infrastructures/Kubernetes/Transcriber/ReplicationControllerTranscriber.php
         -
             message: '#SecretTranscriber::encode#'
