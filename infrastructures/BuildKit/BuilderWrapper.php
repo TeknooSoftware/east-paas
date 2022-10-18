@@ -254,8 +254,7 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
                         $paths,
                         'cp -rf ' . $volumeUpdated->getLocalPath()
                             . '/. '
-                            . $volumeUpdated->getMountPath()
-                            . '; sleep 120',
+                            . $volumeUpdated->getMountPath(),
                     ),
                 ];
 
