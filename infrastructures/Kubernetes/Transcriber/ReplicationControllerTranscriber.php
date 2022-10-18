@@ -237,10 +237,12 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     $ctl = $rcRepository->setLabelSelector(['name' => $name])->first();
                     $version = 1;
                     if (null !== $ctl) {
-                        $version = (int) substr(
-                            string:($ctl->toArray()['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
-                            offset: 1,
-                        );
+                        $version = (
+                            (int) substr(
+                                string:($ctl->toArray()['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
+                                offset: 1,
+                            )
+                        ) + 1;
                     }
                 } catch (Throwable $error) {
                     $promise->fail($error);
