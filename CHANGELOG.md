@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.115] - 2022-10-19
+### Dev Release
+- Add JobUnit Short Id to limit length of image's name
+
 ## [0.0.114] - 2022-10-17
 ### Dev Release
 - Debug init container for prepopulated volume
