@@ -41,6 +41,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Transcribe
 use Throwable;
 
 use function array_map;
+use function sleep;
 use function substr;
 
 /**
@@ -56,6 +57,12 @@ class ReplicationControllerTranscriber implements DeploymentInterface
     private const POD_SUFFIX = '-pod';
     private const VOLUME_SUFFIX = '-volume';
     private const SECRET_VOLUME_SUFFIX = '-secret';
+
+    public function __construct(
+        private readonly int $podDeletionWaitTime = 5,
+    ) {
+    }
+
 
     /**
      * @param array<string, > $specs
@@ -228,8 +235,18 @@ class ReplicationControllerTranscriber implements DeploymentInterface
         KubernetesClient $client,
         PromiseInterface $promise
     ): TranscriberInterface {
+        $podDeletionWaitTime = $this->podDeletionWaitTime;
         $compiledDeployment->foreachPod(
-            static function (Pod $pod, array $images, array $volumes, string $namespace) use ($client, $promise): void {
+            static function (
+                Pod $pod,
+                array $images,
+                array $volumes,
+                string $namespace,
+            ) use (
+                $client,
+                $promise,
+                $podDeletionWaitTime,
+            ): void {
                 try {
                     if (!empty($namespace)) {
                         $client->setNamespace($namespace);
@@ -269,8 +286,22 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     $promise->success($result);
 
                     if (null !== $ctl) {
+                        $ctl = $ctl->updateModel(
+                            static function (array &$attribute): array {
+                                $attribute['spec']['replicas'] = 0;
+
+                                return $attribute;
+                            }
+                        );
 
                         $rcRepository->patch($ctl);
+
+                        $pods = $client->pods();
+                        $labelSelector = ['vname' => $name . '-v' . $version,];
+                        while (null !== $pods->setLabelSelector($labelSelector)->first()) {
+                            sleep($podDeletionWaitTime);
+                        }
+
                         $rcRepository->delete($ctl);
                     }
                 } catch (Throwable $error) {

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubeClient;
 use Maclof\Kubernetes\Models\ReplicationController;
+use Maclof\Kubernetes\Repositories\PodRepository;
 use Maclof\Kubernetes\Repositories\ReplicationControllerRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -104,7 +105,8 @@ class ReplicationControllerTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $srRepo = $this->createMock(ReplicationControllerRepository::class);
+        $rcRepo = $this->createMock(ReplicationControllerRepository::class);
+        $pRepo = $this->createMock(PodRepository::class);
 
         $kubeClient->expects(self::atLeastOnce())
             ->method('setNamespace')
@@ -113,28 +115,40 @@ class ReplicationControllerTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['replicationControllers', [], $srRepo],
+                ['replicationControllers', [], $rcRepo],
+                ['pods', [], $pRepo],
             ]);
 
-        $srRepo->expects(self::any())
+        $rcRepo->expects(self::any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $srRepo->expects(self::exactly(2))
+        $pRepo->expects(self::any())
+            ->method('setLabelSelector')
+            ->willReturnSelf();
+
+        $rcRepo->expects(self::exactly(2))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
                 new ReplicationController(['metadata' => ['name' => 'foo']]),
             );
 
-        $srRepo->expects(self::exactly(2))
+        $pRepo->expects(self::any(2))
+            ->method('first')
+            ->willReturnOnConsecutiveCalls(
+                new \Maclof\Kubernetes\Models\Pod(['metadata' => ['name' => 'foo']]),
+                null,
+            );
+
+        $rcRepo->expects(self::exactly(2))
             ->method('create')
             ->willReturn(['foo']);
 
-        $srRepo->expects(self::never())
+        $rcRepo->expects(self::never())
             ->method('update');
 
-        $srRepo->expects(self::once())
+        $rcRepo->expects(self::once())
             ->method('delete')
             ->willReturn(['foo']);
 
@@ -201,7 +215,8 @@ class ReplicationControllerTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $srRepo = $this->createMock(ReplicationControllerRepository::class);
+        $rcRepo = $this->createMock(ReplicationControllerRepository::class);
+        $pRepo = $this->createMock(PodRepository::class);
 
         $kubeClient->expects(self::atLeastOnce())
             ->method('setNamespace')
@@ -210,28 +225,40 @@ class ReplicationControllerTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['replicationControllers', [], $srRepo],
+                ['replicationControllers', [], $rcRepo],
+                ['pods', [], $pRepo],
             ]);
 
-        $srRepo->expects(self::any())
+        $rcRepo->expects(self::any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $srRepo->expects(self::exactly(2))
+        $pRepo->expects(self::any())
+            ->method('setLabelSelector')
+            ->willReturnSelf();
+
+        $rcRepo->expects(self::exactly(2))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
                 new ReplicationController(['metadata' => ['name' => 'foo']]),
             );
 
-        $srRepo->expects(self::exactly(2))
+        $pRepo->expects(self::any())
+            ->method('first')
+            ->willReturnOnConsecutiveCalls(
+                new \Maclof\Kubernetes\Models\Pod(['metadata' => ['name' => 'foo']]),
+                null,
+            );
+
+        $rcRepo->expects(self::exactly(2))
             ->method('create')
             ->willReturn(['foo']);
 
-        $srRepo->expects(self::never())
+        $rcRepo->expects(self::never())
             ->method('update');
 
-        $srRepo->expects(self::once())
+        $rcRepo->expects(self::once())
             ->method('delete')
             ->willReturn(['foo']);
 
