@@ -192,12 +192,16 @@ class ReplicationControllerTranscriber implements DeploymentInterface
             ],
             'spec' => [
                 'replicas' => $pod->getReplicas(),
+                'selector' => [
+                    'vname' => $name . '-v' . $version,
+                ],
                 'template' => [
                     'metadata' => [
                         'name' => $pod->getName() . self::POD_SUFFIX,
                         'namespace' => $namespace,
                         'labels' => [
                             'name' => $pod->getName(),
+                            'vname' => $name . '-v' . $version,
                         ],
                     ],
                     'spec' => [
@@ -265,6 +269,8 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     $promise->success($result);
 
                     if (null !== $ctl) {
+
+                        $rcRepository->patch($ctl);
                         $rcRepository->delete($ctl);
                     }
                 } catch (Throwable $error) {
