@@ -49,6 +49,7 @@ use Throwable;
 use function implode;
 use function is_array;
 use function preg_replace_callback;
+use function strlen;
 use function substr;
 use function strtolower;
 
@@ -85,6 +86,16 @@ class JobUnit implements JobUnitInterface
     public function getId(): string
     {
         return $this->id;
+    }
+
+    public function getShortId(): string
+    {
+        $id = $this->getId();
+        if (strlen($id) < 9) {
+            return $id;
+        }
+
+        return substr(string: $id, offset: 0, length: 4) . '-' . substr(string: $id, offset: -4);
     }
 
     public function configureCloningAgent(

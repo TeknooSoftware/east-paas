@@ -45,6 +45,8 @@ interface JobUnitInterface extends NormalizableInterface
 {
     public function getId(): string;
 
+    public function getShortId(): string;
+
     /**
      * @param PromiseInterface<CloningAgentInterface, mixed> $promise
      */

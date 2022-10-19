@@ -222,7 +222,7 @@ class PodCompiler implements CompilerInterface
     ): string {
         $originalImage = $image;
 
-        $image = $originalImage . '_' . $job->getId();
+        $image = $originalImage . '-' . $job->getShortId();
         $parts = explode('/', $image);
         $image = array_pop($parts);
 

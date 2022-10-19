@@ -115,9 +115,10 @@ class JobUnitTest extends TestCase
         array $extra = [],
         bool $hierarchicalNS = false,
         ImageRegistryInterface $imageRegistry = null,
+        string $id = 'test',
     ) {
         return (new JobUnit(
-            'test',
+            $id,
             ['@class' => Project::class,'id' => 'bar', 'name' => 'hello'],
             new Environment('foo'),
             $namespace,
@@ -132,6 +133,31 @@ class JobUnitTest extends TestCase
             $extra,
             $hierarchicalNS,
         ));
+    }
+
+    public function testGetShortId()
+    {
+        $obj = $this->buildObject();
+        self::assertEquals(
+            'test',
+            $obj->getId(),
+        );
+
+        self::assertEquals(
+            'test',
+            $obj->getShortId(),
+        );
+
+        $obj = $this->buildObject(id: 'azertyuiopqsdfghjklm');
+        self::assertEquals(
+            'azertyuiopqsdfghjklm',
+            $obj->getId(),
+        );
+
+        self::assertEquals(
+            'azer-jklm',
+            $obj->getShortId(),
+        );
     }
 
     public function testConfigureCloningAgentOnSuccess()
