@@ -258,12 +258,13 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     $ctl = $rcRepository->setLabelSelector(['name' => $name])->first();
                     $version = 1;
                     if (null !== $ctl) {
-                        $version = (
+                        $oldVersion = (
                             (int) substr(
                                 string:($ctl->toArray()['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
                                 offset: 1,
                             )
-                        ) + 1;
+                        );
+                        $version = $oldVersion + 1;
                     }
                 } catch (Throwable $error) {
                     $promise->fail($error);
@@ -297,7 +298,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                         $rcRepository->patch($ctl);
 
                         $pods = $client->pods();
-                        $labelSelector = ['vname' => $name . '-v' . $version,];
+                        $labelSelector = ['vname' => $name . '-v' . $oldVersion,];
                         while (null !== $pods->setLabelSelector($labelSelector)->first()) {
                             sleep($podDeletionWaitTime);
                         }
