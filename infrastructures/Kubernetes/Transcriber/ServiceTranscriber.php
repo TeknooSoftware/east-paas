@@ -90,7 +90,7 @@ class ServiceTranscriber implements ExposingInterface
     private static function convertToService(Service $service, string $namespace): KubeService
     {
         return new KubeService(
-            self::writeSpec($service, $namespace)
+            static::writeSpec($service, $namespace)
         );
     }
 

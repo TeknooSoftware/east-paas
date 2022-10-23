@@ -104,7 +104,7 @@ class SecretTranscriber implements DeploymentInterface
         }
 
         return new KubeSecret(
-            self::writeSpec($secret, $namespace)
+            static::writeSpec($secret, $namespace)
         );
     }
 

@@ -72,7 +72,7 @@ class NamespaceTranscriber implements GenericTranscriberInterface
     private static function convertToSubnamespace(string $namespace): SubnamespaceAnchor
     {
         return new SubnamespaceAnchor(
-            self::writeSpec($namespace)
+            static::writeSpec($namespace)
         );
     }
 

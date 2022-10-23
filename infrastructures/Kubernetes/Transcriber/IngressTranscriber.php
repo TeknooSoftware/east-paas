@@ -155,7 +155,7 @@ class IngressTranscriber implements ExposingInterface
         array $defaultIngressAnnotations,
     ): KubeIngress {
         return new KubeIngress(
-            self::writeSpec(
+            static::writeSpec(
                 $ingress,
                 $namespace,
                 $defaultIngressClass,

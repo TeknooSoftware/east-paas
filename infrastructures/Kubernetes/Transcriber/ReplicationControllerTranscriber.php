@@ -242,7 +242,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
         int $version
     ): ReplicationController {
         return new ReplicationController(
-            self::writeSpec(
+            static::writeSpec(
                 $name,
                 $pod,
                 $images,

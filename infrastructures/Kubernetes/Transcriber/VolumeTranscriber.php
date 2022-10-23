@@ -81,7 +81,7 @@ class VolumeTranscriber implements DeploymentInterface
         string $namespace
     ): PersistentVolumeClaim {
         return new PersistentVolumeClaim(
-            self::writeSpec($volume, $namespace)
+            static::writeSpec($volume, $namespace)
         );
     }
 
