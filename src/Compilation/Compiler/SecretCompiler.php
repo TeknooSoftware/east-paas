@@ -43,6 +43,7 @@ class SecretCompiler implements CompilerInterface
 {
     private const KEY_PROVIDER = 'provider';
     private const KEY_OPTIONS = 'options';
+    private const KEY_TYPE = 'TYPE';
 
     public function compile(
         array &$definitions,
@@ -59,7 +60,8 @@ class SecretCompiler implements CompilerInterface
                 new Secret(
                     $name,
                     $config[self::KEY_PROVIDER],
-                    $config[self::KEY_OPTIONS]
+                    $config[self::KEY_OPTIONS],
+                    $config[self::KEY_TYPE] ?? Secret::DEFAULT_TYPE,
                 )
             );
         }

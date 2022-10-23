@@ -63,4 +63,17 @@ class SecretTest extends TestCase
             $this->buildObject()->getOptions()
         );
     }
+
+    public function testGetType()
+    {
+        self::assertEquals(
+            'default',
+            $this->buildObject()->getType()
+        );
+
+        self::assertEquals(
+            'tls',
+            (new Secret('foo', 'bar', ['foo' => 'bar'], 'tls'))->getType()
+        );
+    }
 }

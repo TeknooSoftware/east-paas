@@ -39,13 +39,16 @@ class Secret implements ImmutableInterface
 {
     use ImmutableTrait;
 
+    public const DEFAULT_TYPE = 'default';
+
     /**
      * @param array<string|int, mixed> $options
      */
     public function __construct(
         private readonly string $name,
         private readonly string $provider,
-        private readonly array $options
+        private readonly array $options,
+        private readonly string $type = self::DEFAULT_TYPE,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -66,5 +69,10 @@ class Secret implements ImmutableInterface
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
     }
 }
