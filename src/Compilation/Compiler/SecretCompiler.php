@@ -43,7 +43,7 @@ class SecretCompiler implements CompilerInterface
 {
     private const KEY_PROVIDER = 'provider';
     private const KEY_OPTIONS = 'options';
-    private const KEY_TYPE = 'TYPE';
+    private const KEY_TYPE = 'type';
 
     public function compile(
         array &$definitions,
