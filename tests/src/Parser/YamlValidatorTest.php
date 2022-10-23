@@ -60,6 +60,7 @@ secrets:
       key2: ${FOO}
   volume_vault:
     provider: map
+    type: tls
     options:
       foo: bar
       bar: foo

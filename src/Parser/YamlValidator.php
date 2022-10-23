@@ -93,6 +93,7 @@ class YamlValidator
         'latest',
         'listen',
         'replicas',
+        'type',
         'options',
         'ports',
         'target',
