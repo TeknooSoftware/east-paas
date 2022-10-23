@@ -40,7 +40,7 @@ use function implode;
 use function strtolower;
 
 /**
- * Exposing Transcriber to translate CompiledDeployment's namespace to Kubernetes namespace manifest.
+ * "Exposing transcriber" to translate CompiledDeployment's namespace to Kubernetes namespace manifest.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

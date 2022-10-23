@@ -25,13 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
+use DomainException;
 use Psr\Container\ContainerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber as RCTranscriberAlias;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
@@ -39,6 +40,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
 use function DI\decorate;
 use function DI\create;
 use function DI\get;
+use function is_a;
 use function sys_get_temp_dir;
 
 return [
@@ -56,6 +58,7 @@ return [
         return new Factory($tempDir, $client);
     },
 
+    IngressTranscriber::class . ':class' => IngressTranscriber::class,
     IngressTranscriber::class => static function (ContainerInterface $container): IngressTranscriber {
         $defaultIngressClass = null;
         $defaultServiceName = null;
@@ -80,26 +83,79 @@ return [
             $defaultAnnotations = (array) $container->get('teknoo.east.paas.kubernetes.ingress.default_annotations');
         }
 
-        return new IngressTranscriber(
+        $className = $container->get(IngressTranscriber::class . ':class');
+        if ($className !== IngressTranscriber::class && !is_a($className, IngressTranscriber::class)) {
+            throw new DomainException("The class $className is not a ingress transcriber");
+        }
+
+        return new $className(
             defaultIngressClass: $defaultIngressClass,
             defaultIngressService: $defaultServiceName,
             defaultIngressPort: $defaultServicePort,
             defaultIngressAnnotations: $defaultAnnotations,
         );
     },
-    NamespaceTranscriber::class => create(),
-    ReplicationControllerTranscriber::class => create(),
-    SecretTranscriber::class => create(),
-    ServiceTranscriber::class => create(),
-    VolumeTranscriber::class => create(),
+
+    NamespaceTranscriber::class . ':class' => NamespaceTranscriber::class,
+    NamespaceTranscriber::class => static function (ContainerInterface $container): NamespaceTranscriber {
+        $className = $container->get(NamespaceTranscriber::class . ':class');
+        if ($className !== NamespaceTranscriber::class && !is_a($className, NamespaceTranscriber::class)) {
+            throw new DomainException("The class $className is not a namespace transcriber");
+        }
+
+        return new $className();
+    },
+
+    RCTranscriberAlias::class . ':class' => RCTranscriberAlias::class,
+    RCTranscriberAlias::class => static function (
+        ContainerInterface $container
+    ): RCTranscriberAlias {
+        $className = $container->get(RCTranscriberAlias::class . ':class');
+        if ($className !== RCTranscriberAlias::class && !is_a($className, RCTranscriberAlias::class)) {
+            throw new DomainException("The class $className is not a rc transcriber");
+        }
+
+        return new $className();
+    },
+
+    SecretTranscriber::class . ':class' => SecretTranscriber::class,
+    SecretTranscriber::class => static function (ContainerInterface $container): SecretTranscriber {
+        $className = $container->get(SecretTranscriber::class . ':class');
+        if ($className !== SecretTranscriber::class && !is_a($className, SecretTranscriber::class)) {
+            throw new DomainException("The class $className is not a secret transcriber");
+        }
+
+        return new $className();
+    },
+
+    ServiceTranscriber::class . ':class' => ServiceTranscriber::class,
+    ServiceTranscriber::class => static function (ContainerInterface $container): ServiceTranscriber {
+        $className = $container->get(ServiceTranscriber::class . ':class');
+        if ($className !== ServiceTranscriber::class && !is_a($className, ServiceTranscriber::class)) {
+            throw new DomainException("The class $className is not a service transcriber");
+        }
+
+        return new $className();
+    },
+
+    VolumeTranscriber::class . ':class' => VolumeTranscriber::class,
+    VolumeTranscriber::class => static function (ContainerInterface $container): VolumeTranscriber {
+        $className = $container->get(VolumeTranscriber::class . ':class');
+        if ($className !== VolumeTranscriber::class && !is_a($className, VolumeTranscriber::class)) {
+            throw new DomainException("The class $className is not a volume transcriber");
+        }
+
+        return new $className();
+    },
 
     TranscriberCollectionInterface::class => get(TranscriberCollection::class),
+
     TranscriberCollection::class => static function (ContainerInterface $container): TranscriberCollection {
         $collection = new TranscriberCollection();
         $collection->add(5, $container->get(NamespaceTranscriber::class));
         $collection->add(10, $container->get(SecretTranscriber::class));
         $collection->add(10, $container->get(VolumeTranscriber::class));
-        $collection->add(30, $container->get(ReplicationControllerTranscriber::class));
+        $collection->add(30, $container->get(RCTranscriberAlias::class));
         $collection->add(40, $container->get(ServiceTranscriber::class));
         $collection->add(50, $container->get(IngressTranscriber::class));
 

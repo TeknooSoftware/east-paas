@@ -45,7 +45,7 @@ use function sleep;
 use function substr;
 
 /**
- * Deployment Transcriber to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsController
+ * "Deployment transcriber" to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsController
  * manifest.
  *
  * @license     http://teknoo.software/license/mit         MIT License

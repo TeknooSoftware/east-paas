@@ -39,7 +39,7 @@ use Throwable;
 use function array_map;
 
 /**
- * Deployment Transcriber to translate CompiledDeployment's peristant volume to Kubernetes PVC
+ * "Deployment transcriber" to translate CompiledDeployment's peristant volume to Kubernetes PVC
  * manifest.
  *
  * @license     http://teknoo.software/license/mit         MIT License

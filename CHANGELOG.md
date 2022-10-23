@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.116] - 2022-10-23
+### Dev Release
+- Add `writeSpec` as protected method in all transcribers to allow developers to custom specs in theirs implementations.
+- All transcribers can be in the DI by rewriting the entry `<NameOfOriginalTranscriber>:class`.
+
 ## [0.0.115] - 2022-10-19
 ### Dev Release
 - Add JobUnit Short Id to limit length of image's name

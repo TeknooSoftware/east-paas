@@ -37,7 +37,7 @@ use Throwable;
 use function strtolower;
 
 /**
- * Exposing Transcriber to translate CompiledDeployment's services to Kubernetes Services manifest.
+ * "Exposing transcriber" to translate CompiledDeployment's services to Kubernetes Services manifest.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

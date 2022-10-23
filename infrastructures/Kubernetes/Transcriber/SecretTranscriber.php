@@ -42,7 +42,7 @@ use function str_starts_with;
 use function substr;
 
 /**
- * Deployment Transcriber to translate CompiledDeployment's secrets to Kubernetes Secrets manifest.
+ * "Deployment transcriber" to translate CompiledDeployment's secrets to Kubernetes Secrets manifest.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

@@ -153,6 +153,19 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testIngressTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', []);
+
+        $container->set(IngressTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(IngressTranscriber::class);
+    }
+
     public function testIngressTranscriber()
     {
         $container = $this->buildContainer();
@@ -167,6 +180,14 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testReplicationControllerTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(ReplicationControllerTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(ReplicationControllerTranscriber::class);
+    }
+
     public function testReplicationControllerTranscriber()
     {
         $container = $this->buildContainer();
@@ -174,6 +195,14 @@ class ContainerTest extends TestCase
             ReplicationControllerTranscriber::class,
             $container->get(ReplicationControllerTranscriber::class)
         );
+    }
+
+    public function testSecretTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(SecretTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(SecretTranscriber::class);
     }
 
     public function testSecretTranscriber()
@@ -185,6 +214,14 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testServiceTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(ServiceTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(ServiceTranscriber::class);
+    }
+
     public function testServiceTranscriber()
     {
         $container = $this->buildContainer();
@@ -194,6 +231,14 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testNamespaceTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(NamespaceTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(NamespaceTranscriber::class);
+    }
+
     public function testNamespaceTranscriber()
     {
         $container = $this->buildContainer();
@@ -201,6 +246,14 @@ class ContainerTest extends TestCase
             NamespaceTranscriber::class,
             $container->get(NamespaceTranscriber::class)
         );
+    }
+
+    public function testVolumeTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(VolumeTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(VolumeTranscriber::class);
     }
 
     public function testVolumeTranscriber()
