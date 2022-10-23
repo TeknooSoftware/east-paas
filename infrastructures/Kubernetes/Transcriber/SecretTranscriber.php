@@ -93,7 +93,8 @@ class SecretTranscriber implements DeploymentInterface
             ],
             'type' => match ($secret->getType()) {
                 'tls' => 'kubernetes.io/tls',
-                default => 'Opaque',
+                'default' => 'Opaque',
+                default => $secret->getType(),
             },
             'data' => self::encode($secret->getOptions()),
         ];

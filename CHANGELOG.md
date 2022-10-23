@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.117] - 2022-10-24
+### Dev Release
+- Add secret's type
+- fix wording
+
 ## [0.0.116] - 2022-10-23
 ### Dev Release
 - Add `writeSpec` as protected method in all transcribers to allow developers to custom specs in theirs implementations.

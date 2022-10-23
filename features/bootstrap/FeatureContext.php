@@ -901,6 +901,7 @@ secrets:
       key2: ${FOO}
   volume_vault:
     provider: map
+    type: foo
     options:
       foo: bar
       bar: foo

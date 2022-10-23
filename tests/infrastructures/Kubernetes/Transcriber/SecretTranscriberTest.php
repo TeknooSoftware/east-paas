@@ -54,8 +54,9 @@ class SecretTranscriberTest extends TestCase
             ->method('foreachSecret')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'default_namespace');
-                $callback(new Secret('foo2', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]]), 'default_namespace');
-                $callback(new Secret('foo2', 'foo', ['bar']), 'default_namespace');
+                $callback(new Secret('foo2', 'map', ['foo' => 'bar'], 'tls'), 'default_namespace');
+                $callback(new Secret('foo3', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]], 'foo'), 'default_namespace');
+                $callback(new Secret('foo4', 'foo', ['bar'], 'tls'), 'default_namespace');
                 return $cd;
             });
 
@@ -71,11 +72,11 @@ class SecretTranscriberTest extends TestCase
                 ['secrets', [], $seRepo],
             ]);
 
-        $seRepo->expects(self::exactly(2))
+        $seRepo->expects(self::exactly(3))
             ->method('exists')
-            ->willReturnOnConsecutiveCalls(false, true);
+            ->willReturnOnConsecutiveCalls(false, false, true);
 
-        $seRepo->expects(self::once())
+        $seRepo->expects(self::exactly(2))
             ->method('create')
             ->willReturn(['foo']);
 
@@ -84,7 +85,7 @@ class SecretTranscriberTest extends TestCase
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
+        $promise->expects(self::exactly(3))->method('success')->with(['foo']);
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
