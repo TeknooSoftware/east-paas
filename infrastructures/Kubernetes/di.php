@@ -84,7 +84,7 @@ return [
         }
 
         $className = $container->get(IngressTranscriber::class . ':class');
-        if ($className !== IngressTranscriber::class && !is_a($className, IngressTranscriber::class)) {
+        if (!is_a($className, IngressTranscriber::class, true)) {
             throw new DomainException("The class $className is not a ingress transcriber");
         }
 
@@ -99,7 +99,7 @@ return [
     NamespaceTranscriber::class . ':class' => NamespaceTranscriber::class,
     NamespaceTranscriber::class => static function (ContainerInterface $container): NamespaceTranscriber {
         $className = $container->get(NamespaceTranscriber::class . ':class');
-        if ($className !== NamespaceTranscriber::class && !is_a($className, NamespaceTranscriber::class)) {
+        if (!is_a($className, NamespaceTranscriber::class, true)) {
             throw new DomainException("The class $className is not a namespace transcriber");
         }
 
@@ -111,7 +111,7 @@ return [
         ContainerInterface $container
     ): RCTranscriberAlias {
         $className = $container->get(RCTranscriberAlias::class . ':class');
-        if ($className !== RCTranscriberAlias::class && !is_a($className, RCTranscriberAlias::class)) {
+        if (!is_a($className, RCTranscriberAlias::class, true)) {
             throw new DomainException("The class $className is not a rc transcriber");
         }
 
@@ -121,7 +121,7 @@ return [
     SecretTranscriber::class . ':class' => SecretTranscriber::class,
     SecretTranscriber::class => static function (ContainerInterface $container): SecretTranscriber {
         $className = $container->get(SecretTranscriber::class . ':class');
-        if ($className !== SecretTranscriber::class && !is_a($className, SecretTranscriber::class)) {
+        if (!is_a($className, SecretTranscriber::class, true)) {
             throw new DomainException("The class $className is not a secret transcriber");
         }
 
@@ -131,7 +131,7 @@ return [
     ServiceTranscriber::class . ':class' => ServiceTranscriber::class,
     ServiceTranscriber::class => static function (ContainerInterface $container): ServiceTranscriber {
         $className = $container->get(ServiceTranscriber::class . ':class');
-        if ($className !== ServiceTranscriber::class && !is_a($className, ServiceTranscriber::class)) {
+        if (!is_a($className, ServiceTranscriber::class, true)) {
             throw new DomainException("The class $className is not a service transcriber");
         }
 
@@ -141,7 +141,7 @@ return [
     VolumeTranscriber::class . ':class' => VolumeTranscriber::class,
     VolumeTranscriber::class => static function (ContainerInterface $container): VolumeTranscriber {
         $className = $container->get(VolumeTranscriber::class . ':class');
-        if ($className !== VolumeTranscriber::class && !is_a($className, VolumeTranscriber::class)) {
+        if (!is_a($className, VolumeTranscriber::class, true)) {
             throw new DomainException("The class $className is not a volume transcriber");
         }
 
