@@ -46,8 +46,13 @@ class ServiceTranscriber implements ExposingInterface
 {
     public const NAME_SUFFIX = '-service';
 
-    private static function convertToService(Service $service, string $namespace): KubeService
-    {
+    /**
+     * @return array<string, mixed>
+     */
+    protected static function writeSpec(
+        Service $service,
+        string $namespace
+    ): array {
         $ports = [];
         foreach ($service->getPorts() as $listen => $target) {
             $ports[] = [
@@ -80,7 +85,13 @@ class ServiceTranscriber implements ExposingInterface
             ],
         ];
 
-        return new KubeService($specs);
+        return $specs;
+    }
+    private static function convertToService(Service $service, string $namespace): KubeService
+    {
+        return new KubeService(
+            self::writeSpec($service, $namespace)
+        );
     }
 
     public function transcribe(

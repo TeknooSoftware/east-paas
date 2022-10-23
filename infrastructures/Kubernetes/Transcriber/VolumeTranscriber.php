@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Maclof\Kubernetes\Models\PersistentVolumeClaim;
+use SebastianBergmann\GlobalState\Snapshot;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -46,11 +47,14 @@ use function array_map;
  */
 class VolumeTranscriber implements DeploymentInterface
 {
-    private static function convertToPVC(
+    /**
+     * @return array<string, mixed>
+     */
+    protected static function writeSpec(
         PersistentVolumeInterface $volume,
         string $namespace
-    ): PersistentVolumeClaim {
-        return new PersistentVolumeClaim([
+    ): array {
+        return [
             'metadata' => [
                 'name' => $volume->getName(),
                 'namespace' => $namespace,
@@ -69,7 +73,16 @@ class VolumeTranscriber implements DeploymentInterface
                     ]
                 ],
             ],
-        ]);
+        ];
+    }
+
+    private static function convertToPVC(
+        PersistentVolumeInterface $volume,
+        string $namespace
+    ): PersistentVolumeClaim {
+        return new PersistentVolumeClaim(
+            self::writeSpec($volume, $namespace)
+        );
     }
 
     public function transcribe(

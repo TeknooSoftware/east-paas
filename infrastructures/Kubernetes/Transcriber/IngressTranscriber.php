@@ -55,10 +55,18 @@ class IngressTranscriber implements ExposingInterface
     ) {
     }
 
-    private function convertToIngress(
+    /**
+     * @param array<string, mixed> $defaultIngressAnnotations
+     * @return array<string, mixed>
+     */
+    protected static function writeSpec(
         Ingress $ingress,
-        string $namespace
-    ): KubeIngress {
+        string $namespace,
+        ?string $defaultIngressClass,
+        ?string $defaultIngressService,
+        ?int $defaultIngressPort,
+        array $defaultIngressAnnotations,
+    ): array {
         $rule = [
             'host' => $ingress->getHost(),
             'http' => [
@@ -104,23 +112,23 @@ class IngressTranscriber implements ExposingInterface
                 'labels' => [
                     'name' => $ingress->getName(),
                 ],
-                'annotations' => $this->defaultIngressAnnotations,
+                'annotations' => $defaultIngressAnnotations,
             ],
             'spec' => [
                 'rules' => [$rule],
             ],
         ];
 
-        if (null !== $this->defaultIngressClass || null !== $ingress->getProvider()) {
-            $provider = $ingress->getProvider() ?? $this->defaultIngressClass;
+        if (null !== $defaultIngressClass || null !== $ingress->getProvider()) {
+            $provider = $ingress->getProvider() ?? $defaultIngressClass;
             $specs['metadata']['annotations']['kubernetes.io/ingress.class'] = $provider;
         }
 
-        if (null !== $this->defaultIngressService && null !== $this->defaultIngressPort) {
+        if (null !== $defaultIngressService && null !== $defaultIngressPort) {
             $specs['spec']['defaultBackend']['service'] = [
-                'name' => $this->defaultIngressService,
+                'name' => $defaultIngressService,
                 'port' => [
-                    'number' => $this->defaultIngressPort,
+                    'number' => $defaultIngressPort,
                 ],
             ];
         }
@@ -132,7 +140,30 @@ class IngressTranscriber implements ExposingInterface
             ];
         }
 
-        return new KubeIngress($specs);
+        return $specs;
+    }
+
+    /**
+     * @param array<string, mixed> $defaultIngressAnnotations
+     */
+    private static function convertToIngress(
+        Ingress $ingress,
+        string $namespace,
+        ?string $defaultIngressClass,
+        ?string $defaultIngressService,
+        ?int $defaultIngressPort,
+        array $defaultIngressAnnotations,
+    ): KubeIngress {
+        return new KubeIngress(
+            self::writeSpec(
+                $ingress,
+                $namespace,
+                $defaultIngressClass,
+                $defaultIngressService,
+                $defaultIngressPort,
+                $defaultIngressAnnotations,
+            )
+        );
     }
 
     public function transcribe(
@@ -140,9 +171,32 @@ class IngressTranscriber implements ExposingInterface
         KubernetesClient $client,
         PromiseInterface $promise
     ): TranscriberInterface {
+
+        $defaultIngressClass = $this->defaultIngressClass;
+        $defaultIngressService = $this->defaultIngressService;
+        $defaultIngressPort = $this->defaultIngressPort;
+        $defaultIngressAnnotations = $this->defaultIngressAnnotations;
+
         $compiledDeployment->foreachIngress(
-            function (Ingress $ingress, string $namespace) use ($client, $promise) {
-                $kubIngress = $this->convertToIngress($ingress, $namespace);
+            static function (
+                Ingress $ingress,
+                string $namespace,
+            ) use (
+                $client,
+                $promise,
+                $defaultIngressClass,
+                $defaultIngressService,
+                $defaultIngressPort,
+                $defaultIngressAnnotations,
+            ) {
+                $kubIngress = self::convertToIngress(
+                    $ingress,
+                    $namespace,
+                    $defaultIngressClass,
+                    $defaultIngressService,
+                    $defaultIngressPort,
+                    $defaultIngressAnnotations,
+                );
 
                 try {
                     if (!empty($namespace)) {

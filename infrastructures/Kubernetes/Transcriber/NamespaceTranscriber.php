@@ -47,7 +47,10 @@ use function strtolower;
  */
 class NamespaceTranscriber implements GenericTranscriberInterface
 {
-    private static function convertToSubnamespace(string $namespace): SubnamespaceAnchor
+    /**
+     * @return array<string, mixed>
+     */
+    protected static function writeSpec(string $namespace): array
     {
         $parts = explode('-', $namespace);
         $namespaceChild = array_pop($parts);
@@ -63,7 +66,14 @@ class NamespaceTranscriber implements GenericTranscriberInterface
             ],
         ];
 
-        return new SubnamespaceAnchor($specs);
+        return $specs;
+    }
+
+    private static function convertToSubnamespace(string $namespace): SubnamespaceAnchor
+    {
+        return new SubnamespaceAnchor(
+            self::writeSpec($namespace)
+        );
     }
 
     public function transcribe(

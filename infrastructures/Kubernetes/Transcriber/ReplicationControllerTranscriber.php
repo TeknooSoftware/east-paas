@@ -63,7 +63,6 @@ class ReplicationControllerTranscriber implements DeploymentInterface
     ) {
     }
 
-
     /**
      * @param array<string, > $specs
      * @param array<string, array<string, Image>>|Image[][] $images
@@ -177,15 +176,16 @@ class ReplicationControllerTranscriber implements DeploymentInterface
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param array<string, Volume>|Volume[] $volumes
+     * @return array<string, mixed>
      */
-    private static function convertToReplicationController(
+    protected static function writeSpec(
         string $name,
         Pod $pod,
         array $images,
         array $volumes,
         string $namespace,
         int $version
-    ): ReplicationController {
+    ): array {
         $specs = [
             'metadata' => [
                 'name' => $name . self::NAME_SUFFIX . '-v' . $version,
@@ -227,7 +227,30 @@ class ReplicationControllerTranscriber implements DeploymentInterface
         self::convertToVolumes($specs, $volumes);
         self::convertToContainer($specs, $pod, $images);
 
-        return new ReplicationController($specs);
+        return $specs;
+    }
+    /**
+     * @param array<string, array<string, Image>>|Image[][] $images
+     * @param array<string, Volume>|Volume[] $volumes
+     */
+    private static function convertToReplicationController(
+        string $name,
+        Pod $pod,
+        array $images,
+        array $volumes,
+        string $namespace,
+        int $version
+    ): ReplicationController {
+        return new ReplicationController(
+            self::writeSpec(
+                $name,
+                $pod,
+                $images,
+                $volumes,
+                $namespace,
+                $version,
+            )
+        );
     }
 
     public function transcribe(

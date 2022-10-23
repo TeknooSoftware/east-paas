@@ -78,14 +78,12 @@ class SecretTranscriber implements DeploymentInterface
         return substr($value, strlen(self::BASE64_SUFFIX));
     }
 
-    private static function convertToSecret(Secret $secret, string $namespace): ?KubeSecret
+    /**
+     * @return array<string, mixed>
+     */
+    protected static function writeSpec(Secret $secret, string $namespace): array
     {
-        $provider = $secret->getProvider();
-        if ('map' !== $provider) {
-            return null;
-        }
-
-        return new KubeSecret([
+        return [
             'metadata' => [
                 'name' => $secret->getName() . self::NAME_SUFFIX,
                 'namespace' => $namespace,
@@ -95,7 +93,19 @@ class SecretTranscriber implements DeploymentInterface
             ],
             'type' => 'Opaque',
             'data' => self::encode($secret->getOptions()),
-        ]);
+        ];
+    }
+
+    private static function convertToSecret(Secret $secret, string $namespace): ?KubeSecret
+    {
+        $provider = $secret->getProvider();
+        if ('map' !== $provider) {
+            return null;
+        }
+
+        return new KubeSecret(
+            self::writeSpec($secret, $namespace)
+        );
     }
 
     public function transcribe(
