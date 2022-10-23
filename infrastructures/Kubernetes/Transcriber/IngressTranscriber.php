@@ -43,6 +43,7 @@ use Throwable;
 class IngressTranscriber implements ExposingInterface
 {
     private const NAME_SUFFIX = '-ingress';
+    private const SECRET_SUFFIX = '-secret';
 
     /**
      * @param array<string, mixed> $defaultIngressAnnotations
@@ -136,7 +137,7 @@ class IngressTranscriber implements ExposingInterface
         if (!empty($ingress->getTlsSecret())) {
             $specs['spec']['tls'][] = [
                 'hosts' => [$ingress->getHost()],
-                'secretName' => $ingress->getTlsSecret(),
+                'secretName' => $ingress->getTlsSecret() . self::SECRET_SUFFIX,
             ];
         }
 

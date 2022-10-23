@@ -49,19 +49,19 @@ use function substr;
  */
 class SecretTranscriber implements DeploymentInterface
 {
-    private const BASE64_SUFFIX = 'base64:';
+    private const BASE64_PREFIX = 'base64:';
     private const NAME_SUFFIX = '-secret';
 
-    private static function isValid64(string $value): bool
+    public static function isValid64(string $value): bool
     {
-        return str_starts_with($value, self::BASE64_SUFFIX);
+        return str_starts_with($value, self::BASE64_PREFIX);
     }
 
     /**
      * @param string|array<string|int, mixed> $value
      * @return string|array<string|int, mixed>
      */
-    private static function encode(int | string | array $value): string | array
+    protected static function encode(int | string | array $value): string | array
     {
         if (is_array($value)) {
             foreach ($value as $key => &$subValue) {
@@ -75,7 +75,7 @@ class SecretTranscriber implements DeploymentInterface
             return base64_encode((string) $value);
         }
 
-        return substr($value, strlen(self::BASE64_SUFFIX));
+        return substr($value, strlen(self::BASE64_PREFIX));
     }
 
     /**
