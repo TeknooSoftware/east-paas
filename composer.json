@@ -51,6 +51,7 @@
         "phploc/phploc": "^7.0.2",
         "phpstan/phpstan": "^1.9",
         "icanhazstring/composer-unused": "^0.8.4",
+        "nikic/php-parser": "^v4.15.1",
         "behat/behat": "^3.11",
         "doctrine/common": "^3.4",
         "doctrine/persistence": "^3.0.3",
@@ -92,8 +93,7 @@
         "teknoo/bridge-phpdi-symfony": "^5.1.2",
         "illuminate/collections": "^9.27",
         "illuminate/contracts": "^9.27",
-        "illuminate/support": "^9.27",
-        "nikic/php-parser": "^v4.14"
+        "illuminate/support": "^9.27"
     },
     "autoload": {
         "psr-4": {
