@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\Models\ReplicationController;
+use Maclof\Kubernetes\Models\ReplicaSet;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
@@ -51,7 +51,7 @@ use function substr;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class ReplicationControllerTranscriber implements DeploymentInterface
+class ReplicaSetTranscriber implements DeploymentInterface
 {
     private const NAME_SUFFIX = '-ctrl';
     private const POD_SUFFIX = '-pod';
@@ -200,7 +200,9 @@ class ReplicationControllerTranscriber implements DeploymentInterface
             'spec' => [
                 'replicas' => $pod->getReplicas(),
                 'selector' => [
-                    'vname' => $name . '-v' . $version,
+                    'matchLabels' => [
+                        'vname' => $name . '-v' . $version,
+                    ],
                 ],
                 'template' => [
                     'metadata' => [
@@ -233,15 +235,15 @@ class ReplicationControllerTranscriber implements DeploymentInterface
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param array<string, Volume>|Volume[] $volumes
      */
-    private static function convertToReplicationController(
+    private static function convertToReplicaSet(
         string $name,
         Pod $pod,
         array $images,
         array $volumes,
         string $namespace,
         int $version
-    ): ReplicationController {
-        return new ReplicationController(
+    ): ReplicaSet {
+        return new ReplicaSet(
             static::writeSpec(
                 $name,
                 $pod,
@@ -276,7 +278,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     }
 
                     $name = $pod->getName();
-                    $rcRepository = $client->replicationControllers();
+                    $rcRepository = $client->replicaSets();
 
                     $ctl = $rcRepository->setLabelSelector(['name' => $name])->first();
                     $version = 1;
@@ -295,7 +297,7 @@ class ReplicationControllerTranscriber implements DeploymentInterface
                     return;
                 }
 
-                $kubeController = self::convertToReplicationController(
+                $kubeController = self::convertToReplicaSet(
                     name: $name,
                     pod: $pod,
                     images: $images,

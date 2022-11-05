@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.118] - 2022-11-05
+### Dev Release
+- Replace `ReplicationController` by `ReplicaSet` in Kubernetes
+
 ## [0.0.117] - 2022-10-24
 ### Dev Release
 - Add secret's type

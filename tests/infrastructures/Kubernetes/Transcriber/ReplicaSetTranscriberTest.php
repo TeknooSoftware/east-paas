@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubeClient;
-use Maclof\Kubernetes\Models\ReplicationController;
+use Maclof\Kubernetes\Models\ReplicaSet;
 use Maclof\Kubernetes\Repositories\PodRepository;
-use Maclof\Kubernetes\Repositories\ReplicationControllerRepository;
+use Maclof\Kubernetes\Repositories\ReplicaSetRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -39,18 +39,18 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicaSetTranscriber;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicaSetTranscriber
  */
-class ReplicationControllerTranscriberTest extends TestCase
+class ReplicaSetTranscriberTest extends TestCase
 {
-    public function buildTranscriber(): ReplicationControllerTranscriber
+    public function buildTranscriber(): ReplicaSetTranscriber
     {
-        return new ReplicationControllerTranscriber();
+        return new ReplicaSetTranscriber();
     }
 
     public function testRun()
@@ -105,7 +105,7 @@ class ReplicationControllerTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $rcRepo = $this->createMock(ReplicationControllerRepository::class);
+        $rcRepo = $this->createMock(ReplicaSetRepository::class);
         $pRepo = $this->createMock(PodRepository::class);
 
         $kubeClient->expects(self::atLeastOnce())
@@ -115,7 +115,7 @@ class ReplicationControllerTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['replicationControllers', [], $rcRepo],
+                ['replicaSets', [], $rcRepo],
                 ['pods', [], $pRepo],
             ]);
 
@@ -131,7 +131,7 @@ class ReplicationControllerTranscriberTest extends TestCase
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
-                new ReplicationController(['metadata' => ['name' => 'foo']]),
+                new ReplicaSet(['metadata' => ['name' => 'foo']]),
             );
 
         $pRepo->expects(self::any(2))
@@ -157,7 +157,7 @@ class ReplicationControllerTranscriberTest extends TestCase
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
-            ReplicationControllerTranscriber::class,
+            ReplicaSetTranscriber::class,
             $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
         );
     }
@@ -215,7 +215,7 @@ class ReplicationControllerTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $rcRepo = $this->createMock(ReplicationControllerRepository::class);
+        $rcRepo = $this->createMock(ReplicaSetRepository::class);
         $pRepo = $this->createMock(PodRepository::class);
 
         $kubeClient->expects(self::atLeastOnce())
@@ -225,7 +225,7 @@ class ReplicationControllerTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['replicationControllers', [], $rcRepo],
+                ['replicaSets', [], $rcRepo],
                 ['pods', [], $pRepo],
             ]);
 
@@ -241,7 +241,7 @@ class ReplicationControllerTranscriberTest extends TestCase
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
-                new ReplicationController(['metadata' => ['name' => 'foo']]),
+                new ReplicaSet(['metadata' => ['name' => 'foo']]),
             );
 
         $pRepo->expects(self::any())
@@ -267,7 +267,7 @@ class ReplicationControllerTranscriberTest extends TestCase
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
-            ReplicationControllerTranscriber::class,
+            ReplicaSetTranscriber::class,
             $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
         );
     }
@@ -299,10 +299,10 @@ class ReplicationControllerTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $repo = $this->createMock(ReplicationControllerRepository::class);
+        $repo = $this->createMock(ReplicaSetRepository::class);
         $kubeClient->expects(self::any())
             ->method('__call')
-            ->with('replicationControllers')
+            ->with('replicaSets')
             ->willReturn($repo);
 
         $repo->expects(self::any())
@@ -334,7 +334,7 @@ class ReplicationControllerTranscriberTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ReplicationControllerTranscriber::class,
+            ReplicaSetTranscriber::class,
             $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
         );
     }
@@ -366,10 +366,10 @@ class ReplicationControllerTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $repo = $this->createMock(ReplicationControllerRepository::class);
+        $repo = $this->createMock(ReplicaSetRepository::class);
         $kubeClient->expects(self::any())
             ->method('__call')
-            ->with('replicationControllers')
+            ->with('replicaSets')
             ->willReturn($repo);
 
         $repo->expects(self::any())
@@ -380,7 +380,7 @@ class ReplicationControllerTranscriberTest extends TestCase
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
-                new ReplicationController(['metadata' => ['name' => 'foo']]),
+                new ReplicaSet(['metadata' => ['name' => 'foo']]),
             );
 
         $call = 0;
@@ -404,7 +404,7 @@ class ReplicationControllerTranscriberTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ReplicationControllerTranscriber::class,
+            ReplicaSetTranscriber::class,
             $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
         );
     }

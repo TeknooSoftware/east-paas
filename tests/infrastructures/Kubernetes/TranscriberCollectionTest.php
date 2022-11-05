@@ -25,36 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
-use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\Repositories\IngressRepository;
-use Maclof\Kubernetes\Repositories\SecretRepository;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
-use Maclof\Kubernetes\Client as KubeClient;
-use Maclof\Kubernetes\Repositories\ReplicationControllerRepository;
-use Maclof\Kubernetes\Repositories\ServiceRepository;
-use PHPUnit\Framework\MockObject\MockObject;
+
 use PHPUnit\Framework\TestCase;
-use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
+
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\TranscriberCollection;
-use Teknoo\East\Paas\Object\ClusterCredentials;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

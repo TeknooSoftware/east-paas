@@ -35,7 +35,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicationControllerTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicaSetTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
@@ -180,20 +180,20 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testReplicationControllerTranscriberBadClass()
+    public function testReplicaSetTranscriberBadClass()
     {
         $container = $this->buildContainer();
-        $container->set(ReplicationControllerTranscriber::class . ':class', \stdClass::class);
+        $container->set(ReplicaSetTranscriber::class . ':class', \stdClass::class);
         $this->expectException(\DomainException::class);
-        $container->get(ReplicationControllerTranscriber::class);
+        $container->get(ReplicaSetTranscriber::class);
     }
 
-    public function testReplicationControllerTranscriber()
+    public function testReplicaSetTranscriber()
     {
         $container = $this->buildContainer();
         self::assertInstanceOf(
-            ReplicationControllerTranscriber::class,
-            $container->get(ReplicationControllerTranscriber::class)
+            ReplicaSetTranscriber::class,
+            $container->get(ReplicaSetTranscriber::class)
         );
     }
 

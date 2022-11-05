@@ -15,7 +15,7 @@ parameters:
             path: src/Job/JobUnit.php
         -
             message: '#mixed#'
-            path: infrastructures/Kubernetes/Transcriber/ReplicationControllerTranscriber.php
+            path: infrastructures/Kubernetes/Transcriber/ReplicaSetTranscriber.php
         -
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
