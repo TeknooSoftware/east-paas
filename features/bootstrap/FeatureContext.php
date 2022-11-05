@@ -890,16 +890,28 @@ EOF;
                 $conf = <<<'EOF'
 paas: #Dedicated to compiler
   version: v1
-  namespace: 'demo'
+
+#Config
+maps:
+  map1:
+    key1: value1
+    key2: ${FOO}
+  map2:
+    foo: bar
+    bar: foo
 
 #Secrets provider
 secrets:
-  map_vault:
+  map-vault:
     provider: map #Internal secrets, must be passed in this file
     options:
       key1: value1
       key2: ${FOO}
-  volume_vault:
+  map-vault2:
+    provider: map #Internal secrets, must be passed in this file
+    options:
+      hello: world
+  volume-vault:
     provider: map
     type: foo
     options:
@@ -953,14 +965,24 @@ pods:
           data: #Persistent volume, can not be pre-populated
             mount-path: '/opt/data'
             persistent: true
-            storage-size: 2Gib
+            storage-size: 3Gi
+          map:
+            mount-path: '/map'
+            from-map: 'map2'
           vault:
             mount-path: '/vault'
-            from-secret: 'volume_vault'
+            from-secret: 'volume-vault'
         variables: #To define some environment variables
           SERVER_SCRIPT: '/opt/app/src/server.php'
+          from-maps:
+            KEY0: 'map1.key0'
+          import-map:
+            - 'map2'
           from-secrets: #To fetch some value from secret/vault
-            KEY1: 'map_vault.key1'
+            KEY1: 'map-vault.key1'
+            KEY2: 'map-vault.key2'
+          import-secret:
+            - 'map-vault2'
   demo-pods:
     replicas: 1
     containers:

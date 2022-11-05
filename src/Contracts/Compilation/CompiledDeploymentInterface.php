@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Compilation;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
@@ -64,6 +65,8 @@ interface CompiledDeploymentInterface
 
     public function addSecret(string $name, Secret $secret): CompiledDeploymentInterface;
 
+    public function addMap(string $name, Map $map): CompiledDeploymentInterface;
+
     public function addService(string $name, Service $service): CompiledDeploymentInterface;
 
     public function addIngress(string $name, Ingress $ingress): CompiledDeploymentInterface;
@@ -77,6 +80,8 @@ interface CompiledDeploymentInterface
     public function foreachBuildable(callable $callback): CompiledDeploymentInterface;
 
     public function foreachSecret(callable $callback): CompiledDeploymentInterface;
+
+    public function foreachMap(callable $callback): CompiledDeploymentInterface;
 
     public function foreachPod(callable $callback): CompiledDeploymentInterface;
 

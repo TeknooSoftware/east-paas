@@ -38,6 +38,7 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\SecretCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
@@ -999,6 +1000,16 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             SecretCompiler::class,
             $container->get(SecretCompiler::class)
+        );
+    }
+
+    public function testMapCompiler()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            MapCompiler::class,
+            $container->get(MapCompiler::class)
         );
     }
 

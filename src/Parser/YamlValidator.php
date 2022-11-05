@@ -55,6 +55,7 @@ class YamlValidator
     private static array $staticNodesNames = [
         'paas',
         'defaults',
+        'maps',
         'secrets',
         'volumes',
         'images',
@@ -86,6 +87,10 @@ class YamlValidator
         'reset-on-deployment',
         'from-secret',
         'from-secrets',
+        'import-secret',
+        'from-map',
+        'from-maps',
+        'import-map',
         'storage-provider',
         'storage-size',
         'add',
@@ -135,6 +140,8 @@ class YamlValidator
                     $nodeName = 'from-' . $nodeName;
                 } elseif (true === $isVolume && is_array($values[$name]) && isset($values[$name]['persistent'])) {
                     $nodeName = 'persistent-' . $nodeName;
+                } elseif (true === $isVolume && is_array($values[$name]) && isset($values[$name]['from-map'])) {
+                    $nodeName = 'map-' . $nodeName;
                 } elseif (true === $isVolume && is_array($values[$name]) && isset($values[$name]['from-secret'])) {
                     $nodeName = 'secret-' . $nodeName;
                 }

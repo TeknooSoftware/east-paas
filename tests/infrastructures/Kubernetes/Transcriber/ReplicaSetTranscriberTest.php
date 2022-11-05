@@ -30,6 +30,8 @@ use Maclof\Kubernetes\Models\ReplicaSet;
 use Maclof\Kubernetes\Repositories\PodRepository;
 use Maclof\Kubernetes\Repositories\ReplicaSetRepository;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
@@ -79,10 +81,12 @@ class ReplicaSetTranscriberTest extends TestCase
                         'bar' => $volume2->import('/bar'),
                         'data' => new PersistentVolume('foo', 'bar'),
                         'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'map' => new MapVolume('foo', '/map', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
                         'secret' => new SecretReference('foo', 'bar'),
+                        'map' => new MapReference('foo', 'bar'),
                     ]
                 );
 

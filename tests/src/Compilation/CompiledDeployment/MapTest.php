@@ -23,42 +23,36 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
+namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment;
 
-use Teknoo\Immutable\ImmutableInterface;
-use Teknoo\Immutable\ImmutableTrait;
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 
 /**
- * Immutable value object, representing a normalized secret will must be injected as environment variable
- * to container in a pod. Name representing the provider and key the secret identifier in the provider.
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\Map
  */
-class SecretReference implements ImmutableInterface
+class MapTest extends TestCase
 {
-    use ImmutableTrait;
-
-    public function __construct(
-        private readonly string $name,
-        private readonly ?string $key = null,
-        private readonly bool $importAll = false,
-    ) {
-        $this->uniqueConstructorCheck();
+    private function buildObject(): Map
+    {
+        return new Map('foo', ['foo' => 'bar']);
     }
 
-    public function getName(): string
+    public function testGetName()
     {
-        return $this->name;
+        self::assertEquals(
+            'foo',
+            $this->buildObject()->getName()
+        );
     }
 
-    public function getKey(): ?string
+    public function testGetOptions()
     {
-        return $this->key;
-    }
-
-    public function isImportAll(): bool
-    {
-        return $this->importAll;
+        self::assertEquals(
+            ['foo' => 'bar'],
+            $this->buildObject()->getOptions()
+        );
     }
 }

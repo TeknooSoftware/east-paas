@@ -49,21 +49,39 @@ class YamlValidatorTest extends TestCase
         $conf = <<<'EOF'
 paas: #Dedicated to compiler
   version: v1
-  namespace: 'demo'
+
+#Config
+maps:
+  map1:
+    key1: value1
+    key2: ${FOO}
+  map2:
+    foo: bar
+    bar: foo
 
 #Secrets provider
 secrets:
-  map_vault:
+  map-vault:
     provider: map #Internal secrets, must be passed in this file
     options:
       key1: value1
       key2: ${FOO}
-  volume_vault:
+  map-vault2:
+    provider: map #Internal secrets, must be passed in this file
+    options:
+      hello: world
+  volume-vault:
     provider: map
-    type: tls
     options:
       foo: bar
       bar: foo
+  tls-vault:
+    provider: map
+    type: tls
+    options:
+      tls.crt: "${TLS_CERT}"
+      tls.key: "${TLS_KEY}"
+      ca.crt: "${TLS_CA}"
 
 #Custom image, not available in the library
 images:
@@ -75,16 +93,16 @@ images:
 #Hook to build the project before container, Called in this order
 builds:
   composer-build: #Name of the step
-    composer: install #Hook to call
+    composer: ${COMPOSER} #Hook to call
 
 #Volume to build to use with container
 volumes:
   extra: #Name of the volume
     local-path: "/foo/bar" #optional local path where store data in the volume
-    add: #folder or file, from .paas.yaml where is located to add to the volume
+    add: #folder or file, from .paas.yml where is located to add to the volume
       - 'extra'
   other_name: #Name of the volume
-    add: #folder or file, from .paas.yaml where is located to add to the volume
+    add: #folder or file, from .paas.yml where is located to add to the volume
       - 'vendor'
 
 #Pods (set of container)
@@ -92,9 +110,9 @@ pods:
   php-pods: #podset name
     replicas: 2 #instance of pods
     containers:
-      php-run: #CompiledDeployment name
-        image: registry.teknoo.software/php-run #CompiledDeployment image to use
-        version: 7.4
+      php-run: #Container name
+        image: ${PHP_IMAGE} #Container image to use
+        version: ${PHP_VERSION}
         listen: #Port listen by the container
           - 8080
         volumes: #Volumes to link
@@ -103,22 +121,31 @@ pods:
             mount-path: '/opt/extra' #Path where volume will be mount
           app:
             mount-path: '/opt/app' #Path where data will be stored
-            add: #folder or file, from .paas.yaml where is located to add to the volume
+            add: #folder or file, from .paas.yml where is located to add to the volume
               - 'src'
               - 'vendor'
               - 'composer.json'
               - 'composer.lock'
-              - 'composer.phar'
           data: #Persistent volume, can not be pre-populated
             mount-path: '/opt/data'
             persistent: true
+          map:
+            mount-path: '/map'
+            from-map: 'map2'
           vault:
             mount-path: '/vault'
-            from-secret: 'volume_vault'
+            from-secret: 'volume-vault'
         variables: #To define some environment variables
           SERVER_SCRIPT: '/opt/app/src/server.php'
+          from-maps:
+            KEY0: 'map1.key0'
+          import-map: 
+            - 'map2'
           from-secrets: #To fetch some value from secret/vault
-            KEY1: 'map_vault.key1'
+            KEY1: 'map-vault.key1'
+            KEY2: 'map-vault.key2'
+          import-secret: 
+            - 'map-vault2'
   demo-pods:
     replicas: 1
     containers:
@@ -155,9 +182,9 @@ services:
 #Ingresses configuration
 ingresses:
   demo: #rule name
-    host: demo-paas.teknoo.software
+    host: ${PROJECT_URL}
     tls:
-      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+      secret: "tls-vault" #Configure the orchestrator to fetch value from vault
     service: #default service
       name: demo-service
       port: 8080

@@ -20,6 +20,9 @@ parameters:
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
         -
+            message: '#ConfigMapTranscriber::encode#'
+            path: infrastructures/Kubernetes/Transcriber/ConfigMapTranscriber.php
+        -
             message: '#mixed given#'
             path: infrastructures/Doctrine/Form/Type/AccountType.php
         -

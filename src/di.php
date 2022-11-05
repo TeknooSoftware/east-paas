@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
@@ -194,6 +195,7 @@ return [
 
         return new ImageCompiler($imagesLibrary);
     },
+    MapCompiler::class => create(),
     IngressCompiler::class => create(),
     PodCompiler::class => create(),
     SecretCompiler::class => create(),
@@ -218,6 +220,7 @@ return [
             }
         };
 
+        $collection->add('[maps]', $container->get(MapCompiler::class));
         $collection->add('[secrets]', $container->get(SecretCompiler::class));
         $collection->add('[volumes]', $container->get(VolumeCompiler::class));
         $collection->add('[images]', $container->get(ImageCompiler::class));

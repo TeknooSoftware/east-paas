@@ -33,6 +33,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Transcribe
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicaSetTranscriber as RSTranscriberAlias;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
@@ -128,6 +129,16 @@ return [
         return new $className();
     },
 
+    ConfigMapTranscriber::class . ':class' => ConfigMapTranscriber::class,
+    ConfigMapTranscriber::class => static function (ContainerInterface $container): ConfigMapTranscriber {
+        $className = $container->get(ConfigMapTranscriber::class . ':class');
+        if (!is_a($className, ConfigMapTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a configMap transcriber");
+        }
+
+        return new $className();
+    },
+
     ServiceTranscriber::class . ':class' => ServiceTranscriber::class,
     ServiceTranscriber::class => static function (ContainerInterface $container): ServiceTranscriber {
         $className = $container->get(ServiceTranscriber::class . ':class');
@@ -154,6 +165,7 @@ return [
         $collection = new TranscriberCollection();
         $collection->add(5, $container->get(NamespaceTranscriber::class));
         $collection->add(10, $container->get(SecretTranscriber::class));
+        $collection->add(10, $container->get(ConfigMapTranscriber::class));
         $collection->add(10, $container->get(VolumeTranscriber::class));
         $collection->add(30, $container->get(RSTranscriberAlias::class));
         $collection->add(40, $container->get(ServiceTranscriber::class));

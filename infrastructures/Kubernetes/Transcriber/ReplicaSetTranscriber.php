@@ -27,11 +27,13 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Maclof\Kubernetes\Models\ReplicaSet;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
@@ -56,7 +58,8 @@ class ReplicaSetTranscriber implements DeploymentInterface
     private const NAME_SUFFIX = '-ctrl';
     private const POD_SUFFIX = '-pod';
     private const VOLUME_SUFFIX = '-volume';
-    private const SECRET_VOLUME_SUFFIX = '-secret';
+    private const SECRET_SUFFIX = '-secret';
+    private const MAP_SUFFIX = '-map';
 
     public function __construct(
         private readonly int $podDeletionWaitTime = 5,
@@ -84,11 +87,45 @@ class ReplicaSetTranscriber implements DeploymentInterface
             $envsVars = [];
             foreach ($container->getVariables() as $name => &$value) {
                 if ($value instanceof SecretReference) {
+                    if ($value->isImportAll()) {
+                        $spec['envFrom'][] = [
+                            'secretRef' => [
+                                'name' => $value->getName() . self::SECRET_SUFFIX,
+                            ],
+                        ];
+
+                        continue;
+                    }
+
                     $envsVars[] = [
                         'name' => $name,
                         'valueFrom' => [
                             'secretKeyRef' => [
-                                'name' => $value->getName() . self::SECRET_VOLUME_SUFFIX,
+                                'name' => $value->getName() . self::SECRET_SUFFIX,
+                                'key' => $value->getKey(),
+                            ],
+                        ],
+                    ];
+
+                    continue;
+                }
+
+                if ($value instanceof MapReference) {
+                    if ($value->isImportAll()) {
+                        $spec['envFrom'][] = [
+                            'configMapRef' => [
+                                'name' => $value->getName() . self::MAP_SUFFIX,
+                            ],
+                        ];
+
+                        continue;
+                    }
+
+                    $envsVars[] = [
+                        'name' => $name,
+                        'valueFrom' => [
+                            'configMapRef' => [
+                                'name' => $value->getName() . self::MAP_SUFFIX,
                                 'key' => $value->getKey(),
                             ],
                         ],
@@ -126,7 +163,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
 
     /**
      * @param array<string, mixed> $specs
-     * @param array<string, SecretVolume|Volume> $volumes
+     * @param array<string, SecretVolume|MapVolume|Volume> $volumes
      */
     private static function convertToVolumes(array &$specs, array $volumes): void
     {
@@ -146,7 +183,18 @@ class ReplicaSetTranscriber implements DeploymentInterface
                 $specs['spec']['template']['spec']['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'secret' => [
-                        'secretName' => $volume->getSecretIdentifier() . self::SECRET_VOLUME_SUFFIX,
+                        'secretName' => $volume->getSecretIdentifier() . self::SECRET_SUFFIX,
+                    ],
+                ];
+
+                continue;
+            }
+
+            if ($volume instanceof MapVolume) {
+                $specs['spec']['template']['spec']['volumes'][] = [
+                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
+                    'secret' => [
+                        'secretName' => $volume->getMapIdentifier() . self::MAP_SUFFIX,
                     ],
                 ];
 

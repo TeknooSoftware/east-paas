@@ -76,6 +76,15 @@ class PodCompilerTest extends TestCase
                             'from-secrets' => [
                                 'bar' => 'myvauult.key',
                             ],
+                            'import-secret' => [
+                                'vault2'
+                            ],
+                            'from-maps' => [
+                                'foo' => 'amap.key',
+                            ],
+                            'import-map' => [
+                                'map2'
+                            ],
                             'foo' => 'bar'
                         ],
                         'version' => 7.4,
@@ -98,6 +107,10 @@ class PodCompilerTest extends TestCase
                             ],
                             'other_name2' => [
                                 'from' => 'main',
+                                'mount-path' => '/app/vendor/',
+                            ],
+                            'map' => [
+                                'from-map' => 'a-map',
                                 'mount-path' => '/app/vendor/',
                             ],
                             'vault' => [

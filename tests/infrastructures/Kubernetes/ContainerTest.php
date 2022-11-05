@@ -33,6 +33,7 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicaSetTranscriber;
@@ -211,6 +212,23 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             SecretTranscriber::class,
             $container->get(SecretTranscriber::class)
+        );
+    }
+
+    public function testConfigMapTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(ConfigMapTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(ConfigMapTranscriber::class);
+    }
+
+    public function testConfigMapTranscriber()
+    {
+        $container = $this->buildContainer();
+        self::assertInstanceOf(
+            ConfigMapTranscriber::class,
+            $container->get(ConfigMapTranscriber::class)
         );
     }
 

@@ -34,7 +34,9 @@
     ],
     "require": {
         "php": "^8.1",
+        "ext-dom": "*",
         "ext-json": "*",
+        "ext-libxml": "*",
         "php-di/php-di": "^6.4",
         "psr/http-client": "^1.0.1",
         "teknoo/immutable": "^3.0.1",

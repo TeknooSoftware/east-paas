@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation;
 
 use DomainException;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
@@ -54,6 +55,11 @@ class CompiledDeployment implements CompiledDeploymentInterface
      * @var array<string, Secret>
      */
     private array $secrets = [];
+
+    /**
+     * @var array<string, Map>
+     */
+    private array $maps = [];
 
     /**
      * @var array<string, array<string, string|BuildableInterface>>
@@ -182,6 +188,13 @@ class CompiledDeployment implements CompiledDeploymentInterface
         return $this;
     }
 
+    public function addMap(string $name, Map $map): CompiledDeploymentInterface
+    {
+        $this->maps[$name] = $map;
+
+        return $this;
+    }
+
     public function addService(string $name, Service $service): CompiledDeploymentInterface
     {
         $this->services[$name] = $service;
@@ -257,6 +270,15 @@ class CompiledDeployment implements CompiledDeploymentInterface
     {
         foreach ($this->secrets as $secret) {
             $callback($secret, $this->namespace);
+        }
+
+        return $this;
+    }
+
+    public function foreachMap(callable $callback): CompiledDeploymentInterface
+    {
+        foreach ($this->maps as $map) {
+            $callback($map, $this->namespace);
         }
 
         return $this;

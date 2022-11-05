@@ -23,26 +23,31 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
+namespace Teknoo\East\Paas\Compilation\CompiledDeployment\Volume;
 
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
- * Immutable value object, representing a normalized secret will must be injected as environment variable
- * to container in a pod. Name representing the provider and key the secret identifier in the provider.
+ * Immutable value object, representing a normalized configuration about MapVolume, where store confidential data,
+ * like private key, or any credential, to ise into pods, They are not impacted by deployment, and uncorrelated with
+ * any pods lifecycle. Data stay available when after pod deletion.
+ * Map must be hosted by a provider.
+ * For development, there are basically a default provider "map" to store map in a key:value store.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class SecretReference implements ImmutableInterface
+class MapVolume implements ImmutableInterface, VolumeInterface
 {
     use ImmutableTrait;
 
     public function __construct(
         private readonly string $name,
-        private readonly ?string $key = null,
-        private readonly bool $importAll = false,
+        private readonly string $mountPath,
+        private readonly string $mapIdentifier
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -52,13 +57,13 @@ class SecretReference implements ImmutableInterface
         return $this->name;
     }
 
-    public function getKey(): ?string
+    public function getMountPath(): string
     {
-        return $this->key;
+        return $this->mountPath;
     }
 
-    public function isImportAll(): bool
+    public function getMapIdentifier(): string
     {
-        return $this->importAll;
+        return $this->mapIdentifier;
     }
 }

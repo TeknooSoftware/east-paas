@@ -26,6 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
 use RuntimeException;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -65,7 +67,11 @@ class PodCompiler implements CompilerInterface
     private const KEY_PERSISTENT = 'persistent';
     private const KEY_RESET_ON_DEPLOYMENT = 'reset-on-deployment';
     private const KEY_FROM_SECRET = 'from-secret';
+    private const KEY_IMPORT_SECRET = 'import-secret';
     private const KEY_FROM_SECRETS = 'from-secrets';
+    private const KEY_FROM_MAP = 'from-map';
+    private const KEY_IMPORT_MAP = 'import-map';
+    private const KEY_FROM_MAPS = 'from-maps';
     private const KEY_STORAGE_IDENTIFIER = 'storage-provider';
     private const KEY_STORAGE_SIZE = 'storage-size';
     private const KEY_ADD = 'add';
@@ -127,6 +133,21 @@ class PodCompiler implements CompilerInterface
     /**
      * @param array<string, mixed> $volumeDefinition
      */
+    private function buildMapVolume(
+        string $volumeName,
+        string $mountPath,
+        array &$volumeDefinition
+    ): MapVolume {
+        return new MapVolume(
+            $volumeName,
+            $mountPath,
+            $volumeDefinition[self::KEY_FROM_MAP]
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $volumeDefinition
+     */
     private function buildVolume(
         string $volumeName,
         string $mountPath,
@@ -176,6 +197,16 @@ class PodCompiler implements CompilerInterface
 
             if (isset($volumeDefinition[self::KEY_FROM_SECRET])) {
                 $containerVolumes[(string) $volumeName] = $this->buildSecretVolume(
+                    $volumeName,
+                    $mountPath,
+                    $volumeDefinition
+                );
+
+                continue;
+            }
+
+            if (isset($volumeDefinition[self::KEY_FROM_MAP])) {
+                $containerVolumes[(string) $volumeName] = $this->buildMapVolume(
                     $volumeName,
                     $mountPath,
                     $volumeDefinition
@@ -244,9 +275,31 @@ class PodCompiler implements CompilerInterface
      */
     private function processVariables(array $variables): array
     {
+        if (isset($variables[self::KEY_IMPORT_SECRET])) {
+            $index = 0;
+            foreach ($variables[self::KEY_IMPORT_SECRET] as $name) {
+                $variables[self::KEY_IMPORT_SECRET . '-' . $index++] = new SecretReference($name, null, true);
+            }
+            unset($variables[self::KEY_IMPORT_SECRET]);
+        }
+
         if (isset($variables[self::KEY_FROM_SECRETS])) {
             foreach ($variables[self::KEY_FROM_SECRETS] as $varName => $key) {
                 $variables[(string) $varName] = new SecretReference(...explode('.', (string) $key));
+            }
+            unset($variables[self::KEY_FROM_SECRETS]);
+        }
+
+        if (isset($variables[self::KEY_IMPORT_MAP])) {
+            $index = 0;
+            foreach ($variables[self::KEY_IMPORT_MAP] as $name) {
+                $variables[self::KEY_IMPORT_MAP . '-' . $index++] = new MapReference($name, null, true);
+            }
+        }
+
+        if (isset($variables[self::KEY_FROM_MAPS])) {
+            foreach ($variables[self::KEY_FROM_MAPS] as $varName => $key) {
+                $variables[(string) $varName] = new MapReference(...explode('.', (string) $key));
             }
             unset($variables[self::KEY_FROM_SECRETS]);
         }

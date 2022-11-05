@@ -29,20 +29,24 @@ use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
- * Immutable value object, representing a normalized secret will must be injected as environment variable
- * to container in a pod. Name representing the provider and key the secret identifier in the provider.
+ * Immutable value object, representing a normalized Map. Maps' values are not hosted by these instances.
+ * They wrap only an identifier and the provider's name where map are hosted and can be accessible.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class SecretReference implements ImmutableInterface
+class Map implements ImmutableInterface
 {
     use ImmutableTrait;
 
+    public const DEFAULT_TYPE = 'default';
+
+    /**
+     * @param array<string|int, mixed> $options
+     */
     public function __construct(
         private readonly string $name,
-        private readonly ?string $key = null,
-        private readonly bool $importAll = false,
+        private readonly array $options,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -52,13 +56,11 @@ class SecretReference implements ImmutableInterface
         return $this->name;
     }
 
-    public function getKey(): ?string
+    /**
+     * @return array<string|int, mixed>
+     */
+    public function getOptions(): array
     {
-        return $this->key;
-    }
-
-    public function isImportAll(): bool
-    {
-        return $this->importAll;
+        return $this->options;
     }
 }
