@@ -67,10 +67,10 @@ class PodCompiler implements CompilerInterface
     private const KEY_PERSISTENT = 'persistent';
     private const KEY_RESET_ON_DEPLOYMENT = 'reset-on-deployment';
     private const KEY_FROM_SECRET = 'from-secret';
-    private const KEY_IMPORT_SECRET = 'import-secret';
+    private const KEY_IMPORT_SECRETS = 'import-secrets';
     private const KEY_FROM_SECRETS = 'from-secrets';
     private const KEY_FROM_MAP = 'from-map';
-    private const KEY_IMPORT_MAP = 'import-map';
+    private const KEY_IMPORT_MAPS = 'import-maps';
     private const KEY_FROM_MAPS = 'from-maps';
     private const KEY_STORAGE_IDENTIFIER = 'storage-provider';
     private const KEY_STORAGE_SIZE = 'storage-size';
@@ -275,12 +275,12 @@ class PodCompiler implements CompilerInterface
      */
     private function processVariables(array $variables): array
     {
-        if (isset($variables[self::KEY_IMPORT_SECRET])) {
+        if (isset($variables[self::KEY_IMPORT_SECRETS])) {
             $index = 0;
-            foreach ($variables[self::KEY_IMPORT_SECRET] as $name) {
-                $variables[self::KEY_IMPORT_SECRET . '-' . $index++] = new SecretReference($name, null, true);
+            foreach ($variables[self::KEY_IMPORT_SECRETS] as $name) {
+                $variables[self::KEY_IMPORT_SECRETS . '-' . $index++] = new SecretReference($name, null, true);
             }
-            unset($variables[self::KEY_IMPORT_SECRET]);
+            unset($variables[self::KEY_IMPORT_SECRETS]);
         }
 
         if (isset($variables[self::KEY_FROM_SECRETS])) {
@@ -290,10 +290,10 @@ class PodCompiler implements CompilerInterface
             unset($variables[self::KEY_FROM_SECRETS]);
         }
 
-        if (isset($variables[self::KEY_IMPORT_MAP])) {
+        if (isset($variables[self::KEY_IMPORT_MAPS])) {
             $index = 0;
-            foreach ($variables[self::KEY_IMPORT_MAP] as $name) {
-                $variables[self::KEY_IMPORT_MAP . '-' . $index++] = new MapReference($name, null, true);
+            foreach ($variables[self::KEY_IMPORT_MAPS] as $name) {
+                $variables[self::KEY_IMPORT_MAPS . '-' . $index++] = new MapReference($name, null, true);
             }
         }
 

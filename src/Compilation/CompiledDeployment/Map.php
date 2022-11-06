@@ -29,8 +29,8 @@ use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
- * Immutable value object, representing a normalized Map. Maps' values are not hosted by these instances.
- * They wrap only an identifier and the provider's name where map are hosted and can be accessible.
+ * Immutable value object, representing a normalized Map. a collection key value, able to store some parameters and
+ * configurations to use in your pods
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

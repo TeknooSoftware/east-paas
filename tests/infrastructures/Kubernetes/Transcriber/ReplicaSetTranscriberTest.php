@@ -31,12 +31,12 @@ use Maclof\Kubernetes\Repositories\PodRepository;
 use Maclof\Kubernetes\Repositories\ReplicaSetRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
@@ -87,6 +87,8 @@ class ReplicaSetTranscriberTest extends TestCase
                         'foo' => 'bar',
                         'secret' => new SecretReference('foo', 'bar'),
                         'map' => new MapReference('foo', 'bar'),
+                        'secret2' => new SecretReference('foo', null, true),
+                        'map2' => new MapReference('foo', null, true),
                     ]
                 );
 
@@ -103,6 +105,7 @@ class ReplicaSetTranscriberTest extends TestCase
                         'bar' => $volume2,
                         'data' => new PersistentVolume('foo', 'bar'),
                         'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'map' => new MapVolume('bar', '/bar', 'bar'),
                     ],
                     'default_namespace'
                 );
@@ -193,10 +196,14 @@ class ReplicaSetTranscriberTest extends TestCase
                         'bar' => $volume2->import('/bar'),
                         'data' => new PersistentVolume('foo', 'bar'),
                         'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'map' => new MapVolume('foo', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
                         'secret' => new SecretReference('foo', 'bar'),
+                        'map' => new MapReference('foo', 'bar'),
+                        'secret2' => new SecretReference('foo', null, true),
+                        'map2' => new MapReference('foo', null, true),
                     ]
                 );
 

@@ -42,7 +42,7 @@ use function str_starts_with;
 use function substr;
 
 /**
- * "Deployment transcriber" to translate CompiledDeployment's configMaps to Kubernetes ConfigMaps manifest.
+ * "Deployment transcriber" to translate CompiledDeployment's map to Kubernetes ConfigMaps manifest.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

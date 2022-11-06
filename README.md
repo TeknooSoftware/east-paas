@@ -138,16 +138,28 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
    
     paas: #Dedicated to compiler
       version: v1
-      namespace: 'demo'
+    
+    #Config
+    maps:
+      map1:
+        key1: value1
+        key2: ${FOO}
+      map2:
+        foo: bar
+        bar: foo
     
     #Secrets provider
     secrets:
-      map_vault:
+      map-vault:
         provider: map #Internal secrets, must be passed in this file
         options:
           key1: value1
           key2: ${FOO}
-      volume_vault:
+      map-vault2:
+        provider: map #Internal secrets, must be passed in this file
+        options:
+          hello: world
+      volume-vault:
         provider: map
         options:
           foo: bar
@@ -181,8 +193,8 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
         replicas: 2 #instance of pods
         containers:
           php-run: #Container name
-            image: registry.teknoo.software/php-run #Container image to use
-            version: 7.4
+            image: ${PHP_IMAGE} #Container image to use
+            version: ${PHP_VERSION}
             listen: #Port listen by the container
               - 8080
             volumes: #Volumes to link
@@ -196,17 +208,26 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                   - 'vendor'
                   - 'composer.json'
                   - 'composer.lock'
-                  - 'composer.phar'
               data: #Persistent volume, can not be pre-populated
                 mount-path: '/opt/data'
                 persistent: true
+              map:
+                mount-path: '/map'
+                from-map: 'map2'
               vault:
                 mount-path: '/vault'
-                from-secret: 'volume_vault'
+                from-secret: 'volume-vault'
             variables: #To define some environment variables
               SERVER_SCRIPT: '/opt/app/src/server.php'
+              from-maps:
+                KEY0: 'map1.key0'
+              import-maps:
+                - 'map2'
               from-secrets: #To fetch some value from secret/vault
-                KEY1: 'map_vault.key1'
+                KEY1: 'map-vault.key1'
+                KEY2: 'map-vault.key2'
+              import-secrets:
+                - 'map-vault2'
       demo-pods:
         replicas: 1
         containers:
@@ -243,9 +264,9 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
     #Ingresses configuration
     ingresses:
       demo: #rule name
-        host: demo-paas.teknoo.software
+        host: ${PROJECT_URL}
         tls:
-          secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+          secret: "tls-vault" #Configure the orchestrator to fetch value from vault
         service: #default service
           name: demo-service
           port: 8080
@@ -254,6 +275,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
             service:
               name: php-service
               port: 9876
+
 
 Support this project
 ---------------------
@@ -277,7 +299,7 @@ This library requires :
     * Teknoo/Recipe.
     * Teknoo/East-Foundation.
     * Teknoo/East-Website.
-    * Optional: Symfony 6.0+ (for administration)
+    * Optional: Symfony 6.1+ (for administration)
 
 Credits
 -------

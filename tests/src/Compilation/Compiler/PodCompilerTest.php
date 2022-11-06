@@ -76,13 +76,13 @@ class PodCompilerTest extends TestCase
                             'from-secrets' => [
                                 'bar' => 'myvauult.key',
                             ],
-                            'import-secret' => [
+                            'import-secrets' => [
                                 'vault2'
                             ],
                             'from-maps' => [
                                 'foo' => 'amap.key',
                             ],
-                            'import-map' => [
+                            'import-maps' => [
                                 'map2'
                             ],
                             'foo' => 'bar'

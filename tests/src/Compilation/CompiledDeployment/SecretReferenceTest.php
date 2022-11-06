@@ -55,4 +55,14 @@ class SecretReferenceTest extends TestCase
             $this->buildObject()->getKey()
         );
     }
+
+    public function testIsImportAll()
+    {
+        self::assertFalse(
+            $this->buildObject()->isImportAll()
+        );
+        self::assertTrue(
+            (new SecretReference('foo', 'bar', true))->isImportAll()
+        );
+    }
 }

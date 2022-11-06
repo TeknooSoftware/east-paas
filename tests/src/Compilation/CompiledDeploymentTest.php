@@ -32,6 +32,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
@@ -280,6 +281,29 @@ class CompiledDeploymentTest extends TestCase
             $this->buildObject()->addSecret(
                 'foo',
                 $this->createMock(Secret::class)
+            )
+        );
+    }
+    
+    public function testAddMapWrongMap()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->addMap('foo', new \stdClass());
+    }
+
+    public function testAddMapWrongMapName()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->addMap(new \stdClass(), $this->createMock(Map::class));
+    }
+
+    public function testAddMap()
+    {
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $this->buildObject()->addMap(
+                'foo',
+                $this->createMock(Map::class)
             )
         );
     }
@@ -710,6 +734,40 @@ class CompiledDeploymentTest extends TestCase
             CompiledDeployment::class,
             $cd->foreachSecret(function ($secret) use (&$count) {
                 self::assertInstanceOf(Secret::class, $secret);
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(2, $count);
+    }
+
+    public function testForeachMapBadCallback()
+    {
+        $this->expectException(\TypeError::class);
+
+        $this->buildObject()->foreachMap(new \stdClass());
+    }
+
+    public function testForeachMap()
+    {
+        $cd = $this->buildObject();
+
+        $cd->addMap(
+            'foo1',
+            $this->createMock(Map::class)
+        );
+
+        $cd->addMap(
+            'foo2',
+            $this->createMock(Map::class)
+        );
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachMap(function ($map) use (&$count) {
+                self::assertInstanceOf(Map::class, $map);
 
                 $count++;
             })

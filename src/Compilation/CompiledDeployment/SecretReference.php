@@ -30,7 +30,7 @@ use Teknoo\Immutable\ImmutableTrait;
 
 /**
  * Immutable value object, representing a normalized secret will must be injected as environment variable
- * to container in a pod. Name representing the provider and key the secret identifier in the provider.
+ * to container in a pod. Name representing the secret and key the identifier of the value in the secret.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

@@ -55,4 +55,14 @@ class MapReferenceTest extends TestCase
             $this->buildObject()->getKey()
         );
     }
+
+    public function testIsImportAll()
+    {
+        self::assertFalse(
+            $this->buildObject()->isImportAll()
+        );
+        self::assertTrue(
+            (new MapReference('foo', 'bar', true))->isImportAll()
+        );
+    }
 }

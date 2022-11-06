@@ -32,7 +32,7 @@ use Teknoo\Immutable\ImmutableTrait;
 
 /**
  * Immutable value object, representing a normalized configuration about SecretVolume, where store confidential data,
- * like private key, or any credential, to ise into pods, They are not impacted by deployment, and uncorrelated with
+ * like private key, or any credential, to use into pods, They are not impacted by deployment, and uncorrelated with
  * any pods lifecycle. Data stay available when after pod deletion.
  * Secret must be hosted by a provider.
  * For development, there are basically a default provider "map" to store secret in a key:value store.

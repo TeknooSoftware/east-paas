@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.119] - 2022-11-06
+### Dev Release
+- Add Map (inspired by ConfigMap in Kubernetes) to create collection of keys-values, able to store configurations and
+  parameters for pods
+- Secret and Map can be fully imported by using the key `import-secrets` instead `from-secrets` and
+ `import-maps` instead `from-maps` in pods's variables configuration
+
 ## [0.0.118] - 2022-11-05
 ### Dev Release
 - Replace `ReplicationController` by `ReplicaSet` in Kubernetes

@@ -31,11 +31,9 @@ use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
- * Immutable value object, representing a normalized configuration about MapVolume, where store confidential data,
- * like private key, or any credential, to ise into pods, They are not impacted by deployment, and uncorrelated with
- * any pods lifecycle. Data stay available when after pod deletion.
- * Map must be hosted by a provider.
- * For development, there are basically a default provider "map" to store map in a key:value store.
+ * Immutable value object, representing a normalized configuration about MapVolume, where store data,
+ * like configurations and other parameters, to use into pods, They are not impacted by deployment, and uncorrelated
+ * with any pods lifecycle. Data stay available when after pod deletion.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

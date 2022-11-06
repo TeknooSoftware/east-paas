@@ -30,7 +30,7 @@ use Teknoo\Immutable\ImmutableTrait;
 
 /**
  * Immutable value object, representing a normalized map will must be injected as environment variable
- * to container in a pod. Name representing the provider and key the map identifier in the provider.
+ * to container in a pod.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
