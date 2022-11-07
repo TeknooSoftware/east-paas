@@ -23,9 +23,9 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\BuildKit;
+namespace Teknoo\East\Paas\Infrastructures\Image;
 
-use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
@@ -47,14 +47,14 @@ return [
         }
     },
 
-    BuilderInterface::class => get(BuilderWrapper::class),
-    BuilderWrapper::class => static function (ContainerInterface $container): BuilderWrapper {
+    BuilderInterface::class => get(ImageWrapper::class),
+    ImageWrapper::class => static function (ContainerInterface $container): ImageWrapper {
         $timeout = 3 * 60; //3 minutes;
-        if ($container->has('teknoo.east.paas.buildkit.build.timeout')) {
-            $timeout = (int) $container->get('teknoo.east.paas.buildkit.build.timeout');
+        if ($container->has('teknoo.east.paas.img_builder.build.timeout')) {
+            $timeout = (int) $container->get('teknoo.east.paas.img_builder.build.timeout');
         }
 
-        return new BuilderWrapper(
+        return new ImageWrapper(
             'docker',
             [
                 'image' => (string) file_get_contents(__DIR__ . '/templates/buildx/image.template'),
@@ -64,8 +64,7 @@ return [
                 'volume' => (string) file_get_contents(__DIR__ . '/templates/buildx/volume.template'),
             ],
             $container->get(ProcessFactoryInterface::class),
-            (string) $container->get('teknoo.east.paas.buildkit.builder.name'),
-            (string) $container->get('teknoo.east.paas.buildkit.build.platforms'),
+            (string) $container->get('teknoo.east.paas.img_builder.build.platforms'),
             $timeout
         );
     }

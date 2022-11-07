@@ -23,14 +23,14 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\BuildKit;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Image;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
-use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
-use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper;
+use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
@@ -43,11 +43,11 @@ use Teknoo\East\Paas\Object\XRegistryAuth;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper
- * @covers \Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Generator
- * @covers \Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Running
+ * @covers \Teknoo\East\Paas\Infrastructures\Image\ImageWrapper
+ * @covers \Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Generator
+ * @covers \Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Running
  */
-class BuilderWrapperTest extends TestCase
+class ImageWrapperTest extends TestCase
 {
     private ?ProcessFactoryInterface $processFactory = null;
 
@@ -68,9 +68,9 @@ class BuilderWrapperTest extends TestCase
         return $this->processFactory;
     }
 
-    public function buildWrapper($timeout = 300): BuilderWrapper
+    public function buildWrapper($timeout = 300): ImageWrapper
     {
-        return new BuilderWrapper(
+        return new ImageWrapper(
             'docker',
             [
                 'image' => 'foo',
@@ -79,7 +79,6 @@ class BuilderWrapperTest extends TestCase
             ],
             $this->getProcessFactoryMock(),
             'foo',
-            'bar',
             $timeout
         );
     }
@@ -87,14 +86,13 @@ class BuilderWrapperTest extends TestCase
     public function testConstructorWithoutImageTemplate()
     {
         $this->expectException(\DomainException::class);
-        new BuilderWrapper(
+        new ImageWrapper(
             'docker',
             [
                 'volume' => 'bar',
             ],
             $this->getProcessFactoryMock(),
             'foo',
-            'bar',
             0,
         );
     }
@@ -102,14 +100,13 @@ class BuilderWrapperTest extends TestCase
     public function testConstructorWithoutVolumeTemplate()
     {
         $this->expectException(\DomainException::class);
-        new BuilderWrapper(
+        new ImageWrapper(
             'docker',
             [
                 'image' => 'foo',
             ],
             $this->getProcessFactoryMock(),
             'foo',
-            'bar',
             0
         );
     }
@@ -157,7 +154,7 @@ class BuilderWrapperTest extends TestCase
     public function testConfigure()
     {
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $this->buildWrapper()->configure(
                 'foo',
                 'bar',
@@ -240,7 +237,7 @@ class BuilderWrapperTest extends TestCase
         $builder = $this->buildWrapper();
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder = $builder->configure(
                 'bar',
                 'repository.teknoo.run',
@@ -249,7 +246,7 @@ class BuilderWrapperTest extends TestCase
         );
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder->buildImages(
                 $cd,
                 'foo',
@@ -302,7 +299,7 @@ class BuilderWrapperTest extends TestCase
         $builder = $this->buildWrapper();
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder = $builder->configure(
                 'bar',
                 'repository.teknoo.run',
@@ -311,7 +308,7 @@ class BuilderWrapperTest extends TestCase
         );
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder->buildImages(
                 $cd,
                 'foo',
@@ -360,7 +357,7 @@ class BuilderWrapperTest extends TestCase
         $builder = $this->buildWrapper(0);
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder = $builder->configure(
                 'bar',
                 'repository.teknoo.run',
@@ -369,7 +366,7 @@ class BuilderWrapperTest extends TestCase
         );
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder->buildImages(
                 $cd,
                 'foo',
@@ -456,7 +453,7 @@ class BuilderWrapperTest extends TestCase
         $builder = $this->buildWrapper();
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder = $builder->configure(
                 'bar',
                 'repository.teknoo.run',
@@ -465,7 +462,7 @@ class BuilderWrapperTest extends TestCase
         );
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder->buildVolumes(
                 $cd,
                 'foo',
@@ -520,7 +517,7 @@ class BuilderWrapperTest extends TestCase
         $builder = $this->buildWrapper();
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder = $builder->configure(
                 'bar',
                 'repository.teknoo.run',
@@ -529,7 +526,7 @@ class BuilderWrapperTest extends TestCase
         );
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
+            ImageWrapper::class,
             $builder->buildVolumes(
                 $cd,
                 'foo',

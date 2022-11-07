@@ -9,7 +9,7 @@ parameters:
             path: infrastructures/
         -
             message: '#mixed#'
-            path: infrastructures/BuildKit/di.php
+            path: infrastructures/Image/di.php
         -
             message: '#mixed#'
             path: src/Job/JobUnit.php

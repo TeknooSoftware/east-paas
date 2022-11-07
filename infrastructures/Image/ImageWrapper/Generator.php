@@ -23,21 +23,22 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\BuildKit\Contracts;
+namespace Teknoo\East\Paas\Infrastructures\Image\ImageWrapper;
 
-use Symfony\Component\Process\Process;
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper;
+use Teknoo\States\State\StateInterface;
+use Teknoo\States\State\StateTrait;
 
 /**
- * Interface defining a factory in the DI to create, on demand, a new `Symfony Process` instance,
- * needed to execute and manipulate BuildKit.
+ * State for the class ImageWrapper for the mother instance present into container, to build new Conductor instance
+ * via a self cloning.
+ *
+ * @mixin ImageWrapper
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface ProcessFactoryInterface
+class Generator implements StateInterface
 {
-    /**
-     * @return Process<mixed>
-     */
-    public function __invoke(string $cwd): Process;
+    use StateTrait;
 }

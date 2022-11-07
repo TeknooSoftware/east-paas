@@ -23,22 +23,21 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
+namespace Teknoo\East\Paas\Infrastructures\Image\Contracts;
 
-use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
-use Teknoo\States\State\StateInterface;
-use Teknoo\States\State\StateTrait;
+use Symfony\Component\Process\Process;
 
 /**
- * State for the class BuilderWrapper for the mother instance present into container, to build new Conductor instance
- * via a self cloning.
- *
- * @mixin BuilderWrapper
+ * Interface defining a factory in the DI to create, on demand, a new `Symfony Process` instance,
+ * needed to execute and manipulate an oci image builder.
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Generator implements StateInterface
+interface ProcessFactoryInterface
 {
-    use StateTrait;
+    /**
+     * @return Process<mixed>
+     */
+    public function __invoke(string $cwd): Process;
 }

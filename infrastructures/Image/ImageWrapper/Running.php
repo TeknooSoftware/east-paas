@@ -23,11 +23,11 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
+namespace Teknoo\East\Paas\Infrastructures\Image\ImageWrapper;
 
 use Closure;
 use RuntimeException;
-use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper;
 use Symfony\Component\Process\Process;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
@@ -45,9 +45,9 @@ use function trim;
 use const PHP_EOL;
 
 /**
- * State for the class BuilderWrapper for the daughter instance present into the workplan
+ * State for the class ImageWrapper for the daughter instance present into the workplan
  *
- * @mixin BuilderWrapper
+ * @mixin ImageWrapper
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

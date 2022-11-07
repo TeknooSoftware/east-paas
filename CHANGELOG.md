@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.120] - 2022-11-07
+### Dev Release
+- Replace BuildKit by an oci image builder, not require docker daemon
+
 ## [0.0.119] - 2022-11-06
 ### Dev Release
 - Add Map (inspired by ConfigMap in Kubernetes) to create collection of keys-values, able to store configurations and
@@ -541,8 +545,8 @@
 - Pod's containers can use embedded volumes to build a new image with files from the git repository without use
   and external volume to mount in Kubernetes.
 - Add nez type of Image called EmbedddedVolumeImage and interfaces BuildableInterface and RegistrableInterface
-- Change Docker to BuildKit
-- Image building with BuildKit use only pipes and environments variables without write temp files
+- Change Docker to Image
+- Image building with Image use only pipes and environments variables without write temp files
 - Persistent volume
 
 ## [0.0.19] - 2020-12-06

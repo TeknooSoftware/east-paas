@@ -23,20 +23,20 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\BuildKit;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Image;
 
 use DI\Container;
 use DI\ContainerBuilder;
 use Symfony\Component\Process\Process;
-use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper;
-use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper;
+use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @package Teknoo\Tests\East\Paas\Infrastructures\BuildKit
+ * @package Teknoo\Tests\East\Paas\Infrastructures\Image
  */
 class ContainerTest extends TestCase
 {
@@ -47,7 +47,7 @@ class ContainerTest extends TestCase
     protected function buildContainer() : Container
     {
         $containerDefinition = new ContainerBuilder();
-        $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/BuildKit/di.php');
+        $containerDefinition->addDefinitions(__DIR__ . '/../../../infrastructures/Image/di.php');
 
         return $containerDefinition->build();
     }
@@ -71,8 +71,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
-        $container->set('teknoo.east.paas.buildkit.builder.name', 'foo');
-        $container->set('teknoo.east.paas.buildkit.build.platforms', 'bar');
+        $container->set('teknoo.east.paas.img_builder.build.platforms', 'bar');
 
         self::assertInstanceOf(
             BuilderInterface::class,
@@ -80,30 +79,28 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testBuilderWrapper()
+    public function testImageWrapper()
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
-        $container->set('teknoo.east.paas.buildkit.builder.name', 'foo');
-        $container->set('teknoo.east.paas.buildkit.build.platforms', 'bar');
+        $container->set('teknoo.east.paas.img_builder.build.platforms', 'bar');
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
-            $container->get(BuilderWrapper::class)
+            ImageWrapper::class,
+            $container->get(ImageWrapper::class)
         );
     }
 
-    public function testBuilderWrapperWithTileout()
+    public function testImageWrapperWithTileout()
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
-        $container->set('teknoo.east.paas.buildkit.builder.name', 'foo');
-        $container->set('teknoo.east.paas.buildkit.build.platforms', 'bar');
-        $container->set('teknoo.east.paas.buildkit.build.timeout', 123);
+        $container->set('teknoo.east.paas.img_builder.build.platforms', 'bar');
+        $container->set('teknoo.east.paas.img_builder.build.timeout', 123);
 
         self::assertInstanceOf(
-            BuilderWrapper::class,
-            $container->get(BuilderWrapper::class)
+            ImageWrapper::class,
+            $container->get(ImageWrapper::class)
         );
     }
 }

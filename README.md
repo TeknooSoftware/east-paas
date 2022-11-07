@@ -46,7 +46,7 @@ Example with Symfony
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Flysystem/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Git/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Kubernetes/di.php'
-            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/BuildKit/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Image/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Composer/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Laminas/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-paas/infrastructures/Symfony/Components/di.php'
@@ -124,9 +124,8 @@ Example with Symfony
     
         'teknoo.east.paas.composer.phar.path' => ...,
     
-        'teknoo.east.paas.buildkit.build.timeout' => ...,
-        'teknoo.east.paas.buildkit.build.platforms' => ...,
-        'teknoo.east.paas.buildkit.builder.name' => ...,
+        'teknoo.east.paas.img_builder.build.timeout' => ...,
+        'teknoo.east.paas.img_builder.build.platforms' => ...,
     
         'teknoo.east.paas.kubernetes.ssl.verify' => ...,
     ];

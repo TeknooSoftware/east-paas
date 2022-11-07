@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Infrastructures\BuildKit;
+namespace Teknoo\East\Paas\Infrastructures\Image;
 
 use DomainException;
 use RuntimeException;
@@ -31,9 +31,9 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
-use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Generator;
-use Teknoo\East\Paas\Infrastructures\BuildKit\BuilderWrapper\Running;
-use Teknoo\East\Paas\Infrastructures\BuildKit\Contracts\ProcessFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Generator;
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Running;
+use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
@@ -53,9 +53,9 @@ use function uniqid;
 
 /**
  * Service able to take a BuildableInterface instance and convert it / build them to OCI images and
- * push it to a registry thanks to BuildKit.
- * Symfony Process is used to control Buildkit, process created via a factory defined by the ProcessFactoryInterface
- * of this namespace.
+ * push it to a registry thanks to an oci image builder.
+ * Symfony Process is used to control an oci image builder, process created via a factory defined by the
+ * ProcessFactoryInterface of this namespace.
  * This class has two state :
  * - Generator for instance created via the DI, only able to clone self
  * - Running, configured to be executed with a job, only available in a workplan
@@ -63,7 +63,7 @@ use function uniqid;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class BuilderWrapper implements BuilderInterface, AutomatedInterface
+class ImageWrapper implements BuilderInterface, AutomatedInterface
 {
     use ProxyTrait;
     use AutomatedTrait {
@@ -85,7 +85,6 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
         private readonly string $binary,
         private readonly array $templates,
         private readonly ProcessFactoryInterface $processFactory,
-        private readonly string $builderName,
         private readonly string $platforms,
         private readonly ?int $timeout,
     ) {
@@ -176,8 +175,7 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
                 $process->setInput($script);
 
                 $variables = $newImage->getVariables();
-                $variables['PAAS_BUILDKIT_BUILDER_NAME'] = $this->builderName;
-                $variables['PAAS_BUILDKIT_PLATFORM'] = $this->platforms;
+                $variables['PAAS_IMAGE_PLATFORM'] = $this->platforms;
 
                 if ($newImage instanceof EmbeddedVolumeImage) {
                     $paths = [];
@@ -247,8 +245,7 @@ class BuilderWrapper implements BuilderInterface, AutomatedInterface
                 }
 
                 $variables = [
-                    'PAAS_BUILDKIT_BUILDER_NAME' => $this->builderName,
-                    'PAAS_BUILDKIT_PLATFORM' => $this->platforms,
+                    'PAAS_IMAGE_PLATFORM' => $this->platforms,
                     'PAAS_DOCKERFILE_CONTENT' => $this->generateDockerFile(
                         'alpine:latest',
                         $paths,
