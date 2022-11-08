@@ -71,6 +71,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.img_builder.cmd', 'docker');
         $container->set('teknoo.east.paas.img_builder.build.platforms', 'bar');
 
         self::assertInstanceOf(

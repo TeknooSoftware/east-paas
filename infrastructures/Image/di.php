@@ -54,8 +54,13 @@ return [
             $timeout = (int) $container->get('teknoo.east.paas.img_builder.build.timeout');
         }
 
+        $binary = 'buildah';
+        if ($container->has('teknoo.east.paas.img_builder.cmd')) {
+            $binary = (string) $container->get('teknoo.east.paas.img_builder.cmd');
+        }
+
         return new ImageWrapper(
-            'docker',
+            $binary,
             [
                 'image' => (string) file_get_contents(__DIR__ . '/templates/generic/image.template'),
                 'embedded-volume-image' => (string) file_get_contents(

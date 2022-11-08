@@ -71,7 +71,7 @@ class ImageWrapperTest extends TestCase
     public function buildWrapper($timeout = 300): ImageWrapper
     {
         return new ImageWrapper(
-            'docker',
+            'buildah',
             [
                 'image' => 'foo',
                 'embedded-volume-image' => 'foo',
@@ -87,7 +87,7 @@ class ImageWrapperTest extends TestCase
     {
         $this->expectException(\DomainException::class);
         new ImageWrapper(
-            'docker',
+            'buildah',
             [
                 'volume' => 'bar',
             ],
@@ -101,7 +101,7 @@ class ImageWrapperTest extends TestCase
     {
         $this->expectException(\DomainException::class);
         new ImageWrapper(
-            'docker',
+            'buildah',
             [
                 'image' => 'foo',
             ],

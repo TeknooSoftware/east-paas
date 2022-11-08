@@ -1,7 +1,7 @@
 parameters:
     teknoo.east.paas.symfony.form_type.cluster.class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType'
 
-    teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes', 'Docker Swarm': 'swarm' }
+    teknoo.east.paas.symfony.form_type.cluster.types: { 'Kubernetes': 'kubernetes' }
 
 services:
     teknoo.east.paas.symfony.form_type.cluster:

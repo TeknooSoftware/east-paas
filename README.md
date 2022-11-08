@@ -124,6 +124,7 @@ Example with Symfony
     
         'teknoo.east.paas.composer.phar.path' => ...,
     
+        'teknoo.east.paas.img_builder.cmd' => ...,
         'teknoo.east.paas.img_builder.build.timeout' => ...,
         'teknoo.east.paas.img_builder.build.platforms' => ...,
     
