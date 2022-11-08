@@ -54,7 +54,7 @@ return [
             $timeout = (int) $container->get('teknoo.east.paas.img_builder.build.timeout');
         }
 
-        $binary = 'buildah';
+        $binary = 'docker';
         if ($container->has('teknoo.east.paas.img_builder.cmd')) {
             $binary = (string) $container->get('teknoo.east.paas.img_builder.cmd');
         }
