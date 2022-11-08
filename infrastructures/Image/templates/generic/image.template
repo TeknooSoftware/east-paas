@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+set -e
+
+echo "$PAAS_REGISTRY_PWD" | {% binary %} login --username=$PAAS_REGISTRY_USER --password-stdin $PAAS_REGISTRY_HOST
+
+{% binary %} build --no-cache --platform $PAAS_IMAGE_PLATFORM {% buildsArgs %} ---force-rm --rm -t {% imageName %} {% imagePath %}
+
+{% binary %} push {% imageName %}

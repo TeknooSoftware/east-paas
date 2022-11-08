@@ -57,11 +57,11 @@ return [
         return new ImageWrapper(
             'docker',
             [
-                'image' => (string) file_get_contents(__DIR__ . '/templates/buildx/image.template'),
+                'image' => (string) file_get_contents(__DIR__ . '/templates/generic/image.template'),
                 'embedded-volume-image' => (string) file_get_contents(
-                    __DIR__ . '/templates/buildx/embedded-volume-image.template'
+                    __DIR__ . '/templates/generic/embedded-volume-image.template'
                 ),
-                'volume' => (string) file_get_contents(__DIR__ . '/templates/buildx/volume.template'),
+                'volume' => (string) file_get_contents(__DIR__ . '/templates/generic/volume.template'),
             ],
             $container->get(ProcessFactoryInterface::class),
             (string) $container->get('teknoo.east.paas.img_builder.build.platforms'),
