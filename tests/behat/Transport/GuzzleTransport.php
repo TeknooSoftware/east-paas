@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\Behat\Transport;
+namespace Teknoo\Tests\East\Paas\Behat\Transport;
 
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use GuzzleHttp\Client;

@@ -2,14 +2,20 @@
 
 declare(strict_types=1);
 
+namespace Teknoo\Tests\East\Paas\Behat;
+
 use Behat\Behat\Context\Context;
+use DateTime;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
+use RuntimeException;
+use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder as SfContainerBuilder;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -17,6 +23,9 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use Teknoo\DI\SymfonyBridge\DIBridgeBundle;
+use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
+use Teknoo\East\FoundationBundle\EastFoundationBundle;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Common\Object\User;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -24,6 +33,7 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
+use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\GitRepository;
@@ -46,6 +56,13 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Symfony\Component\DependencyInjection\Container;
+use Traversable;
+
+use function dirname;
+use function json_decode;
+use function json_encode;
+use function random_int;
+use function strlen;
 
 /**
  * Defines application features from the specific context.
@@ -214,27 +231,27 @@ class FeatureContext implements Context
 
             public function getProjectDir(): string
             {
-                return \dirname(__DIR__, 2);
+                return dirname(__DIR__, 2);
             }
 
             public function getCacheDir(): string
             {
-                return \dirname(__DIR__, 2).'/tests/var/cache';
+                return dirname(__DIR__, 1).'/var/cache';
             }
 
             public function getLogDir(): string
             {
-                return \dirname(__DIR__, 2).'/tests/var/logs';
+                return dirname(__DIR__, 1).'/var/logs';
             }
 
             public function registerBundles(): iterable
             {
-                yield new \Symfony\Bundle\FrameworkBundle\FrameworkBundle();
-                yield new \Teknoo\East\FoundationBundle\EastFoundationBundle();
-                yield new \Teknoo\East\CommonBundle\TeknooEastCommonBundle();
-                yield new \Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle();
-                yield new \Teknoo\DI\SymfonyBridge\DIBridgeBundle();
-                yield new \Symfony\Bundle\SecurityBundle\SecurityBundle();
+                yield new FrameworkBundle();
+                yield new EastFoundationBundle();
+                yield new TeknooEastCommonBundle();
+                yield new TeknooEastPaasBundle();
+                yield new DIBridgeBundle();
+                yield new SecurityBundle();
             }
 
             protected function configureContainer(SfContainerBuilder $container, LoaderInterface $loader)
@@ -264,7 +281,7 @@ class FeatureContext implements Context
                 $characters = 'abcdefghijklmnopqrstuvwxyz';
                 $str = '';
                 for ($i = 0; $i < 10; $i++) {
-                    $str .= $characters[\rand(0, \strlen($characters) - 1)];
+                    $str .= $characters[random_int(0, strlen($characters) - 1)];
                 }
 
                 return $str;
@@ -298,7 +315,7 @@ class FeatureContext implements Context
     public function getRepository(string $className)
     {
         if (!isset($this->repositories[$className])) {
-            throw new \RuntimeException("Missing $className");
+            throw new RuntimeException("Missing $className");
         }
 
         return $this->repositories[$className];
@@ -435,15 +452,11 @@ class FeatureContext implements Context
         $this->buildRepository(Cluster::class);
         $this->buildRepository(Job::class);
         $this->buildRepository(Project::class);
-        $this->buildRepository(Content::class);
-        $this->buildRepository(Item::class);
-        $this->buildRepository(Media::class);
-        $this->buildRepository(Type::class);
         $this->buildRepository(User::class);
 
         $this->useHnc = false;
         $this->sfContainer->get(DatesService::class)
-            ->setCurrentDate(new \DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
+            ->setCurrentDate(new DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
     }
 
     /**
@@ -543,7 +556,7 @@ class FeatureContext implements Context
     {
         $this->calledUrl = $url;
 
-        $body = \json_encode(new History(null, $this->historyMessage = $text, new \DateTime($this->historyDate = $date)));
+        $body = json_encode(new History(null, $this->historyMessage = $text, new DateTime($this->historyDate = $date)));
         $request = Request::create('https://'.$this->sfContainer->getParameter('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $body);
         $this->response = $this->kernel->handle($request);
     }
@@ -647,8 +660,8 @@ EOF;
     public function withThisBodyAnswerTheProblemJson($body)
     {
         Assert::assertEquals('application/problem+json', $this->response->headers->get('Content-Type'));
-        $expected = \json_decode($body, true);
-        $actual = \json_decode($current = $this->response->getContent(), true);
+        $expected = json_decode($body, true);
+        $actual = json_decode($current = $this->response->getContent(), true);
         Assert::assertEquals($expected, $actual);
     }
 
@@ -714,14 +727,14 @@ EOF;
     {
         $job = $this->getNormalizedJob([]);
 
-        $content = \json_decode($this->response->getContent(), true);
+        $content = json_decode($this->response->getContent(), true);
         try {
             Assert::assertEquals(
                 $job,
                 $content
             );
         } catch (ExpectationFailedException $error) {
-            throw new \RuntimeException((string) $error, $error->getCode(), $error);
+            throw new RuntimeException((string) $error, $error->getCode(), $error);
         }
     }
 
@@ -730,14 +743,14 @@ EOF;
      */
     public function withTheJobNormalizedInTheBodyWithVariables($variables)
     {
-        $job = $this->getNormalizedJob(\json_decode($variables, true));
+        $job = $this->getNormalizedJob(json_decode($variables, true));
 
-        $content = \json_decode($this->response->getContent(), true);
+        $content = json_decode($this->response->getContent(), true);
 
         try {
             Assert::assertEquals($job, $content);
         } catch (ExpectationFailedException $error) {
-            throw new \RuntimeException((string) $error, $error->getCode(), $error);
+            throw new RuntimeException((string) $error, $error->getCode(), $error);
         }
     }
 
@@ -748,14 +761,14 @@ EOF;
     {
         $job = $this->getNormalizedJob([], true);
 
-        $content = \json_decode($this->response->getContent(), true);
+        $content = json_decode($this->response->getContent(), true);
         try {
             Assert::assertEquals(
                 $job,
                 $content
             );
         } catch (ExpectationFailedException $error) {
-            throw new \RuntimeException((string) $error, $error->getCode(), $error);
+            throw new RuntimeException((string) $error, $error->getCode(), $error);
         }
     }
 
@@ -764,14 +777,14 @@ EOF;
      */
     public function withTheJobNormalizedWithHncInTheBodyWithVariables($variables)
     {
-        $job = $this->getNormalizedJob(\json_decode($variables, true), true);
+        $job = $this->getNormalizedJob(json_decode($variables, true), true);
 
-        $content = \json_decode($this->response->getContent(), true);
+        $content = json_decode($this->response->getContent(), true);
 
         try {
             Assert::assertEquals($job, $content);
         } catch (ExpectationFailedException $error) {
-            throw new \RuntimeException((string) $error, $error->getCode(), $error);
+            throw new RuntimeException((string) $error, $error->getCode(), $error);
         }
     }
 
@@ -787,7 +800,7 @@ EOF;
             ->setEnvironment($this->environment)
             ->setExtra(['foo' => 'bar'])
             ->useHierarchicalNamespaces($hnc)
-            ->addToHistory('teknoo.east.paas.jobs.configured', new \DateTime($this->jobDate));
+            ->addToHistory('teknoo.east.paas.jobs.configured', new DateTime($this->jobDate));
 
         $this->repositories[Job::class]->register(
             $id,
@@ -821,9 +834,9 @@ EOF;
             'date' => $this->historyDate = $date,
             'is_final' => false,
             'extra' => [],
-            'previous' => new History(null, 'teknoo.east.paas.jobs.configured', new \DateTime($this->jobDate)),
+            'previous' => new History(null, 'teknoo.east.paas.jobs.configured', new DateTime($this->jobDate)),
         ];
-        Assert::assertEquals(\json_encode($history), $this->response->getContent());
+        Assert::assertEquals(json_encode($history), $this->response->getContent());
     }
 
     /**
@@ -842,7 +855,7 @@ EOF;
             'previous' => null,
         ];
 
-        $content = \json_decode($this->response->getContent(), true);
+        $content = json_decode($this->response->getContent(), true);
 
         Assert::assertEquals($history, $content);
     }
@@ -1139,7 +1152,7 @@ EOF;
                 $this->hooks = $hooks;
             }
 
-            public function getIterator(): \Traversable
+            public function getIterator(): Traversable
             {
                 yield from $this->hooks;
             }

@@ -17,5 +17,5 @@ di_bridge:
     - '%kernel.project_dir%/infrastructures/Composer/di.php'
     - '%kernel.project_dir%/infrastructures/Symfony/Components/di.php'
     - '%kernel.project_dir%/infrastructures/Laminas/di.php'
-    - '%kernel.project_dir%/features/bootstrap/config/di.php'
+    - '%kernel.project_dir%/tests/behat/config/di.php'
 
