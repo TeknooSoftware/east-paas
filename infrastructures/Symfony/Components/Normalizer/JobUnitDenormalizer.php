@@ -72,7 +72,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
         $jobId = $data['id'];
         $projectResume = $data['project'];
         $baseNamespace = $data['base_namespace'] ?? null;
-        $hierarchicalNamespaces = $data['hierarchical_namespaces'] ?? $hierarchicalNSDefaultValue;
+        $hierarchicalNamespaces = !empty($data['hierarchical_namespaces'] ?? $hierarchicalNSDefaultValue);
         $denormalizer = $this->denormalizer;
         $sourceRepository = $denormalizer->denormalize(
             $data['source_repository'],

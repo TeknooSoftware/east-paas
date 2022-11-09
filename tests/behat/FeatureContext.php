@@ -56,6 +56,7 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Symfony\Component\DependencyInjection\Container;
+use Throwable;
 use Traversable;
 
 use function dirname;
@@ -63,6 +64,7 @@ use function json_decode;
 use function json_encode;
 use function random_int;
 use function strlen;
+use function var_export;
 
 /**
  * Defines application features from the specific context.
@@ -196,7 +198,7 @@ class FeatureContext implements Context
      */
     private $requestBody;
 
-    private $useHnc = false;
+    private static $useHnc = false;
 
     /**
      * Initializes context.
@@ -454,7 +456,7 @@ class FeatureContext implements Context
         $this->buildRepository(Project::class);
         $this->buildRepository(User::class);
 
-        $this->useHnc = false;
+        self::$useHnc = false;
         $this->sfContainer->get(DatesService::class)
             ->setCurrentDate(new DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
     }
@@ -470,7 +472,7 @@ class FeatureContext implements Context
             $this->account = (new Account())->setId($this->accountId)
                 ->setName('Consumer Account')
                 ->setNamespace('behat-test')
-                ->setUseHierarchicalNamespaces($this->useHnc)
+                ->setUseHierarchicalNamespaces(self::$useHnc)
         );
     }
 
@@ -567,11 +569,13 @@ class FeatureContext implements Context
     public function iRunANewJobFromProjectAtTo($jobId, $projectId, $url)
     {
         $this->calledUrl = $url;
+        $hnc = (int) self::$useHnc;
 
         $body = <<<EOF
 {
   "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\Job",
   "id": "$jobId",
+  "hierarchical_namespaces": $hnc,
   "project": {
     "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\Project",
     "id": "$projectId",
@@ -1121,27 +1125,7 @@ EOF;
      */
     public function aComposerHookAsHookBuilder()
     {
-        $hook = new class implements HookInterface {
-            public function setPath(string $path): HookInterface
-            {
-                return $this;
-            }
-
-            /**
-             * @inheritDoc
-             */
-            public function setOptions(array $options, PromiseInterface $promise): HookInterface
-            {
-                $promise->success();
-                return $this;
-            }
-
-            public function run(PromiseInterface $promise): HookInterface
-            {
-                $promise->success('foo');
-                return $this;
-            }
-        };
+        $hook = new HookMock();
 
         $collection = new class (['composer' => $hook]) implements HooksCollectionInterface {
 
@@ -1235,6 +1219,18 @@ EOF;
      */
     public function aClusterSupportingHierarchicalNamespace()
     {
-        $this->useHnc = true;
+        self::$useHnc = true;
+    }
+
+    public static function compareCD(CompiledDeploymentInterface $cd): void
+    {
+        try {
+            Assert::assertEquals(
+                var_export($ecd = (include('expectedCD.php'))(self::$useHnc), true),
+                var_export($cd, true)
+            );
+        } catch (Throwable $e) {
+            throw $e;
+        }
     }
 }

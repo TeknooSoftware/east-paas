@@ -51,7 +51,14 @@ class Deserializer implements DeserializerInterface
         array $context = []
     ): DeserializerInterface {
         try {
-            $promise->success($this->serializer->deserialize($data, $type, $format, $context));
+            $promise->success(
+                $this->serializer->deserialize(
+                    data: $data,
+                    type: $type,
+                    format: $format,
+                    context: $context
+                )
+            );
         } catch (Throwable $error) {
             $promise->fail($error);
         }

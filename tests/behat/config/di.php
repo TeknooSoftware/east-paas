@@ -1,9 +1,12 @@
 <?php
 
+namespace Teknoo\Tests\East\Paas\Behat\config;
+
 use Laminas\Diactoros\RequestFactory;
 use Laminas\Diactoros\ResponseFactory;
 use Laminas\Diactoros\StreamFactory;
 use Laminas\Diactoros\UriFactory;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -14,7 +17,10 @@ use Psr\Http\Client\ClientInterface as PsrClient;
 use Teknoo\East\Diactoros\ResponseMessageFactory;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 
+use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
+use Teknoo\Tests\East\Paas\Behat\FeatureContext;
 use function DI\create;
+use function DI\decorate;
 use function DI\get;
 
 return [
@@ -57,4 +63,12 @@ return [
     },
 
     MessageFactoryInterface::class => get(ResponseMessageFactory::class),
+
+    RunJobStepsInterface::class => decorate(
+        static function (RunJobStepsInterface $previous, ContainerInterface $container): RunJobStepsInterface {
+            $previous->add(89, FeatureContext::compareCD(...));
+
+            return $previous;
+        }
+    ),
 ];

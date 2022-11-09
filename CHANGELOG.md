@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.121] - 2022-11-09
+### Dev Release
+- Migrate behat's context in tests directory
+- Complete test and check paas compilation
+- Fix some bug in job deserializing and pod compilation
+
 ## [0.0.120] - 2022-11-07
 ### Dev Release
 - Replace BuildKit by an oci image builder, not require docker daemon

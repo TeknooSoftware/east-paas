@@ -295,13 +295,14 @@ class PodCompiler implements CompilerInterface
             foreach ($variables[self::KEY_IMPORT_MAPS] as $name) {
                 $variables[self::KEY_IMPORT_MAPS . '-' . $index++] = new MapReference($name, null, true);
             }
+            unset($variables[self::KEY_IMPORT_MAPS]);
         }
 
         if (isset($variables[self::KEY_FROM_MAPS])) {
             foreach ($variables[self::KEY_FROM_MAPS] as $varName => $key) {
                 $variables[(string) $varName] = new MapReference(...explode('.', (string) $key));
             }
-            unset($variables[self::KEY_FROM_SECRETS]);
+            unset($variables[self::KEY_FROM_MAPS]);
         }
 
         return $variables;
