@@ -6,12 +6,18 @@ namespace Teknoo\Tests\East\Paas\Behat;
 
 use Behat\Behat\Context\Context;
 use DateTime;
+use DI\Container as DiContainer;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
+use Maclof\Kubernetes\Client;
+use Maclof\Kubernetes\Repositories\Repository;
+use Maclof\Kubernetes\RepositoryRegistry;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\MockObject\Generator;
+use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount as AnyInvokedCountMatcher;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -22,6 +28,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Teknoo\DI\SymfonyBridge\DIBridgeBundle;
 use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
@@ -34,7 +41,10 @@ use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
+use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Object\Cluster;
+use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Object\ImageRegistry;
@@ -52,7 +62,6 @@ use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Symfony\Component\DependencyInjection\Container;
@@ -153,6 +162,8 @@ class FeatureContext implements Context
      */
     private $cluster;
 
+    private string $clusterType = 'behat';
+
     /**
      * @var string
      */
@@ -213,7 +224,17 @@ class FeatureContext implements Context
     public function __construct()
     {
         include_once __DIR__ . '/../../tests/fakeQuery.php';
+    }
+
+    /**
+     * @Given the platform is booted
+     */
+    public function thePlatformIsBooted()
+    {
         $this->initiateSymfonyKernel();
+        $this->sfContainer->set(ObjectManager::class, $this->buildObjectManager());
+        $this->sfContainer->get(DatesService::class)
+            ->setCurrentDate(new DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
     }
 
     private function initiateSymfonyKernel()
@@ -449,7 +470,8 @@ class FeatureContext implements Context
      */
     public function iHaveAConfiguredPlatform()
     {
-        $this->sfContainer->set(ObjectManager::class, $this->buildObjectManager());
+        $this->clusterType = 'behat';
+
         $this->buildRepository(Account::class);
         $this->buildRepository(Cluster::class);
         $this->buildRepository(Job::class);
@@ -457,8 +479,6 @@ class FeatureContext implements Context
         $this->buildRepository(User::class);
 
         self::$useHnc = false;
-        $this->sfContainer->get(DatesService::class)
-            ->setCurrentDate(new DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
     }
 
     /**
@@ -499,7 +519,7 @@ class FeatureContext implements Context
         $this->envName = $id;
 
         $this->project->setClusters([
-            $this->cluster = (new Cluster())->setId('cluster-id')->setType('behat')->setProject($this->project)
+            $this->cluster = (new Cluster())->setId('cluster-id')->setType($this->clusterType)->setProject($this->project)
                 ->setName($this->clusterName)->setEnvironment($this->environment = new Environment($this->envName))
         ]);
     }
@@ -570,6 +590,7 @@ class FeatureContext implements Context
     {
         $this->calledUrl = $url;
         $hnc = (int) self::$useHnc;
+        $clusterType = $this->clusterType;
 
         $body = <<<EOF
 {
@@ -616,7 +637,7 @@ class FeatureContext implements Context
       "id": "4f719ead65683a1986339be59bbb03ab",
       "name": "fooBar",
       "address": "fooBar",
-      "type": "behat",
+      "type": "$clusterType",
       "identity": {
         "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\ClusterCredentials",
         "id": "f61d411e3f1b33eaa0900d3b17d36f1d",
@@ -703,7 +724,7 @@ EOF;
                     '@class' => Cluster::class,
                     'id' => 'cluster-id',
                     'name' => $this->clusterName,
-                    'type' => 'behat',
+                    'type' => $this->clusterType,
                     'address' => '',
                     'identity' => null,
                     'environment' => [
@@ -1212,6 +1233,97 @@ EOF;
         };
 
         $this->sfContainer->get(Directory::class)->register('behat', $client);
+    }
+
+    /**
+     * @Given an OCI builder
+     */
+    public function anOciBuilder()
+    {
+        $generator = new Generator();
+        $mock = $generator->getMock(
+            type: Process::class,
+            callOriginalConstructor: false,
+            callOriginalClone: false,
+            callOriginalMethods: false,
+        );
+
+        $mock->expects(new AnyInvokedCountMatcher())
+            ->method('isSuccessful')
+            ->willReturn(true);
+
+        $this->sfContainer->set(
+            ProcessFactoryInterface::class,
+            new class ($mock) implements ProcessFactoryInterface {
+                public function __construct(
+                    private Process $process,
+                ) {
+                }
+
+                public function __invoke(string $cwd): Process
+                {
+                    return $this->process;
+                }
+            }
+        );
+
+        $this->sfContainer->get(DiContainer::class)->set(
+            'teknoo.east.paas.img_builder.build.platforms',
+            'kubernetes',
+        );
+    }
+
+    /**
+     * @Given a kubernetes client
+     */
+    public function aKubernetesClient()
+    {
+        $generator = new Generator();
+        $mock = $generator->getMock(
+            type: Client::class,
+            callOriginalConstructor: false,
+            callOriginalClone: false,
+            callOriginalMethods: false,
+        );
+
+        $repoMock = $generator->getMock(
+            type: Repository::class,
+            callOriginalConstructor: false,
+            callOriginalClone: false,
+            callOriginalMethods: false,
+        );
+
+        $mock->expects(new AnyInvokedCountMatcher())
+            ->method('__call')
+            ->willReturn($repoMock);
+
+        $repoMock->expects(new AnyInvokedCountMatcher())
+            ->method('exists')
+            ->willReturn(false);
+
+        $repoMock->expects(new AnyInvokedCountMatcher())
+            ->method('create')
+            ->willReturn(['foo']);
+
+        $this->sfContainer->set(
+            ClientFactoryInterface::class,
+            new class ($mock) implements ClientFactoryInterface {
+                public function __construct(
+                    private Client $client,
+                ) {
+                }
+
+                public function __invoke(
+                    string $master,
+                    ?ClusterCredentials $credentials,
+                    ?RepositoryRegistry $repositoryRegistry = null
+                ): Client {
+                    return $this->client;
+                }
+            }
+        );
+
+        $this->clusterType = 'kubernetes';
     }
 
     /**

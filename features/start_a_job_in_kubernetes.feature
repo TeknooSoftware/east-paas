@@ -1,4 +1,4 @@
-Feature: Start a job, by running a new deployment on a worker
+Feature: Start a job, by running a new deployment on a worker for kubernetes
   As a developer, I need to start a new deployment, executed by a worker when it receive a normalized job
   via an http request.
 
@@ -8,8 +8,8 @@ Feature: Start a job, by running a new deployment on a worker
     And a job workspace agent
     And a git cloning agent
     And a composer hook as hook builder
-    And an image builder
-    And a cluster client
+    And an OCI builder
+    And a kubernetes client
     And a malformed body
     When I call the PaaS with this PUT request "/project/projectid/environment/dev/job/foo-bar/run"
     Then I must obtain an HTTP answer with this status code equals to "400".
@@ -21,8 +21,8 @@ Feature: Start a job, by running a new deployment on a worker
     And a job workspace agent
     And a git cloning agent
     And a composer hook as hook builder
-    And an image builder
-    And a cluster client
+    And an OCI builder
+    And a kubernetes client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
     And a cluster "kubernetes" dedicated to the environment "prod"
@@ -38,8 +38,8 @@ Feature: Start a job, by running a new deployment on a worker
     And a job workspace agent
     And a git cloning agent
     And a composer hook as hook builder
-    And an image builder
-    And a cluster client
+    And an OCI builder
+    And a kubernetes client
     And a cluster supporting hierarchical namespace
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
