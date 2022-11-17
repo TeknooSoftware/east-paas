@@ -49,3 +49,4 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200".
     And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And some kunbernetes manifests have been created

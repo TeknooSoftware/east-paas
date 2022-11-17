@@ -12,6 +12,7 @@ use Doctrine\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Maclof\Kubernetes\Client;
+use Maclof\Kubernetes\Models\Model;
 use Maclof\Kubernetes\Repositories\Repository;
 use Maclof\Kubernetes\RepositoryRegistry;
 use PHPUnit\Framework\Assert;
@@ -210,6 +211,8 @@ class FeatureContext implements Context
     private $requestBody;
 
     private static $useHnc = false;
+
+    private array $manifests = [];
 
     /**
      * Initializes context.
@@ -1301,9 +1304,16 @@ EOF;
             ->method('exists')
             ->willReturn(false);
 
+        $this->manifests = [];
         $repoMock->expects(new AnyInvokedCountMatcher())
             ->method('create')
-            ->willReturn(['foo']);
+            ->willReturnCallback(
+                function (Model $model): array {
+                    $this->manifests[$model::class][] = $model->toArray();
+
+                    return ['foo'];
+                }
+            );
 
         $this->sfContainer->set(
             ClientFactoryInterface::class,
@@ -1344,5 +1354,435 @@ EOF;
         } catch (Throwable $e) {
             throw $e;
         }
+    }
+
+    /**
+     * @Then some kunbernetes manifests have been created
+     */
+    public function someKunbernetesManifestsHaveBeenCreated()
+    {
+        $excepted = <<<'EOF'
+{
+    "Maclof\\Kubernetes\\Models\\SubnamespaceAnchor": [
+        {
+            "metadata": {
+                "name": "test",
+                "namespace": "",
+                "labels": {
+                    "name": "test"
+                }
+            }
+        },
+        {
+            "metadata": {
+                "name": "test",
+                "namespace": "",
+                "labels": {
+                    "name": "test"
+                }
+            }
+        }
+    ],
+    "Maclof\\Kubernetes\\Models\\Secret": [
+        {
+            "metadata": {
+                "name": "map-vault-secret",
+                "namespace": "test",
+                "labels": {
+                    "name": "map-vault"
+                }
+            },
+            "type": "Opaque",
+            "data": {
+                "key1": "dmFsdWUx",
+                "key2": "Zm9v"
+            }
+        },
+        {
+            "metadata": {
+                "name": "map-vault2-secret",
+                "namespace": "test",
+                "labels": {
+                    "name": "map-vault2"
+                }
+            },
+            "type": "Opaque",
+            "data": {
+                "hello": "d29ybGQ="
+            }
+        },
+        {
+            "metadata": {
+                "name": "volume-vault-secret",
+                "namespace": "test",
+                "labels": {
+                    "name": "volume-vault"
+                }
+            },
+            "type": "foo",
+            "data": {
+                "foo": "YmFy",
+                "bar": "Zm9v"
+            }
+        }
+    ],
+    "Maclof\\Kubernetes\\Models\\ConfigMap": [
+        {
+            "metadata": {
+                "name": "map1-map",
+                "namespace": "test",
+                "labels": {
+                    "name": "map1"
+                }
+            },
+            "data": {
+                "key1": "dmFsdWUx",
+                "key2": "Zm9v"
+            }
+        },
+        {
+            "metadata": {
+                "name": "map2-map",
+                "namespace": "test",
+                "labels": {
+                    "name": "map2"
+                }
+            },
+            "data": {
+                "foo": "YmFy",
+                "bar": "Zm9v"
+            }
+        }
+    ],
+    "Maclof\\Kubernetes\\Models\\PersistentVolumeClaim": [
+        {
+            "metadata": {
+                "name": "data",
+                "namespace": "test",
+                "labels": {
+                    "name": "data"
+                }
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "storageClassName": "nfs",
+                "resources": {
+                    "requests": {
+                        "storage": "3Gi"
+                    }
+                }
+            }
+        }
+    ],
+    "Maclof\\Kubernetes\\Models\\ReplicaSet": [
+        {
+            "metadata": {
+                "name": "php-pods-ctrl-v1",
+                "namespace": "test",
+                "labels": {
+                    "name": "php-pods"
+                },
+                "annotations": {
+                    "teknoo.space.version": "v1"
+                }
+            },
+            "spec": {
+                "replicas": 2,
+                "selector": {
+                    "matchLabels": {
+                        "vname": "php-pods-v1"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "name": "php-pods-pod",
+                        "namespace": "test",
+                        "labels": {
+                            "name": "php-pods",
+                            "vname": "php-pods-v1"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "php-run",
+                                "image": "fooBar\/php-run-jobid:7.4",
+                                "imagePullPolicy": "Always",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080
+                                    }
+                                ],
+                                "envFrom": [
+                                    {
+                                        "secretRef": {
+                                            "name": "map-vault2-secret"
+                                        }
+                                    },
+                                    {
+                                        "configMapRef": {
+                                            "name": "map2-map"
+                                        }
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "SERVER_SCRIPT",
+                                        "value": "\/opt\/app\/src\/server.php"
+                                    },
+                                    {
+                                        "name": "KEY1",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "name": "map-vault-secret",
+                                                "key": "key1"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "KEY2",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "name": "map-vault-secret",
+                                                "key": "key2"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "KEY0",
+                                        "valueFrom": {
+                                            "configMapRef": {
+                                                "name": "map1-map",
+                                                "key": "key0"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "volumeMounts": [
+                                    {
+                                        "name": "extra-jobid-volume",
+                                        "mountPath": "\/opt\/extra",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "name": "data-volume",
+                                        "mountPath": "\/opt\/data",
+                                        "readOnly": false
+                                    },
+                                    {
+                                        "name": "map-volume",
+                                        "mountPath": "\/map",
+                                        "readOnly": false
+                                    },
+                                    {
+                                        "name": "vault-volume",
+                                        "mountPath": "\/vault",
+                                        "readOnly": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "initContainers": [
+                            {
+                                "name": "extra-jobid",
+                                "image": "fooBar\/extra-jobid",
+                                "imagePullPolicy": "Always",
+                                "volumeMounts": [
+                                    {
+                                        "name": "extra-jobid-volume",
+                                        "mountPath": "\/opt\/extra",
+                                        "readOnly": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "extra-jobid-volume",
+                                "emptyDir": []
+                            },
+                            {
+                                "name": "data-volume",
+                                "persistentVolumeClaim": {
+                                    "claimName": "data"
+                                }
+                            },
+                            {
+                                "name": "map-volume",
+                                "secret": {
+                                    "secretName": "map2-map"
+                                }
+                            },
+                            {
+                                "name": "vault-volume",
+                                "secret": {
+                                    "secretName": "volume-vault-secret"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "metadata": {
+                "name": "demo-pods-ctrl-v1",
+                "namespace": "test",
+                "labels": {
+                    "name": "demo-pods"
+                },
+                "annotations": {
+                    "teknoo.space.version": "v1"
+                }
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {
+                    "matchLabels": {
+                        "vname": "demo-pods-v1"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "name": "demo-pods-pod",
+                        "namespace": "test",
+                        "labels": {
+                            "name": "demo-pods",
+                            "vname": "demo-pods-v1"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "nginx",
+                                "image": "fooBar\/nginx-jobid:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ],
+    "Maclof\\Kubernetes\\Models\\Service": [
+        {
+            "metadata": {
+                "name": "php-service-service",
+                "namespace": "test",
+                "labels": {
+                    "name": "php-service"
+                }
+            },
+            "spec": {
+                "selector": {
+                    "name": "php-pods"
+                },
+                "type": "LoadBalancer",
+                "ports": [
+                    {
+                        "name": "php-service-9876",
+                        "protocol": "TCP",
+                        "port": 9876,
+                        "targetPort": 8080
+                    }
+                ]
+            }
+        },
+        {
+            "metadata": {
+                "name": "demo-service-service",
+                "namespace": "test",
+                "labels": {
+                    "name": "demo-service"
+                }
+            },
+            "spec": {
+                "selector": {
+                    "name": "demo-pods"
+                },
+                "type": "LoadBalancer",
+                "ports": [
+                    {
+                        "name": "demo-service-8080",
+                        "protocol": "TCP",
+                        "port": 8080,
+                        "targetPort": 8080
+                    }
+                ]
+            }
+        }
+    ],
+    "Maclof\\Kubernetes\\Models\\Ingress": [
+        {
+            "metadata": {
+                "name": "demo-ingress",
+                "namespace": "test",
+                "labels": {
+                    "name": "demo"
+                },
+                "annotations": {
+                    "foo": "bar"
+                }
+            },
+            "spec": {
+                "rules": [
+                    {
+                        "host": "demo-paas.teknoo.software",
+                        "http": {
+                            "paths": [
+                                {
+                                    "path": "\/",
+                                    "pathType": "Prefix",
+                                    "backend": {
+                                        "service": {
+                                            "name": "demo-service-service",
+                                            "port": {
+                                                "number": 8080
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "path": "\/php",
+                                    "pathType": "Prefix",
+                                    "backend": {
+                                        "service": {
+                                            "name": "php-service-service",
+                                            "port": {
+                                                "number": 9876
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "tls": [
+                    {
+                        "hosts": [
+                            "demo-paas.teknoo.software"
+                        ],
+                        "secretName": "demo_vault-secret"
+                    }
+                ]
+            }
+        }
+    ]
+}
+EOF;
+
+        $json = json_encode($this->manifests, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
+        Assert::assertEquals(
+            $excepted,
+            $json
+        );
     }
 }
