@@ -178,7 +178,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
 
     public function prepareRepository(CloningAgentInterface $cloningAgent): JobWorkspaceInterface
     {
-        $cloningAgent->cloningIntoPath($this->getWorkspacePath(), $this->getRepositoryPath());
+        $cloningAgent->cloningIntoPath($this->rootPath . $this->getWorkspacePath(), $this->getRepositoryPath());
 
         return $this;
     }
@@ -212,7 +212,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
 
     public function runInRepositoryPath(callable $callback): JobWorkspaceInterface
     {
-        $workspacePath = $this->getWorkspacePath();
+        $workspacePath = $this->rootPath . $this->getWorkspacePath();
         $callback(
             $workspacePath . $this->getRepositoryPath(),
             $workspacePath,
