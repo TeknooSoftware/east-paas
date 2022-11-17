@@ -56,10 +56,10 @@ class Running implements StateInterface
             $options = $this->options;
 
             $this->getWorkspace()->runInRepositoryPath(
-                function ($repositoryPathn, $workspacePath) use ($options, $promise) {
+                function ($repositoryPath, $workspacePath) use ($options, $promise) {
                     $this->gitProcess->setEnv([
                         'GIT_SSH_COMMAND' => "ssh -i {$workspacePath}{$this->privateKeyFilename} -o IdentitiesOnly=yes",
-                        'JOB_CLONE_DESTINATION' => $repositoryPathn . $options['path'],
+                        'JOB_CLONE_DESTINATION' => $repositoryPath . $options['path'],
                         'JOB_REPOSITORY' => $options['url'],
                         'JOB_BRANCH' => ($options['branch'] ?? 'main'),
                     ]);
