@@ -82,11 +82,11 @@ class WorkspaceTest extends TestCase
         return $this->job;
     }
 
-    public function buildJobWorkspace(): Workspace
+    public function buildJobWorkspace($root = '/path/root'): Workspace
     {
         return new Workspace(
             $this->getFilesystemMock(),
-            '/path/root',
+            $root,
             '.paas.yaml',
         );
     }
@@ -191,6 +191,37 @@ class WorkspaceTest extends TestCase
         self::assertInstanceOf(
             JobWorkspaceInterface::class,
             $this->buildJobWorkspace()->setJob($this->getJobMock())->writeFile($file, function ($path, $filename, $file) {
+                self::assertEquals($path, '/path/root');
+                self::assertNotFalse(strpos($filename, '/foo'));
+                self::assertInstanceOf(FileInterface::class, $file);
+            })
+        );
+    }
+
+    public function testWriteFileWithCallableWithRootWithSlash()
+    {
+        $file = $this->createMock(FileInterface::class);
+        $file->expects(self::any())->method('getName')->willReturn($name = 'foo');
+        $file->expects(self::any())->method('getContent')->willReturn($content = 'bar');
+        $file->expects(self::any())->method('getVisibility')->willReturn($v = Visibility::Private);
+
+        $this->getJobMock()
+            ->expects(self::any())
+            ->method('getId')
+            ->willReturn('fooBar');
+
+        $this->getFilesystemMock()
+            ->expects(self::once())
+            ->method('write')
+            ->with(
+                $this->callback(fn($name) => str_contains((string) $name, '/foo')),
+                $content,
+                ['visibility' => $v->value]
+            );
+
+        self::assertInstanceOf(
+            JobWorkspaceInterface::class,
+            $this->buildJobWorkspace('/path/root/')->setJob($this->getJobMock())->writeFile($file, function ($path, $filename, $file) {
                 self::assertEquals($path, '/path/root');
                 self::assertNotFalse(strpos($filename, '/foo'));
                 self::assertInstanceOf(FileInterface::class, $file);

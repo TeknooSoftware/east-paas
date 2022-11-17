@@ -46,6 +46,7 @@ use Throwable;
 
 use function is_callable;
 use function random_int;
+use function substr;
 
 /**
  * Implementation of `JobWorkspaceInterface` to represent the dedicated file system manager used locally to perform the
@@ -70,12 +71,20 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
 
     private ?int $rand = null;
 
+    private readonly string $rootPath;
+
     public function __construct(
         private Filesystem $filesystem,
-        private readonly string $rootPath,
+        string $rootPath,
         private readonly string $configurationFileName,
     ) {
         $this->uniqueConstructorCheck();
+
+        if (str_ends_with($rootPath, '/') || str_ends_with($rootPath, '\\')) {
+            $rootPath = substr(string: $rootPath, offset: 0, length: -1);
+        }
+
+        $this->rootPath = $rootPath;
 
         $this->initializeStateProxy();
         $this->updateStates();
