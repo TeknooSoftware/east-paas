@@ -57,11 +57,4 @@ class Generator implements StateInterface
             throw new RuntimeException('Workspace is in generator state');
         };
     }
-
-    private function getRepositoryPath(): Closure
-    {
-        return function (): never {
-            throw new RuntimeException('Workspace is in generator state');
-        };
-    }
 }
