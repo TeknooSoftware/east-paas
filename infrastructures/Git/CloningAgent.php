@@ -169,7 +169,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         return $this;
     }
 
-    public function cloningIntoPath(string $path): CloningAgentInterface
+    public function cloningIntoPath(string $jobRootPath, string $repositoryFolder): CloningAgentInterface
     {
         $sourceRepository = $this->getSourceRepository();
 
@@ -177,8 +177,8 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         $pullUrl = $this->getSshIdentity()->getName() . '@' . array_pop($pullUrlParts);
 
         $this->gitProcess->setEnv([
-            'GIT_SSH_COMMAND' => "ssh -i {$this->privateKeyFilename} -o IdentitiesOnly=yes",
-            'JOB_CLONE_DESTINATION' => $path,
+            'GIT_SSH_COMMAND' => "ssh -i {$jobRootPath}{$this->privateKeyFilename} -o IdentitiesOnly=yes",
+            'JOB_CLONE_DESTINATION' => $jobRootPath . $repositoryFolder,
             'JOB_REPOSITORY' => $pullUrl,
             'JOB_BRANCH' => $sourceRepository->getDefaultBranch(),
         ]);

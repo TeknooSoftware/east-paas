@@ -55,26 +55,28 @@ class Running implements StateInterface
         return function (PromiseInterface $promise): Hook {
             $options = $this->options;
 
-            $this->getWorkspace()->runInRoot(function ($path) use ($options, $promise) {
-                $this->gitProcess->setEnv([
-                    'GIT_SSH_COMMAND' => "ssh -i {$this->privateKeyFilename} -o IdentitiesOnly=yes",
-                    'JOB_CLONE_DESTINATION' => $path . $options['path'],
-                    'JOB_REPOSITORY' => $options['url'],
-                    'JOB_BRANCH' => ($options['branch'] ?? 'main'),
-                ]);
+            $this->getWorkspace()->runInRepositoryPath(
+                function ($repositoryPathn, $workspacePath) use ($options, $promise) {
+                    $this->gitProcess->setEnv([
+                        'GIT_SSH_COMMAND' => "ssh -i {$workspacePath}{$this->privateKeyFilename} -o IdentitiesOnly=yes",
+                        'JOB_CLONE_DESTINATION' => $repositoryPathn . $options['path'],
+                        'JOB_REPOSITORY' => $options['url'],
+                        'JOB_BRANCH' => ($options['branch'] ?? 'main'),
+                    ]);
 
-                $this->gitProcess->run();
+                    $this->gitProcess->run();
 
-                if (!$this->gitProcess->isSuccessFul()) {
-                    $promise->fail(
-                        new RuntimeException(
-                            "Error while initializing repository: {$this->gitProcess->getErrorOutput()}"
-                        )
-                    );
-                } else {
-                    $promise->success();
+                    if (!$this->gitProcess->isSuccessFul()) {
+                        $promise->fail(
+                            new RuntimeException(
+                                "Error while initializing repository: {$this->gitProcess->getErrorOutput()}"
+                            )
+                        );
+                    } else {
+                        $promise->success();
+                    }
                 }
-            });
+            );
 
             return $this;
         };

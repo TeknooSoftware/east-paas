@@ -102,7 +102,7 @@ class HookingDeploymentTest extends TestCase
         };
 
         $workspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(
                 function (callable $callback) use ($workspace) {
                     $callback('foo/bar');
@@ -166,7 +166,7 @@ class HookingDeploymentTest extends TestCase
         $hook2->expects(self::never())->method('run');
 
         $workspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(
                 function (callable $callback) use ($workspace) {
                     $callback('foo/bar');
@@ -240,7 +240,7 @@ class HookingDeploymentTest extends TestCase
         );
 
         $workspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(
                 function (callable $callback) use ($workspace) {
                     $callback('foo/bar');

@@ -80,7 +80,7 @@ class BuildImages
             )
         );
 
-        $workspace->runInRoot(
+        $workspace->runInRepositoryPath(
             function (
                 string $root
             ) use (

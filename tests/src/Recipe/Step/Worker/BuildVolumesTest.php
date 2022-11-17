@@ -171,7 +171,7 @@ class BuildVolumesTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
 
         $workspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(
                 static function (callable $callback) use ($workspace) {
                     $callback('/foo/bar');
@@ -223,7 +223,7 @@ class BuildVolumesTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
 
         $workspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(
                 static function (callable $callback) use ($workspace) {
                     $callback('/foo/bar');

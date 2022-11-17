@@ -182,7 +182,7 @@ class BuildImagesTest extends TestCase
             );
 
         $jobWorkspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(
                 static function (callable $callback) use ($jobWorkspace) {
                     $callback('/foo/bar');
@@ -234,7 +234,7 @@ class BuildImagesTest extends TestCase
             );
 
         $jobWorkspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(
                 static function (callable $callback) use ($jobWorkspace) {
                     $callback('/foo/bar');

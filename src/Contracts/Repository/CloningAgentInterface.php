@@ -45,5 +45,5 @@ interface CloningAgentInterface extends ImmutableInterface
 
     public function run(): CloningAgentInterface;
 
-    public function cloningIntoPath(string $path): CloningAgentInterface;
+    public function cloningIntoPath(string $jobRootPath, string $repositoryFolder): CloningAgentInterface;
 }

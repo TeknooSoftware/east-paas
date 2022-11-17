@@ -163,9 +163,9 @@ class HookTest extends TestCase
             });
 
         $workspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(function (callable $callback) use ($workspace) {
-                $callback('foo');
+                $callback('foo', 'bar');
 
                 return $workspace;
             });
@@ -232,9 +232,9 @@ class HookTest extends TestCase
             });
 
         $workspace->expects(self::once())
-            ->method('runInRoot')
+            ->method('runInRepositoryPath')
             ->willReturnCallback(function (callable $callback) use ($workspace) {
-                $callback('foo');
+                $callback('foo', 'bar');
 
                 return $workspace;
             });

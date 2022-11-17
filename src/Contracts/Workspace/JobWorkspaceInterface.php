@@ -61,5 +61,5 @@ interface JobWorkspaceInterface extends ImmutableInterface
      */
     public function hasDirectory(string $path, PromiseInterface $promise): JobWorkspaceInterface;
 
-    public function runInRoot(callable $callback): JobWorkspaceInterface;
+    public function runInRepositoryPath(callable $callback): JobWorkspaceInterface;
 }

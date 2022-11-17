@@ -80,6 +80,6 @@ class Running implements StateInterface
 
     private function getRepositoryPath(): Closure
     {
-        return fn(): string => $this->getWorkspacePath() . 'repository/';
+        return fn(): string => 'repository/';
     }
 }

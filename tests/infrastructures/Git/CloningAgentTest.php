@@ -181,7 +181,7 @@ class CloningAgentTest extends TestCase
             ->method('prepareRepository')
             ->willReturnCallback(
                 function () use ($agent, $workspace) {
-                    $agent->cloningIntoPath('/foo');
+                    $agent->cloningIntoPath('/bar', '/foo');
 
                     return $workspace;
                 }
@@ -260,7 +260,7 @@ class CloningAgentTest extends TestCase
 
         self::assertInstanceOf(
             CloningAgentInterface::class,
-            $agent->cloningIntoPath($path = 'foo')
+            $agent->cloningIntoPath($path = 'foo', 'bar')
         );
     }
 
@@ -289,7 +289,7 @@ class CloningAgentTest extends TestCase
 
         self::assertInstanceOf(
             CloningAgentInterface::class,
-            $agent->cloningIntoPath($path = 'foo/bar')
+            $agent->cloningIntoPath('foo', '/bar')
         );
     }
 
@@ -321,7 +321,7 @@ class CloningAgentTest extends TestCase
         $this->expectException(\RuntimeException::class);
         self::assertInstanceOf(
             CloningAgentInterface::class,
-            $agent->cloningIntoPath($path = 'foo/bar')
+            $agent->cloningIntoPath('foo', '/bar')
         );
     }
 

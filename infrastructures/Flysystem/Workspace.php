@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Flysystem;
 
 use DomainException;
+use Exception;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Generator;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace\Running;
 use League\Flysystem\Filesystem;
@@ -163,6 +164,9 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
         return $this;
     }
 
+    /**
+     * @throws Exception
+     */
     private function getRand(): int
     {
         if (null === $this->rand) {
@@ -174,9 +178,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
 
     public function prepareRepository(CloningAgentInterface $cloningAgent): JobWorkspaceInterface
     {
-        $repositoryPath = $this->getRepositoryPath();
-
-        $cloningAgent->cloningIntoPath($this->rootPath . $repositoryPath);
+        $cloningAgent->cloningIntoPath($this->getWorkspacePath(), $this->getRepositoryPath());
 
         return $this;
     }
@@ -185,7 +187,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
         ConductorInterface $conductor,
         PromiseInterface $promise
     ): JobWorkspaceInterface {
-        $repositoryPath = $this->getRepositoryPath();
+        $repositoryPath = $this->getWorkspacePath() . $this->getRepositoryPath();
 
         $conductor->prepare(
             $this->filesystem->read($repositoryPath . $this->configurationFileName),
@@ -203,17 +205,17 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
             return $this;
         }
 
-        $promise->fail(new DomainException());
+        $promise->fail(new DomainException("Diretory {$path} does not exist"));
 
         return $this;
     }
 
-    public function runInRoot(callable $callback): JobWorkspaceInterface
+    public function runInRepositoryPath(callable $callback): JobWorkspaceInterface
     {
-        $repositoryPath = $this->getRepositoryPath();
-
+        $workspacePath = $this->getWorkspacePath();
         $callback(
-            $this->rootPath . $repositoryPath
+            $workspacePath . $this->getRepositoryPath(),
+            $workspacePath,
         );
 
         return $this;

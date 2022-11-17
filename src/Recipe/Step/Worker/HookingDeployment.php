@@ -73,7 +73,7 @@ class HookingDeployment
             fn (Throwable $error) => throw $error,
         );
 
-        $workspace->runInRoot(
+        $workspace->runInRepositoryPath(
             function (
                 $path
             ) use (

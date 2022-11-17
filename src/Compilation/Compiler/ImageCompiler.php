@@ -121,7 +121,7 @@ class ImageCompiler implements CompilerInterface
                 continue;
             }
 
-            $workspace->runInRoot(
+            $workspace->runInRepositoryPath(
                 fn ($root) => $addImage($root . $config[self::KEY_PATH])
             );
         }

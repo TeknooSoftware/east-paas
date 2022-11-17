@@ -80,7 +80,7 @@ class BuildVolumes
             )
         );
 
-        $workspace->runInRoot(
+        $workspace->runInRepositoryPath(
             function (
                 string $root
             ) use (

@@ -1089,7 +1089,7 @@ EOF;
                 return $this;
             }
 
-            public function runInRoot(callable $callback): JobWorkspaceInterface
+            public function runInRepositoryPath(callable $callback): JobWorkspaceInterface
             {
                 $callback('/foo');
 
@@ -1132,7 +1132,7 @@ EOF;
                 return $this;
             }
 
-            public function cloningIntoPath(string $path): CloningAgentInterface
+            public function cloningIntoPath(string $jobRootPath, string $repositoryFolder): CloningAgentInterface
             {
                 return $this;
             }

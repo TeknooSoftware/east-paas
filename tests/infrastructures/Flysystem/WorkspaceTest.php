@@ -362,15 +362,15 @@ class WorkspaceTest extends TestCase
         );
     }
 
-    public function testRunInRootWrongCallback()
+    public function testRunInRepositoryPathWrongCallback()
     {
         $this->expectException(\TypeError::class);
-        $this->buildJobWorkspace()->runInRoot(
+        $this->buildJobWorkspace()->runInRepositoryPath(
             new \stdClass()
         );
     }
 
-    public function testRunInRoot()
+    public function testRunInRepositoryPath()
     {
         $called = false;
         $callback = function ($path) use (&$called) {
@@ -385,7 +385,7 @@ class WorkspaceTest extends TestCase
 
         self::assertInstanceOf(
             Workspace::class,
-            $this->buildJobWorkspace()->setJob($this->getJobMock())->runInRoot($callback)
+            $this->buildJobWorkspace()->setJob($this->getJobMock())->runInRepositoryPath($callback)
         );
 
         self::assertTrue($called);

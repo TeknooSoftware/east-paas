@@ -110,7 +110,7 @@ class ImageCompilerTest extends TestCase
             });
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $workspace->expects(self::any())->method('runInRoot')->willReturnCallback(
+        $workspace->expects(self::any())->method('runInRepositoryPath')->willReturnCallback(
             static function (callable $callback) use ($workspace) {
                 $callback('/foo');
                 return $workspace;
