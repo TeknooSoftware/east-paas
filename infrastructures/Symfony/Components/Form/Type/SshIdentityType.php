@@ -53,8 +53,8 @@ class SshIdentityType extends AbstractType
     {
         parent::buildForm($builder, $options);
 
-        $builder->add('name', TextType::class, ['required' => true, 'label' => 'Identity name']);
-        $builder->add('privateKey', TextareaType::class, ['required' => true]);
+        $builder->add('name', TextType::class, ['required' => false, 'label' => 'Identity name']);
+        $builder->add('privateKey', TextareaType::class, ['required' => false]);
 
         $builder->setDataMapper(new class implements DataMapperInterface {
             /**

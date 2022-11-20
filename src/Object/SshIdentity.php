@@ -53,6 +53,7 @@ class SshIdentity implements
     private string $name = '';
 
     private string $privateKey = '';
+
     public function __construct(
         string $name = '',
         string $privateKey = '',
