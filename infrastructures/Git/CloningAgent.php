@@ -138,7 +138,10 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
 
         $identity = $repository->getIdentity();
 
-        if (!str_starts_with($repository->getPullUrl(), 'http') && !$identity instanceof SshIdentity) {
+        if (
+            !str_starts_with($repository->getPullUrl(), 'http')
+            || (null !== $identity && !$identity instanceof SshIdentity)
+        ) {
             throw new LogicException(
                 sprintf(
                     "Identity of type %s is not managed by this agent",
