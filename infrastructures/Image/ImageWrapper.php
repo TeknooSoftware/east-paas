@@ -189,7 +189,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
 
                         foreach ($volume->getPaths() as $path) {
                             $parts = explode('/', rtrim($path, '/'));
-                            $paths[$path] = $volume->getMountPath() . '/' . array_pop($parts);
+                            $paths[$path] = rtrim($volume->getMountPath(), '/') . '/' . array_pop($parts);
                         }
                     }
 
@@ -241,7 +241,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                 $paths = [];
                 foreach ($volumeUpdated->getPaths() as $path) {
                     $parts = explode('/', rtrim($path, '/'));
-                    $paths[$path] = $volumeUpdated->getLocalPath() . '/' . array_pop($parts);
+                    $paths[$path] = rtrim($volumeUpdated->getLocalPath(), '/') . '/' . array_pop($parts);
                 }
 
                 $variables = [
