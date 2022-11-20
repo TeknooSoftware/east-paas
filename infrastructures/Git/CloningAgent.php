@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
+use InvalidArgumentException;
 use Symfony\Component\Process\Process;
 use LogicException;
 use RuntimeException;
@@ -49,6 +50,7 @@ use function count;
 use function explode;
 use function is_object;
 use function sprintf;
+use function str_starts_with;
 
 /**
  * Default implementation of `CloningAgentInterface`, service able to clone in a local filesystem a source repository
@@ -157,12 +159,23 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     public function run(): CloningAgentInterface
     {
         $workspace = $this->getWorkspace();
-        $workspace->writeFile(
-            new File($this->privateKeyFilename, Visibility::Private, $this->getSshIdentity()->getPrivateKey()),
-            function ($path) {
-                $this->gitProcess->setWorkingDirectory($path);
-            }
-        );
+
+        $sourceRepository = $this->getSourceRepository();
+
+        if (!str_starts_with($sourceRepository->getPullUrl(), 'http')) {
+            $workspace->writeFile(
+                new File($this->privateKeyFilename, Visibility::Private, $this->getSshIdentity()->getPrivateKey()),
+                function ($path) {
+                    $this->gitProcess->setWorkingDirectory($path);
+                }
+            );
+        } else {
+            $workspace->runInRepositoryPath(
+                function ($repositoryPath, $path) {
+                    $this->gitProcess->setWorkingDirectory($path);
+                }
+            );
+        }
 
         $workspace->prepareRepository($this);
 
@@ -173,11 +186,21 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     {
         $sourceRepository = $this->getSourceRepository();
 
-        $pullUrlParts = explode('@', $sourceRepository->getPullUrl());
-        $pullUrl = $this->getSshIdentity()->getName() . '@' . array_pop($pullUrlParts);
+        $pullUrl = $sourceRepository->getPullUrl();
+        if (str_starts_with($pullUrl, 'http:')) {
+            throw new InvalidArgumentException(
+                'Error, the git client support only ssh and https protocol'
+            );
+        }
+
+        if (!str_starts_with($pullUrl, 'https')) {
+            $pullUrlParts = explode('@', $pullUrl);
+            $pullUrl = $this->getSshIdentity()->getName() . '@' . array_pop($pullUrlParts);
+        }
 
         $this->gitProcess->setEnv([
-            'GIT_SSH_COMMAND' => "ssh -i {$jobRootPath}{$this->privateKeyFilename} -o IdentitiesOnly=yes",
+            'GIT_SSH_COMMAND' => "ssh -i {$jobRootPath}{$this->privateKeyFilename} ' 
+                . '-o IdentitiesOnly=yes -o StrictHostKeyChecking=no",
             'JOB_CLONE_DESTINATION' => $jobRootPath . $repositoryFolder,
             'JOB_REPOSITORY' => $pullUrl,
             'JOB_BRANCH' => $sourceRepository->getDefaultBranch(),

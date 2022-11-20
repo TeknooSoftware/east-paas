@@ -156,10 +156,11 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
 
     public function writeFile(FileInterface $file, callable $return = null): JobWorkspaceInterface
     {
-        $name = $this->getWorkspacePath() . $file->getName();
+        $path = $this->getWorkspacePath();
+        $name =  $file->getName();
 
         $this->filesystem->write(
-            $name,
+            $path . $name,
             $file->getContent(),
             [
                 'visibility' => $file->getVisibility()->value,
@@ -167,7 +168,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
         );
 
         if (is_callable($return)) {
-            $return($this->rootPath, $name, $file);
+            $return($this->rootPath . $path, $name, $file);
         }
 
         return $this;

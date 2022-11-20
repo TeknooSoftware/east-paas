@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git\Hook;
 
+use InvalidArgumentException;
 use Closure;
 use RuntimeException;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
@@ -34,6 +35,8 @@ use Teknoo\East\Paas\Infrastructures\Git\Hook;
 use Teknoo\East\Paas\Workspace\File;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
+
+use function str_starts_with;
 
 /**
  * @mixin Hook
@@ -55,10 +58,23 @@ class Running implements StateInterface
         return function (PromiseInterface $promise): Hook {
             $options = $this->options;
 
+            if (str_starts_with(($options['url'] ?? ''), 'http:')) {
+                $promise->fail(
+                    new InvalidArgumentException(
+                        'Error, the git client support only ssh and https protocol'
+                    )
+                );
+
+                return $this;
+            }
+
             $this->getWorkspace()->runInRepositoryPath(
                 function ($repositoryPath, $workspacePath) use ($options, $promise) {
+                    $this->gitProcess->setWorkingDirectory($workspacePath);
+
                     $this->gitProcess->setEnv([
-                        'GIT_SSH_COMMAND' => "ssh -i {$workspacePath}{$this->privateKeyFilename} -o IdentitiesOnly=yes",
+                        'GIT_SSH_COMMAND' => "ssh -i {$workspacePath}{$this->privateKeyFilename} ' 
+                            . ' -o IdentitiesOnly=yes -o StrictHostKeyChecking=no",
                         'JOB_CLONE_DESTINATION' => $repositoryPath . $options['path'],
                         'JOB_REPOSITORY' => $options['url'],
                         'JOB_BRANCH' => ($options['branch'] ?? 'main'),
@@ -87,11 +103,15 @@ class Running implements StateInterface
         return function (PromiseInterface $promise): Hook {
             $workspace = $this->getWorkspace();
 
+            if (str_starts_with(($this->options['url'] ?? ''), 'http')) {
+                $this->clone($promise);
+
+                return $this;
+            }
+
             $workspace->writeFile(
                 new File($this->privateKeyFilename, Visibility::Private, $this->options['key']),
-                function ($path) use ($promise) {
-                    $this->gitProcess->setWorkingDirectory($path);
-
+                function () use ($promise) {
                     $this->clone($promise);
                 }
             );

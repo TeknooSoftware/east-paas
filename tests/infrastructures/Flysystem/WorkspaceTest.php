@@ -191,8 +191,8 @@ class WorkspaceTest extends TestCase
         self::assertInstanceOf(
             JobWorkspaceInterface::class,
             $this->buildJobWorkspace()->setJob($this->getJobMock())->writeFile($file, function ($path, $filename, $file) {
-                self::assertEquals($path, '/path/root');
-                self::assertNotFalse(strpos($filename, '/foo'));
+                self::assertStringStartsWith('/path/root/fooBar', $path);
+                self::assertEquals('foo', $filename);
                 self::assertInstanceOf(FileInterface::class, $file);
             })
         );
@@ -222,8 +222,8 @@ class WorkspaceTest extends TestCase
         self::assertInstanceOf(
             JobWorkspaceInterface::class,
             $this->buildJobWorkspace('/path/root/')->setJob($this->getJobMock())->writeFile($file, function ($path, $filename, $file) {
-                self::assertEquals($path, '/path/root');
-                self::assertNotFalse(strpos($filename, '/foo'));
+                self::assertStringStartsWith('/path/root/fooBar', $path);
+                self::assertEquals('foo', $filename);
                 self::assertInstanceOf(FileInterface::class, $file);
             })
         );

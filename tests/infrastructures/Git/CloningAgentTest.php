@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
@@ -140,7 +141,7 @@ class CloningAgentTest extends TestCase
         );
     }
 
-    public function testRun()
+    public function testRunWithSSH()
     {
         $identity = $this->createMock(SshIdentity::class);
         $identity->expects(self::any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
@@ -148,6 +149,9 @@ class CloningAgentTest extends TestCase
         $repository = $this->createMock(GitRepository::class);
         $repository->expects(self::any())->method('getIdentity')->willReturn(
             $identity
+        );
+        $repository->expects(self::any())->method('getPullUrl')->willReturn(
+            'git@foo:bar'
         );
 
         $agent = $this->buildAgent();
@@ -161,6 +165,60 @@ class CloningAgentTest extends TestCase
                 self::assertEquals(Visibility::Private, $file->getVisibility());
                 
                 $return('/foo/bar/private.key');
+
+                return $workspace;
+            });
+
+        $this->getProcessMock()
+            ->expects(self::once())
+            ->method('setWorkingDirectory');
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent = $agent->configure(
+                $repository,
+                $workspace
+            )
+        );
+
+        $workspace->expects(self::once())
+            ->method('prepareRepository')
+            ->willReturnCallback(
+                function () use ($agent, $workspace) {
+                    $agent->cloningIntoPath('/bar', '/foo');
+
+                    return $workspace;
+                }
+            );
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent->run()
+        );
+    }
+
+    public function testRunWithHttps()
+    {
+        $identity = $this->createMock(SshIdentity::class);
+
+        $repository = $this->createMock(GitRepository::class);
+        $repository->expects(self::any())->method('getIdentity')->willReturn(
+            $identity
+        );
+        $repository->expects(self::any())->method('getPullUrl')->willReturn(
+            'https://foo.bar'
+        );
+
+        $agent = $this->buildAgent();
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+
+        $workspace->expects(self::never())
+            ->method('writeFile');
+
+        $workspace->expects(self::once())
+            ->method('runInRepositoryPath')
+            ->willReturnCallback(function (callable $return) use ($workspace) {
+                $return('/foo/bar/repo', '/foo/bar/');
 
                 return $workspace;
             });
@@ -264,7 +322,7 @@ class CloningAgentTest extends TestCase
         );
     }
 
-    public function testCloningIntoPath()
+    public function testCloningIntoPathWithHttp()
     {
         $identity = $this->createMock(SshIdentity::class);
         $identity->expects(self::any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
@@ -274,7 +332,63 @@ class CloningAgentTest extends TestCase
             $identity
         );
         $repository->expects(self::any())->method('getPullUrl')->willReturn(
-            $url = 'https://foo.bar'
+            'http://foo.bar'
+        );
+
+        $agent = $this->buildAgent();
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent = $agent->configure(
+                $repository,
+                $this->createMock(JobWorkspaceInterface::class)
+            )
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $agent->cloningIntoPath('foo', '/bar');
+    }
+
+    public function testCloningIntoPathWithHttps()
+    {
+        $identity = $this->createMock(SshIdentity::class);
+        $identity->expects(self::any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
+
+        $repository = $this->createMock(GitRepository::class);
+        $repository->expects(self::any())->method('getIdentity')->willReturn(
+            $identity
+        );
+        $repository->expects(self::any())->method('getPullUrl')->willReturn(
+            'https://foo.bar'
+        );
+
+        $agent = $this->buildAgent();
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent = $agent->configure(
+                $repository,
+                $this->createMock(JobWorkspaceInterface::class)
+            )
+        );
+
+        self::assertInstanceOf(
+            CloningAgentInterface::class,
+            $agent->cloningIntoPath('foo', '/bar')
+        );
+    }
+
+    public function testCloningIntoPathWithSSH()
+    {
+        $identity = $this->createMock(SshIdentity::class);
+        $identity->expects(self::any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
+
+        $repository = $this->createMock(GitRepository::class);
+        $repository->expects(self::any())->method('getIdentity')->willReturn(
+            $identity
+        );
+        $repository->expects(self::any())->method('getPullUrl')->willReturn(
+            'git@foo.bar'
         );
 
         $agent = $this->buildAgent();

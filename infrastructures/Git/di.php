@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
-use Gitonomy\Git\Admin;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;

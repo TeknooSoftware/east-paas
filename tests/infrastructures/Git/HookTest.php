@@ -145,7 +145,7 @@ class HookTest extends TestCase
         $this->buildHook()->run(new \stdClass());
     }
 
-    public function testRun()
+    public function testRunWithSsh()
     {
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
@@ -156,8 +156,8 @@ class HookTest extends TestCase
                 self::assertEquals('private.key', $file->getName());
                 self::assertEquals('fooBar', $file->getContent());
                 self::assertEquals(Visibility::Private, $file->getVisibility());
-                
-                $return('/foo/bar/private.key');
+
+                $return();
 
                 return $workspace;
             });
@@ -182,8 +182,119 @@ class HookTest extends TestCase
             Hook::class,
             $hook = $hook->setOptions(
                 [
-                    'url' => 'https://bar.foo',
+                    'url' => 'git@bar:foo',
                     'key' => 'fooBar',
+                    'path' => '/bar'
+                ],
+                $this->createMock(PromiseInterface::class)
+            )
+        );
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setPath('foo')
+        );
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setContext(
+                $this->createMock(JobUnitInterface::class),
+                $workspace
+            )
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('fail');
+        $promise->expects(self::once())->method('success');
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook->run($promise)
+        );
+    }
+
+    public function testRunWithHttp()
+    {
+        $hook = $this->buildHook();
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+
+        $workspace->expects(self::never())
+            ->method('writeFile');
+
+        $workspace->expects(self::never())
+            ->method('runInRepositoryPath');
+
+        $this->getProcessMock()
+            ->expects(self::never())
+            ->method('setWorkingDirectory');
+
+        $this->getProcessMock()
+            ->expects(self::never())
+            ->method('run');
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setOptions(
+                [
+                    'url' => 'http://foo.bar',
+                    'path' => '/bar'
+                ],
+                $this->createMock(PromiseInterface::class)
+            )
+        );
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setPath('foo')
+        );
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setContext(
+                $this->createMock(JobUnitInterface::class),
+                $workspace
+            )
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('fail');
+        $promise->expects(self::never())->method('success');
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook->run($promise)
+        );
+    }
+
+    public function testRunWithHttps()
+    {
+        $hook = $this->buildHook();
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+
+        $workspace->expects(self::never())
+            ->method('writeFile');
+
+        $workspace->expects(self::once())
+            ->method('runInRepositoryPath')
+            ->willReturnCallback(function (callable $callback) use ($workspace) {
+                $callback('foo', 'bar');
+
+                return $workspace;
+            });
+
+        $this->getProcessMock()
+            ->expects(self::once())
+            ->method('setWorkingDirectory');
+
+        $this->getProcessMock()
+            ->expects(self::once())
+            ->method('run');
+
+        self::assertInstanceOf(
+            Hook::class,
+            $hook = $hook->setOptions(
+                [
+                    'url' => 'https://bar.foo',
                     'path' => '/bar'
                 ],
                 $this->createMock(PromiseInterface::class)
@@ -226,7 +337,7 @@ class HookTest extends TestCase
                 self::assertEquals('fooBar', $file->getContent());
                 self::assertEquals(Visibility::Private, $file->getVisibility());
 
-                $return('/foo/bar/private.key');
+                $return();
 
                 return $workspace;
             });
@@ -251,7 +362,7 @@ class HookTest extends TestCase
             Hook::class,
             $hook = $hook->setOptions(
                 [
-                    'url' => 'https://bar.foo',
+                    'url' => 'git@bar:foo',
                     'key' => 'fooBar',
                     'path' => '/bar'
                 ],

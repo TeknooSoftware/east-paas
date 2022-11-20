@@ -96,7 +96,6 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
                 ->with('options', new Property\IsNotEmpty())
                 ->with('options', new Property\HasNotEmptyValueForKey('url'))
                 ->with('options', new Property\HasNotEmptyValueForKey('path'))
-                ->with('options', new Property\HasNotEmptyValueForKey('key'))
                 ->with('path', new Property\IsNotEmpty())
                 ->with('jobUnit', new Property\IsNotEmpty())
                 ->with('workspace', new Property\IsNotEmpty()),
@@ -107,8 +106,6 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
                 ->with('options', new Property\HasEmptyValueForKey('url')),
             (new Property(Generator::class))
                 ->with('options', new Property\HasEmptyValueForKey('path')),
-            (new Property(Generator::class))
-                ->with('options', new Property\HasEmptyValueForKey('key')),
             (new Property(Generator::class))
                 ->with('path', new Property\IsEmpty()),
             (new Property(Generator::class))
