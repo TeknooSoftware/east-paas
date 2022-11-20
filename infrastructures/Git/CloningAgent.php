@@ -137,7 +137,8 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         }
 
         $identity = $repository->getIdentity();
-        if (!$identity instanceof SshIdentity) {
+
+        if (!str_starts_with($repository->getPullUrl(), 'http') && !$identity instanceof SshIdentity) {
             throw new LogicException(
                 sprintf(
                     "Identity of type %s is not managed by this agent",
@@ -199,8 +200,8 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         }
 
         $this->gitProcess->setEnv([
-            'GIT_SSH_COMMAND' => "ssh -i {$jobRootPath}{$this->privateKeyFilename} ' 
-                . '-o IdentitiesOnly=yes -o StrictHostKeyChecking=no",
+            'GIT_SSH_COMMAND' => "ssh -i {$jobRootPath}{$this->privateKeyFilename} "
+                . "-o IdentitiesOnly=yes -o StrictHostKeyChecking=no",
             'JOB_CLONE_DESTINATION' => $jobRootPath . $repositoryFolder,
             'JOB_REPOSITORY' => $pullUrl,
             'JOB_BRANCH' => $sourceRepository->getDefaultBranch(),

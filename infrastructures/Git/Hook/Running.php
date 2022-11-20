@@ -73,8 +73,8 @@ class Running implements StateInterface
                     $this->gitProcess->setWorkingDirectory($workspacePath);
 
                     $this->gitProcess->setEnv([
-                        'GIT_SSH_COMMAND' => "ssh -i {$workspacePath}{$this->privateKeyFilename} ' 
-                            . ' -o IdentitiesOnly=yes -o StrictHostKeyChecking=no",
+                        'GIT_SSH_COMMAND' => "ssh -i {$workspacePath}{$this->privateKeyFilename} "
+                            . " -o IdentitiesOnly=yes -o StrictHostKeyChecking=no",
                         'JOB_CLONE_DESTINATION' => $repositoryPath . $options['path'],
                         'JOB_REPOSITORY' => $options['url'],
                         'JOB_BRANCH' => ($options['branch'] ?? 'main'),
