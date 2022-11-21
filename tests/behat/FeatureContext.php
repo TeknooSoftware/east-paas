@@ -1553,7 +1553,7 @@ EOF;
                                     {
                                         "name": "KEY0",
                                         "valueFrom": {
-                                            "configMapRef": {
+                                            "configMapKeyRef": {
                                                 "name": "map1-map",
                                                 "key": "key0"
                                             }

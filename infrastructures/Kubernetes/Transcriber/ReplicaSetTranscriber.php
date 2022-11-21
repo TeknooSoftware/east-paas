@@ -124,7 +124,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     $envsVars[] = [
                         'name' => $name,
                         'valueFrom' => [
-                            'configMapRef' => [
+                            'configMapKeyRef' => [
                                 'name' => $value->getName() . self::MAP_SUFFIX,
                                 'key' => $value->getKey(),
                             ],
