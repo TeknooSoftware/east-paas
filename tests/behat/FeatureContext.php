@@ -1611,8 +1611,8 @@ EOF;
                             },
                             {
                                 "name": "map-volume",
-                                "secret": {
-                                    "secretName": "map2-map"
+                                "configMap": {
+                                    "name": "map2-map"
                                 }
                             },
                             {

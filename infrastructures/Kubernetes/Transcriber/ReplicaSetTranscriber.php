@@ -193,8 +193,8 @@ class ReplicaSetTranscriber implements DeploymentInterface
             if ($volume instanceof MapVolume) {
                 $specs['spec']['template']['spec']['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
-                    'secret' => [
-                        'secretName' => $volume->getMapIdentifier() . self::MAP_SUFFIX,
+                    'configMap' => [
+                        'name' => $volume->getMapIdentifier() . self::MAP_SUFFIX,
                     ],
                 ];
 
