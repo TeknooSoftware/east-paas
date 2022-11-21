@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 
 use InvalidArgumentException;
+use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
@@ -90,7 +91,7 @@ class CloningAgentTest extends TestCase
 
     public function testConfigureNotGitRepository()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->buildAgent()
             ->configure(
                 $this->createMock(SourceRepositoryInterface::class),
@@ -100,7 +101,7 @@ class CloningAgentTest extends TestCase
 
     public function testConfigureGitRepositoryWithNoIdentity()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->buildAgent()
             ->configure(
                 $this->createMock(GitRepository::class),
@@ -199,12 +200,8 @@ class CloningAgentTest extends TestCase
 
     public function testRunWithHttps()
     {
-        $identity = $this->createMock(SshIdentity::class);
-
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects(self::any())->method('getIdentity')->willReturn(
-            $identity
-        );
+        $repository->expects(self::any())->method('getIdentity')->willReturn(null);
         $repository->expects(self::any())->method('getPullUrl')->willReturn(
             'https://foo.bar'
         );
@@ -265,7 +262,7 @@ class CloningAgentTest extends TestCase
 
     public function testRunWrongIdentityObject()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
 
         $identity = $this->createMock(IdentityInterface::class);;
 
@@ -324,13 +321,8 @@ class CloningAgentTest extends TestCase
 
     public function testCloningIntoPathWithHttp()
     {
-        $identity = $this->createMock(SshIdentity::class);
-        $identity->expects(self::any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
-
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects(self::any())->method('getIdentity')->willReturn(
-            $identity
-        );
+        $repository->expects(self::any())->method('getIdentity')->willReturn(null);
         $repository->expects(self::any())->method('getPullUrl')->willReturn(
             'http://foo.bar'
         );
@@ -351,13 +343,8 @@ class CloningAgentTest extends TestCase
 
     public function testCloningIntoPathWithHttps()
     {
-        $identity = $this->createMock(SshIdentity::class);
-        $identity->expects(self::any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
-
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects(self::any())->method('getIdentity')->willReturn(
-            $identity
-        );
+        $repository->expects(self::any())->method('getIdentity')->willReturn(null);
         $repository->expects(self::any())->method('getPullUrl')->willReturn(
             'https://foo.bar'
         );
@@ -417,7 +404,7 @@ class CloningAgentTest extends TestCase
             $identity
         );
         $repository->expects(self::any())->method('getPullUrl')->willReturn(
-            $url = 'https://foo.bar'
+            $url = 'git@foo:bar'
         );
 
         $this->getProcessMock(false);
