@@ -36,6 +36,7 @@ use Psr\Http\Message\UriInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Common\Service\DatesService;
@@ -55,6 +56,11 @@ class SendHistoryTest extends TestCase
     private $dateTimeService;
 
     private ?MessageBusInterface $bus = null;
+
+    /**
+     * @var \PHPUnit\Framework\MockObject\MockObject|SerialGenerator
+     */
+    private $generator;
 
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject|DatesService
@@ -80,11 +86,30 @@ class SendHistoryTest extends TestCase
         return $this->bus;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject|SerialGenerator
+     */
+    public function getSerialGeneratorMock(): SerialGenerator
+    {
+        if (!$this->generator instanceof SerialGenerator) {
+            $this->generator = $this->createMock(SerialGenerator::class);
+
+            $this->generator
+                ->expects(self::any())
+                ->method('getNewSerialNumber')
+                ->willReturn(0);
+        }
+
+        return $this->generator;
+    }
+
+
     public function buildStep(): SendHistory
     {
         return new SendHistory(
             $this->getDateTimeServiceMock(),
-            $this->getMessageBusMock()
+            $this->getMessageBusMock(),
+            $this->getSerialGeneratorMock(),
         );
     }
 

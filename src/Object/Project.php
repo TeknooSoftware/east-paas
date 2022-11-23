@@ -47,6 +47,8 @@ use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
 
+use const PHP_INT_MAX;
+
 /**
  * Persisted object representing a project, in an Account, to deploy on clusters from a source repository.
  *
@@ -231,7 +233,12 @@ class Project implements
 
     public function refuseExecution(Job $job, string $error, DateTimeInterface $date): self
     {
-        $job->addToHistory($error, $date, true);
+        $job->addToHistory(
+            message: $error,
+            date: $date,
+            isFinal: true,
+            serialNumber: PHP_INT_MAX,
+        );
 
         return $this;
     }

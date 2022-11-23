@@ -197,9 +197,19 @@ class Job implements
         string $message,
         DateTimeInterface $date,
         bool $isFinal = false,
-        array $extra = []
+        array $extra = [],
+        int $serialNumber = 0,
     ): Job {
-        $this->setHistory(new History($this->history, $message, $date, $isFinal, $extra));
+        $this->setHistory(
+            new History(
+                previous: $this->history,
+                message: $message,
+                date: $date,
+                isFinal: $isFinal,
+                extra: $extra,
+                serialNumber: $serialNumber,
+            )
+        );
 
         return $this;
     }

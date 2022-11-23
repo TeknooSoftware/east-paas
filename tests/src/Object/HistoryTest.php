@@ -102,14 +102,23 @@ class HistoryTest extends TestCase
     public function testJsonSerialize()
     {
         self::assertEquals(
-            '{"message":"bar","date":"2018-05-01 00:00:00 UTC","is_final":true,"extra":[],"previous":{"message":"foo","date":"2018-04-01 00:00:00 UTC","is_final":false,"extra":{"foo":"bar"},"previous":null}}',
+            '{"message":"bar","date":"2018-05-01 00:00:00 UTC","is_final":true,"extra":[],"previous":{"message":"foo","date":"2018-04-01 00:00:00 UTC","is_final":false,"extra":{"foo":"bar"},"previous":null,"serial_number":123},"serial_number":0}',
             \json_encode(
                 new History(
-                    new History(null, 'foo', new \DateTimeImmutable('2018-04-01'), false, ['foo'=>'bar']),
+                    new History(
+                        null,
+                        'foo',
+                        new \DateTimeImmutable('2018-04-01'),
+                        false,
+                        ['foo'=>'bar'],
+                        123,
+                    ),
                     'bar',
                     new \DateTimeImmutable('2018-05-01'),
-                    true
-                ), JSON_THROW_ON_ERROR
+                    true,
+                    serialNumber: 0,
+                ),
+                JSON_THROW_ON_ERROR
             )
         );
     }
@@ -131,9 +140,9 @@ class HistoryTest extends TestCase
 
     public function testCloneWithoutParentWithParent()
     {
-        $parent = new History(null, 'bar', new \DateTime('2018-10-25'));
-        $history = new History(null, 'foo', new \DateTime('2018-11-25'));
-        $expected = new History($parent, 'foo', new \DateTime('2018-11-25'));
+        $parent = new History(null, 'bar', new \DateTime('2018-10-25'), serialNumber: 0,);
+        $history = new History(null, 'foo', new \DateTime('2018-11-25'), serialNumber: 0,);
+        $expected = new History($parent, 'foo', new \DateTime('2018-11-25'), serialNumber: 0,);
         $cloned = $history->clone($parent);
 
         self::assertNotSame($history, $cloned);
@@ -143,12 +152,13 @@ class HistoryTest extends TestCase
 
     public function testCloneWithoutParentWithMoreRecent()
     {
-        $recent = new History(null, 'bar', new \DateTime('2019-10-25'));
-        $history = new History(null, 'foo', new \DateTime('2018-11-25'));
+        $recent = new History(null, 'bar', new \DateTime('2019-10-25'), serialNumber: 0,);
+        $history = new History(null, 'foo', new \DateTime('2018-11-25'), serialNumber: 0,);
         $expected = new History(
             $history,
             'bar',
             new \DateTime('2019-10-25'),
+            serialNumber: 0,
         );
 
         $cloned = $history->clone($recent);
@@ -160,10 +170,10 @@ class HistoryTest extends TestCase
 
     public function testCloneWithNewHistoryToInsert()
     {
-        $newHistory = new History(null, 'bar', new \DateTime('2019-10-25'));
-        $history1 = new History(null, 'foo1', new \DateTime('2017-11-25'));
-        $history2 = new History($history1, 'foo2', new \DateTime('2018-11-25'));
-        $history3 = new History($history2, 'foo3', new \DateTime('2020-11-25'));
+        $newHistory = new History(null, 'bar', new \DateTime('2019-10-25'), serialNumber: 0,);
+        $history1 = new History(null, 'foo1', new \DateTime('2017-11-25'), serialNumber: 0,);
+        $history2 = new History($history1, 'foo2', new \DateTime('2018-11-25'), serialNumber: 0,);
+        $history3 = new History($history2, 'foo3', new \DateTime('2020-11-25'), serialNumber: 0,);
 
         $expected = new History(
             new History(
@@ -172,15 +182,19 @@ class HistoryTest extends TestCase
                         null,
                         'foo1',
                         new \DateTime('2017-11-25'),
+                        serialNumber: 0,
                     ),
                     'foo2',
                     new \DateTime('2018-11-25'),
+                    serialNumber: 0,
                 ),
                 'bar',
                 new \DateTime('2019-10-25'),
+                serialNumber: 0,
             ),
             'foo3',
             new \DateTime('2020-11-25'),
+            serialNumber: 0,
         );
 
         $cloned = $history3->clone($newHistory);
@@ -194,10 +208,10 @@ class HistoryTest extends TestCase
 
     public function testCloneWithNewHistoryToInsert2()
     {
-        $newHistory = new History(null, 'bar', new \DateTime('2018-10-25'));
-        $history1 = new History(null, 'foo1', new \DateTime('2017-11-25'));
-        $history2 = new History($history1, 'foo2', new \DateTime('2019-11-25'));
-        $history3 = new History($history2, 'foo3', new \DateTime('2020-11-25'));
+        $newHistory = new History(null, 'bar', new \DateTime('2018-10-25'), serialNumber: 0,);
+        $history1 = new History(null, 'foo1', new \DateTime('2017-11-25'), serialNumber: 0,);
+        $history2 = new History($history1, 'foo2', new \DateTime('2019-11-25'), serialNumber: 0,);
+        $history3 = new History($history2, 'foo3', new \DateTime('2020-11-25'), serialNumber: 0,);
 
         $expected = new History(
             new History(
@@ -206,18 +220,190 @@ class HistoryTest extends TestCase
                         null,
                         'foo1',
                         new \DateTime('2017-11-25'),
+                        serialNumber: 0,
                     ),
                     'bar',
                     new \DateTime('2018-10-25'),
+                    serialNumber: 0,
                 ),
                 'foo2',
                 new \DateTime('2019-11-25'),
+                serialNumber: 0,
             ),
             'foo3',
             new \DateTime('2020-11-25'),
+            serialNumber: 0,
         );
 
         $cloned = $history3->clone($newHistory);
+
+        self::assertNotSame($history1, $cloned);
+        self::assertNotSame($history2, $cloned);
+        self::assertNotSame($history3, $cloned);
+        self::assertNotSame($newHistory, $cloned);
+        self::assertEquals($expected, $cloned);
+    }
+
+    public function testCloneWithoutParentWithMoreRecentWithCounter()
+    {
+        $recent = new History(
+            previous: null,
+            message: 'bar',
+            date: new \DateTime('2019-10-25'),
+            serialNumber: 1,
+        );
+        $history = new History(
+            previous: null,
+            message: 'foo',
+            date: new \DateTime('2018-11-25'),
+            serialNumber: 3,
+        );
+        $expected = new History(
+            previous: $history,
+            message: 'bar',
+            date: new \DateTime('2019-10-25'),
+            serialNumber: 1,
+        );
+
+        $cloned = $history->clone($recent);
+
+        self::assertNotSame($history, $cloned);
+        self::assertNotSame($recent, $cloned);
+        self::assertEquals($expected, $cloned);
+    }
+
+    public function testCloneWithNewHistoryToInsertWithCounter()
+    {
+        $newHistory = new History(
+            previous: null,
+            message: 'bar',
+            date: new \DateTime('2020-11-25'),
+            serialNumber: 3,
+        );
+        $history1 = new History(
+            previous: null,
+            message: 'foo1',
+            date: new \DateTime('2020-11-25'),
+            serialNumber: 5,
+        );
+        $history2 = new History(
+            previous: $history1,
+            message: 'foo2',
+            date: new \DateTime('2020-11-25'),
+            serialNumber: 4,
+        );
+        $history3 = new History(
+            previous: $history2,
+            message: 'foo3',
+            date: new \DateTime('2020-11-25'),
+            serialNumber: 1,
+
+        );
+
+        $expected = new History(
+            previous: new History(
+                previous: new History(
+                    previous: new History(
+                        previous:null,
+                        message: 'foo1',
+                        date: new \DateTime('2020-11-25'),
+                        serialNumber: 5,
+                    ),
+                    message: 'foo2',
+                    date: new \DateTime('2020-11-25'),
+                    serialNumber: 4,
+                ),
+                message: 'bar',
+                date: new \DateTime('2020-11-25'),
+                serialNumber: 3,
+            ),
+            message: 'foo3',
+            date: new \DateTime('2020-11-25'),
+            serialNumber: 1,
+        );
+
+        $cloned = $history3->clone($newHistory);
+
+        self::assertNotSame($history1, $cloned);
+        self::assertNotSame($history2, $cloned);
+        self::assertNotSame($history3, $cloned);
+        self::assertNotSame($newHistory, $cloned);
+        self::assertEquals($expected, $cloned);
+    }
+
+    public function testCloneWithNewHistoryToInsert2WithCounter()
+    {
+
+        $newHistory = new History(
+            previous:null,
+            message: 'bar',
+            date: new \DateTime('2018-10-25'),
+            serialNumber: 3,
+        );
+        $history1 = new History(
+            previous:null,
+            message: 'foo1',
+            date: new \DateTime('2017-11-25'),
+            serialNumber: 5,
+        );
+        $history2 = new History(
+            previous:$history1,
+            message: 'foo2',
+            date: new \DateTime('2019-11-25'),
+            serialNumber: 0,
+        );
+        $history3 = new History(
+            previous:$history2,
+            message: 'foo3',
+            date: new \DateTime('2020-11-25'),
+            serialNumber: 1,
+        );
+        $history4 = new History(
+            previous:$history3,
+            message: 'foo4',
+            date: new \DateTime('2021-11-25'),
+            serialNumber: 0,
+        );
+        $history5 = new History(
+            previous:$history4,
+            message: 'foo5',
+            date: new \DateTime('2021-11-25'),
+            serialNumber: 1,
+        );
+
+        $expected = new History(
+            previous: new History(
+                previous: new History(
+                    previous: new History(
+                        previous: new History(
+                            previous: new History(
+                                previous: null,
+                                message: 'foo1',
+                                date: new \DateTime('2017-11-25'),
+                                serialNumber: 5,
+                            ),
+                            message: 'bar',
+                            date: new \DateTime('2018-10-25'),
+                            serialNumber: 3,
+                        ),
+                        message: 'foo2',
+                        date: new \DateTime('2019-11-25'),
+                        serialNumber: 0,
+                    ),
+                    message: 'foo3',
+                    date: new \DateTime('2020-11-25'),
+                    serialNumber: 1,
+                ),
+                message: 'foo4',
+                date: new \DateTime('2021-11-25'),
+                serialNumber: 0,
+            ),
+            message: 'foo5',
+            date: new \DateTime('2021-11-25'),
+            serialNumber: 1,
+        );
+
+        $cloned = $history5->clone($newHistory);
 
         self::assertNotSame($history1, $cloned);
         self::assertNotSame($history2, $cloned);

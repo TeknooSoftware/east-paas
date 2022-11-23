@@ -36,6 +36,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 use Teknoo\East\Common\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
+use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\Recipe\Promise\Promise;
 use Throwable;
@@ -57,6 +58,7 @@ class PushResult implements DispatchResultInterface
         private readonly MessageBusInterface $bus,
         private readonly NormalizerInterface $normalizer,
         private readonly ErrorFactoryInterface $errorFactory,
+        private readonly SerialGenerator $generator,
         private readonly bool $preferRealDate = false,
     ) {
     }
@@ -78,11 +80,12 @@ class PushResult implements DispatchResultInterface
                 $promise = new Promise(
                     function ($normalizedResult) use ($projectId, $envName, $jobId, $manager, $now, $extra) {
                         $history = new History(
-                            null,
-                            DispatchResultInterface::class,
-                            $now,
-                            true,
-                            ['result' => $normalizedResult] + $extra
+                            previous: null,
+                            message: DispatchResultInterface::class,
+                            date: $now,
+                            isFinal: true,
+                            extra: ['result' => $normalizedResult] + $extra,
+                            serialNumber: $this->generator->getNewSerialNumber(),
                         );
 
                         $manager->updateWorkPlan([

@@ -55,11 +55,6 @@ class HistoryDenormalizer implements DenormalizerInterface
             $previous = $this->denormalize($data['previous'], History::class, $format, $context);
         }
 
-        $message = '';
-        if (isset($data['message'])) {
-            $message = $data['message'];
-        }
-
         $date = new DateTime();
         if (isset($data['date'])) {
             $date = DateTime::createFromFormat(History::DATE_FORMAT, $data['date']);
@@ -69,14 +64,14 @@ class HistoryDenormalizer implements DenormalizerInterface
             throw new RuntimeException('Bad denormalized date');
         }
 
-        $isFinal = !empty($data['is_final']);
-
-        $extra = [];
-        if (isset($data['extra'])) {
-            $extra = $data['extra'];
-        }
-
-        return new History($previous, $message, $date, $isFinal, $extra);
+        return new History(
+            previous: $previous,
+            message: $data['message'] ?? '',
+            date: $date,
+            isFinal: !empty($data['is_final']),
+            extra: $data['extra'] ?? [],
+            serialNumber: $data['serial_number'] ?? 0,
+        );
     }
 
     /**

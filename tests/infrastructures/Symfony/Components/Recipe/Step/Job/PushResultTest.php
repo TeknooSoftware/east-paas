@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult;
 use Teknoo\East\Common\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\Tests\East\Paas\ErrorFactory;
@@ -57,6 +58,11 @@ class PushResultTest extends TestCase
     private $normalizer;
 
     private ?MessageBusInterface $bus = null;
+
+    /**
+     * @var \PHPUnit\Framework\MockObject\MockObject|SerialGenerator
+     */
+    private $generator;
 
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject|DatesService
@@ -94,6 +100,23 @@ class PushResultTest extends TestCase
         return $this->normalizer;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject|SerialGenerator
+     */
+    public function getSerialGeneratorMock(): SerialGenerator
+    {
+        if (!$this->generator instanceof SerialGenerator) {
+            $this->generator = $this->createMock(SerialGenerator::class);
+
+            $this->generator
+                ->expects(self::any())
+                ->method('getNewSerialNumber')
+                ->willReturn(0);
+        }
+
+        return $this->generator;
+    }
+
     public function buildStep(): PushResult
     {
         return new PushResult(
@@ -101,6 +124,7 @@ class PushResultTest extends TestCase
             $this->getMessageBusMock(),
             $this->getNormalizer(),
             new ErrorFactory(),
+            $this->getSerialGeneratorMock(),
         );
     }
 

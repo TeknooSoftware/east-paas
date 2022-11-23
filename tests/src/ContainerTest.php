@@ -66,6 +66,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
@@ -592,6 +593,15 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             SaveJob::class,
             $container->get(SaveJob::class)
+        );
+    }
+
+    public function testSerialGenerator()
+    {
+        $container = $this->buildContainer();
+        self::assertInstanceOf(
+            SerialGenerator::class,
+            $container->get(SerialGenerator::class)
         );
     }
 

@@ -31,6 +31,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
+use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Common\Service\DatesService;
 
@@ -47,6 +48,7 @@ class SendHistory implements DispatchHistoryInterface
     public function __construct(
         private readonly DatesService $dateTimeService,
         private readonly MessageBusInterface $bus,
+        private readonly SerialGenerator $generator,
         private readonly bool $preferRealDate = false,
     ) {
     }
@@ -64,11 +66,12 @@ class SendHistory implements DispatchHistoryInterface
         $this->dateTimeService->passMeTheDate(
             function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $step, $extra) {
                 $history = new History(
-                    null,
-                    $step,
-                    $now,
-                    false,
-                    $extra
+                    previous: null,
+                    message: $step,
+                    date: $now,
+                    isFinal: false,
+                    extra: $extra,
+                    serialNumber: $this->generator->getNewSerialNumber(),
                 );
 
                 $this->bus->dispatch(

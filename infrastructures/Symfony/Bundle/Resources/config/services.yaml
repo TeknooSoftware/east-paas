@@ -82,6 +82,7 @@ services:
         arguments:
             - '@Teknoo\East\Common\Service\DatesService'
             - '@messenger.default_bus'
+            - '@Teknoo\East\Paas\Job\History\SerialGenerator'
             - '%teknoo.east.paas.symfony.history.prefer-real-date%'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult:
@@ -92,6 +93,7 @@ services:
             - '@messenger.default_bus'
             - '@Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface'
             - '@Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface'
+            - '@Teknoo\East\Paas\Job\History\SerialGenerator'
             - '%teknoo.east.paas.symfony.history.prefer-real-date%'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:

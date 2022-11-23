@@ -63,6 +63,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList;
 use Teknoo\East\Paas\Recipe\Cookbook\AbstractEditObjectEndPoint;
@@ -368,6 +369,8 @@ return [
     PrepareWorkspace::class => create()
         ->constructor(get(JobWorkspaceInterface::class)),
     ReadDeploymentConfiguration::class => create(),
+
+    SerialGenerator::class => create(),
 
     //Base recipe
     OriginalRecipeInterface::class => get(Recipe::class),

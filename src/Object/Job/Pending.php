@@ -122,7 +122,12 @@ class Pending implements StateInterface
     public function validate(): Closure
     {
         return function (DateTimeInterface $date): Job {
-            $this->addToHistory('teknoo.east.paas.error.job.not_validated', $date, true, ['code' => 400]);
+            $this->addToHistory(
+                'teknoo.east.paas.error.job.not_validated',
+                $date,
+                true,
+                ['code' => 400]
+            );
 
             return $this;
         };

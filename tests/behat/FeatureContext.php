@@ -44,6 +44,7 @@ use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
+use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\East\Paas\Object\Environment;
@@ -238,6 +239,9 @@ class FeatureContext implements Context
         $this->sfContainer->set(ObjectManager::class, $this->buildObjectManager());
         $this->sfContainer->get(DatesService::class)
             ->setCurrentDate(new DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
+        $this->sfContainer
+            ->get(SerialGenerator::class)
+            ->setGenerator(fn() => 0);
     }
 
     private function initiateSymfonyKernel()
@@ -742,6 +746,7 @@ EOF;
                 'is_final' => false,
                 'extra' => [],
                 'previous' => null,
+                'serial_number' => 0,
             ],
             'extra' => [],
             'variables' => $variables,
@@ -862,9 +867,16 @@ EOF;
             'date' => $this->historyDate = $date,
             'is_final' => false,
             'extra' => [],
-            'previous' => new History(null, 'teknoo.east.paas.jobs.configured', new DateTime($this->jobDate)),
+            'previous' => new History(
+                null, 'teknoo.east.paas.jobs.configured',
+                new DateTime($this->jobDate)
+            ),
+           'serial_number' => 0,
         ];
-        Assert::assertEquals(json_encode($history), $this->response->getContent());
+        Assert::assertEquals(
+            json_encode($history),
+            $this->response->getContent()
+        );
     }
 
     /**
@@ -881,6 +893,7 @@ EOF;
                 'result' => [],
             ],
             'previous' => null,
+            'serial_number' => 0,
         ];
 
         $content = json_decode($this->response->getContent(), true);

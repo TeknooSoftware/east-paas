@@ -54,12 +54,15 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
 
     private DateTimeInterface $date;
 
+    private int $serialNumber = 0;
+
     private bool $isFinal = false;
 
     /**
      * @var array<string, mixed>
      */
     private array $extra = [];
+
     /**
      * @param array<string, mixed> $extra
      */
@@ -69,6 +72,7 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
         DateTimeInterface $date,
         bool $isFinal = false,
         array $extra = [],
+        int $serialNumber = 0,
     ) {
         $this->uniqueConstructorCheck();
 
@@ -77,6 +81,7 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
         $this->date = $date;
         $this->isFinal = $isFinal;
         $this->extra = $extra;
+        $this->serialNumber = $serialNumber;
     }
 
     public function getPrevious(): ?History
@@ -107,8 +112,13 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
         return $this->extra;
     }
 
+    public function getSerialNumber(): int
+    {
+        return $this->serialNumber;
+    }
+
     /**
-     * @return array<string, array<string, mixed>|bool|string|null>
+     * @return array<string, array<string, mixed>|bool|string|int|null>
      */
     public function jsonSerialize(): mixed
     {
@@ -123,6 +133,7 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
             'is_final' => $this->isFinal(),
             'extra' => $this->getExtra(),
             'previous' => $previousArray,
+            'serial_number' => $this->getSerialNumber(),
         ];
     }
 
@@ -135,7 +146,10 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
             return $history;
         }
 
-        if ($newHistory->date <= $this->date) {
+        if (
+            $newHistory->date <= $this->date
+            || $newHistory->serialNumber > $this->serialNumber
+        ) {
             $history->previous = $newHistory->clone($history->previous);
 
             return $history;

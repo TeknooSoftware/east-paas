@@ -73,28 +73,28 @@ class HistoryDenormalizerTest extends TestCase
     public function testDenormalize()
     {
         self::assertEquals(
-            new History(null, 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000')),
-            $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000'], History::class)
+            new History(null, 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), serialNumber: 0,),
+            $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'serial_number' => 0], History::class)
         );
 
         self::assertEquals(
-            new History(null, 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), true),
-            $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => true], History::class)
+            new History(null, 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), true, serialNumber: 0,),
+            $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => true, 'serial_number' => 0], History::class)
         );
 
         self::assertEquals(
-            new History(null, 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), false),
-            $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => false], History::class)
+            new History(null, 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), false, serialNumber: 0,),
+            $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => false, 'serial_number' => 0], History::class)
         );
 
         self::assertEquals(
-            new History(null, 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), false, ['hello' => 'world']),
-            $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => false, 'extra' => ['hello' => 'world']], History::class)
+            new History(null, 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), false, ['hello' => 'world'], serialNumber: 0,),
+            $this->buildNormalizer()->denormalize(['message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => false, 'extra' => ['hello' => 'world'], 'serial_number' => 0], History::class)
         );
 
         self::assertEquals(
-            new History(new History(null, 'bar', new \DateTimeImmutable('2018-04-01 00:00:00 +0000')), 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), false, ['hello' => 'world']),
-            $this->buildNormalizer()->denormalize(['previous' => ['message' => 'bar', 'date' => '2018-04-01 00:00:00 +0000'], 'message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => false, 'extra' => ['hello' => 'world']], History::class)
+            new History(new History(null, 'bar', new \DateTimeImmutable('2018-04-01 00:00:00 +0000'), serialNumber: 123,), 'foo', new \DateTimeImmutable('2018-05-01 00:00:00 +0000'), false, ['hello' => 'world'], serialNumber: 0,),
+            $this->buildNormalizer()->denormalize(['previous' => ['message' => 'bar', 'date' => '2018-04-01 00:00:00 +0000', 'serial_number' => 123], 'message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => false, 'extra' => ['hello' => 'world'], 'serial_number' => 0], History::class)
         );
     }
 }

@@ -28,6 +28,8 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Response;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\History;
 use Teknoo\East\Paas\Object\History as BaseHistory;
+use function json_decode;
+use function json_encode;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -41,7 +43,12 @@ class HistoryTest extends TestCase
         return new History(
             200,
             'foo',
-            new BaseHistory(null, 'foo', new \DateTime('2021-06-25'))
+            new BaseHistory(
+                previous: null,
+                message: 'foo',
+                date: new \DateTime('2021-06-25'),
+                serialNumber: 123,
+            )
         );
     }
 
@@ -62,8 +69,17 @@ class HistoryTest extends TestCase
                 'is_final' => false,
                 'extra' => [],
                 'previous' => null,
+                'serial_number' => 123,
             ],
-            \json_decode(\json_encode($this->build(), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR)
+            json_decode(
+                json_encode(
+                    $this->build(),
+                    JSON_THROW_ON_ERROR
+                ),
+                true,
+                512,
+                JSON_THROW_ON_ERROR
+            )
         );
     }
 
