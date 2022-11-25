@@ -1,5 +1,13 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.122] - 2022-11-25
+### Dev Release
+- Update symfony configuration for behat
+- Histories have also a serial number used to sort them if it is greater than 0.
+- Serial generator is added to Teknoo/East/PaaS/Job/History namespace to redefine serial number generation.
+- Git clone support of https/http
+- Ignore host key fingerprint for ssh clone (prefere https access)
+
 ## [0.0.121] - 2022-11-09
 ### Dev Release
 - Migrate behat's context in tests directory

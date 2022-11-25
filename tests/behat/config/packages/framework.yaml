@@ -19,3 +19,5 @@ framework:
     routing:
       # Route your messages to the transports
       'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob': 'teknoo_paas_message_job'
+  router:
+    default_uri: 'https://teknoo.software/'
