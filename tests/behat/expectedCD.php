@@ -162,7 +162,21 @@ return static function (bool $hnc): CompiledDeployment {
 
     $cd->addHook(
         name: 'composer-build:composer',
-        hook: new HookMock(),
+        hook: new HookMock(
+            [
+                'action' => 'install',
+                'arguments' => [
+                    'no-dev',
+                    'optimize-autoloader',
+                    'classmap-authoritative',
+                ],
+            ],
+        ),
+    );
+
+    $cd->addHook(
+        name: 'custom-hook:hook-id',
+        hook: new HookMock(['foo bar']),
     );
 
     $cd->addPod(

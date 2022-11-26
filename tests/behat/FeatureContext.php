@@ -980,9 +980,16 @@ images:
     path: '/images/${FOO}'
 
 #Hook to build the project before container, Called in this order
-builds:
+builds:  
   composer-build: #Name of the step
-    composer: install #Hook to call
+    composer: 
+      action: install #Hook to call
+      arguments:
+        - 'no-dev'
+        - 'optimize-autoloader'
+        - 'classmap-authoritative'
+  custom-hook:
+    hook-id: foo bar
 
 #Volume to build to use with container
 volumes:
@@ -1164,7 +1171,8 @@ EOF;
     {
         $hook = new HookMock();
 
-        $collection = new class (['composer' => $hook]) implements HooksCollectionInterface {
+        $hooks = ['composer' => clone $hook, 'hook-id' => clone $hook];
+        $collection = new class ($hooks) implements HooksCollectionInterface {
 
             private iterable $hooks;
 

@@ -32,6 +32,7 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Throwable;
 
 use function array_flip;
+use function array_merge;
 use function is_string;
 use function preg_match;
 use function reset;
@@ -83,43 +84,107 @@ class ComposerHook implements HookInterface
     }
 
     /**
-     * @param array<string, scalar> $options
+     * @param array{action?: string|null, arguments?: iterable<string>} $options
+     * @return string[]
      */
-    private function validateOptions(array $options): void
+    private function validateOptions(array $options): array
     {
-        $grantedCommands = array_flip([
-            'dump-autoload',
-            'dumpautoload',
-            'exec',
-            'install',
-            'require',
-            'run',
-            'run-script',
-            'update',
-            'upgrade',
-            'self-update',
-            'selfupdate',
-        ]);
+        $globalOptions = [
+            'quiet',
+            'version',
+            'ansi',
+            'dev',
+            'no-dev',
+            'no-ansi',
+            'no-interaction',
+            'no-plugins',
+            'no-scripts',
+            'working-dir',
+            'no-cache'
+        ];
 
-        foreach ($options as &$option) {
-            if (!is_scalar($option)) {
-                throw new RuntimeException('Options must be scalar value');
-            }
+        $dumpOptions = [
+            'optimize',
+            'classmap-authoritative',
+            'apcu',
+            'ignore-platform-req',
+            'ignore-platform-reqs',
+            'strict-psr',
+        ];
+
+        $installOptions = [
+            'prefer-source',
+            'prefer-dist',
+            'prefer-install',
+            'dry-run',
+            'no-suggest',
+            'no-autoloader',
+            'no-progress',
+            'no-install',
+            'audit',
+            'optimize-autoloader',
+        ];
+
+        $runOptions = [
+            '[a-zA-Z0-9\-_]+',
+        ];
+
+        $requireOptions = [
+            'update-with-dependencies',
+            'update-with-all-dependencies',
+            'with-dependencies',
+            'with-all-dependencies',
+        ];
+
+        $grantedCommands = [
+            'dump-autoload' => array_merge($globalOptions, $dumpOptions),
+            'dumpautoload' => array_merge($globalOptions, $dumpOptions),
+            'exec' => array_merge($globalOptions, $runOptions),
+            'install' => array_merge($globalOptions, $dumpOptions, $installOptions),
+            'require' => array_merge($globalOptions, $dumpOptions, $installOptions, $requireOptions),
+            'run' => array_merge($globalOptions, $runOptions),
+            'run-script' => array_merge($globalOptions, $runOptions),
+            'update' => array_merge($globalOptions, $dumpOptions, $installOptions),
+            'upgrade' => array_merge($globalOptions, $dumpOptions, $installOptions),
+        ];
+
+        $args = [];
+        if (!isset($options['action'])) {
+            $cmd = (string) reset($options);
+        } else {
+            $cmd = $options['action'];
+            $args = $options['arguments'] ?? [];
         }
 
-        foreach ($options as &$option) {
-            if (preg_match('#[\&\||<|>;]#iS', (string) $option)) {
+        foreach ([$cmd, ...$args] as &$value) {
+            if (!is_scalar($value)) {
+                throw new RuntimeException('composer action and arguments must be scalars values');
+            }
+
+            if (preg_match('#[\&\||<|>;]#S', (string) $value)) {
                 throw new RuntimeException('Pipe and redirection are forbidden');
             }
         }
 
-        if (!isset($grantedCommands[$cmd = reset($options)])) {
+        if (!isset($grantedCommands[$cmd])) {
             throw new RuntimeException("$cmd is forbidden");
         }
+
+        $final = [$cmd];
+        foreach ($args as &$arg) {
+            $pattern = '#^' . implode('|', $grantedCommands[$cmd]) . '$#S';
+            if (!preg_match($pattern, (string) $arg)) {
+                throw new RuntimeException("$arg is not a granted option for $cmd");
+            }
+
+            $final[] = ' --' . $arg;
+        }
+
+        return $final;
     }
 
     /**
-     * @param array<string, scalar> $options
+     * @param array{action?: string|null, arguments?: iterable<string>} $options
      */
     public function setOptions(array $options, PromiseInterface $promise): HookInterface
     {

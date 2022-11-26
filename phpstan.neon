@@ -17,6 +17,9 @@ parameters:
             message: '#CloningAgent::\$sshIdentity#'
             path: infrastructures/Git/CloningAgent.php
         -
+            message: '#Cannot cast iterable#'
+            path: infrastructures/Composer/ComposerHook.php
+        -
             message: '#mixed#'
             path: infrastructures/Kubernetes/Transcriber/ReplicaSetTranscriber.php
         -

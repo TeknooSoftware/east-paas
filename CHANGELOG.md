@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.123] - 2022-11-26
+### Dev Release
+- Composer hook can accept `action` and `arguments` keys as option instead of directly `action` value to pass some
+  arguments to composer
+- Improve checks about command passed to `composer`
+
 ## [0.0.122] - 2022-11-25
 ### Dev Release
 - Update symfony configuration for behat

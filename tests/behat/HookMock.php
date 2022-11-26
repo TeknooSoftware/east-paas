@@ -8,6 +8,11 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 class HookMock implements HookInterface {
+    public function __construct(
+        public array $options = [],
+    ) {
+    }
+
     public function setPath(string $path): HookInterface
     {
         return $this;
@@ -18,6 +23,7 @@ class HookMock implements HookInterface {
      */
     public function setOptions(array $options, PromiseInterface $promise): HookInterface
     {
+        $this->options = $options;
         $promise->success();
         return $this;
     }

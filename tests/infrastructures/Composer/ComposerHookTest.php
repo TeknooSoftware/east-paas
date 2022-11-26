@@ -93,7 +93,43 @@ class ComposerHookTest extends TestCase
 
         self::assertInstanceOf(
             ComposerHook::class,
-            $this->buildHook()->setOptions(['install', '||', 'rm', '-r', '/'], $promise)
+            $this->buildHook()->setOptions(['install || rm -r /'], $promise)
+        );
+    }
+
+    public function testSetOptionsWithAnd()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook()->setOptions(['install && rm -r /'], $promise)
+        );
+    }
+
+    public function testSetOptionsWithPipeInArguments()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['--no-dev || rm -r /']], $promise)
+        );
+    }
+
+    public function testSetOptionsWithAndInArguments()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['--no-dev && rm -r /']], $promise)
         );
     }
 
@@ -118,6 +154,42 @@ class ComposerHookTest extends TestCase
         self::assertInstanceOf(
             ComposerHook::class,
             $this->buildHook()->setOptions(['install'], $promise)
+        );
+    }
+
+    public function testSetOptionsWithAction()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::any())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook()->setOptions(['action' => 'install'], $promise)
+        );
+    }
+
+    public function testSetOptionsWithActionAndArguments()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::any())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['prefer-install']], $promise)
+        );
+    }
+
+    public function testSetOptionsWithActionAndForbiddenArguments()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['foo']], $promise)
         );
     }
 
