@@ -1044,7 +1044,7 @@ pods:
             KEY2: 'map-vault.key2'
           import-secrets:
             - 'map-vault2'
-  demo-pods:
+  demo:
     replicas: 1
     containers:
       nginx:
@@ -1071,8 +1071,7 @@ services:
     ports:
       - listen: 9876 #Port listened
         target: 8080 #Pod's port targeted
-  demo-service: #Service name
-    pod: "demo-pods" #Pod name, use service name by default
+  demo: #Service name
     ports:
       - listen: 8080 #Port listened
         target: 8080 #Pod's port targeted
@@ -1084,7 +1083,7 @@ ingresses:
     tls:
       secret: "demo_vault" #Configure the orchestrator to fetch value from vault
     service: #default service
-      name: demo-service
+      name: demo
       port: 8080
     paths:
       - path: /php
@@ -1657,10 +1656,10 @@ EOF;
         },
         {
             "metadata": {
-                "name": "demo-pods-ctrl-v1",
+                "name": "demo-ctrl-v1",
                 "namespace": "test",
                 "labels": {
-                    "name": "demo-pods"
+                    "name": "demo"
                 },
                 "annotations": {
                     "teknoo.space.version": "v1"
@@ -1670,16 +1669,16 @@ EOF;
                 "replicas": 1,
                 "selector": {
                     "matchLabels": {
-                        "vname": "demo-pods-v1"
+                        "vname": "demo-v1"
                     }
                 },
                 "template": {
                     "metadata": {
-                        "name": "demo-pods-pod",
+                        "name": "demo-pod",
                         "namespace": "test",
                         "labels": {
-                            "name": "demo-pods",
-                            "vname": "demo-pods-v1"
+                            "name": "demo",
+                            "vname": "demo-v1"
                         }
                     },
                     "spec": {
@@ -1734,20 +1733,20 @@ EOF;
         },
         {
             "metadata": {
-                "name": "demo-service-service",
+                "name": "demo-service",
                 "namespace": "test",
                 "labels": {
-                    "name": "demo-service"
+                    "name": "demo"
                 }
             },
             "spec": {
                 "selector": {
-                    "name": "demo-pods"
+                    "name": "demo"
                 },
                 "type": "LoadBalancer",
                 "ports": [
                     {
-                        "name": "demo-service-8080",
+                        "name": "demo-8080",
                         "protocol": "TCP",
                         "port": 8080,
                         "targetPort": 8080
@@ -1779,7 +1778,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "demo-service-service",
+                                            "name": "demo-service",
                                             "port": {
                                                 "number": 8080
                                             }

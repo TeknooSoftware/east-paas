@@ -222,7 +222,7 @@
 
   <xs:complexType name="service_node">
     <xs:all>
-      <xs:element name="pod" type="xs:string" />
+      <xs:element name="pod" type="xs:string" minOccurs="0"/>
       <xs:element name="internal" type="xs:boolean" default="false" minOccurs="0"/>
       <xs:element name="protocol" type="xs:string" minOccurs="0"/>
       <xs:element name="ports">

@@ -254,9 +254,9 @@ return static function (bool $hnc): CompiledDeployment {
     );
 
     $cd->addPod(
-        name: 'demo-pods',
+        name: 'demo',
         pod: new CompiledDeployment\Pod(
-            name: 'demo-pods',
+            name: 'demo',
             replicas: 1,
             containers: [
                 new CompiledDeployment\Container(
@@ -287,10 +287,10 @@ return static function (bool $hnc): CompiledDeployment {
     );
 
     $cd->addService(
-        name: 'demo-service',
+        name: 'demo',
         service: new CompiledDeployment\Expose\Service(
-            name: 'demo-service',
-            podName: 'demo-pods',
+            name: 'demo',
+            podName: 'demo',
             ports: [
                 8080 => 8080,
             ],
@@ -305,7 +305,7 @@ return static function (bool $hnc): CompiledDeployment {
             name: 'demo',
             host: 'demo-paas.teknoo.software',
             provider: null,
-            defaultServiceName: 'demo-service',
+            defaultServiceName: 'demo',
             defaultServicePort: 8080,
             paths: [
                 new CompiledDeployment\Expose\IngressPath(
