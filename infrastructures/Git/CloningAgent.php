@@ -140,8 +140,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
 
         $isHttp = str_starts_with($repository->getPullUrl(), 'http');
         if (
-            ($isHttp && null !== $identity)
-            || (!$isHttp && !$identity instanceof SshIdentity)
+            (!$isHttp && !$identity instanceof SshIdentity)
         ) {
             throw new LogicException(
                 sprintf(
