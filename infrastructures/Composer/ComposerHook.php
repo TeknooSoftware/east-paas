@@ -190,6 +190,11 @@ class ComposerHook implements HookInterface
     {
         try {
             $this->options = $this->validateOptions($options);
+
+            if (!empty($options['path'])) {
+                $this->path .= "/{$options['path']}";
+            }
+
         } catch (Throwable $error) {
             $promise->fail($error);
 
