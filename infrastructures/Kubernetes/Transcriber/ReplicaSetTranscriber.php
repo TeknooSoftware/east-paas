@@ -234,6 +234,14 @@ class ReplicaSetTranscriber implements DeploymentInterface
         string $namespace,
         int $version
     ): array {
+        $hostAliases = [
+            'hostnames' => [],
+            'ip' => '127.0.0.1',
+        ];
+        foreach ($pod as $container) {
+            $hostAliases['hostnames'][] = $container->getName();
+        }
+
         $specs = [
             'metadata' => [
                 'name' => $name . self::NAME_SUFFIX . '-v' . $version,
@@ -262,6 +270,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                         ],
                     ],
                     'spec' => [
+                        'hostAliases' => [$hostAliases],
                         'containers' => [],
                     ],
                 ],

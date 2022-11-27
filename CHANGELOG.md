@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.124] - 2022-11-27
+### Dev Release
+- All containers in a pod are directly mapped to localhost as host alias in each container of the pod.
+
 ## [0.0.123] - 2022-11-26
 ### Dev Release
 - Composer hook can accept `action` and `arguments` keys as option instead of directly `action` value to pass some

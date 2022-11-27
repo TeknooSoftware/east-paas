@@ -1526,6 +1526,14 @@ EOF;
                         }
                     },
                     "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "php-run"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
                         "containers": [
                             {
                                 "name": "php-run",
@@ -1675,6 +1683,14 @@ EOF;
                         }
                     },
                     "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "nginx"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
                         "containers": [
                             {
                                 "name": "nginx",
