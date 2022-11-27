@@ -177,7 +177,7 @@ class ComposerHook implements HookInterface
                 throw new RuntimeException("$arg is not a granted option for $cmd");
             }
 
-            $final[] = ' --' . $arg;
+            $final[] = '--' . $arg;
         }
 
         return $final;
