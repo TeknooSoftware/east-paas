@@ -49,8 +49,6 @@ use function reset;
  * - run-script
  * - update
  * - upgrade
- * - self-update
- * - selfupdate
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -62,7 +60,9 @@ class ComposerHook implements HookInterface
      */
     private $factory;
 
-    private ?string $path = null;
+    private ?string $path = '';
+
+    private string $localPath = '';
 
     /**
      * @var array<string, mixed>
@@ -192,7 +192,7 @@ class ComposerHook implements HookInterface
             $this->options = $this->validateOptions($options);
 
             if (!empty($options['path'])) {
-                $this->path .= "/{$options['path']}";
+                $this->localPath = "/{$options['path']}";
             }
 
         } catch (Throwable $error) {
@@ -208,7 +208,7 @@ class ComposerHook implements HookInterface
 
     public function run(PromiseInterface $promise): HookInterface
     {
-        $command = ($this->factory)([$this->binary, ...$this->options], $this->path);
+        $command = ($this->factory)([$this->binary, ...$this->options], $this->path . $this->localPath);
         if (!$command instanceof Process) {
             $promise->fail(new RuntimeException('Bad process manager'));
 
