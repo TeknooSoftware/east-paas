@@ -189,9 +189,7 @@ class ComposerHook implements HookInterface
     public function setOptions(array $options, PromiseInterface $promise): HookInterface
     {
         try {
-            $this->validateOptions($options);
-
-            $this->options = $options;
+            $this->options = $this->validateOptions($options);
         } catch (Throwable $error) {
             $promise->fail($error);
 
