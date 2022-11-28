@@ -184,7 +184,7 @@ class ComposerHook implements HookInterface
     }
 
     /**
-     * @param array{action?: string|null, arguments?: iterable<string>} $options
+     * @param array{action?: string|null, path?:string, arguments?: iterable<string>} $options
      */
     public function setOptions(array $options, PromiseInterface $promise): HookInterface
     {
@@ -194,7 +194,6 @@ class ComposerHook implements HookInterface
             if (!empty($options['path'])) {
                 $this->localPath = $options['path'];
             }
-
         } catch (Throwable $error) {
             $promise->fail($error);
 

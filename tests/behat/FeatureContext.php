@@ -1743,7 +1743,7 @@ EOF;
                 "selector": {
                     "name": "demo"
                 },
-                "type": "LoadBalancer",
+                "type": "ClusterIP",
                 "ports": [
                     {
                         "name": "demo-8080",

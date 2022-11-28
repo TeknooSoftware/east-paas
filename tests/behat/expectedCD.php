@@ -295,7 +295,7 @@ return static function (bool $hnc): CompiledDeployment {
                 8080 => 8080,
             ],
             protocol: CompiledDeployment\Expose\Transport::Tcp,
-            internal: false,
+            internal: true,
         )
     );
 

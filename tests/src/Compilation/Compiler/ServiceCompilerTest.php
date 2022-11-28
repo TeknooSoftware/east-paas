@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -48,6 +49,16 @@ class ServiceCompilerTest extends TestCase
     {
         return [
             'php-react' => [
+                'internal' => false,
+                'ports' => [
+                    [
+                        'listen' => 80,
+                        'target' => 8080,
+                    ],
+                ],
+            ],
+            'php-internal' => [
+                'internal' => true,
                 'ports' => [
                     [
                         'listen' => 80,
@@ -60,8 +71,8 @@ class ServiceCompilerTest extends TestCase
                 'protocol' => Transport::Udp->value,
                 'ports' => [
                     [
-                        'listen' => 80,
-                        'target' => 8080,
+                        'listen' => 81,
+                        'target' => 8181,
                     ],
                 ],
             ],
@@ -92,7 +103,42 @@ class ServiceCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(2))->method('addService');
+        $compiledDeployment
+            ->expects(self::exactly(3))
+            ->method('addService')
+            ->withConsecutive(
+                [
+                    'php-react',
+                    new Service(
+                        'php-react',
+                        'php-react',
+                        [80 => 8080],
+                        Transport::Tcp,
+                        false,
+                    ),
+                ],
+                [
+                    'php-internal',
+                    new Service(
+                        'php-internal',
+                        'php-internal',
+                        [80 => 8080],
+                        Transport::Tcp,
+                        true,
+                    ),
+                ],
+                [
+                    'php-udp',
+                    new Service(
+                        'php-udp',
+                        'php-react',
+                        [81 => 8181],
+                        Transport::Udp,
+                        true,
+                    ),
+                ],
+            )
+        ;
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class );

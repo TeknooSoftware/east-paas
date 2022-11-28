@@ -70,7 +70,7 @@ class ServiceCompiler implements CompilerInterface
                     $config[self::KEY_POD_NAME] ?? $name,
                     $ports,
                     Transport::from($config[self::KEY_PROTOCOL] ?? Transport::Tcp->value),
-                    !empty($config[self::KEY_INTERNAL])
+                    !isset($config[self::KEY_INTERNAL]) || !empty($config[self::KEY_INTERNAL])
                 )
             );
         }
