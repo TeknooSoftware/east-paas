@@ -133,7 +133,7 @@ class Running implements StateInterface
             if (!empty($writables)) {
                 $spl = ' ; \ ' . PHP_EOL . 'chmod o+w ' ;
                 $output .= 'USER root:root'. PHP_EOL;
-                $output .= "RUN chmod o+w " . implode($spl, $writables) . PHP_EOL;
+                $output .= "RUN chmod a+w " . implode($spl, $writables) . PHP_EOL;
                 $output .= 'USER 1000:1000'. PHP_EOL;
             }
 
