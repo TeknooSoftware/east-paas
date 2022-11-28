@@ -286,7 +286,7 @@ return [
     DeserializeJob::class => static function (ContainerInterface $container): DeserializeJob {
         return new DeserializeJob(
             $container->get(DeserializerInterface::class),
-            $_ENV + $container->get('teknoo.east.paas.worker.global_variables'),
+            $container->get('teknoo.east.paas.worker.global_variables'),
         );
     },
     GetJob::class => create()
