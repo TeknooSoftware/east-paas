@@ -192,7 +192,7 @@ class ComposerHook implements HookInterface
             $this->options = $this->validateOptions($options);
 
             if (!empty($options['path'])) {
-                $this->localPath = "/{$options['path']}";
+                $this->localPath = $options['path'];
             }
 
         } catch (Throwable $error) {
@@ -215,6 +215,7 @@ class ComposerHook implements HookInterface
             return $this;
         }
 
+        $command->setIdleTimeout(0);
         $command->run();
 
         if ($command->isSuccessful()) {
