@@ -62,7 +62,8 @@ class IngressTranscriberTest extends TestCase
                         'sr1',
                         80,
                         [],
-                        null
+                        null,
+                        false
                     ),
                     'default_namespace'
                 );
@@ -76,7 +77,8 @@ class IngressTranscriberTest extends TestCase
                         [
                             new IngressPath('/foo', 'sr2', 90)
                         ],
-                        'cert'
+                        'cert',
+                        true
                     ),
                     'default_namespace'
                 );
@@ -134,7 +136,8 @@ class IngressTranscriberTest extends TestCase
                         'sr1',
                         80,
                         [],
-                        null
+                        null,
+                        false
                     ),
                     'default_namespace'
                 );
@@ -148,7 +151,8 @@ class IngressTranscriberTest extends TestCase
                         [
                             new IngressPath('/foo', 'sr2', 90)
                         ],
-                        'cert'
+                        'cert',
+                        true
                     ),
                     'default_namespace'
                 );

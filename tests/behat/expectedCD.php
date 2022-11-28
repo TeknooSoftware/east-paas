@@ -265,6 +265,7 @@ return static function (bool $hnc): CompiledDeployment {
                     version: 'alpine',
                     listen: [
                         8080,
+                        8181,
                     ],
                     volumes: [],
                     variables: [],
@@ -293,6 +294,7 @@ return static function (bool $hnc): CompiledDeployment {
             podName: 'demo',
             ports: [
                 8080 => 8080,
+                8181 => 8181,
             ],
             protocol: CompiledDeployment\Expose\Transport::Tcp,
             internal: true,
@@ -315,6 +317,21 @@ return static function (bool $hnc): CompiledDeployment {
                 ),
             ],
             tlsSecret: 'demo_vault',
+            httpsBackend: false,
+        )
+    );
+
+    $cd->addIngress(
+        name: 'demo-secure',
+        ingress: new CompiledDeployment\Expose\Ingress(
+            name: 'demo-secure',
+            host: 'demo-secure.teknoo.software',
+            provider: null,
+            defaultServiceName: 'demo',
+            defaultServicePort: 8181,
+            paths: [],
+            tlsSecret: 'demo_vault',
+            httpsBackend: true,
         )
     );
 

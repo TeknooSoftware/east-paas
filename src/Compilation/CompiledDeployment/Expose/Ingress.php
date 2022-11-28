@@ -49,7 +49,8 @@ class Ingress implements ImmutableInterface
         private readonly ?string $defaultServiceName,
         private readonly ?int $defaultServicePort,
         private readonly array $paths,
-        private readonly ?string $tlsSecret
+        private readonly ?string $tlsSecret,
+        private readonly bool $httpsBackend,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -90,5 +91,10 @@ class Ingress implements ImmutableInterface
     public function getTlsSecret(): ?string
     {
         return $this->tlsSecret;
+    }
+
+    public function isHttpsBackend(): bool
+    {
+        return $this->httpsBackend;
     }
 }

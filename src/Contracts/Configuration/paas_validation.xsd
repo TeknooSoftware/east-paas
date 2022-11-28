@@ -271,6 +271,7 @@
   <xs:complexType name="ingress_node">
     <xs:all>
       <xs:element name="host" type="xs:string" />
+      <xs:element name="https-backend" type="xs:boolean" minOccurs="0" />
       <xs:element name="tls" type="epv:ingress_tls" />
       <xs:element name="service" type="epv:ingress_service" minOccurs="0" />
       <xs:element name="paths" type="epv:ingress_paths" minOccurs="0" />

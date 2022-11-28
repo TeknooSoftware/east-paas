@@ -66,6 +66,27 @@ class IngressCompilerTest extends TestCase
                     ],
                 ],
             ],
+            'demo-secure' => [
+                'host' => 'demo-paas.teknoo.software',
+                'https-backend' => true,
+                'tls' => [
+                    'cert' => 'foo',
+                    'key' => 'bar',
+                ],
+                'service' => [
+                    'name' => 'php-react',
+                    'port' => 80
+                ],
+                'paths' => [
+                    [
+                        'path' => '/demo',
+                        'service' => [
+                            'name' => 'php-udp',
+                            'port' => 8080,
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -93,7 +114,7 @@ class IngressCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::once())->method('addIngress');
+        $compiledDeployment->expects(self::exactly(2))->method('addIngress');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
@@ -118,7 +139,7 @@ class IngressCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::once())->method('addIngress');
+        $compiledDeployment->expects(self::exactly(2))->method('addIngress');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 

@@ -72,6 +72,7 @@ class YamlValidator
         'path',
         'host',
         'tls',
+        'https-backend',
         'provider',
         'secret',
         'service',

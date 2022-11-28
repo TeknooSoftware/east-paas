@@ -125,6 +125,10 @@ class IngressTranscriber implements ExposingInterface
             $specs['metadata']['annotations']['kubernetes.io/ingress.class'] = $provider;
         }
 
+        if ($ingress->isHttpsBackend()) {
+            $specs['metadata']['annotations']['nginx.ingress.kubernetes.io/backend-protocol'] = 'HTTPS';
+        }
+
         if (null !== $defaultIngressService && null !== $defaultIngressPort) {
             $specs['spec']['defaultBackend']['service'] = [
                 'name' => $defaultIngressService,

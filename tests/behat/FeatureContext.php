@@ -1052,6 +1052,7 @@ pods:
         version: alpine
         listen: #Port listen by the container
           - 8080
+          - 8181
         volumes:
           www:
             mount-path: '/var'
@@ -1075,6 +1076,8 @@ services:
     ports:
       - listen: 8080 #Port listened
         target: 8080 #Pod's port targeted
+      - listen: 8181 #Port listened
+        target: 8181 #Pod's port targeted
 
 #Ingresses configuration
 ingresses:
@@ -1090,6 +1093,14 @@ ingresses:
         service:
           name: php-service
           port: 9876
+  demo-secure: #rule name
+    host: demo-secure.teknoo.software
+    https-backend: true
+    tls:
+      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+    service: #default service
+      name: demo
+      port: 8181
 
 EOF;
 
@@ -1698,6 +1709,9 @@ EOF;
                                 "ports": [
                                     {
                                         "containerPort": 8080
+                                    },
+                                    {
+                                        "containerPort": 8181
                                     }
                                 ]
                             }
@@ -1750,6 +1764,12 @@ EOF;
                         "protocol": "TCP",
                         "port": 8080,
                         "targetPort": 8080
+                    },
+                    {
+                        "name": "demo-8181",
+                        "protocol": "TCP",
+                        "port": 8181,
+                        "targetPort": 8181
                     }
                 ]
             }
@@ -1805,6 +1825,50 @@ EOF;
                     {
                         "hosts": [
                             "demo-paas.teknoo.software"
+                        ],
+                        "secretName": "demo_vault-secret"
+                    }
+                ]
+            }
+        },
+        {
+            "metadata": {
+                "name": "demo-secure-ingress",
+                "namespace": "test",
+                "labels": {
+                    "name": "demo-secure"
+                },
+                "annotations": {
+                    "foo": "bar",
+                    "nginx.ingress.kubernetes.io\/backend-protocol": "HTTPS"
+                }
+            },
+            "spec": {
+                "rules": [
+                    {
+                        "host": "demo-secure.teknoo.software",
+                        "http": {
+                            "paths": [
+                                {
+                                    "path": "\/",
+                                    "pathType": "Prefix",
+                                    "backend": {
+                                        "service": {
+                                            "name": "demo-service",
+                                            "port": {
+                                                "number": 8181
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "tls": [
+                    {
+                        "hosts": [
+                            "demo-secure.teknoo.software"
                         ],
                         "secretName": "demo_vault-secret"
                     }

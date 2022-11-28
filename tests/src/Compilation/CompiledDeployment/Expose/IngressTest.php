@@ -47,7 +47,8 @@ class IngressTest extends TestCase
             [
                 new IngressPath('/foo', 'bar', 80)
             ],
-            'fooSecret'
+            'fooSecret',
+            true
         );
     }
 
@@ -106,6 +107,26 @@ class IngressTest extends TestCase
         self::assertEquals(
             'fooSecret',
             $this->buildObject()->getTlsSecret()
+        );
+    }
+
+    public function testIsHttpsBackend()
+    {
+        self::assertTrue($this->buildObject()->isHttpsBackend());
+
+        self::assertFalse(
+            (new Ingress(
+                'foo',
+                'bar.com',
+                'providerName',
+                'bar',
+                8080,
+                [
+                    new IngressPath('/foo', 'bar', 80)
+                ],
+                'fooSecret',
+                false,
+            ))->isHttpsBackend()
         );
     }
 }

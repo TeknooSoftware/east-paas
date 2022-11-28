@@ -50,6 +50,7 @@ class IngressCompiler implements CompilerInterface
     private const KEY_PORT = 'port';
     private const KEY_PATHS = 'paths';
     private const KEY_PATH = 'path';
+    private const KEY_HTTPS_BACKEND = 'https-backend';
 
     public function compile(
         array &$definitions,
@@ -84,7 +85,8 @@ class IngressCompiler implements CompilerInterface
                     $config[self::KEY_SERVICE][self::KEY_SERVICE_NAME] ?? null,
                     $port,
                     $paths,
-                    $config[self::KEY_TLS][self::KEY_SECRET] ?? null
+                    $config[self::KEY_TLS][self::KEY_SECRET] ?? null,
+                    !empty($config[self::KEY_HTTPS_BACKEND]),
                 )
             );
         }
