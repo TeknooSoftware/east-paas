@@ -1019,10 +1019,13 @@ pods:
             mount-path: '/opt/app' #Path where data will be stored
             add: #folder or file, from .paas.yaml where is located to add to the volume
               - 'src'
+              - 'var'
               - 'vendor'
               - 'composer.json'
               - 'composer.lock'
               - 'composer.phar'
+            writables:
+              - 'var/*'
           data: #Persistent volume, can not be pre-populated
             mount-path: '/opt/data'
             persistent: true

@@ -264,7 +264,7 @@ class ImageWrapperTest extends TestCase
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $volumes = [
                     new PersistentVolume('v!', '/bar', 'pv'),
-                    new Volume('v!', ['/bar'], '/volume', '/mount'),
+                    new Volume('v!', ['/bar'], '/volume', '/mount', ['/var*'], true),
                 ];
                 $image2 = new EmbeddedVolumeImage('bar1', 'bar', 'bar', $volumes);
 

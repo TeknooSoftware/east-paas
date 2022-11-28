@@ -93,6 +93,7 @@ return static function (bool $hnc): CompiledDeployment {
                     name: 'app',
                     paths: [
                         'src',
+                        'var',
                         'vendor',
                         'composer.json',
                         'composer.lock',
@@ -100,6 +101,9 @@ return static function (bool $hnc): CompiledDeployment {
                     ],
                     localPath: '/volume',
                     mountPath: '/opt/app',
+                    writables: [
+                        'var/*',
+                    ],
                     isEmbedded: true,
                 ),
             ],

@@ -95,6 +95,7 @@ class YamlValidator
         'storage-provider',
         'storage-size',
         'add',
+        'writables',
         'image',
         'latest',
         'listen',

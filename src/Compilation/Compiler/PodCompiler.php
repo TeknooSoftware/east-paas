@@ -75,6 +75,7 @@ class PodCompiler implements CompilerInterface
     private const KEY_STORAGE_IDENTIFIER = 'storage-provider';
     private const KEY_STORAGE_SIZE = 'storage-size';
     private const KEY_ADD = 'add';
+    private const KEY_WRITABLES = 'writables';
     private const KEY_IMAGE = 'image';
     private const KEY_VERSION = 'version';
     private const KEY_LISTEN = 'listen';
@@ -154,11 +155,12 @@ class PodCompiler implements CompilerInterface
         array &$volumeDefinition
     ): Volume {
         return new Volume(
-            $volumeName,
-            $volumeDefinition[self::KEY_ADD],
-            self::VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME,
-            $mountPath,
-            true
+            name: $volumeName,
+            paths: $volumeDefinition[self::KEY_ADD],
+            localPath: self::VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME,
+            mountPath: $mountPath,
+            writables: $volumeDefinition[self::KEY_WRITABLES] ?? [],
+            isEmbedded: true
         );
     }
 

@@ -47,12 +47,14 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
 
     /**
      * @param string[] $paths
+     * @param string[] $writables
      */
     public function __construct(
         private readonly string $name,
         private readonly array $paths,
         private readonly string $localPath,
         private string $mountPath,
+        private readonly array $writables = [],
         private readonly bool $isEmbedded = false
     ) {
         $this->uniqueConstructorCheck();
@@ -69,6 +71,14 @@ class Volume implements ImmutableInterface, RegistrableInterface, PopulatedVolum
     public function getPaths(): array
     {
         return $this->paths;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getWritables(): array
+    {
+        return $this->writables;
     }
 
     public function getLocalPath(): string

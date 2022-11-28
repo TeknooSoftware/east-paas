@@ -159,6 +159,8 @@ pods:
             mount-path: '/var'
             add:
               - 'nginx/www'
+            writables:
+              - 'var/*'
           config:
             mount-path: '/etc/nginx/conf.d/'
             add:
@@ -183,6 +185,7 @@ services:
 ingresses:
   demo: #rule name
     host: ${PROJECT_URL}
+    https-backend: true
     tls:
       secret: "tls-vault" #Configure the orchestrator to fetch value from vault
     service: #default service

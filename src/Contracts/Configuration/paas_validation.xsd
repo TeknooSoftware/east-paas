@@ -151,6 +151,7 @@
     <xs:all>
       <xs:element name="mount-path" type="xs:string" />
       <xs:element name="add" type="epv:rows_list_string"/>
+      <xs:element name="writables" type="epv:rows_list_string" minOccurs="0"/>
     </xs:all>
     <xs:attribute name="name" type="xs:NMTOKEN" />
   </xs:complexType>

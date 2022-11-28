@@ -123,11 +123,16 @@ class Running implements StateInterface
 
     private function generateDockerFile(): Closure
     {
-        return function (string $fromImage, array $paths, ?string $command = null): string {
+        return function (string $fromImage, array $paths, array $writables = [], ?string $command = null): string {
             $output = "FROM $fromImage" . PHP_EOL;
 
             foreach ($paths as $sourcePath => $localPath) {
                 $output .= "COPY $sourcePath $localPath" . PHP_EOL;
+            }
+
+            if (!empty($writables)) {
+                $spl = ' ; \ ' . PHP_EOL . 'chmod o+w ' ;
+                $output .= "RUN chmod o+w " . implode($spl, $writables) . PHP_EOL;
             }
 
             if (!empty($command)) {

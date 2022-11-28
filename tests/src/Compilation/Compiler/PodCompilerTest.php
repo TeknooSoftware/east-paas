@@ -103,7 +103,16 @@ class PodCompilerTest extends TestCase
                                     'foo',
                                     'bar',
                                 ],
+                                'writables' => [
+                                    'bar/*',
+                                ],
                                 'mount-path' => '/app/embedded/',
+                            ],
+                            'embedded2' => [
+                                'add' => [
+                                    'foo',
+                                ],
+                                'mount-path' => '/app/embedded2/',
                             ],
                             'other_name2' => [
                                 'from' => 'main',

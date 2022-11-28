@@ -180,6 +180,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
 
                 if ($newImage instanceof EmbeddedVolumeImage) {
                     $paths = [];
+                    $writables = [];
                     foreach ($newImage->getVolumes() as $volume) {
                         if (
                             $volume instanceof PersistentVolumeInterface
@@ -188,19 +189,26 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                             continue;
                         }
 
+                        $mP = rtrim($volume->getMountPath(), '/');
                         foreach ($volume->getPaths() as $path) {
                             $parts = explode('/', rtrim($path, '/'));
                             $dest = '';
                             if (count($parts) > 1) {
                                 $dest = array_pop($parts);
                             }
-                            $paths[$path] = rtrim($volume->getMountPath(), '/') . '/' . $dest;
+                            $paths[$path] = $mP . '/' . $dest;
+                        }
+
+                        $writables = [];
+                        foreach ($volume->getWritables() as $path) {
+                            $writables[] = $mP . '/' . $path;
                         }
                     }
 
                     $variables['PAAS_DOCKERFILE_CONTENT'] = $this->generateDockerFile(
-                        $newImage->getOriginalName() . ':' . $newImage->getTag(),
-                        $paths
+                        fromImage: $newImage->getOriginalName() . ':' . $newImage->getTag(),
+                        paths: $paths,
+                        writables: $writables,
                     );
                 }
 
@@ -244,21 +252,22 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                 $process->setInput($script);
 
                 $paths = [];
+                $lP = rtrim($volumeUpdated->getLocalPath(), '/');
                 foreach ($volumeUpdated->getPaths() as $path) {
                     $parts = explode('/', rtrim($path, '/'));
                     $dest = '';
                     if (count($parts) > 1) {
                         $dest = array_pop($parts);
                     }
-                    $paths[$path] = rtrim($volumeUpdated->getLocalPath(), '/') . '/' . $dest;
+                    $paths[$path] = $lP . '/' . $dest;
                 }
 
                 $variables = [
                     'PAAS_IMAGE_PLATFORM' => $this->platforms,
                     'PAAS_DOCKERFILE_CONTENT' => $this->generateDockerFile(
-                        'alpine:latest',
-                        $paths,
-                        'cp -rf ' . $volumeUpdated->getLocalPath()
+                        fromImage: 'alpine:latest',
+                        paths: $paths,
+                        command: 'cp -rf ' . $volumeUpdated->getLocalPath()
                             . '/. '
                             . $volumeUpdated->getMountPath(),
                     ),

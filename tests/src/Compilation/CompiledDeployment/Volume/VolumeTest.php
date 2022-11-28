@@ -37,7 +37,7 @@ class VolumeTest extends TestCase
 {
     private function buildObject(): Volume
     {
-        return new Volume('foo', ['foo', 'bar'], 'bar', '/mount');
+        return new Volume('foo', ['foo', 'bar'], 'bar', '/mount', ['bar']);
     }
 
     public function testGetName()
@@ -88,6 +88,15 @@ class VolumeTest extends TestCase
         );
     }
 
+
+    public function testGetWritable()
+    {
+        self::assertEquals(
+            ['bar'],
+            $this->buildObject()->getWritables()
+        );
+    }
+
     public function testIsEmbedded()
     {
         self::assertFalse(
@@ -95,7 +104,7 @@ class VolumeTest extends TestCase
         );
 
         self::assertTrue(
-            (new Volume('foo', ['foo', 'bar'], 'bar', 'mount', true))->isEmbedded()
+            (new Volume('foo', ['foo', 'bar'], 'bar', 'mount', [], true))->isEmbedded()
         );
     }
 
