@@ -58,27 +58,6 @@ class ConfigMapTranscriber implements DeploymentInterface
     }
 
     /**
-     * @param string|array<string|int, mixed> $value
-     * @return string|array<string|int, mixed>
-     */
-    protected static function encode(int | string | array $value): string | array
-    {
-        if (is_array($value)) {
-            foreach ($value as $key => &$subValue) {
-                $subValue = self::encode($subValue);
-            }
-
-            return $value;
-        }
-
-        if (!is_string($value) || !self::isValid64($value)) {
-            return base64_encode((string) $value);
-        }
-
-        return substr($value, strlen(self::BASE64_PREFIX));
-    }
-
-    /**
      * @return array<string, mixed>
      */
     protected static function writeSpec(Map $configMap, string $namespace): array
@@ -91,7 +70,7 @@ class ConfigMapTranscriber implements DeploymentInterface
                     'name' => $configMap->getName(),
                 ],
             ],
-            'data' => self::encode($configMap->getOptions()),
+            'data' => $configMap->getOptions(),
         ];
     }
 

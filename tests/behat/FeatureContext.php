@@ -1456,8 +1456,8 @@ EOF;
                 }
             },
             "data": {
-                "key1": "dmFsdWUx",
-                "key2": "Zm9v"
+                "key1": "value1",
+                "key2": "foo"
             }
         },
         {
@@ -1469,8 +1469,8 @@ EOF;
                 }
             },
             "data": {
-                "foo": "YmFy",
-                "bar": "Zm9v"
+                "foo": "bar",
+                "bar": "foo"
             }
         }
     ],
