@@ -49,13 +49,7 @@ use function substr;
  */
 class ConfigMapTranscriber implements DeploymentInterface
 {
-    private const BASE64_PREFIX = 'base64:';
     private const NAME_SUFFIX = '-map';
-
-    public static function isValid64(string $value): bool
-    {
-        return str_starts_with($value, self::BASE64_PREFIX);
-    }
 
     /**
      * @return array<string, mixed>

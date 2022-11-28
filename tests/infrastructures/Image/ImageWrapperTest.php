@@ -412,7 +412,7 @@ class ImageWrapperTest extends TestCase
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
-                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
+                $volume2 = new Volume('bar1', ['bar' => 'foo/bar'], '/bar', '/mount');
 
                 $callback('foo', $volume1);
                 $callback('bar', $volume2);

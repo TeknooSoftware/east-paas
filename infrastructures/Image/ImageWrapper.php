@@ -47,6 +47,7 @@ use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
 
 use function array_pop;
+use function count;
 use function explode;
 use function rtrim;
 use function uniqid;
@@ -189,7 +190,11 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
 
                         foreach ($volume->getPaths() as $path) {
                             $parts = explode('/', rtrim($path, '/'));
-                            $paths[$path] = rtrim($volume->getMountPath(), '/') . '/' . array_pop($parts);
+                            $dest = '';
+                            if (count($parts) > 1) {
+                                $dest = array_pop($parts);
+                            }
+                            $paths[$path] = rtrim($volume->getMountPath(), '/') . '/' . $dest;
                         }
                     }
 
@@ -241,7 +246,11 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                 $paths = [];
                 foreach ($volumeUpdated->getPaths() as $path) {
                     $parts = explode('/', rtrim($path, '/'));
-                    $paths[$path] = rtrim($volumeUpdated->getLocalPath(), '/') . '/' . array_pop($parts);
+                    $dest = '';
+                    if (count($parts) > 1) {
+                        $dest = array_pop($parts);
+                    }
+                    $paths[$path] = rtrim($volumeUpdated->getLocalPath(), '/') . '/' . $dest;
                 }
 
                 $variables = [
