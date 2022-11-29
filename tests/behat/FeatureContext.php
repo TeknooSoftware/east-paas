@@ -1727,7 +1727,7 @@ EOF;
     "Maclof\\Kubernetes\\Models\\Service": [
         {
             "metadata": {
-                "name": "php-service-service",
+                "name": "php-service",
                 "namespace": "test",
                 "labels": {
                     "name": "php-service"
@@ -1750,7 +1750,7 @@ EOF;
         },
         {
             "metadata": {
-                "name": "demo-service",
+                "name": "demo",
                 "namespace": "test",
                 "labels": {
                     "name": "demo"
@@ -1801,7 +1801,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "demo-service",
+                                            "name": "demo",
                                             "port": {
                                                 "number": 8080
                                             }
@@ -1813,7 +1813,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "php-service-service",
+                                            "name": "php-service",
                                             "port": {
                                                 "number": 9876
                                             }
@@ -1857,7 +1857,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "demo-service",
+                                            "name": "demo",
                                             "port": {
                                                 "number": 8181
                                             }

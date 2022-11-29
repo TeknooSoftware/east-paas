@@ -44,8 +44,6 @@ use function strtolower;
  */
 class ServiceTranscriber implements ExposingInterface
 {
-    public const NAME_SUFFIX = '-service';
-
     /**
      * @return array<string, mixed>
      */
@@ -70,7 +68,7 @@ class ServiceTranscriber implements ExposingInterface
 
         $specs = [
             'metadata' => [
-                'name' => $service->getName() . self::NAME_SUFFIX,
+                'name' => $service->getName(),
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $service->getName(),
@@ -109,7 +107,7 @@ class ServiceTranscriber implements ExposingInterface
                     }
 
                     $serviceRepository = $client->services();
-                    $name = $kubeService->getMetadata('name') ?? $service->getName() . self::NAME_SUFFIX;
+                    $name = $kubeService->getMetadata('name') ?? $service->getName();
                     if ($serviceRepository->exists($name)) {
                         $serviceRepository->delete($kubeService);
                     }
