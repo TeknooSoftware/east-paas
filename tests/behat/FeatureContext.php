@@ -1065,6 +1065,14 @@ pods:
             mount-path: '/etc/nginx/conf.d/'
             add:
               - 'nginx/conf.d/default.conf'
+      blackfire:
+        image: 'blackfire/blackfire'
+        version: '2'
+        listen:
+          - 8307
+        variables:
+          BLACKFIRE_SERVER_ID: 'foo'
+          BLACKFIRE_SERVER_TOKEN: 'bar'
 
 #Pods expositions
 services:
@@ -1699,7 +1707,8 @@ EOF;
                         "hostAliases": [
                             {
                                 "hostnames": [
-                                    "nginx"
+                                    "nginx",
+                                    "blackfire"
                                 ],
                                 "ip": "127.0.0.1"
                             }
@@ -1715,6 +1724,26 @@ EOF;
                                     },
                                     {
                                         "containerPort": 8181
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "blackfire",
+                                "image": "blackfire\/blackfire:2",
+                                "imagePullPolicy": "Always",
+                                "ports": [
+                                    {
+                                        "containerPort": 8307
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "BLACKFIRE_SERVER_ID",
+                                        "value": "foo"
+                                    },
+                                    {
+                                        "name": "BLACKFIRE_SERVER_TOKEN",
+                                        "value": "bar"
                                     }
                                 ]
                             }

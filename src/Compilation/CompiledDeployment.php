@@ -113,14 +113,29 @@ class CompiledDeployment implements CompiledDeploymentInterface
         return $this;
     }
 
-    private function getBuildable(string $url, ?string $tag): BuildableInterface
+    private function hasBuildable(string $url, ?string $tag): bool
     {
         if (empty($tag)) {
             $tag = 'latest';
         }
 
         if (!isset($this->buildables[$url][$tag])) {
-            throw new DomainException("Buildable $url:$tag is not referenced");
+            return false;
+        }
+
+        $value = $this->buildables[$url][$tag];
+
+        if (is_string($value)) {
+            return $this->hasBuildable($value, $tag);
+        }
+
+        return true;
+    }
+
+    private function getBuildable(string $url, ?string $tag): BuildableInterface
+    {
+        if (empty($tag)) {
+            $tag = 'latest';
         }
 
         $value = $this->buildables[$url][$tag];
@@ -166,16 +181,6 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
     public function addPod(string $name, Pod $pod): CompiledDeploymentInterface
     {
-        foreach ($pod as $container) {
-            $buildable = $container->getImage();
-            if (str_contains($buildable, '/')) {
-                //Is an external buildable
-                continue;
-            }
-
-            $this->getBuildable($buildable, $version = $container->getVersion());
-        }
-
         $this->pods[$name] = $pod;
 
         return $this;
@@ -256,10 +261,12 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
                 $processedBuildables[$buildable][$version] = true;
 
-                $callback(
-                    $this->getBuildable($buildable, $version),
-                    $this->namespace
-                );
+                if ($this->hasBuildable($buildable, $version)) {
+                    $callback(
+                        $this->getBuildable($buildable, $version),
+                        $this->namespace
+                    );
+                }
             }
         }
 
@@ -292,12 +299,15 @@ class CompiledDeployment implements CompiledDeploymentInterface
             foreach ($pod as $container) {
                 $imgName = $container->getImage();
                 $imgVersion = $container->getVersion();
-                $buildables[$imgName][$imgVersion] = $this->getBuildable($imgName, $imgVersion);
-                foreach ($container->getVolumes() as $name => $volume) {
-                    if ($volume instanceof PopulatedVolumeInterface) {
-                        $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
-                    } else {
-                        $volumes[$container->getName() . '_' . $name] = $volume;
+
+                if ($this->hasBuildable($imgName, $imgVersion)) {
+                    $buildables[$imgName][$imgVersion] = $this->getBuildable($imgName, $imgVersion);
+                    foreach ($container->getVolumes() as $name => $volume) {
+                        if ($volume instanceof PopulatedVolumeInterface) {
+                            $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
+                        } else {
+                            $volumes[$container->getName() . '_' . $name] = $volume;
+                        }
                     }
                 }
             }

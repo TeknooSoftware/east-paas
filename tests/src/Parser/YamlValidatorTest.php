@@ -72,16 +72,10 @@ secrets:
       hello: world
   volume-vault:
     provider: map
+    type: foo
     options:
       foo: bar
       bar: foo
-  tls-vault:
-    provider: map
-    type: tls
-    options:
-      tls.crt: "${TLS_CERT}"
-      tls.key: "${TLS_KEY}"
-      ca.crt: "${TLS_CA}"
 
 #Custom image, not available in the library
 images:
@@ -91,18 +85,25 @@ images:
     path: '/images/${FOO}'
 
 #Hook to build the project before container, Called in this order
-builds:
+builds:  
   composer-build: #Name of the step
-    composer: ${COMPOSER} #Hook to call
+    composer: 
+      action: install #Hook to call
+      arguments:
+        - 'no-dev'
+        - 'optimize-autoloader'
+        - 'classmap-authoritative'
+  custom-hook:
+    hook-id: foo bar
 
 #Volume to build to use with container
 volumes:
   extra: #Name of the volume
     local-path: "/foo/bar" #optional local path where store data in the volume
-    add: #folder or file, from .paas.yml where is located to add to the volume
+    add: #folder or file, from .paas.yaml where is located to add to the volume
       - 'extra'
   other_name: #Name of the volume
-    add: #folder or file, from .paas.yml where is located to add to the volume
+    add: #folder or file, from .paas.yaml where is located to add to the volume
       - 'vendor'
 
 #Pods (set of container)
@@ -111,8 +112,8 @@ pods:
     replicas: 2 #instance of pods
     containers:
       php-run: #Container name
-        image: ${PHP_IMAGE} #Container image to use
-        version: ${PHP_VERSION}
+        image: registry.teknoo.software/php-run #Container image to use
+        version: 7.4
         listen: #Port listen by the container
           - 8080
         volumes: #Volumes to link
@@ -121,14 +122,19 @@ pods:
             mount-path: '/opt/extra' #Path where volume will be mount
           app:
             mount-path: '/opt/app' #Path where data will be stored
-            add: #folder or file, from .paas.yml where is located to add to the volume
+            add: #folder or file, from .paas.yaml where is located to add to the volume
               - 'src'
+              - 'var'
               - 'vendor'
               - 'composer.json'
               - 'composer.lock'
+              - 'composer.phar'
+            writables:
+              - 'var/*'
           data: #Persistent volume, can not be pre-populated
             mount-path: '/opt/data'
             persistent: true
+            storage-size: 3Gi
           map:
             mount-path: '/map'
             from-map: 'map2'
@@ -139,14 +145,14 @@ pods:
           SERVER_SCRIPT: '/opt/app/src/server.php'
           from-maps:
             KEY0: 'map1.key0'
-          import-maps: 
+          import-maps:
             - 'map2'
           from-secrets: #To fetch some value from secret/vault
             KEY1: 'map-vault.key1'
             KEY2: 'map-vault.key2'
-          import-secrets: 
+          import-secrets:
             - 'map-vault2'
-  demo-pods:
+  demo:
     replicas: 1
     containers:
       nginx:
@@ -154,17 +160,24 @@ pods:
         version: alpine
         listen: #Port listen by the container
           - 8080
+          - 8181
         volumes:
           www:
             mount-path: '/var'
             add:
               - 'nginx/www'
-            writables:
-              - 'var/*'
           config:
             mount-path: '/etc/nginx/conf.d/'
             add:
               - 'nginx/conf.d/default.conf'
+      blackfire:
+        image: 'blackfire/blackfire'
+        version: '2'
+        listen:
+          - 8307
+        variables:
+          BLACKFIRE_SERVER_ID: 'foo'
+          BLACKFIRE_SERVER_TOKEN: 'bar'
 
 #Pods expositions
 services:
@@ -175,27 +188,35 @@ services:
     ports:
       - listen: 9876 #Port listened
         target: 8080 #Pod's port targeted
-  demo-service: #Service name
-    pod: "demo-pods" #Pod name, use service name by default
+  demo: #Service name
     ports:
       - listen: 8080 #Port listened
         target: 8080 #Pod's port targeted
+      - listen: 8181 #Port listened
+        target: 8181 #Pod's port targeted
 
 #Ingresses configuration
 ingresses:
   demo: #rule name
-    host: ${PROJECT_URL}
-    https-backend: true
+    host: demo-paas.teknoo.software
     tls:
-      secret: "tls-vault" #Configure the orchestrator to fetch value from vault
+      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
     service: #default service
-      name: demo-service
+      name: demo
       port: 8080
     paths:
       - path: /php
         service:
           name: php-service
           port: 9876
+  demo-secure: #rule name
+    host: demo-secure.teknoo.software
+    https-backend: true
+    tls:
+      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+    service: #default service
+      name: demo
+      port: 8181
 
 EOF;
 

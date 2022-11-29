@@ -273,6 +273,18 @@ return static function (bool $hnc): CompiledDeployment {
                     ],
                     volumes: [],
                     variables: [],
+                ),new CompiledDeployment\Container(
+                    name: 'blackfire',
+                    image: 'blackfire/blackfire',
+                    version: '2',
+                    listen: [
+                        8307,
+                    ],
+                    volumes: [],
+                    variables: [
+                        'BLACKFIRE_SERVER_ID' => 'foo',
+                        'BLACKFIRE_SERVER_TOKEN' => 'bar',
+                    ],
                 ),
             ],
         ),

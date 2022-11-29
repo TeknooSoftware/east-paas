@@ -73,10 +73,16 @@ class ReplicaSetTranscriber implements DeploymentInterface
     private static function convertToContainer(array &$specs, Pod $pod, array $images): void
     {
         foreach ($pod as $container) {
-            $image = $images[$container->getImage()][$container->getVersion()];
+            if (isset($images[$container->getImage()][$container->getVersion()])) {
+                $image = $images[$container->getImage()][$container->getVersion()];
+                $imgUrl = $image->getUrl() . ':' . $image->getTag();
+            } else {
+                $imgUrl = $container->getImage() . ':' . $container->getVersion();
+            }
+
             $spec = [
                 'name'  => $container->getName(),
-                'image' => $image->getUrl() . ':' . $image->getTag(),
+                'image' => $imgUrl,
                 'imagePullPolicy' => 'Always',
                 'ports' => array_map(
                     fn ($port) => ['containerPort' => $port,],

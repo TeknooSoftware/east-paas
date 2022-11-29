@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation;
 
+use DomainException;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
@@ -343,17 +344,6 @@ class CompiledDeploymentTest extends TestCase
         $this->buildObject()->addPod(new \stdClass(), $this->createMock(Pod::class));
     }
 
-    public function testAddPodMissingBuildable()
-    {
-        $this->expectException(\DomainException::class);
-
-        $this->buildObject()
-            ->addPod(
-                'foo',
-                new Pod('foo', 1, [new Container('foo', 'bar', '1.2', [80], [], [])])
-            );
-    }
-
     public function testAddPod()
     {
         self::assertInstanceOf(
@@ -586,6 +576,18 @@ class CompiledDeploymentTest extends TestCase
                         'foo1',
                         'foo',
                         '1.2',
+                        [
+                            80
+                        ],
+                        [
+                            'foo' => $foo
+                        ],
+                        []
+                    ),
+                    new Container(
+                        'foo2',
+                        'alpine',
+                        '3.16',
                         [
                             80
                         ],

@@ -91,9 +91,10 @@ class ReplicaSetTranscriberTest extends TestCase
                         'map2' => new MapReference('foo', null, true),
                     ]
                 );
+                $c3 = new Container('c3', 'alpine', '3.16', [8080], [], ['foo' => 'bar', 'bar' => 'foo']);
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2]);
+                $pod2 = new Pod('p2', 1, [$c2, $c3]);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace');
                 $callback(
@@ -106,6 +107,14 @@ class ReplicaSetTranscriberTest extends TestCase
                         'data' => new PersistentVolume('foo', 'bar'),
                         'vault' => new SecretVolume('foo', '/secret', 'bar'),
                         'map' => new MapVolume('bar', '/bar', 'bar'),
+                    ],
+                    'default_namespace'
+                );
+                $callback(
+                    $pod2,
+                    [
+                    ],
+                    [
                     ],
                     'default_namespace'
                 );
@@ -134,21 +143,21 @@ class ReplicaSetTranscriberTest extends TestCase
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $rcRepo->expects(self::exactly(2))
+        $rcRepo->expects(self::exactly(3))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
                 new ReplicaSet(['metadata' => ['name' => 'foo']]),
             );
 
-        $pRepo->expects(self::any(2))
+        $pRepo->expects(self::any(3))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 new \Maclof\Kubernetes\Models\Pod(['metadata' => ['name' => 'foo']]),
                 null,
             );
 
-        $rcRepo->expects(self::exactly(2))
+        $rcRepo->expects(self::exactly(3))
             ->method('create')
             ->willReturn(['foo']);
 
@@ -160,7 +169,7 @@ class ReplicaSetTranscriberTest extends TestCase
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
+        $promise->expects(self::exactly(3))->method('success')->with(['foo']);
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
