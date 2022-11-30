@@ -1,5 +1,18 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.125] - 2022-11-30
+### Dev Release
+- Debug compiled deployment to not create buildable image for external image
+- Remove "-service" to service on kubernetes to can more easily call them in a container
+- Improve writable data in image builder
+- Add writable option into embedded volume in container to allow write some stuff into container FS
+- Add option into ingress to set backend accept only https
+- Fix bug in building image to not copy last folder when the path is a directory in dest
+- DeserializeJob get global variables only from key `teknoo.east.paas.worker.global_variables` in DI, and never from $_ENV
+- Config map are not base64 encoded
+- Fix service are by default internal if the key is not defined
+- fix service definition in paas.yaml to not require pod entry
+
 ## [0.0.124] - 2022-11-27
 ### Dev Release
 - All containers in a pod are directly mapped to localhost as host alias in each container of the pod.
