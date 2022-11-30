@@ -214,7 +214,6 @@ class ComposerHook implements HookInterface
             return $this;
         }
 
-        $command->setIdleTimeout(0);
         $command->run();
 
         if ($command->isSuccessful()) {

@@ -76,10 +76,34 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testGitCloningAgentWithTimeout()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
+        $container->set('teknoo.east.paas.git.cloning.timeout', 240);
+
+        self::assertInstanceOf(
+            CloningAgent::class,
+            $container->get(CloningAgent::class)
+        );
+    }
+
     public function testHook()
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
+
+        self::assertInstanceOf(
+            Hook::class,
+            $container->get(Hook::class)
+        );
+    }
+
+    public function testHookWithTimeout()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
+        $container->set('teknoo.east.paas.git.cloning.timeout', 240);
 
         self::assertInstanceOf(
             Hook::class,

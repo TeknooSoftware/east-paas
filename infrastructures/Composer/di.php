@@ -29,10 +29,27 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 
 return [
+    ComposerHook::class . ':factory' => static function (ContainerInterface $container): callable {
+        return function (array $command, string $cwd) use ($container): Process {
+            $process = new Process($command, $cwd);
+
+            $timeout = 0;
+            if ($container->has('teknoo.east.paas.composer.timeout')) {
+                $timeout = $container->get('teknoo.east.paas.composer.timeout');
+            }
+
+            $process->setTimeout(
+                $timeout,
+            );
+
+            return $process;
+        };
+    },
+
     ComposerHook::class => static function (ContainerInterface $container): ComposerHook {
         return new ComposerHook(
             $container->get('teknoo.east.paas.composer.phar.path'),
-            fn (array $command, string $cwd) => new Process($command, $cwd)
+            $container->get(ComposerHook::class . ':factory'),
         );
     },
 ];

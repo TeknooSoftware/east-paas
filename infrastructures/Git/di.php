@@ -34,19 +34,41 @@ use function DI\get;
 return [
     CloningAgentInterface::class => get(CloningAgent::class),
     CloningAgent::class => static function (ContainerInterface $container): CloningAgent {
+        $process = Process::fromShellCommandline(
+            'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
+        );
+
+        $timeout = 0;
+        if ($container->has('teknoo.east.paas.git.cloning.timeout')) {
+            $timeout = $container->get('teknoo.east.paas.git.cloning.timeout');
+        }
+
+        $process->setTimeout(
+            $timeout,
+        );
+
         return new CloningAgent(
-            Process::fromShellCommandline(
-                'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
-            ),
+            $process,
             'private.key',
         );
     },
 
     Hook::class => static function (ContainerInterface $container): Hook {
+        $process = Process::fromShellCommandline(
+            'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
+        );
+
+        $timeout = 0;
+        if ($container->has('teknoo.east.paas.git.cloning.timeout')) {
+            $timeout = $container->get('teknoo.east.paas.git.cloning.timeout');
+        }
+
+        $process->setTimeout(
+            $timeout,
+        );
+
         return new Hook(
-            Process::fromShellCommandline(
-                'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
-            ),
+            $process,
             'private.key',
         );
     },

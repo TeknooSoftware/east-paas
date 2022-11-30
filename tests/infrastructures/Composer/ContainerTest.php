@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Composer;
 
 use DI\Container;
 use DI\ContainerBuilder;
+use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Infrastructures\Composer\ComposerHook;
 use PHPUnit\Framework\TestCase;
 
@@ -56,6 +57,49 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             ComposerHook::class,
             $container->get(ComposerHook::class)
+        );
+    }
+
+    public function testComposerHookWithTimeout()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.composer.phar.path', '/foo/composer.phar');
+        $container->set('teknoo.east.paas.composer.timeout', 240);
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $container->get(ComposerHook::class)
+        );
+    }
+
+    public function testComposerHookFactory()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.composer.phar.path', '/foo/composer.phar');
+
+        self::assertIsCallable(
+            $factory= $container->get(ComposerHook::class . ':factory')
+        );
+
+        self::assertInstanceOf(
+            Process::class,
+            $factory(['foo'], '/tmp'),
+        );
+    }
+
+    public function testComposerHookFactoryWithTimeout()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.composer.phar.path', '/foo/composer.phar');
+        $container->set('teknoo.east.paas.composer.timeout', 240);
+
+        self::assertIsCallable(
+            $factory = $container->get(ComposerHook::class . ':factory')
+        );
+
+        self::assertInstanceOf(
+            Process::class,
+            $factory(['foo'], '/tmp'),
         );
     }
 }
