@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.126] - 2022-11-30
+### Dev Release
+- Fix histories' serials numbers persistence in db
+- add optional entry in di `teknoo.east.paas.composer.timeout` and
+  `teknoo.east.paas.git.cloning.timeout` to set timeout on composer and
+  git subprocess.
+
 ## [0.0.125] - 2022-11-30
 ### Dev Release
 - Debug compiled deployment to not create buildable image for external image
