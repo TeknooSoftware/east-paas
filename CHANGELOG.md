@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.127] - 2022-12-01
+### Dev Release
+- Fix processes' timeouts as float
+- image builder use processes' timeouts behavior instaed of set_time_limit
+
 ## [0.0.126] - 2022-11-30
 ### Dev Release
 - Fix histories' serials numbers persistence in db
