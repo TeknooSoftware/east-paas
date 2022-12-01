@@ -411,4 +411,65 @@ class HistoryTest extends TestCase
         self::assertNotSame($newHistory, $cloned);
         self::assertEquals($expected, $cloned);
     }
+
+    public function testCloneWithNewHistoryToInsertWithCounterAndFinal()
+    {
+        $recent = new History(
+            previous: null,
+            message: 'bar',
+            date: new \DateTime('2019-10-25'),
+            serialNumber: 1,
+        );
+
+        $history = new History(
+            previous: null,
+            message: 'foo',
+            date: new \DateTime('2018-11-25'),
+            serialNumber: 3,
+            isFinal: true,
+        );
+
+        $expected = new History(
+            previous: $recent,
+            message: 'foo',
+            date: new \DateTime('2018-11-25'),
+            serialNumber: 3,
+            isFinal: true,
+        );
+
+        $cloned = $history->clone($recent);
+
+        self::assertNotSame($history, $cloned);
+        self::assertNotSame($recent, $cloned);
+        self::assertEquals($expected, $cloned);
+
+        $recent = new History(
+            previous: null,
+            message: 'bar',
+            date: new \DateTime('2019-10-25'),
+            serialNumber: 1,
+            isFinal: true,
+        );
+
+        $history = new History(
+            previous: null,
+            message: 'foo',
+            date: new \DateTime('2018-11-25'),
+            serialNumber: 3,
+        );
+
+        $expected = new History(
+            previous: $history,
+            message: 'bar',
+            date: new \DateTime('2019-10-25'),
+            serialNumber: 1,
+            isFinal: true,
+        );
+
+        $cloned = $history->clone($recent);
+
+        self::assertNotSame($history, $cloned);
+        self::assertNotSame($recent, $cloned);
+        self::assertEquals($expected, $cloned);
+    }
 }

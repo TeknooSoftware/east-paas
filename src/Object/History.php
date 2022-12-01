@@ -147,7 +147,8 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
         }
 
         if (
-            $newHistory->date <= $this->date
+            true === $history->isFinal
+            || $newHistory->date <= $this->date
             || $newHistory->serialNumber > $this->serialNumber
         ) {
             $history->previous = $newHistory->clone($history->previous);
