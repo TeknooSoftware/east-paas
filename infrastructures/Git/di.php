@@ -38,9 +38,9 @@ return [
             'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
         );
 
-        $timeout = 0;
+        $timeout = 0.0;
         if ($container->has('teknoo.east.paas.git.cloning.timeout')) {
-            $timeout = $container->get('teknoo.east.paas.git.cloning.timeout');
+            $timeout = (float) $container->get('teknoo.east.paas.git.cloning.timeout');
         }
 
         $process->setTimeout(
@@ -58,9 +58,9 @@ return [
             'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
         );
 
-        $timeout = 0;
+        $timeout = 0.0;
         if ($container->has('teknoo.east.paas.git.cloning.timeout')) {
-            $timeout = $container->get('teknoo.east.paas.git.cloning.timeout');
+            $timeout = (float) $container->get('teknoo.east.paas.git.cloning.timeout');
         }
 
         $process->setTimeout(

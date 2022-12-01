@@ -71,8 +71,6 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
-    private const GRACEFUL_TIME = 30;
-
     private ?string $projectId = null;
 
     private ?string $url = null;
@@ -87,7 +85,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
         private readonly array $templates,
         private readonly ProcessFactoryInterface $processFactory,
         private readonly string $platforms,
-        private readonly ?int $timeout,
+        private readonly ?float $timeout,
     ) {
         foreach (['image', 'embedded-volume-image', 'volume'] as $entry) {
             if (empty($this->templates[$entry])) {
@@ -146,8 +144,6 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
         string $workingPath,
         PromiseInterface $promise
     ): BuilderInterface {
-        $this->setTimeout();
-
         $processes = [];
         $compiledDeployment->foreachBuildable(
             function (BuildableInterface $image) use (&$processes, $workingPath, $compiledDeployment) {
@@ -173,6 +169,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                 }
 
                 $process = ($this->processFactory)($path);
+                $process->setTimeout($this->timeout);
                 $process->setInput($script);
 
                 $variables = $newImage->getVariables();
@@ -228,8 +225,6 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
         string $workingPath,
         PromiseInterface $promise
     ): BuilderInterface {
-        $this->setTimeout();
-
         $processes = [];
         $compiledDeployment->foreachVolume(
             function (string $name, VolumeInterface $volume) use (&$processes, $workingPath, $compiledDeployment) {
@@ -249,6 +244,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                 );
 
                 $process = ($this->processFactory)($workingPath);
+                $process->setTimeout($this->timeout);
                 $process->setInput($script);
 
                 $paths = [];

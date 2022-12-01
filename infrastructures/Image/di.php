@@ -49,9 +49,9 @@ return [
 
     BuilderInterface::class => get(ImageWrapper::class),
     ImageWrapper::class => static function (ContainerInterface $container): ImageWrapper {
-        $timeout = 3 * 60; //3 minutes;
+        $timeout = (float) (3 * 60); //3 minutes;
         if ($container->has('teknoo.east.paas.img_builder.build.timeout')) {
-            $timeout = (int) $container->get('teknoo.east.paas.img_builder.build.timeout');
+            $timeout = (float) $container->get('teknoo.east.paas.img_builder.build.timeout');
         }
 
         $binary = 'docker';

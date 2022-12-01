@@ -33,9 +33,9 @@ return [
         return function (array $command, string $cwd) use ($container): Process {
             $process = new Process($command, $cwd);
 
-            $timeout = 0;
+            $timeout = 0.0;
             if ($container->has('teknoo.east.paas.composer.timeout')) {
-                $timeout = $container->get('teknoo.east.paas.composer.timeout');
+                $timeout = (float) $container->get('teknoo.east.paas.composer.timeout');
             }
 
             $process->setTimeout(

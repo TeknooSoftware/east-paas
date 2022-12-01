@@ -71,17 +71,6 @@ class Running implements StateInterface
         return fn(string $name) => substr(hash('sha256', $this->projectId . $name), 0, 10);
     }
 
-    private function setTimeout(): Closure
-    {
-        return function (): void {
-            if (empty($this->timeout)) {
-                set_time_limit(0);
-            } else {
-                set_time_limit(($this->timeout + self::GRACEFUL_TIME));
-            }
-        };
-    }
-
     private function generateShellScript(): Closure
     {
         return function (
