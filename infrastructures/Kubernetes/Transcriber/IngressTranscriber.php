@@ -42,6 +42,8 @@ use Throwable;
  */
 class IngressTranscriber implements ExposingInterface
 {
+    use CleaningTrait;
+
     private const NAME_SUFFIX = '-ingress';
     private const SECRET_SUFFIX = '-secret';
 
@@ -215,6 +217,8 @@ class IngressTranscriber implements ExposingInterface
                     } else {
                         $result = $ingressRepository->create($kubIngress);
                     }
+
+                    $result = self::cleanResult($result);
 
                     $promise->success($result);
                 } catch (Throwable $error) {

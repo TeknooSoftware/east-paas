@@ -2,6 +2,9 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         -
+            message: '#::cleanResult#'
+            path: infrastructures/Kubernetes/Transcriber
+        -
             message: '#mixed#'
             path: infrastructures/Kubernetes/Driver.php
         -

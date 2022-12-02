@@ -44,6 +44,8 @@ use function strtolower;
  */
 class ServiceTranscriber implements ExposingInterface
 {
+    use CleaningTrait;
+
     /**
      * @return array<string, mixed>
      */
@@ -113,6 +115,8 @@ class ServiceTranscriber implements ExposingInterface
                     }
 
                     $result = $serviceRepository->create($kubeService);
+
+                    $result = self::cleanResult($result);
 
                     $promise->success($result);
                 } catch (Throwable $error) {

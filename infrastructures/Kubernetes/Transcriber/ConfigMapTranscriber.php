@@ -49,6 +49,8 @@ use function substr;
  */
 class ConfigMapTranscriber implements DeploymentInterface
 {
+    use CleaningTrait;
+
     private const NAME_SUFFIX = '-map';
 
     /**
@@ -96,6 +98,8 @@ class ConfigMapTranscriber implements DeploymentInterface
                     } else {
                         $result = $sRepository->create($kubeConfigMap);
                     }
+
+                    $result = self::cleanResult($result);
 
                     $promise->success($result);
                 } catch (Throwable $error) {

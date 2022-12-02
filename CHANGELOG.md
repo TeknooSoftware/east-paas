@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.128] - 2022-12-01
+### Dev Release
+- Prevent secret leaks in transcribers' returns
+
 ## [0.0.127] - 2022-12-01
 ### Dev Release
 - Fix processes' timeouts as float

@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
  */
 class SecretTranscriberTest extends TestCase
 {
@@ -78,14 +79,26 @@ class SecretTranscriberTest extends TestCase
 
         $seRepo->expects(self::exactly(2))
             ->method('create')
-            ->willReturn(['foo']);
+            ->willReturn([
+                'foo' => 'bar',
+                'metadata' => ['managedFields' =>['foo']],
+                'data' => ['foo' => 'bar'],
+            ]);
 
         $seRepo->expects(self::once())
             ->method('update')
-            ->willReturn(['foo']);
+            ->willReturn([
+                'foo' => 'bar',
+                'metadata' => ['managedFields' =>['foo']],
+                'data' => ['foo' => 'bar'],
+            ]);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(3))->method('success')->with(['foo']);
+        $promise->expects(self::exactly(3))->method('success')->with([
+            'foo' => 'bar',
+            'metadata' => ['managedFields' => '#removed#'],
+            'data' => '#removed#',
+        ]);
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(

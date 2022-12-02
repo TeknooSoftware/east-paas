@@ -38,6 +38,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
  */
 class VolumeTranscriberTest extends TestCase
 {

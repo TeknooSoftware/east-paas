@@ -49,6 +49,8 @@ use function substr;
  */
 class SecretTranscriber implements DeploymentInterface
 {
+    use CleaningTrait;
+
     private const BASE64_PREFIX = 'base64:';
     private const NAME_SUFFIX = '-secret';
 
@@ -137,6 +139,8 @@ class SecretTranscriber implements DeploymentInterface
                     } else {
                         $result = $sRepository->create($kubeSecret);
                     }
+
+                    $result = self::cleanResult($result);
 
                     $promise->success($result);
                 } catch (Throwable $error) {

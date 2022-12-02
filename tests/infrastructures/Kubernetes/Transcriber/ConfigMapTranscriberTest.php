@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
  */
 class ConfigMapTranscriberTest extends TestCase
 {

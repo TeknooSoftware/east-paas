@@ -47,6 +47,8 @@ use function strtolower;
  */
 class NamespaceTranscriber implements GenericTranscriberInterface
 {
+    use CleaningTrait;
+
     /**
      * @return array<string, mixed>
      */
@@ -99,6 +101,8 @@ class NamespaceTranscriber implements GenericTranscriberInterface
                     if (!$namespaceRepository->exists($namespace)) {
                         $result = $subnamespacesAnchorsRepository->create(self::convertToSubnamespace($namespace));
                     }
+
+                    $result = self::cleanResult($result);
 
                     $promise->success($result);
                 } catch (Throwable $error) {

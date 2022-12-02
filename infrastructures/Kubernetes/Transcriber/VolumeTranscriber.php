@@ -47,6 +47,8 @@ use function array_map;
  */
 class VolumeTranscriber implements DeploymentInterface
 {
+    use CleaningTrait;
+
     /**
      * @return array<string, mixed>
      */
@@ -116,6 +118,8 @@ class VolumeTranscriber implements DeploymentInterface
                     }
 
                     $result = $pvcRepository->create($pvc);
+
+                    $result = self::cleanResult($result);
 
                     $promise->success($result);
                 } catch (Throwable $error) {

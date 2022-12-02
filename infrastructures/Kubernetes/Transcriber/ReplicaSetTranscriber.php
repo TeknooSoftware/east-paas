@@ -55,6 +55,8 @@ use function substr;
  */
 class ReplicaSetTranscriber implements DeploymentInterface
 {
+    use CleaningTrait;
+
     private const NAME_SUFFIX = '-ctrl';
     private const POD_SUFFIX = '-pod';
     private const VOLUME_SUFFIX = '-volume';
@@ -371,6 +373,8 @@ class ReplicaSetTranscriber implements DeploymentInterface
 
                 try {
                     $result = $rcRepository->create($kubeController);
+
+                    $result = self::cleanResult($result);
 
                     $promise->success($result);
 
