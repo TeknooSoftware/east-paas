@@ -49,7 +49,7 @@ use function substr;
  */
 class SecretTranscriber implements DeploymentInterface
 {
-    use CleaningTrait;
+    use CommonTrait;
 
     private const BASE64_PREFIX = 'base64:';
     private const NAME_SUFFIX = '-secret';
@@ -83,14 +83,14 @@ class SecretTranscriber implements DeploymentInterface
     /**
      * @return array<string, mixed>
      */
-    protected static function writeSpec(Secret $secret, string $namespace): array
+    protected static function writeSpec(Secret $secret, string $namespace, callable $prefixer): array
     {
         return [
             'metadata' => [
-                'name' => $secret->getName() . self::NAME_SUFFIX,
+                'name' => $prefixer($secret->getName() . self::NAME_SUFFIX),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $secret->getName(),
+                    'name' => $prefixer($secret->getName()),
                 ],
             ],
             'type' => match ($secret->getType()) {
@@ -102,7 +102,7 @@ class SecretTranscriber implements DeploymentInterface
         ];
     }
 
-    private static function convertToSecret(Secret $secret, string $namespace): ?KubeSecret
+    private static function convertToSecret(Secret $secret, string $namespace, callable $prefixer): ?KubeSecret
     {
         $provider = $secret->getProvider();
         if ('map' !== $provider) {
@@ -110,7 +110,7 @@ class SecretTranscriber implements DeploymentInterface
         }
 
         return new KubeSecret(
-            static::writeSpec($secret, $namespace)
+            static::writeSpec($secret, $namespace, $prefixer)
         );
     }
 
@@ -120,8 +120,9 @@ class SecretTranscriber implements DeploymentInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachSecret(
-            static function (Secret $secret, string $namespace) use ($client, $promise) {
-                $kubeSecret = self::convertToSecret($secret, $namespace);
+            static function (Secret $secret, string $namespace, string $prefix,) use ($client, $promise) {
+                $prefixer = self::createPrefixer($prefix);
+                $kubeSecret = self::convertToSecret($secret, $namespace, $prefixer);
 
                 if (!$kubeSecret instanceof KubeSecret) {
                     return;
@@ -133,7 +134,7 @@ class SecretTranscriber implements DeploymentInterface
                     }
 
                     $sRepository = $client->secrets();
-                    $name = $kubeSecret->getMetadata('name') ?? $secret->getName() . self::NAME_SUFFIX;
+                    $name = $kubeSecret->getMetadata('name') ?? $prefixer($secret->getName() . self::NAME_SUFFIX);
                     if ($sRepository->exists($name)) {
                         $result = $sRepository->update($kubeSecret);
                     } else {

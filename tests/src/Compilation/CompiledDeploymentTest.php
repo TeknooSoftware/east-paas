@@ -51,7 +51,7 @@ class CompiledDeploymentTest extends TestCase
 {
     private function buildObject(): CompiledDeployment
     {
-        return new CompiledDeployment(1, 'default_namespace', true);
+        return new CompiledDeployment(1, 'default_namespace', true, 'prefix');
     }
 
     public function testAddBuildableWrongBuildable()

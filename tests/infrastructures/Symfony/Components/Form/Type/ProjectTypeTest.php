@@ -58,6 +58,7 @@ class ProjectTypeTest extends TestCase
     {
         return [
             'name' => 'fooBar',
+            'prefix' => 'fooBar',
             'sourceRepository' => new GitRepository(),
             'imagesRegistry' => new ImageRegistry(),
             'clusters' => [new Cluster()],

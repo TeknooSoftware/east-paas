@@ -47,7 +47,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicaSetTranscribe
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicaSetTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
 class ReplicaSetTranscriberTest extends TestCase
 {
@@ -97,7 +97,7 @@ class ReplicaSetTranscriberTest extends TestCase
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2, $c3]);
 
-                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace');
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
                     $pod2,
                     [
@@ -109,7 +109,8 @@ class ReplicaSetTranscriberTest extends TestCase
                         'vault' => new SecretVolume('foo', '/secret', 'bar'),
                         'map' => new MapVolume('bar', '/bar', 'bar'),
                     ],
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 $callback(
                     $pod2,
@@ -117,7 +118,8 @@ class ReplicaSetTranscriberTest extends TestCase
                     ],
                     [
                     ],
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 return $cd;
             });
@@ -220,7 +222,7 @@ class ReplicaSetTranscriberTest extends TestCase
                 $pod1 = new Pod('p1', 1, [$c1], 'foo');
                 $pod2 = new Pod('p2', 1, [$c2]);
 
-                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace');
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
                     $pod2,
                     [
@@ -231,7 +233,8 @@ class ReplicaSetTranscriberTest extends TestCase
                         'data' => new PersistentVolume('foo', 'bar'),
                         'vault' => new SecretVolume('foo', '/secret', 'bar'),
                     ],
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 return $cd;
             });
@@ -315,8 +318,8 @@ class ReplicaSetTranscriberTest extends TestCase
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2]);
 
-                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace');
-                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace');
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
+                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');
                 return $cd;
             });
 
@@ -382,8 +385,8 @@ class ReplicaSetTranscriberTest extends TestCase
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2]);
 
-                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace');
-                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace');
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
+                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');
                 return $cd;
             });
 

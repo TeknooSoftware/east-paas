@@ -47,21 +47,22 @@ use function array_map;
  */
 class VolumeTranscriber implements DeploymentInterface
 {
-    use CleaningTrait;
+    use CommonTrait;
 
     /**
      * @return array<string, mixed>
      */
     protected static function writeSpec(
         PersistentVolumeInterface $volume,
-        string $namespace
+        string $namespace,
+        callable $prefixer,
     ): array {
         return [
             'metadata' => [
-                'name' => $volume->getName(),
+                'name' => $prefixer($volume->getName()),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $volume->getName(),
+                    'name' => $prefixer($volume->getName()),
                 ],
             ],
             'spec' => [
@@ -80,10 +81,11 @@ class VolumeTranscriber implements DeploymentInterface
 
     private static function convertToPVC(
         PersistentVolumeInterface $volume,
-        string $namespace
+        string $namespace,
+        callable $prefixer,
     ): PersistentVolumeClaim {
         return new PersistentVolumeClaim(
-            static::writeSpec($volume, $namespace)
+            static::writeSpec($volume, $namespace, $prefixer)
         );
     }
 
@@ -93,12 +95,21 @@ class VolumeTranscriber implements DeploymentInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachVolume(
-            function (string $name, VolumeInterface $volume, string $namespace) use ($client, $promise) {
+            function (
+                string $name,
+                VolumeInterface $volume,
+                string $namespace,
+                string $prefix,
+            ) use (
+                $client,
+                $promise,
+            ) {
+                $prefixer = self::createPrefixer($prefix);
                 if (!$volume instanceof PersistentVolumeInterface) {
                     return;
                 }
 
-                $pvc = self::convertToPVC($volume, $namespace);
+                $pvc = self::convertToPVC($volume, $namespace, $prefixer);
 
                 try {
                     if (!empty($namespace)) {
@@ -106,7 +117,7 @@ class VolumeTranscriber implements DeploymentInterface
                     }
 
                     $pvcRepository = $client->persistentVolumeClaims();
-                    $name = $pvc->getMetadata('name') ?? $volume->getName();
+                    $name = $pvc->getMetadata('name') ?? $prefixer($volume->getName());
                     if ($pvcRepository->exists($name)) {
                         if (!$volume->isResetOnDeployment()) {
                             $promise->success([]);

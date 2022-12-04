@@ -38,7 +38,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
 class IngressTranscriberTest extends TestCase
 {
@@ -66,7 +66,8 @@ class IngressTranscriberTest extends TestCase
                         null,
                         false
                     ),
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 $callback(
                     new Ingress(
@@ -81,7 +82,8 @@ class IngressTranscriberTest extends TestCase
                         'cert',
                         true
                     ),
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
 
                 return $cd;
@@ -140,7 +142,8 @@ class IngressTranscriberTest extends TestCase
                         null,
                         false
                     ),
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 $callback(
                     new Ingress(
@@ -155,7 +158,8 @@ class IngressTranscriberTest extends TestCase
                         'cert',
                         true
                     ),
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 return $cd;
             });

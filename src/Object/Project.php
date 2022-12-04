@@ -73,6 +73,8 @@ class Project implements
 
     protected ?string $name = null;
 
+    protected ?string $prefix = null;
+
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
     protected ?ImageRegistryInterface $imagesRegistry = null;
@@ -149,6 +151,17 @@ class Project implements
         return $this;
     }
 
+    private function getPrefix(): string
+    {
+        return (string) $this->prefix;
+    }
+
+    public function setPrefix(string $prefix): Project
+    {
+        $this->prefix = $prefix;
+        return $this;
+    }
+
     private function getSourceRepository(): ?SourceRepositoryInterface
     {
         return $this->sourceRepository;
@@ -214,6 +227,10 @@ class Project implements
     {
         if (isset($visitors['name'])) {
             $visitors['name']($this->getName());
+        }
+
+        if (isset($visitors['prefix'])) {
+            $visitors['prefix']($this->getPrefix());
         }
 
         if (isset($visitors['sourceRepository'])) {

@@ -55,8 +55,9 @@ class CompiledDeploymentFactory implements CompiledDeploymentFactoryInterface
         int $version,
         string $namespace,
         bool $hierarchicalNamespaces,
+        ?string $prefix
     ): CompiledDeploymentInterface {
-        return new $this->className($version, $namespace, $hierarchicalNamespaces);
+        return new $this->className($version, $namespace, $hierarchicalNamespaces, $prefix);
     }
 
     public function getSchema(): string

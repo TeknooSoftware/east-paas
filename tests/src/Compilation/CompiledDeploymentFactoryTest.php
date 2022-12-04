@@ -47,7 +47,7 @@ class CompiledDeploymentFactoryTest extends TestCase
         self::assertInstanceOf(
             CompiledDeployment::class,
             (new CompiledDeploymentFactory(CompiledDeployment::class, 'bar'))
-                ->build(1, 'bar', true)
+                ->build(1, 'bar', true, 'prefix')
         );
     }
 

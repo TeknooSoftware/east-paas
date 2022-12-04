@@ -38,7 +38,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
 class VolumeTranscriberTest extends TestCase
 {
@@ -55,10 +55,10 @@ class VolumeTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace');
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace');
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar', true), 'default_namespace');
-                $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'default_namespace');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace', 'a-prefix');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace', 'a-prefix');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar', true), 'default_namespace', 'a-prefix');
+                $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'default_namespace', 'a-prefix');
                 return $cd;
             });
 
@@ -106,8 +106,8 @@ class VolumeTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace');
-                $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'default_namespace');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace', 'a-prefix');
+                $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'default_namespace', 'a-prefix');
                 return $cd;
             });
 

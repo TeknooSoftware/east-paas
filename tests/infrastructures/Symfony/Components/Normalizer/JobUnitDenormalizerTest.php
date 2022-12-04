@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingNormalier;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Normalizer;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -111,7 +111,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 null,
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
                 $clusters = [$this->createMock(Cluster::class)],
                 $history = $this->createMock(History::class)
@@ -199,7 +199,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 null,
                 $clusters = [$this->createMock(Cluster::class)],
                 $history = $this->createMock(History::class)
@@ -243,7 +243,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
                 [],
                 $history = $this->createMock(History::class)
@@ -287,7 +287,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
                 [new \stdClass()],
                 $history = $this->createMock(History::class)
@@ -331,7 +331,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
                 $clusters = [$this->createMock(Cluster::class)],
                 null
@@ -373,7 +373,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
                 $clusters = [$this->createMock(Cluster::class)],
                 $history = $this->createMock(History::class)
@@ -390,6 +390,7 @@ class JobUnitDenormalizerTest extends TestCase
             "id" => $id,
             "project" => $project,
             "base_namespace" => 'fooBar',
+            "prefix" => 'foobar',
             "environment" => ['env' => 'bar'],
             "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
             "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
@@ -398,7 +399,18 @@ class JobUnitDenormalizerTest extends TestCase
             "history" => ['history' => 'bar'],
         ];
 
-        $jobUnit = new JobUnit($id, $project, $env, 'fooBar', $srepo, $irepo, $clusters, ['foo' => 'bar'], $history);
+        $jobUnit = new JobUnit(
+            id: $id, 
+            projectResume: $project, 
+            environment: $env, 
+            baseNamespace: 'fooBar',
+            prefix: 'foobar', 
+            sourceRepository: $srepo, 
+            imagesRegistry: $iregistry,
+            clusters: $clusters,
+            variables: ['foo' => 'bar'],
+            history: $history
+        );
         self::assertEquals(
             $jobUnit,
             $this->buildNormalizer()->setDenormalizer($denormalizer)
@@ -420,7 +432,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
                 $clusters = [$this->createMock(Cluster::class)],
                 $history = $this->createMock(History::class)
@@ -437,6 +449,7 @@ class JobUnitDenormalizerTest extends TestCase
             "id" => $id,
             "project" => $project,
             "base_namespace" => 'fooBar',
+            "prefix" => 'foobar',
             "hierarchical_namespaces" => true,
             "environment" => ['env' => 'bar'],
             "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
@@ -451,9 +464,10 @@ class JobUnitDenormalizerTest extends TestCase
             projectResume: $project,
             environment: $env,
             baseNamespace: 'fooBar',
+            prefix: 'foobar',
             hierarchicalNamespaces: true,
             sourceRepository: $srepo,
-            imagesRegistry: $irepo,
+            imagesRegistry: $iregistry,
             clusters: $clusters,
             variables: ['foo' => 'bar'],
             history: $history,
@@ -479,7 +493,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
                 $clusters = [$this->createMock(Cluster::class)],
                 $history = $this->createMock(History::class)
@@ -496,6 +510,7 @@ class JobUnitDenormalizerTest extends TestCase
             "id" => $id,
             "project" => $project,
             "base_namespace" => 'fooBar',
+            "prefix" => 'foobar',
             "hierarchical_namespaces" => true,
             "environment" => ['env' => 'bar'],
             "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
@@ -510,9 +525,10 @@ class JobUnitDenormalizerTest extends TestCase
             projectResume: $project,
             environment: $env,
             baseNamespace: 'fooBar',
+            prefix: 'foobar',
             hierarchicalNamespaces: true,
             sourceRepository: $srepo,
-            imagesRegistry: $irepo,
+            imagesRegistry: $iregistry,
             clusters: $clusters,
             variables: ['foo' => 'bar'],
             history: $history,
@@ -538,7 +554,7 @@ class JobUnitDenormalizerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $irepo = $this->createMock(ImageRegistryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
                 $clusters = [$this->createMock(Cluster::class)],
                 $history = $this->createMock(History::class)
@@ -555,6 +571,7 @@ class JobUnitDenormalizerTest extends TestCase
             "id" => $id,
             "project" => $project,
             "base_namespace" => 'fooBar',
+            "prefix" => 'foobar',
             "environment" => ['env' => 'bar'],
             "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
             "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
@@ -568,9 +585,10 @@ class JobUnitDenormalizerTest extends TestCase
             projectResume: $project,
             environment: $env,
             baseNamespace: 'fooBar',
+            prefix: 'foobar',
             hierarchicalNamespaces: true,
             sourceRepository: $srepo,
-            imagesRegistry: $irepo,
+            imagesRegistry: $iregistry,
             clusters: $clusters,
             variables: ['foo' => 'bar'],
             history: $history,

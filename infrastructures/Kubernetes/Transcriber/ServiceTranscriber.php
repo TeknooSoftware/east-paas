@@ -44,14 +44,15 @@ use function strtolower;
  */
 class ServiceTranscriber implements ExposingInterface
 {
-    use CleaningTrait;
+    use CommonTrait;
 
     /**
      * @return array<string, mixed>
      */
     protected static function writeSpec(
         Service $service,
-        string $namespace
+        string $namespace,
+        callable $prefixer,
     ): array {
         $ports = [];
         foreach ($service->getPorts() as $listen => $target) {
@@ -70,15 +71,15 @@ class ServiceTranscriber implements ExposingInterface
 
         $specs = [
             'metadata' => [
-                'name' => $service->getName(),
+                'name' => $prefixer($service->getName()),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $service->getName(),
+                    'name' => $prefixer($service->getName()),
                 ],
             ],
             'spec' => [
                 'selector' => [
-                    'name' => $service->getPodName(),
+                    'name' => $prefixer($service->getPodName()),
                 ],
                 'type' => $type,
                 'ports' => $ports,
@@ -87,10 +88,10 @@ class ServiceTranscriber implements ExposingInterface
 
         return $specs;
     }
-    private static function convertToService(Service $service, string $namespace): KubeService
+    private static function convertToService(Service $service, string $namespace, callable $prefixer): KubeService
     {
         return new KubeService(
-            static::writeSpec($service, $namespace)
+            static::writeSpec($service, $namespace, $prefixer)
         );
     }
 
@@ -100,8 +101,9 @@ class ServiceTranscriber implements ExposingInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachService(
-            static function (Service $service, string $namespace) use ($client, $promise) {
-                $kubeService = self::convertToService($service, $namespace);
+            static function (Service $service, string $namespace, string $prefix,) use ($client, $promise) {
+                $prefixer = self::createPrefixer($prefix);
+                $kubeService = self::convertToService($service, $namespace, $prefixer);
 
                 try {
                     if (!empty($namespace)) {
@@ -109,7 +111,7 @@ class ServiceTranscriber implements ExposingInterface
                     }
 
                     $serviceRepository = $client->services();
-                    $name = $kubeService->getMetadata('name') ?? $service->getName();
+                    $name = $kubeService->getMetadata('name') ?? $prefixer($service->getName());
                     if ($serviceRepository->exists($name)) {
                         $serviceRepository->delete($kubeService);
                     }

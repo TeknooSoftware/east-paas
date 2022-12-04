@@ -37,6 +37,7 @@ interface CompiledDeploymentFactoryInterface
         int $version,
         string $namespace,
         bool $hierarchicalNamespaces,
+        ?string $prefix,
     ): CompiledDeploymentInterface;
 
     public function getSchema(): string;

@@ -144,6 +144,36 @@ class ProjectTest extends TestCase
         $this->buildObject()->setName(new \stdClass());
     }
 
+    /**
+     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     */
+    public function testSetPrefix()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->setPrefix('fooBar')
+        );
+
+        $argument = 'fooBar';
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with($argument);
+
+        self::assertInstanceOf(
+            Project::class,
+            $object->visit(['prefix' => $form->setData(...)])
+        );
+    }
+
+    public function testSetPrefixExceptionOnBadArgument()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->setPrefix(new \stdClass());
+    }
+
     public function testGetSourceRepository()
     {
         $argument = $this->createMock(SourceRepositoryInterface::class);

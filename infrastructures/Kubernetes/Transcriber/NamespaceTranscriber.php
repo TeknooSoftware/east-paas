@@ -47,7 +47,7 @@ use function strtolower;
  */
 class NamespaceTranscriber implements GenericTranscriberInterface
 {
-    use CleaningTrait;
+    use CommonTrait;
 
     /**
      * @param array<int, string> $parts

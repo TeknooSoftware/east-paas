@@ -49,31 +49,31 @@ use function substr;
  */
 class ConfigMapTranscriber implements DeploymentInterface
 {
-    use CleaningTrait;
+    use CommonTrait;
 
     private const NAME_SUFFIX = '-map';
 
     /**
      * @return array<string, mixed>
      */
-    protected static function writeSpec(Map $configMap, string $namespace): array
+    protected static function writeSpec(Map $configMap, string $namespace, callable $prefixer): array
     {
         return [
             'metadata' => [
-                'name' => $configMap->getName() . self::NAME_SUFFIX,
+                'name' => $prefixer($configMap->getName() . self::NAME_SUFFIX),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $configMap->getName(),
+                    'name' => $prefixer($configMap->getName()),
                 ],
             ],
             'data' => $configMap->getOptions(),
         ];
     }
 
-    private static function convertToConfigMap(Map $configMap, string $namespace): KubeConfigMap
+    private static function convertToConfigMap(Map $configMap, string $namespace, callable $prefixer): KubeConfigMap
     {
         return new KubeConfigMap(
-            static::writeSpec($configMap, $namespace)
+            static::writeSpec($configMap, $namespace, $prefixer)
         );
     }
 
@@ -83,8 +83,9 @@ class ConfigMapTranscriber implements DeploymentInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachMap(
-            static function (Map $configMap, string $namespace) use ($client, $promise) {
-                $kubeConfigMap = self::convertToConfigMap($configMap, $namespace);
+            static function (Map $configMap, string $namespace, string $prefix) use ($client, $promise) {
+                $prefixer = self::createPrefixer($prefix);
+                $kubeConfigMap = self::convertToConfigMap($configMap, $namespace, $prefixer);
 
                 try {
                     if (!empty($namespace)) {
@@ -92,7 +93,7 @@ class ConfigMapTranscriber implements DeploymentInterface
                     }
 
                     $sRepository = $client->configMaps();
-                    $name = $kubeConfigMap->getMetadata('name') ?? $configMap->getName() . self::NAME_SUFFIX;
+                    $name = $kubeConfigMap->getMetadata('name') ?? $prefixer($configMap->getName() . self::NAME_SUFFIX);
                     if ($sRepository->exists($name)) {
                         $result = $sRepository->update($kubeConfigMap);
                     } else {
