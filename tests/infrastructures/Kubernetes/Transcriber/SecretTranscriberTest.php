@@ -37,7 +37,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
 class SecretTranscriberTest extends TestCase
 {
@@ -54,10 +54,10 @@ class SecretTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachSecret')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'default_namespace');
-                $callback(new Secret('foo2', 'map', ['foo' => 'bar'], 'tls'), 'default_namespace');
-                $callback(new Secret('foo3', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]], 'foo'), 'default_namespace');
-                $callback(new Secret('foo4', 'foo', ['bar'], 'tls'), 'default_namespace');
+                $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
+                $callback(new Secret('foo2', 'map', ['foo' => 'bar'], 'tls'), 'default_namespace', 'a-prefix');
+                $callback(new Secret('foo3', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]], 'foo'), 'default_namespace', 'a-prefix');
+                $callback(new Secret('foo4', 'foo', ['bar'], 'tls'), 'default_namespace', 'a-prefix');
                 return $cd;
             });
 
@@ -115,8 +115,8 @@ class SecretTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachSecret')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'default_namespace');
-                $callback(new Secret('foo2', 'map', ['foo' => 'bar']), 'default_namespace');
+                $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
+                $callback(new Secret('foo2', 'map', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
                 return $cd;
             });
 

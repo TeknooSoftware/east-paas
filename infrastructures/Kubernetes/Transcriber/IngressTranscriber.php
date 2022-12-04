@@ -42,7 +42,7 @@ use Throwable;
  */
 class IngressTranscriber implements ExposingInterface
 {
-    use CleaningTrait;
+    use CommonTrait;
 
     private const NAME_SUFFIX = '-ingress';
     private const SECRET_SUFFIX = '-secret';
@@ -69,6 +69,7 @@ class IngressTranscriber implements ExposingInterface
         ?string $defaultIngressService,
         ?int $defaultIngressPort,
         array $defaultIngressAnnotations,
+        callable $prefixer,
     ): array {
         $rule = [
             'host' => $ingress->getHost(),
@@ -83,7 +84,7 @@ class IngressTranscriber implements ExposingInterface
                 'pathType' => 'Prefix',
                 'backend' => [
                     'service' => [
-                        'name' => $ingress->getDefaultServiceName(),
+                        'name' => $prefixer($ingress->getDefaultServiceName()),
                         'port' => [
                             'number' => $ingress->getDefaultServicePort(),
                         ],
@@ -98,7 +99,7 @@ class IngressTranscriber implements ExposingInterface
                 'pathType' => 'Prefix',
                 'backend' => [
                     'service' => [
-                        'name' => $path->getServiceName(),
+                        'name' => $prefixer($path->getServiceName()),
                         'port' => [
                             'number' => $path->getServicePort(),
                         ],
@@ -110,10 +111,10 @@ class IngressTranscriber implements ExposingInterface
 
         $specs = [
             'metadata' => [
-                'name' => $ingress->getName() . self::NAME_SUFFIX,
+                'name' => $prefixer($ingress->getName() . self::NAME_SUFFIX),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $ingress->getName(),
+                    'name' => $prefixer($ingress->getName()),
                 ],
                 'annotations' => $defaultIngressAnnotations,
             ],
@@ -133,7 +134,7 @@ class IngressTranscriber implements ExposingInterface
 
         if (null !== $defaultIngressService && null !== $defaultIngressPort) {
             $specs['spec']['defaultBackend']['service'] = [
-                'name' => $defaultIngressService,
+                'name' => $prefixer($defaultIngressService),
                 'port' => [
                     'number' => $defaultIngressPort,
                 ],
@@ -143,7 +144,7 @@ class IngressTranscriber implements ExposingInterface
         if (!empty($ingress->getTlsSecret())) {
             $specs['spec']['tls'][] = [
                 'hosts' => [$ingress->getHost()],
-                'secretName' => $ingress->getTlsSecret() . self::SECRET_SUFFIX,
+                'secretName' => $prefixer($ingress->getTlsSecret() . self::SECRET_SUFFIX),
             ];
         }
 
@@ -160,6 +161,7 @@ class IngressTranscriber implements ExposingInterface
         ?string $defaultIngressService,
         ?int $defaultIngressPort,
         array $defaultIngressAnnotations,
+        callable $prefixer,
     ): KubeIngress {
         return new KubeIngress(
             static::writeSpec(
@@ -169,6 +171,7 @@ class IngressTranscriber implements ExposingInterface
                 $defaultIngressService,
                 $defaultIngressPort,
                 $defaultIngressAnnotations,
+                $prefixer,
             )
         );
     }
@@ -188,6 +191,7 @@ class IngressTranscriber implements ExposingInterface
             static function (
                 Ingress $ingress,
                 string $namespace,
+                string $prefix,
             ) use (
                 $client,
                 $promise,
@@ -196,6 +200,7 @@ class IngressTranscriber implements ExposingInterface
                 $defaultIngressPort,
                 $defaultIngressAnnotations,
             ) {
+                $prefixer = self::createPrefixer($prefix);
                 $kubIngress = self::convertToIngress(
                     $ingress,
                     $namespace,
@@ -203,6 +208,7 @@ class IngressTranscriber implements ExposingInterface
                     $defaultIngressService,
                     $defaultIngressPort,
                     $defaultIngressAnnotations,
+                    $prefixer,
                 );
 
                 try {
@@ -211,7 +217,7 @@ class IngressTranscriber implements ExposingInterface
                     }
 
                     $ingressRepository = $client->ingresses();
-                    $name = $kubIngress->getMetadata('name') ?? $ingress->getName() . self::NAME_SUFFIX;
+                    $name = $kubIngress->getMetadata('name') ?? $prefixer($ingress->getName() . self::NAME_SUFFIX);
                     if ($ingressRepository->exists($name)) {
                         $result = $ingressRepository->update($kubIngress);
                     } else {

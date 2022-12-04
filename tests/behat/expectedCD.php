@@ -6,12 +6,17 @@ namespace Teknoo\Tests\East\Paas\Behat;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 
-return static function (bool $hnc, string $hncSuffix): CompiledDeployment {
+return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledDeployment {
     $cd = new CompiledDeployment(
         version: 1,
         namespace: 'behat-test' . $hncSuffix,
         hierarchicalNamespaces: $hnc,
+        prefix: $prefix
     );
+
+    if (!empty($prefix)) {
+        $prefix .= '-';
+    }
 
     $cd->addSecret(
         name: 'map-vault',
@@ -32,7 +37,7 @@ return static function (bool $hnc, string $hncSuffix): CompiledDeployment {
             name: 'map-vault2',
             provider: 'map',
             options: [
-                'hello' => 'world',
+                'hello' => $prefix . 'world',
             ],
             type: 'default',
         ),
@@ -68,7 +73,7 @@ return static function (bool $hnc, string $hncSuffix): CompiledDeployment {
             name: 'map2',
             options: [
                 'foo' => 'bar',
-                'bar' => 'foo',
+                'bar' => $prefix . 'foo',
             ],
         ),
     );

@@ -70,6 +70,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
     private const CONFIG_KEY_VERSION = 'version';
     private const CONFIG_KEY_NAMESPACE = 'namespace';
     private const CONFIG_KEY_HNC = 'hierarchical-namespaces';
+    private const CONFIG_KEY_PREFIX = 'prefix';
 
     private const CONFIG_DEFAULTS = '[defaults]';
     private const CONFIG_KEY_STORAGE_PROVIDER = 'storage-provider';
@@ -225,6 +226,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                     [
                         self::CONFIG_KEY_VERSION => 'v1',
                         self::CONFIG_KEY_NAMESPACE => 'default',
+                        self::CONFIG_KEY_PREFIX => null,
                     ],
                     function ($paas) use ($promise, $storageIdentifier, $storageSize, $ociRegistryConfig): void {
                         if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
@@ -236,19 +238,21 @@ class Conductor implements ConductorInterface, AutomatedInterface
                         $version = (int) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
                         $namespace = $paas[self::CONFIG_KEY_NAMESPACE] ?? 'default';
                         $hierarchicalNamespaces = $paas[self::CONFIG_KEY_HNC] ?? false;
+                        $prefix = $paas[self::CONFIG_KEY_PREFIX] ?? null;
 
                         try {
                             $compiledDeployment = $this->factory->build(
-                                $version,
-                                $namespace,
-                                !empty($hierarchicalNamespaces)
+                                version: $version,
+                                namespace: $namespace,
+                                hierarchicalNamespaces: !empty($hierarchicalNamespaces),
+                                prefix: $prefix,
                             );
 
                             $this->extractAndCompile(
                                 $compiledDeployment,
                                 $storageIdentifier ?? $this->storageIdentifier,
                                 $storageSize ?? $this->storageSize,
-                                $ociRegistryConfig ?? $this->defaultOciRegistryConfig
+                                $ociRegistryConfig ?? $this->defaultOciRegistryConfig,
                             );
 
                             $promise->success($compiledDeployment);

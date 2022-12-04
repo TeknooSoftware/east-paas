@@ -31,8 +31,20 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-trait CleaningTrait
+trait CommonTrait
 {
+    private static function createPrefixer(?string $prefix): callable
+    {
+        return static function (string $value) use ($prefix): string {
+            if (empty($prefix)) {
+                return $value;
+            }
+
+            return $prefix . '-' . $value;
+        };
+    }
+
+
     /**
      * @param array<string, string|array<string, mixed>>|null $result
      * @return array<string, string|array<string, mixed>>|null

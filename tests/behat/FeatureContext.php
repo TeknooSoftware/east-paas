@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Behat;
 
 use Behat\Behat\Context\Context;
-use DateTime;
 use DI\Container as DiContainer;
-use Doctrine\ODM\MongoDB\Query\Query;
-use Doctrine\Persistence\ObjectManager;
-use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
+use DateTime;
 use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
+use Doctrine\ODM\MongoDB\Query\Query;
+use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
+use Doctrine\Persistence\ObjectManager;
 use Maclof\Kubernetes\Client;
 use Maclof\Kubernetes\Models\Model;
 use Maclof\Kubernetes\Repositories\Repository;
@@ -24,23 +24,35 @@ use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder as SfContainerBuilder;
-use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Kernel as BaseKernel;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Teknoo\DI\SymfonyBridge\DIBridgeBundle;
 use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
-use Teknoo\East\FoundationBundle\EastFoundationBundle;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Common\Object\User;
+use Teknoo\East\Common\Service\DatesService;
+use Teknoo\East\FoundationBundle\EastFoundationBundle;
 use Teknoo\East\Paas\Cluster\Directory;
-use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
+use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
+use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
+use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
+use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
@@ -49,28 +61,17 @@ use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\GitRepository;
-use Teknoo\East\Paas\Object\ImageRegistry;
 use Teknoo\East\Paas\Object\History;
+use Teknoo\East\Paas\Object\ImageRegistry;
 use Teknoo\East\Paas\Object\Job as OriJob;
-use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
 use Teknoo\East\Paas\Object\Project as OriProject;
-use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
-use Teknoo\East\Common\Service\DatesService;
-use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
-use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\Immutable\ImmutableTrait;
-use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
-use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Symfony\Component\DependencyInjection\Container;
 use Throwable;
 use Traversable;
 
+use function base64_encode;
 use function dirname;
 use function json_decode;
 use function json_encode;
@@ -127,6 +128,11 @@ class FeatureContext implements Context
      * @var string
      */
     private $projectName;
+
+    /**
+     * @var string
+     */
+    private static string $projectPrefix = '';
 
     /**
      * @var string
@@ -511,11 +517,13 @@ class FeatureContext implements Context
 
     /**
      * @Given a project on this account :name with the id :id
+     * @Given a project on this account :name with the id :id and a prefix :prefix
      */
-    public function aProjectOnThisAccountWithTheId($name, $id)
+    public function aProjectOnThisAccountWithTheId($name, $id, $prefix='')
     {
         $this->projectName = $name;
         $this->projectId = $id;
+        self::$projectPrefix = $prefix;
 
         $this->repositories[Project::class]->register(
             $id,
@@ -685,6 +693,7 @@ class FeatureContext implements Context
                 'name' => $this->projectName,
             ],
             'base_namespace' => 'behat-test',
+            'prefix' => self::$projectPrefix,
             'hierarchical_namespaces' => $hnc,
             'environment' => [
                 '@class' => Environment::class,
@@ -944,7 +953,7 @@ maps:
     key2: ${FOO}
   map2:
     foo: bar
-    bar: foo
+    bar: R{foo}
 
 #Secrets provider
 secrets:
@@ -956,7 +965,7 @@ secrets:
   map-vault2:
     provider: map #Internal secrets, must be passed in this file
     options:
-      hello: world
+      hello: R{world}
   volume-vault:
     provider: map
     type: foo
@@ -1382,7 +1391,11 @@ EOF;
     {
         try {
             Assert::assertEquals(
-                var_export($ecd = (include('expectedCD.php'))(self::$useHnc, self::$hncSuffix), true),
+                var_export($ecd = (include('expectedCD.php'))(
+                    self::$useHnc,
+                    self::$hncSuffix,
+                    self::$projectPrefix
+                ), true),
                 var_export($cd, true)
             );
         } catch (Throwable $e) {
@@ -1397,6 +1410,11 @@ EOF;
     {
         $hncSuffix = self::$hncSuffix;
         $nameHnc = trim($hncSuffix, '-');
+
+        $prefix = self::$projectPrefix;
+        if (!empty($prefix)) {
+            $prefix .= '-';
+        }
 
         $hncManifest = '';
         if (self::$useHnc) {
@@ -1416,15 +1434,17 @@ EOF;
 EOF;
         }
 
+        $secret = base64_encode($prefix . 'world');
+
         $excepted = <<<"EOF"
 {
     $hncManifest"Maclof\\Kubernetes\\Models\\Secret": [
         {
             "metadata": {
-                "name": "map-vault-secret",
+                "name": "{$prefix}map-vault-secret",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "map-vault"
+                    "name": "{$prefix}map-vault"
                 }
             },
             "type": "Opaque",
@@ -1435,23 +1455,23 @@ EOF;
         },
         {
             "metadata": {
-                "name": "map-vault2-secret",
+                "name": "{$prefix}map-vault2-secret",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "map-vault2"
+                    "name": "{$prefix}map-vault2"
                 }
             },
             "type": "Opaque",
             "data": {
-                "hello": "d29ybGQ="
+                "hello": "$secret"
             }
         },
         {
             "metadata": {
-                "name": "volume-vault-secret",
+                "name": "{$prefix}volume-vault-secret",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "volume-vault"
+                    "name": "{$prefix}volume-vault"
                 }
             },
             "type": "foo",
@@ -1464,10 +1484,10 @@ EOF;
     "Maclof\\Kubernetes\\Models\\ConfigMap": [
         {
             "metadata": {
-                "name": "map1-map",
+                "name": "{$prefix}map1-map",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "map1"
+                    "name": "{$prefix}map1"
                 }
             },
             "data": {
@@ -1477,25 +1497,25 @@ EOF;
         },
         {
             "metadata": {
-                "name": "map2-map",
+                "name": "{$prefix}map2-map",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "map2"
+                    "name": "{$prefix}map2"
                 }
             },
             "data": {
                 "foo": "bar",
-                "bar": "foo"
+                "bar": "{$prefix}foo"
             }
         }
     ],
     "Maclof\\Kubernetes\\Models\\PersistentVolumeClaim": [
         {
             "metadata": {
-                "name": "data",
+                "name": "{$prefix}data",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "data"
+                    "name": "{$prefix}data"
                 }
             },
             "spec": {
@@ -1514,10 +1534,10 @@ EOF;
     "Maclof\\Kubernetes\\Models\\ReplicaSet": [
         {
             "metadata": {
-                "name": "php-pods-ctrl-v1",
+                "name": "{$prefix}php-pods-ctrl-v1",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "php-pods"
+                    "name": "{$prefix}php-pods"
                 },
                 "annotations": {
                     "teknoo.space.version": "v1"
@@ -1527,16 +1547,16 @@ EOF;
                 "replicas": 2,
                 "selector": {
                     "matchLabels": {
-                        "vname": "php-pods-v1"
+                        "vname": "{$prefix}php-pods-v1"
                     }
                 },
                 "template": {
                     "metadata": {
-                        "name": "php-pods-pod",
+                        "name": "{$prefix}php-pods-pod",
                         "namespace": "behat-test{$hncSuffix}",
                         "labels": {
-                            "name": "php-pods",
-                            "vname": "php-pods-v1"
+                            "name": "{$prefix}php-pods",
+                            "vname": "{$prefix}php-pods-v1"
                         }
                     },
                     "spec": {
@@ -1561,12 +1581,12 @@ EOF;
                                 "envFrom": [
                                     {
                                         "secretRef": {
-                                            "name": "map-vault2-secret"
+                                            "name": "{$prefix}map-vault2-secret"
                                         }
                                     },
                                     {
                                         "configMapRef": {
-                                            "name": "map2-map"
+                                            "name": "{$prefix}map2-map"
                                         }
                                     }
                                 ],
@@ -1579,7 +1599,7 @@ EOF;
                                         "name": "KEY1",
                                         "valueFrom": {
                                             "secretKeyRef": {
-                                                "name": "map-vault-secret",
+                                                "name": "{$prefix}map-vault-secret",
                                                 "key": "key1"
                                             }
                                         }
@@ -1588,7 +1608,7 @@ EOF;
                                         "name": "KEY2",
                                         "valueFrom": {
                                             "secretKeyRef": {
-                                                "name": "map-vault-secret",
+                                                "name": "{$prefix}map-vault-secret",
                                                 "key": "key2"
                                             }
                                         }
@@ -1597,7 +1617,7 @@ EOF;
                                         "name": "KEY0",
                                         "valueFrom": {
                                             "configMapKeyRef": {
-                                                "name": "map1-map",
+                                                "name": "{$prefix}map1-map",
                                                 "key": "key0"
                                             }
                                         }
@@ -1649,19 +1669,19 @@ EOF;
                             {
                                 "name": "data-volume",
                                 "persistentVolumeClaim": {
-                                    "claimName": "data"
+                                    "claimName": "{$prefix}data"
                                 }
                             },
                             {
                                 "name": "map-volume",
                                 "configMap": {
-                                    "name": "map2-map"
+                                    "name": "{$prefix}map2-map"
                                 }
                             },
                             {
                                 "name": "vault-volume",
                                 "secret": {
-                                    "secretName": "volume-vault-secret"
+                                    "secretName": "{$prefix}volume-vault-secret"
                                 }
                             }
                         ]
@@ -1671,10 +1691,10 @@ EOF;
         },
         {
             "metadata": {
-                "name": "demo-ctrl-v1",
+                "name": "{$prefix}demo-ctrl-v1",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "demo"
+                    "name": "{$prefix}demo"
                 },
                 "annotations": {
                     "teknoo.space.version": "v1"
@@ -1684,16 +1704,16 @@ EOF;
                 "replicas": 1,
                 "selector": {
                     "matchLabels": {
-                        "vname": "demo-v1"
+                        "vname": "{$prefix}demo-v1"
                     }
                 },
                 "template": {
                     "metadata": {
-                        "name": "demo-pod",
+                        "name": "{$prefix}demo-pod",
                         "namespace": "behat-test{$hncSuffix}",
                         "labels": {
-                            "name": "demo",
-                            "vname": "demo-v1"
+                            "name": "{$prefix}demo",
+                            "vname": "{$prefix}demo-v1"
                         }
                     },
                     "spec": {
@@ -1749,15 +1769,15 @@ EOF;
     "Maclof\\Kubernetes\\Models\\Service": [
         {
             "metadata": {
-                "name": "php-service",
+                "name": "{$prefix}php-service",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "php-service"
+                    "name": "{$prefix}php-service"
                 }
             },
             "spec": {
                 "selector": {
-                    "name": "php-pods"
+                    "name": "{$prefix}php-pods"
                 },
                 "type": "LoadBalancer",
                 "ports": [
@@ -1772,15 +1792,15 @@ EOF;
         },
         {
             "metadata": {
-                "name": "demo",
+                "name": "{$prefix}demo",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "demo"
+                    "name": "{$prefix}demo"
                 }
             },
             "spec": {
                 "selector": {
-                    "name": "demo"
+                    "name": "{$prefix}demo"
                 },
                 "type": "ClusterIP",
                 "ports": [
@@ -1803,10 +1823,10 @@ EOF;
     "Maclof\\Kubernetes\\Models\\Ingress": [
         {
             "metadata": {
-                "name": "demo-ingress",
+                "name": "{$prefix}demo-ingress",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "demo"
+                    "name": "{$prefix}demo"
                 },
                 "annotations": {
                     "foo": "bar"
@@ -1823,7 +1843,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "demo",
+                                            "name": "{$prefix}demo",
                                             "port": {
                                                 "number": 8080
                                             }
@@ -1835,7 +1855,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "php-service",
+                                            "name": "{$prefix}php-service",
                                             "port": {
                                                 "number": 9876
                                             }
@@ -1851,17 +1871,17 @@ EOF;
                         "hosts": [
                             "demo-paas.teknoo.software"
                         ],
-                        "secretName": "demo_vault-secret"
+                        "secretName": "{$prefix}demo_vault-secret"
                     }
                 ]
             }
         },
         {
             "metadata": {
-                "name": "demo-secure-ingress",
+                "name": "{$prefix}demo-secure-ingress",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "demo-secure"
+                    "name": "{$prefix}demo-secure"
                 },
                 "annotations": {
                     "foo": "bar",
@@ -1879,7 +1899,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "demo",
+                                            "name": "{$prefix}demo",
                                             "port": {
                                                 "number": 8181
                                             }
@@ -1895,7 +1915,7 @@ EOF;
                         "hosts": [
                             "demo-secure.teknoo.software"
                         ],
-                        "secretName": "demo_vault-secret"
+                        "secretName": "{$prefix}demo_vault-secret"
                     }
                 ]
             }

@@ -79,6 +79,8 @@ class Job implements
 
     protected bool $hierarchicalNamespaces = false;
 
+    protected ?string $prefix = null;
+
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
     protected ?ImageRegistryInterface $imagesRegistry = null;
@@ -170,6 +172,13 @@ class Job implements
         return $this;
     }
 
+    public function setPrefix(?string $prefix): Job
+    {
+        $this->prefix = $prefix;
+
+        return $this;
+    }
+
     public function useHierarchicalNamespaces(bool $hierarchicalNamespaces): Job
     {
         $this->hierarchicalNamespaces = $hierarchicalNamespaces;
@@ -235,6 +244,7 @@ class Job implements
             'id' => $this->getId(),
             'project' => $this->project,
             'base_namespace' => $this->baseNamespace,
+            'prefix' => $this->prefix,
             'hierarchical_namespaces' => $this->hierarchicalNamespaces,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,

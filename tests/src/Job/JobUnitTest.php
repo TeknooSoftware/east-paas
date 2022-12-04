@@ -116,12 +116,14 @@ class JobUnitTest extends TestCase
         bool $hierarchicalNS = false,
         ImageRegistryInterface $imageRegistry = null,
         string $id = 'test',
+        string $prefix = 'bar',
     ) {
         return (new JobUnit(
             $id,
             ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
             new Environment('foo'),
             $namespace,
+            $prefix,
             $this->getSourceRepositoryMock(),
             $imageRegistry ?? $this->getImagesRegistryMock(),
             [$this->getClusterMock()],
@@ -345,6 +347,7 @@ class JobUnitTest extends TestCase
                 'project' => ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
                 'environment' => new Environment('foo'),
                 'base_namespace' => 'foo',
+                'prefix' => 'bar',
                 'hierarchical_namespaces' => false,
                 'source_repository' => $this->getSourceRepositoryMock(),
                 'images_repository' => $this->getImagesRegistryMock(),
@@ -370,6 +373,7 @@ class JobUnitTest extends TestCase
                 '${foo}',
                 '${foo} text ${bar}',
             ],
+            'test-prefix' => 'R{value}/bar',
             '${foo}' => 'text'
         ];
 
@@ -384,7 +388,7 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $this->buildObject(imageRegistry: $imageRegistry)->updateVariablesIn(
+            $this->buildObject(imageRegistry: $imageRegistry, prefix: '')->updateVariablesIn(
                 $ori,
                 new Promise(
                     function (array $result) {
@@ -395,9 +399,11 @@ class JobUnitTest extends TestCase
                                     'bar',
                                     'bar text FOO',
                                 ],
+                                'test-prefix' => 'value/bar',
                                 '${foo}' => 'text',
                                 'paas' => [
                                     'namespace' => 'foo',
+                                    'prefix' => '',
                                     'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [
@@ -454,6 +460,7 @@ class JobUnitTest extends TestCase
                                 '${foo}' => 'text',
                                 'paas' => [
                                     'namespace' => 'foo',
+                                    'prefix' => 'bar',
                                     'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [
@@ -507,6 +514,7 @@ class JobUnitTest extends TestCase
                                 '${foo}' => 'text',
                                 'paas' => [
                                     'namespace' => 'foo',
+                                    'prefix' => 'bar',
                                     'hierarchical-namespaces' => false,
                                 ],
                             ],
@@ -548,6 +556,51 @@ class JobUnitTest extends TestCase
                                 '${foo}' => 'text',
                                 'paas' => [
                                     'namespace' => 'foo',
+                                    'prefix' => 'bar',
+                                    'hierarchical-namespaces' => false,
+                                ]
+                            ],
+                            $result
+                        );
+                    },
+                    function (\Throwable  $error): never {
+                        throw $error;
+                    }
+                )
+            )
+        );
+    }
+
+    public function testUpdateVariablesInWithPrefix()
+    {
+        $ori = [
+            'foo' => 'foo',
+            'bar' => [
+                '${foo}',
+                '${foo} text ${bar}',
+            ],
+            'test-prefix' => 'R{value}/bar',
+            '${foo}' => 'text'
+        ];
+
+        self::assertInstanceOf(
+            JobUnit::class,
+            $this->buildObject(hierarchicalNS: false, prefix: 'a-prefix')->updateVariablesIn(
+                $ori,
+                new Promise(
+                    function (array $result) {
+                        self::assertEquals(
+                            [
+                                'foo' => 'foo',
+                                'bar' => [
+                                    'bar',
+                                    'bar text FOO',
+                                ],
+                                'test-prefix' => 'a-prefix-value/bar',
+                                '${foo}' => 'text',
+                                'paas' => [
+                                    'namespace' => 'foo',
+                                    'prefix' => 'a-prefix',
                                     'hierarchical-namespaces' => false,
                                 ]
                             ],
@@ -589,6 +642,7 @@ class JobUnitTest extends TestCase
                                 '${foo}' => 'text',
                                 'paas' => [
                                     'namespace' => 'foo-hllobar',
+                                    'prefix' => 'bar',
                                     'hierarchical-namespaces' => true,
                                 ]
                             ],
@@ -630,6 +684,7 @@ class JobUnitTest extends TestCase
                                 '${foo}' => 'text',
                                 'paas' => [
                                     'namespace' => 'hllobar',
+                                    'prefix' => 'bar',
                                     'hierarchical-namespaces' => false,
                                 ]
                             ],
@@ -658,6 +713,7 @@ class JobUnitTest extends TestCase
                             [
                                 'paas' => [
                                     'namespace' => 'hllobar',
+                                    'prefix' => 'bar',
                                     'hierarchical-namespaces' => false,
                                 ]
                             ],

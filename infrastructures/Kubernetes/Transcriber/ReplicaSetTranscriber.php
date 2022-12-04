@@ -55,7 +55,7 @@ use function substr;
  */
 class ReplicaSetTranscriber implements DeploymentInterface
 {
-    use CleaningTrait;
+    use CommonTrait;
 
     private const NAME_SUFFIX = '-ctrl';
     private const POD_SUFFIX = '-pod';
@@ -72,7 +72,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
      * @param array<string, > $specs
      * @param array<string, array<string, Image>>|Image[][] $images
      */
-    private static function convertToContainer(array &$specs, Pod $pod, array $images): void
+    private static function convertToContainer(array &$specs, Pod $pod, array $images, callable $prefixer,): void
     {
         foreach ($pod as $container) {
             if (isset($images[$container->getImage()][$container->getVersion()])) {
@@ -98,7 +98,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     if ($value->isImportAll()) {
                         $spec['envFrom'][] = [
                             'secretRef' => [
-                                'name' => $value->getName() . self::SECRET_SUFFIX,
+                                'name' => $prefixer($value->getName() . self::SECRET_SUFFIX),
                             ],
                         ];
 
@@ -109,7 +109,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                         'name' => $name,
                         'valueFrom' => [
                             'secretKeyRef' => [
-                                'name' => $value->getName() . self::SECRET_SUFFIX,
+                                'name' => $prefixer($value->getName() . self::SECRET_SUFFIX),
                                 'key' => $value->getKey(),
                             ],
                         ],
@@ -122,7 +122,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     if ($value->isImportAll()) {
                         $spec['envFrom'][] = [
                             'configMapRef' => [
-                                'name' => $value->getName() . self::MAP_SUFFIX,
+                                'name' => $prefixer($value->getName() . self::MAP_SUFFIX),
                             ],
                         ];
 
@@ -133,7 +133,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                         'name' => $name,
                         'valueFrom' => [
                             'configMapKeyRef' => [
-                                'name' => $value->getName() . self::MAP_SUFFIX,
+                                'name' => $prefixer($value->getName() . self::MAP_SUFFIX),
                                 'key' => $value->getKey(),
                             ],
                         ],
@@ -173,14 +173,14 @@ class ReplicaSetTranscriber implements DeploymentInterface
      * @param array<string, mixed> $specs
      * @param array<string, SecretVolume|MapVolume|Volume> $volumes
      */
-    private static function convertToVolumes(array &$specs, array $volumes): void
+    private static function convertToVolumes(array &$specs, array $volumes, callable $prefixer,): void
     {
         foreach ($volumes as $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
                 $specs['spec']['template']['spec']['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'persistentVolumeClaim' => [
-                        'claimName' => $volume->getName(),
+                        'claimName' => $prefixer($volume->getName()),
                     ],
                 ];
 
@@ -191,7 +191,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                 $specs['spec']['template']['spec']['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'secret' => [
-                        'secretName' => $volume->getSecretIdentifier() . self::SECRET_SUFFIX,
+                        'secretName' => $prefixer($volume->getSecretIdentifier() . self::SECRET_SUFFIX),
                     ],
                 ];
 
@@ -202,7 +202,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                 $specs['spec']['template']['spec']['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'configMap' => [
-                        'name' => $volume->getMapIdentifier() . self::MAP_SUFFIX,
+                        'name' => $prefixer($volume->getMapIdentifier() . self::MAP_SUFFIX),
                     ],
                 ];
 
@@ -240,22 +240,25 @@ class ReplicaSetTranscriber implements DeploymentInterface
         array $images,
         array $volumes,
         string $namespace,
-        int $version
+        int $version,
+        callable $prefixer,
     ): array {
-        $hostAliases = [
+        $hostAlias = [
             'hostnames' => [],
             'ip' => '127.0.0.1',
         ];
         foreach ($pod as $container) {
-            $hostAliases['hostnames'][] = $container->getName();
+            $hostAlias['hostnames'][] = $container->getName();
         }
+
+        $hostAliases = [$hostAlias];
 
         $specs = [
             'metadata' => [
                 'name' => $name . self::NAME_SUFFIX . '-v' . $version,
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $pod->getName(),
+                    'name' => $prefixer($pod->getName()),
                 ],
                 'annotations' => [
                     'teknoo.space.version' => 'v' . $version,
@@ -270,15 +273,15 @@ class ReplicaSetTranscriber implements DeploymentInterface
                 ],
                 'template' => [
                     'metadata' => [
-                        'name' => $pod->getName() . self::POD_SUFFIX,
+                        'name' => $prefixer($pod->getName() . self::POD_SUFFIX),
                         'namespace' => $namespace,
                         'labels' => [
-                            'name' => $pod->getName(),
+                            'name' => $prefixer($pod->getName()),
                             'vname' => $name . '-v' . $version,
                         ],
                     ],
                     'spec' => [
-                        'hostAliases' => [$hostAliases],
+                        'hostAliases' => $hostAliases,
                         'containers' => [],
                     ],
                 ],
@@ -291,8 +294,8 @@ class ReplicaSetTranscriber implements DeploymentInterface
             ];
         }
 
-        self::convertToVolumes($specs, $volumes);
-        self::convertToContainer($specs, $pod, $images);
+        self::convertToVolumes($specs, $volumes, $prefixer);
+        self::convertToContainer($specs, $pod, $images, $prefixer);
 
         return $specs;
     }
@@ -306,7 +309,8 @@ class ReplicaSetTranscriber implements DeploymentInterface
         array $images,
         array $volumes,
         string $namespace,
-        int $version
+        int $version,
+        callable $prefixer,
     ): ReplicaSet {
         return new ReplicaSet(
             static::writeSpec(
@@ -316,6 +320,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                 $volumes,
                 $namespace,
                 $version,
+                $prefixer,
             )
         );
     }
@@ -332,17 +337,19 @@ class ReplicaSetTranscriber implements DeploymentInterface
                 array $images,
                 array $volumes,
                 string $namespace,
+                string $prefix,
             ) use (
                 $client,
                 $promise,
                 $podDeletionWaitTime,
             ): void {
+                $prefixer = self::createPrefixer($prefix);
                 try {
                     if (!empty($namespace)) {
                         $client->setNamespace($namespace);
                     }
 
-                    $name = $pod->getName();
+                    $name = $prefixer($pod->getName());
                     $rcRepository = $client->replicaSets();
 
                     $ctl = $rcRepository->setLabelSelector(['name' => $name])->first();
@@ -369,6 +376,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     volumes: $volumes,
                     namespace: $namespace,
                     version: $version,
+                    prefixer: $prefixer,
                 );
 
                 try {

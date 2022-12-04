@@ -8,6 +8,7 @@
     <document name="Teknoo\East\Paas\Object\Project" collection="projects" inheritance-type="COLLECTION_PER_CLASS">
         <id type="string" strategy="UUID"/>
         <field field-name="name" type="string" nullable="false"/>
+        <field field-name="prefix" type="string" nullable="true"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
         <field field-name="updatedAt" name="updated_at" type="date" />
         <embed-one field-name="sourceRepository" field="source_repository" target-document="Teknoo\East\Paas\Object\GitRepository" nullable="false"/>

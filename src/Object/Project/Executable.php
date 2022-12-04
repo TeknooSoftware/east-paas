@@ -67,6 +67,7 @@ class Executable implements StateInterface
             $job->setSourceRepository($this->getSourceRepository());
             $job->setImagesRegistry($this->getImagesRegistry());
             $job->setBaseNamespace($namespace);
+            $job->setPrefix($this->getPrefix());
             $job->useHierarchicalNamespaces($hierarchicalNamespaces);
 
             foreach ($this->clusters as $cluster) {

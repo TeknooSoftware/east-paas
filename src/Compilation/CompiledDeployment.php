@@ -39,6 +39,7 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 
+use function array_keys;
 use function is_string;
 use function str_contains;
 
@@ -95,6 +96,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
         private readonly int $version,
         private readonly string $namespace,
         private readonly bool $hierarchicalNamespaces,
+        private readonly ?string $prefix,
     ) {
     }
 
@@ -216,7 +218,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
     public function forNamespace(callable $callback): CompiledDeploymentInterface
     {
-        $callback($this->namespace, $this->hierarchicalNamespaces);
+        $callback($this->namespace, $this->hierarchicalNamespaces, $this->prefix);
 
         return $this;
     }
@@ -233,13 +235,13 @@ class CompiledDeployment implements CompiledDeploymentInterface
     public function foreachVolume(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->volumes as $name => $volume) {
-            $callback($name, $volume, $this->namespace);
+            $callback($name, $volume, $this->namespace, $this->prefix);
         }
 
         foreach ($this->pods as $pod) {
             foreach ($pod as $container) {
                 foreach ($container->getVolumes() as $name => $volume) {
-                    $callback($name, $volume, $this->namespace);
+                    $callback($name, $volume, $this->namespace, $this->prefix);
                 }
             }
         }
@@ -264,7 +266,8 @@ class CompiledDeployment implements CompiledDeploymentInterface
                 if ($this->hasBuildable($buildable, $version)) {
                     $callback(
                         $this->getBuildable($buildable, $version),
-                        $this->namespace
+                        $this->namespace,
+                        $this->prefix,
                     );
                 }
             }
@@ -276,7 +279,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
     public function foreachSecret(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->secrets as $secret) {
-            $callback($secret, $this->namespace);
+            $callback($secret, $this->namespace, $this->prefix);
         }
 
         return $this;
@@ -285,7 +288,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
     public function foreachMap(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->maps as $map) {
-            $callback($map, $this->namespace);
+            $callback($map, $this->namespace, $this->prefix);
         }
 
         return $this;
@@ -312,7 +315,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
                 }
             }
 
-            $callback($pod, $buildables, $volumes, $this->namespace);
+            $callback($pod, $buildables, $volumes, $this->namespace, $this->prefix);
         }
 
         return $this;
@@ -321,7 +324,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
     public function foreachService(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->services as $service) {
-            $callback($service, $this->namespace);
+            $callback($service, $this->namespace, $this->prefix);
         }
 
         return $this;
@@ -330,7 +333,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
     public function foreachIngress(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->ingresses as $ingress) {
-            $callback($ingress, $this->namespace);
+            $callback($ingress, $this->namespace, $this->prefix);
         }
 
         return $this;

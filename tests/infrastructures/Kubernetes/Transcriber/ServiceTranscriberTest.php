@@ -38,7 +38,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
 class ServiceTranscriberTest extends TestCase
 {
@@ -58,11 +58,13 @@ class ServiceTranscriberTest extends TestCase
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(
                     new Service('foo', 'foo', [80 => 8080], Transport::Udp, false),
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 $callback(
                     new Service('foo', 'foo', [81 => 8081], Transport::Tcp, true),
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 return $cd;
             });
@@ -111,11 +113,13 @@ class ServiceTranscriberTest extends TestCase
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(
                     new Service('foo', 'foo', [80 => 8080], Transport::Tcp, false),
-                    'default_namespace'
+                    'default_namespace',
+                    'a-prefix',
                 );
                 $callback(
                     new Service('foo', 'foo', [81 => 8081], Transport::Tcp, true),
-                    'default_namespace'
+                    'default_namespace',
+                    '',
                 );
                 return $cd;
             });

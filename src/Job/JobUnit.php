@@ -75,6 +75,7 @@ class JobUnit implements JobUnitInterface
         private readonly array $projectResume,
         private readonly Environment $environment,
         private readonly ?string $baseNamespace,
+        private readonly ?string $prefix,
         private readonly SourceRepositoryInterface $sourceRepository,
         private readonly ImageRegistryInterface $imagesRegistry,
         private readonly array $clusters,
@@ -171,6 +172,7 @@ class JobUnit implements JobUnitInterface
             'id' => $this->getId(),
             'project' => $this->projectResume,
             'base_namespace' => $this->baseNamespace,
+            'prefix' => $this->prefix,
             'hierarchical_namespaces' => $this->hierarchicalNamespaces,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
@@ -203,6 +205,7 @@ class JobUnit implements JobUnitInterface
 
         $values['paas']['namespace'] = implode('-', $parts);
         $values['paas']['hierarchical-namespaces'] = $this->hierarchicalNamespaces;
+        $values['paas']['prefix'] = $this->prefix;
     }
 
     /**
@@ -225,7 +228,7 @@ class JobUnit implements JobUnitInterface
      */
     private function updateVariables(array &$values, PromiseInterface $promise): void
     {
-        $pattern = '#(\$\{[A-Za-z]\w*\})#iS';
+        $pattern = '#((?:\$|R)\{[A-Za-z]\w*\})#iS';
 
         $updateClosure = function (&$values, callable $recursive) use ($pattern) {
             foreach ($values as $name => &$value) {
@@ -235,11 +238,26 @@ class JobUnit implements JobUnitInterface
                     continue;
                 }
 
+                $prefix = $this->prefix;
+                if (!empty($prefix)) {
+                    $prefix .= '-';
+                }
+
                 $value = preg_replace_callback(
                     $pattern,
                     /** @var callable(array<int|string, string>) $matches */
-                    function (array $matches): string {
+                    function (
+                        array $matches,
+                    ) use (
+                        $prefix,
+                    ): string {
+                        $type = $matches[1][0];
                         $key = substr($matches[1], 2, -1);
+
+                        if ('R' === $type) {
+                            return $prefix . $key;
+                        }
+
                         if (!isset($this->variables[$key])) {
                             throw new DomainException("$key is not available into variables pass to job");
                         }

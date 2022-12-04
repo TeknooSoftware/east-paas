@@ -467,6 +467,7 @@ class JobTest extends TestCase
                 'clusters' => [],
                 'history' => null,
                 'base_namespace' => 'foo',
+                'prefix' => 'bar',
                 'hierarchical_namespaces' => false,
                 'extra' => ['foo' => 'bar', 'bar' => 'foo'],
             ]);
@@ -475,6 +476,7 @@ class JobTest extends TestCase
             Job::class,
             $this->buildObject()->setId('123')
                 ->setBaseNamespace('foo')
+                ->setPrefix('bar')
                 ->setExtra(['foo' => 'bar'])
                 ->setExtra(['bar' => 'foo'])
                 ->exportToMeData(

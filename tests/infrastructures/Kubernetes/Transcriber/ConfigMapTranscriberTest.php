@@ -37,7 +37,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CleaningTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
 class ConfigMapTranscriberTest extends TestCase
 {
@@ -54,9 +54,9 @@ class ConfigMapTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachMap')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Map('foo', ['foo' => 'bar']), 'default_namespace');
-                $callback(new Map('foo2', ['foo' => 'bar']), 'default_namespace');
-                $callback(new Map('foo3', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]]), 'default_namespace');
+                $callback(new Map('foo', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
+                $callback(new Map('foo2', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
+                $callback(new Map('foo3', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]]), 'default_namespace', 'a-prefix');
                 return $cd;
             });
 
@@ -102,8 +102,8 @@ class ConfigMapTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachMap')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Map('foo', ['foo' => 'bar']), 'default_namespace');
-                $callback(new Map('foo2', ['foo' => 'bar']), 'default_namespace');
+                $callback(new Map('foo', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
+                $callback(new Map('foo2', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
                 return $cd;
             });
 
