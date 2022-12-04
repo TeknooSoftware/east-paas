@@ -138,7 +138,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
    
     paas: #Dedicated to compiler
       version: v1
-    
+
     #Config
     maps:
       map1:
@@ -146,8 +146,8 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
         key2: ${FOO}
       map2:
         foo: bar
-        bar: foo
-    
+        bar: R{foo}
+
     #Secrets provider
     secrets:
       map-vault:
@@ -158,25 +158,33 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
       map-vault2:
         provider: map #Internal secrets, must be passed in this file
         options:
-          hello: world
+          hello: R{world}
       volume-vault:
         provider: map
+        type: foo
         options:
           foo: bar
           bar: foo
-    
+
     #Custom image, not available in the library
     images:
       foo:
         build-name: foo
         tag: latest
         path: '/images/${FOO}'
-    
+
     #Hook to build the project before container, Called in this order
     builds:
       composer-build: #Name of the step
-        composer: install #Hook to call
-    
+        composer:
+          action: install #Hook to call
+          arguments:
+            - 'no-dev'
+            - 'optimize-autoloader'
+            - 'classmap-authoritative'
+      custom-hook:
+        hook-id: foo bar
+
     #Volume to build to use with container
     volumes:
       extra: #Name of the volume
@@ -186,15 +194,15 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
       other_name: #Name of the volume
         add: #folder or file, from .paas.yaml where is located to add to the volume
           - 'vendor'
-    
+
     #Pods (set of container)
     pods:
       php-pods: #podset name
         replicas: 2 #instance of pods
         containers:
           php-run: #Container name
-            image: ${PHP_IMAGE} #Container image to use
-            version: ${PHP_VERSION}
+            image: registry.teknoo.software/php-run #Container image to use
+            version: 7.4
             listen: #Port listen by the container
               - 8080
             volumes: #Volumes to link
@@ -205,12 +213,17 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                 mount-path: '/opt/app' #Path where data will be stored
                 add: #folder or file, from .paas.yaml where is located to add to the volume
                   - 'src'
+                  - 'var'
                   - 'vendor'
                   - 'composer.json'
                   - 'composer.lock'
+                  - 'composer.phar'
+                writables:
+                  - 'var/*'
               data: #Persistent volume, can not be pre-populated
                 mount-path: '/opt/data'
                 persistent: true
+                storage-size: 3Gi
               map:
                 mount-path: '/map'
                 from-map: 'map2'
@@ -228,7 +241,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                 KEY2: 'map-vault.key2'
               import-secrets:
                 - 'map-vault2'
-      demo-pods:
+      demo:
         replicas: 1
         containers:
           nginx:
@@ -236,6 +249,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
             version: alpine
             listen: #Port listen by the container
               - 8080
+              - 8181
             volumes:
               www:
                 mount-path: '/var'
@@ -245,7 +259,15 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                 mount-path: '/etc/nginx/conf.d/'
                 add:
                   - 'nginx/conf.d/default.conf'
-    
+          blackfire:
+            image: 'blackfire/blackfire'
+            version: '2'
+            listen:
+              - 8307
+            variables:
+              BLACKFIRE_SERVER_ID: 'foo'
+              BLACKFIRE_SERVER_TOKEN: 'bar'
+
     #Pods expositions
     services:
       php-service: #Service name
@@ -255,26 +277,35 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
         ports:
           - listen: 9876 #Port listened
             target: 8080 #Pod's port targeted
-      demo-service: #Service name
-        pod: "demo-pods" #Pod name, use service name by default
+      demo: #Service name
         ports:
           - listen: 8080 #Port listened
             target: 8080 #Pod's port targeted
-    
+          - listen: 8181 #Port listened
+            target: 8181 #Pod's port targeted
+
     #Ingresses configuration
     ingresses:
       demo: #rule name
-        host: ${PROJECT_URL}
+        host: demo-paas.teknoo.software
         tls:
-          secret: "tls-vault" #Configure the orchestrator to fetch value from vault
+          secret: "demo_vault" #Configure the orchestrator to fetch value from vault
         service: #default service
-          name: demo-service
+          name: demo
           port: 8080
         paths:
           - path: /php
             service:
               name: php-service
               port: 9876
+      demo-secure: #rule name
+        host: demo-secure.teknoo.software
+        https-backend: true
+        tls:
+          secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+        service: #default service
+          name: demo
+          port: 8181
 
 
 Support this project
