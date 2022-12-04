@@ -17,7 +17,7 @@ Feature: Create a job, aka a new deployment
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
     And a cluster "kubernetes" dedicated to the environment "prod"
-    And a doctrine repository
+    And a oci repository
     And a repository on the url "https://github.com/foo/bar"
     And the platform is booted
     When I call the PaaS with this PUT request "/project/projectid/environment/dev/job/create"
@@ -29,7 +29,7 @@ Feature: Create a job, aka a new deployment
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
     And a cluster "kubernetes" dedicated to the environment "prod"
-    And a doctrine repository
+    And a oci repository
     And the platform is booted
     When I call the PaaS with this PUT request "/project/projectid/environment/prod/job/create"
     Then I must obtain an HTTP answer with this status code equals to "501".
@@ -40,7 +40,7 @@ Feature: Create a job, aka a new deployment
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
     And a cluster "kubernetes" dedicated to the environment "prod"
-    And a doctrine repository
+    And a oci repository
     And a repository on the url "https://github.com/foo/bar"
     And the platform is booted
     When I call the PaaS with this PUT request "/project/projectid/environment/prod/job/create"
@@ -52,7 +52,7 @@ Feature: Create a job, aka a new deployment
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
     And a cluster "kubernetes" dedicated to the environment "prod"
-    And a doctrine repository
+    And a oci repository
     And a repository on the url "https://github.com/foo/bar"
     And the platform is booted
     When I call the PaaS with this PUT request "/project/projectid/environment/prod/job/create" with body '{"foo": "bar", "bar": "foo"}' and content type defined to "application/json"
@@ -65,7 +65,7 @@ Feature: Create a job, aka a new deployment
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
     And a cluster "kubernetes" dedicated to the environment "prod"
-    And a doctrine repository
+    And a oci repository
     And a repository on the url "https://github.com/foo/bar"
     And the platform is booted
     When I call the PaaS with this PUT request "/project/projectid/environment/prod/job/create"
@@ -78,7 +78,7 @@ Feature: Create a job, aka a new deployment
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
     And a cluster "kubernetes" dedicated to the environment "prod"
-    And a doctrine repository
+    And a oci repository
     And a repository on the url "https://github.com/foo/bar"
     And the platform is booted
     When I call the PaaS with this PUT request "/project/projectid/environment/prod/job/create" with body '{"foo": "bar", "bar": "foo"}' and content type defined to "application/json"

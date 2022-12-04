@@ -48,10 +48,12 @@ use Throwable;
 
 use function implode;
 use function is_array;
+use function preg_replace;
 use function preg_replace_callback;
 use function strlen;
 use function substr;
 use function strtolower;
+use function trim;
 
 /**
  * Unit representing the current deployment execution' called a job.
@@ -192,7 +194,11 @@ class JobUnit implements JobUnitInterface
         }
 
         if (empty($parts) || true === $this->hierarchicalNamespaces) {
-            $parts[] = strtolower((string) ($values['paas']['namespace'] ?? $this->projectResume['name']));
+            $subPart = strtolower((string) ($values['paas']['namespace'] ?? $this->projectResume['name']));
+            $subPart = trim($subPart);
+            $subPart = preg_replace('#[^\pL\d]+#u', '', $subPart);
+
+            $parts[] = $subPart;
         }
 
         $values['paas']['namespace'] = implode('-', $parts);

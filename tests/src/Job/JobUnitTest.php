@@ -119,7 +119,7 @@ class JobUnitTest extends TestCase
     ) {
         return (new JobUnit(
             $id,
-            ['@class' => Project::class,'id' => 'bar', 'name' => 'hello'],
+            ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
             new Environment('foo'),
             $namespace,
             $this->getSourceRepositoryMock(),
@@ -342,7 +342,7 @@ class JobUnitTest extends TestCase
             ->with([
                 '@class' => Job::class,
                 'id' => 'test',
-                'project' => ['@class' => Project::class,'id' => 'bar', 'name' => 'hello'],
+                'project' => ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
                 'environment' => new Environment('foo'),
                 'base_namespace' => 'foo',
                 'hierarchical_namespaces' => false,
@@ -588,7 +588,7 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo-hello',
+                                    'namespace' => 'foo-hllobar',
                                     'hierarchical-namespaces' => true,
                                 ]
                             ],
@@ -629,7 +629,7 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'hello',
+                                    'namespace' => 'hllobar',
                                     'hierarchical-namespaces' => false,
                                 ]
                             ],
@@ -657,7 +657,7 @@ class JobUnitTest extends TestCase
                         self::assertEquals(
                             [
                                 'paas' => [
-                                    'namespace' => 'hello',
+                                    'namespace' => 'hllobar',
                                     'hierarchical-namespaces' => false,
                                 ]
                             ],

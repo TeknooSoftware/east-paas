@@ -50,11 +50,11 @@ class NamespaceTranscriber implements GenericTranscriberInterface
     use CleaningTrait;
 
     /**
+     * @param array<int, string> $parts
      * @return array<string, mixed>
      */
-    protected static function writeSpec(string $namespace): array
+    protected static function writeSpec(array $parts, string $namespace): array
     {
-        $parts = explode('-', $namespace);
         $namespaceChild = array_pop($parts);
         $namespaceParent = implode('-', $parts);
 
@@ -71,10 +71,13 @@ class NamespaceTranscriber implements GenericTranscriberInterface
         return $specs;
     }
 
-    private static function convertToSubnamespace(string $namespace): SubnamespaceAnchor
+    /**
+     * @param array<int, string> $parts
+     */
+    private static function convertToSubnamespace(array $parts, string $namespace): SubnamespaceAnchor
     {
         return new SubnamespaceAnchor(
-            static::writeSpec($namespace)
+            static::writeSpec($parts, $namespace)
         );
     }
 
@@ -85,21 +88,24 @@ class NamespaceTranscriber implements GenericTranscriberInterface
     ): TranscriberInterface {
         $compiledDeployment->forNamespace(
             static function (string $namespace, bool $hierarchicalNamespaces) use ($client, $promise) {
-                if (false === $hierarchicalNamespaces) {
+                $namespace = strtolower($namespace);
+                $parts = explode('-', $namespace);
+
+                if (false === $hierarchicalNamespaces || 1 === count($parts)) {
                     $promise->success([]);
 
                     return;
                 }
 
                 try {
-                    $namespace = strtolower($namespace);
-
                     $namespaceRepository = $client->namespaces();
                     $subnamespacesAnchorsRepository = $client->subnamespacesAnchors();
 
                     $result = null;
                     if (!$namespaceRepository->exists($namespace)) {
-                        $result = $subnamespacesAnchorsRepository->create(self::convertToSubnamespace($namespace));
+                        $result = $subnamespacesAnchorsRepository->create(
+                            self::convertToSubnamespace($parts, $namespace)
+                        );
                     }
 
                     $result = self::cleanResult($result);

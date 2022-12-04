@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Exception;
 use Maclof\Kubernetes\Client as KubeClient;
 use Maclof\Kubernetes\Repositories\NamespaceRepository;
 use Maclof\Kubernetes\Repositories\SubnamespaceAnchorRepository;
@@ -54,26 +55,36 @@ class NamespaceTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('forNamespace')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('default_namespace', false);
-                $callback('default_namespace', false);
+                $callback('default-namespace', false);
+                $callback('default-namespace', false);
                 return $cd;
             });
 
-        $seRepo = $this->createMock(NamespaceRepository::class);
+        $nsRepo = $this->createMock(NamespaceRepository::class);
+        $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['namespaces', [], $seRepo],
+                ['namespaces', [], $nsRepo],
+                ['subnamespacesAnchors', [], $snRepo],
             ]);
 
-        $seRepo->expects(self::never())
-            ->method('exists');
+        $nsRepo->expects(self::never())
+            ->method('exists')
+            ->willReturnOnConsecutiveCalls(false, true);
 
-        $seRepo->expects(self::never())
+        $nsRepo->expects(self::never())
             ->method('create');
 
-        $seRepo->expects(self::never())
+        $nsRepo->expects(self::never())
+            ->method('update');
+
+        $snRepo->expects(self::never())
+            ->method('create')
+            ->willReturn(['foo']);
+
+        $snRepo->expects(self::never())
             ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
@@ -94,40 +105,87 @@ class NamespaceTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('forNamespace')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('default_namespace', true);
-                $callback('default_namespace', true);
+                $callback('default-namespace-foo', true);
+                $callback('default-namespace-foo', true);
                 return $cd;
             });
 
-        $seRepo = $this->createMock(NamespaceRepository::class);
-        $nsRepo = $this->createMock(SubnamespaceAnchorRepository::class);
+        $nsRepo = $this->createMock(NamespaceRepository::class);
+        $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['namespaces', [], $seRepo],
-                ['subnamespacesAnchors', [], $nsRepo],
+                ['namespaces', [], $nsRepo],
+                ['subnamespacesAnchors', [], $snRepo],
             ]);
 
-        $seRepo->expects(self::exactly(2))
+        $nsRepo->expects(self::exactly(2))
             ->method('exists')
             ->willReturnOnConsecutiveCalls(false, true);
 
-        $nsRepo->expects(self::once())
-            ->method('create')
-            ->willReturn(['foo']);
+        $nsRepo->expects(self::never())
+            ->method('create');
 
         $nsRepo->expects(self::never())
             ->method('update');
 
-        $seRepo->expects(self::never())
-            ->method('update');
+        $snRepo->expects(self::once())
+            ->method('create')
+            ->willReturn(['foo']);
 
-        $seRepo->expects(self::never())
+        $snRepo->expects(self::never())
             ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::exactly(2))->method('success')->withConsecutive([['foo']],  [null]);
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            NamespaceTranscriber::class,
+            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+        );
+    }
+
+    public function testRunWithHNCButNoChildNameSpace()
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects(self::once())
+            ->method('forNamespace')
+            ->willReturnCallback(function (callable $callback) use ($cd) {
+                $callback('default', true);
+                return $cd;
+            });
+
+        $nsRepo = $this->createMock(NamespaceRepository::class);
+        $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
+
+        $kubeClient->expects(self::any())
+            ->method('__call')
+            ->willReturnMap([
+                ['namespaces', [], $nsRepo],
+                ['subnamespacesAnchors', [], $snRepo],
+            ]);
+
+        $nsRepo->expects(self::never())
+            ->method('exists');
+
+        $nsRepo->expects(self::never())
+            ->method('create');
+
+        $nsRepo->expects(self::never())
+            ->method('update');
+
+        $snRepo->expects(self::never())
+            ->method('create');
+
+        $snRepo->expects(self::never())
+            ->method('update');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success')->with([]);
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
@@ -144,27 +202,36 @@ class NamespaceTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('forNamespace')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('default_namespace', true);
+                $callback('default-namespace-foo', true);
                 return $cd;
             });
 
-        $repo = $this->createMock(NamespaceRepository::class);
-        $nsRepo = $this->createMock(SubnamespaceAnchorRepository::class);
+        $nsRepo = $this->createMock(NamespaceRepository::class);
+        $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['namespaces', [], $repo],
-                ['subnamespacesAnchors', [], $nsRepo],
+                ['namespaces', [], $nsRepo],
+                ['subnamespacesAnchors', [], $snRepo],
             ]);
 
-        $repo->expects(self::exactly(1))
+        $nsRepo->expects(self::exactly(1))
             ->method('exists')
             ->willReturnOnConsecutiveCalls(false);
 
-        $nsRepo->expects(self::once())
+        $nsRepo->expects(self::never())
+            ->method('create');
+
+        $nsRepo->expects(self::never())
+            ->method('update');
+
+        $snRepo->expects(self::once())
             ->method('create')
-            ->willThrowException(new \Exception());
+            ->willThrowException(new Exception());
+
+        $snRepo->expects(self::never())
+            ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::never())->method('success')->with(['foo']);

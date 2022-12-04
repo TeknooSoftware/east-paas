@@ -6,10 +6,10 @@ namespace Teknoo\Tests\East\Paas\Behat;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 
-return static function (bool $hnc): CompiledDeployment {
+return static function (bool $hnc, string $hncSuffix): CompiledDeployment {
     $cd = new CompiledDeployment(
         version: 1,
-        namespace: 'test',
+        namespace: 'behat-test' . $hncSuffix,
         hierarchicalNamespaces: $hnc,
     );
 

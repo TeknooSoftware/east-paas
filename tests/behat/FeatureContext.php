@@ -60,6 +60,7 @@ use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
@@ -74,7 +75,10 @@ use function dirname;
 use function json_decode;
 use function json_encode;
 use function random_int;
+use function str_replace;
+use function stripslashes;
 use function strlen;
+use function strtolower;
 use function var_export;
 
 /**
@@ -211,7 +215,9 @@ class FeatureContext implements Context
      */
     private $requestBody;
 
-    private static $useHnc = false;
+    private static bool $useHnc = false;
+
+    private static string $hncSuffix = '';
 
     private array $manifests = [];
 
@@ -515,6 +521,12 @@ class FeatureContext implements Context
             $id,
             $this->project = (new Project($this->account))->setId($this->projectId)->setName($this->projectName)
         );
+
+        if (self::$useHnc) {
+            self::$hncSuffix = '-' . str_replace(' ', '', strtolower($name));
+        } else {
+            self::$hncSuffix = '';
+        }
     }
 
     /**
@@ -526,8 +538,21 @@ class FeatureContext implements Context
         $this->envName = $id;
 
         $this->project->setClusters([
-            $this->cluster = (new Cluster())->setId('cluster-id')->setType($this->clusterType)->setProject($this->project)
-                ->setName($this->clusterName)->setEnvironment($this->environment = new Environment($this->envName))
+            $this->cluster = (new Cluster())
+                ->setId('cluster-id')
+                ->setType($this->clusterType)
+                ->setProject($this->project)
+                ->setName($this->clusterName)
+                ->setEnvironment($this->environment = new Environment($this->envName))
+                ->setAddress('https://foo-bar')
+                ->setIdentity(
+                    (
+                        new ClusterCredentials(
+                            serverCertificate:  'fooBar',
+                            token:  'fooBar',
+                        )
+                    )->setId('cluster-auth-id')
+                )
         ]);
     }
 
@@ -544,14 +569,26 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given a doctrine repository
+     * @Given a oci repository
      */
-    public function aDoctrineRepository()
+    public function aOciRepository()
     {
         $this->project->setImagesRegistry(
-            $this->imagesRegistry = (new ImageRegistry(
-                'https://foo.bar'
-            ))
+            $this->imagesRegistry = (
+                new ImageRegistry(
+                    apiUrl: 'https://foo.bar',
+                    identity: (
+                        new XRegistryAuth(
+                            username:  'fooBar',
+                            password:  'fooBar',
+                            email:  'fooBar',
+                            auth: '',
+                            serverAddress: 'fooBar',
+                        )
+                    )->setId('xauth-id')
+                    ,
+                )
+            )
         );
     }
 
@@ -596,82 +633,18 @@ class FeatureContext implements Context
     public function iRunANewJobFromProjectAtTo($jobId, $projectId, $url)
     {
         $this->calledUrl = $url;
-        $hnc = (int) self::$useHnc;
-        $clusterType = $this->clusterType;
-
-        $body = <<<EOF
-{
-  "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\Job",
-  "id": "$jobId",
-  "hierarchical_namespaces": $hnc,
-  "project": {
-    "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\Project",
-    "id": "$projectId",
-    "name": "Test"
-  },
-  "environment": {
-    "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\Environment",
-    "name": "staging"
-  },
-  "source_repository": {
-    "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\GitRepository",
-    "id": "42c6351ad59a37409cc1192d57287437",
-    "pull_url": "fooBar",
-    "default_branch": "main",
-    "identity": {
-      "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\SshIdentity",
-      "id": "df02b84131663568b62750e4d6b71922",
-      "private_key": "fooBar"
-    }
-  },
-  "images_repository": {
-    "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\ImageRegistry",
-    "id": "530651c2cd6937158eaf11d36b8eeed4",
-    "api_url": "fooBar",
-    "identity": {
-      "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\XRegistryAuth",
-      "id": "d0d5605e129039778465f5279c16fa29",
-      "username": "fooBar",
-      "password": "fooBar",
-      "email": "fooBar",
-      "auth": "",
-      "server_address": "fooBar"
-    }
-  },
-  "clusters": [
-    {
-      "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\Cluster",
-      "id": "4f719ead65683a1986339be59bbb03ab",
-      "name": "fooBar",
-      "address": "fooBar",
-      "type": "$clusterType",
-      "identity": {
-        "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\ClusterCredentials",
-        "id": "f61d411e3f1b33eaa0900d3b17d36f1d",
-        "server_certificate": "fooBar",
-        "token": "fooBar"
-      },
-      "environment": {
-        "@class": "Teknoo\\\\East\\\\Paas\\\\Object\\\\Environment",
-        "name": "staging"
-      }
-    }
-  ],
-  "history": {
-    "message": "teknoo.east.paas.jobs.configured",
-    "date": "2020-08-26 09:13:55 UTC",
-    "is_final": false,
-    "extra": [],
-    "previous": null
-  },
-  "extra": {
-    "foo": "bar"
-  },
-  "variables": {
-    "FOO": "foo"
-  }
-}
-EOF;
+        $body = json_encode(
+            value: $this->getNormalizedJob(
+                variables: [
+                    'FOO' => 'foo',
+                ],
+                hnc: self::$useHnc,
+                jobId: 'jobid',
+                extra: [
+                    'foo' => 'bar',
+                ],
+            )
+        );
 
         $request = Request::create('https://'.$this->sfContainer->getParameter('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $body);
         $this->response = $this->kernel->handle($request);
@@ -697,11 +670,15 @@ EOF;
         Assert::assertEquals($expected, $actual);
     }
 
-    private function getNormalizedJob(array $variables = [], bool $hnc = false): array
-    {
+    private function getNormalizedJob(
+        array $variables = [],
+        bool $hnc = false,
+        string $jobId = '',
+        array $extra = []
+    ): array {
         return [
             '@class' => OriJob::class,
-            'id' => '',
+            'id' => $jobId,
             'project' => [
                 '@class' => OriProject::class,
                 'id' => $this->projectId,
@@ -724,7 +701,15 @@ EOF;
                 '@class' => ImageRegistry::class,
                 'id' => '',
                 'api_url' => 'https://foo.bar',
-                'identity' => null,
+                'identity' => [
+                    '@class' => XRegistryAuth::class,
+                    'id' => 'xauth-id',
+                    'username' => 'fooBar',
+                    'password' => 'fooBar',
+                    'email' => 'fooBar',
+                    'auth' => '',
+                    'server_address' => 'fooBar',
+                ],
             ],
             'clusters' => [
                 [
@@ -732,8 +717,15 @@ EOF;
                     'id' => 'cluster-id',
                     'name' => $this->clusterName,
                     'type' => $this->clusterType,
-                    'address' => '',
-                    'identity' => null,
+                    'address' => 'https://foo-bar',
+                    'identity' => [
+                        '@class' => ClusterCredentials::class,
+                        'id' => 'cluster-auth-id',
+                        'server_certificate' => 'fooBar',
+                        'token' => 'fooBar',
+                        'username' => '',
+                        'password' => '',
+                    ],
                     'environment' => [
                         '@class' => Environment::class,
                         'name' => $this->envName,
@@ -748,7 +740,7 @@ EOF;
                 'previous' => null,
                 'serial_number' => 0,
             ],
-            'extra' => [],
+            'extra' => $extra,
             'variables' => $variables,
         ];
     }
@@ -1390,7 +1382,7 @@ EOF;
     {
         try {
             Assert::assertEquals(
-                var_export($ecd = (include('expectedCD.php'))(self::$useHnc), true),
+                var_export($ecd = (include('expectedCD.php'))(self::$useHnc, self::$hncSuffix), true),
                 var_export($cd, true)
             );
         } catch (Throwable $e) {
@@ -1403,33 +1395,34 @@ EOF;
      */
     public function someKunbernetesManifestsHaveBeenCreated()
     {
-        $excepted = <<<'EOF'
-{
-    "Maclof\\Kubernetes\\Models\\SubnamespaceAnchor": [
+        $hncSuffix = self::$hncSuffix;
+        $nameHnc = trim($hncSuffix, '-');
+
+        $hncManifest = '';
+        if (self::$useHnc) {
+            $hncManifest = <<<"EOF"
+"Maclof\\Kubernetes\\Models\\SubnamespaceAnchor": [
         {
             "metadata": {
-                "name": "test",
-                "namespace": "",
+                "name": "{$nameHnc}",
+                "namespace": "behat-test",
                 "labels": {
-                    "name": "test"
-                }
-            }
-        },
-        {
-            "metadata": {
-                "name": "test",
-                "namespace": "",
-                "labels": {
-                    "name": "test"
+                    "name": "behat-test{$hncSuffix}"
                 }
             }
         }
     ],
-    "Maclof\\Kubernetes\\Models\\Secret": [
+    
+EOF;
+        }
+
+        $excepted = <<<"EOF"
+{
+    $hncManifest"Maclof\\Kubernetes\\Models\\Secret": [
         {
             "metadata": {
                 "name": "map-vault-secret",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "map-vault"
                 }
@@ -1443,7 +1436,7 @@ EOF;
         {
             "metadata": {
                 "name": "map-vault2-secret",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "map-vault2"
                 }
@@ -1456,7 +1449,7 @@ EOF;
         {
             "metadata": {
                 "name": "volume-vault-secret",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "volume-vault"
                 }
@@ -1472,7 +1465,7 @@ EOF;
         {
             "metadata": {
                 "name": "map1-map",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "map1"
                 }
@@ -1485,7 +1478,7 @@ EOF;
         {
             "metadata": {
                 "name": "map2-map",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "map2"
                 }
@@ -1500,7 +1493,7 @@ EOF;
         {
             "metadata": {
                 "name": "data",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "data"
                 }
@@ -1522,7 +1515,7 @@ EOF;
         {
             "metadata": {
                 "name": "php-pods-ctrl-v1",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "php-pods"
                 },
@@ -1540,7 +1533,7 @@ EOF;
                 "template": {
                     "metadata": {
                         "name": "php-pods-pod",
-                        "namespace": "test",
+                        "namespace": "behat-test{$hncSuffix}",
                         "labels": {
                             "name": "php-pods",
                             "vname": "php-pods-v1"
@@ -1558,7 +1551,7 @@ EOF;
                         "containers": [
                             {
                                 "name": "php-run",
-                                "image": "fooBar\/php-run-jobid:7.4",
+                                "image": "https://foo.bar/php-run-jobid:7.4",
                                 "imagePullPolicy": "Always",
                                 "ports": [
                                     {
@@ -1580,7 +1573,7 @@ EOF;
                                 "env": [
                                     {
                                         "name": "SERVER_SCRIPT",
-                                        "value": "\/opt\/app\/src\/server.php"
+                                        "value": "/opt/app/src/server.php"
                                     },
                                     {
                                         "name": "KEY1",
@@ -1613,22 +1606,22 @@ EOF;
                                 "volumeMounts": [
                                     {
                                         "name": "extra-jobid-volume",
-                                        "mountPath": "\/opt\/extra",
+                                        "mountPath": "/opt/extra",
                                         "readOnly": true
                                     },
                                     {
                                         "name": "data-volume",
-                                        "mountPath": "\/opt\/data",
+                                        "mountPath": "/opt/data",
                                         "readOnly": false
                                     },
                                     {
                                         "name": "map-volume",
-                                        "mountPath": "\/map",
+                                        "mountPath": "/map",
                                         "readOnly": false
                                     },
                                     {
                                         "name": "vault-volume",
-                                        "mountPath": "\/vault",
+                                        "mountPath": "/vault",
                                         "readOnly": false
                                     }
                                 ]
@@ -1637,12 +1630,12 @@ EOF;
                         "initContainers": [
                             {
                                 "name": "extra-jobid",
-                                "image": "fooBar\/extra-jobid",
+                                "image": "https://foo.bar/extra-jobid",
                                 "imagePullPolicy": "Always",
                                 "volumeMounts": [
                                     {
                                         "name": "extra-jobid-volume",
-                                        "mountPath": "\/opt\/extra",
+                                        "mountPath": "/opt/extra",
                                         "readOnly": false
                                     }
                                 ]
@@ -1679,7 +1672,7 @@ EOF;
         {
             "metadata": {
                 "name": "demo-ctrl-v1",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "demo"
                 },
@@ -1697,7 +1690,7 @@ EOF;
                 "template": {
                     "metadata": {
                         "name": "demo-pod",
-                        "namespace": "test",
+                        "namespace": "behat-test{$hncSuffix}",
                         "labels": {
                             "name": "demo",
                             "vname": "demo-v1"
@@ -1716,7 +1709,7 @@ EOF;
                         "containers": [
                             {
                                 "name": "nginx",
-                                "image": "fooBar\/nginx-jobid:alpine",
+                                "image": "https://foo.bar/nginx-jobid:alpine",
                                 "imagePullPolicy": "Always",
                                 "ports": [
                                     {
@@ -1729,7 +1722,7 @@ EOF;
                             },
                             {
                                 "name": "blackfire",
-                                "image": "blackfire\/blackfire:2",
+                                "image": "blackfire/blackfire:2",
                                 "imagePullPolicy": "Always",
                                 "ports": [
                                     {
@@ -1757,7 +1750,7 @@ EOF;
         {
             "metadata": {
                 "name": "php-service",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "php-service"
                 }
@@ -1780,7 +1773,7 @@ EOF;
         {
             "metadata": {
                 "name": "demo",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "demo"
                 }
@@ -1811,7 +1804,7 @@ EOF;
         {
             "metadata": {
                 "name": "demo-ingress",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "demo"
                 },
@@ -1826,7 +1819,7 @@ EOF;
                         "http": {
                             "paths": [
                                 {
-                                    "path": "\/",
+                                    "path": "/",
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
@@ -1838,7 +1831,7 @@ EOF;
                                     }
                                 },
                                 {
-                                    "path": "\/php",
+                                    "path": "/php",
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
@@ -1866,13 +1859,13 @@ EOF;
         {
             "metadata": {
                 "name": "demo-secure-ingress",
-                "namespace": "test",
+                "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "demo-secure"
                 },
                 "annotations": {
                     "foo": "bar",
-                    "nginx.ingress.kubernetes.io\/backend-protocol": "HTTPS"
+                    "nginx.ingress.kubernetes.io/backend-protocol": "HTTPS"
                 }
             },
             "spec": {
@@ -1882,7 +1875,7 @@ EOF;
                         "http": {
                             "paths": [
                                 {
-                                    "path": "\/",
+                                    "path": "/",
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
@@ -1914,7 +1907,7 @@ EOF;
         $json = json_encode($this->manifests, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
         Assert::assertEquals(
             $excepted,
-            $json
+            stripslashes($json)
         );
     }
 }

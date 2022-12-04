@@ -79,7 +79,7 @@ class Running implements StateInterface
 
                 foreach ($this->transcribers as $transcriber) {
                     if (
-                        $transcriber instanceof GenericTranscriberInterface
+                        ($runDeployment && $transcriber instanceof GenericTranscriberInterface)
                         || ($runDeployment && $transcriber instanceof DeploymentInterface)
                         || ($runExposing && $transcriber instanceof ExposingInterface)
                     ) {
