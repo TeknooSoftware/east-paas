@@ -29,7 +29,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 
@@ -41,7 +41,9 @@ use function str_replace;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class HistorySentHandler implements HistorySentHandlerInterface, MessageHandlerInterface
+
+#[AsMessageHandler]
+class HistorySentHandler implements HistorySentHandlerInterface
 {
     use RequestTrait;
 

@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward;
 
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDoneHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 
@@ -36,7 +36,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class JobDoneHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class JobDoneHandler
 {
     private ?JobDoneHandlerInterface $handler = null;
 

@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward;
 
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 
@@ -36,7 +36,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class HistorySentHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class HistorySentHandler
 {
     private ?HistorySentHandlerInterface $handler = null;
 

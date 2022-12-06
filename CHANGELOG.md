@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.130] - 2022-12-06
+### Dev Release
+- Remove deprecated from Symfony 6.2
+- Support only Symfony 6.2 or later
+
 ## [0.0.129] - 2022-12-04
 ### Dev Release
 - Fix behavior with hierarchical namespaces

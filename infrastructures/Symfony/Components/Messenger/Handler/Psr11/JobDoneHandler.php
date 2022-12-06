@@ -29,7 +29,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDoneHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 
@@ -41,7 +41,8 @@ use function str_replace;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class JobDoneHandler implements JobDoneHandlerInterface, MessageHandlerInterface
+#[AsMessageHandler]
+class JobDoneHandler implements JobDoneHandlerInterface
 {
     use RequestTrait;
 
