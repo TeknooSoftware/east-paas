@@ -22,6 +22,12 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:simpleType name="paas_token">
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:pattern value="[a-zA-Z][a-zA-Z0-9\-]{2,}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="paas">
     <xs:all>
       <xs:element name="version" type="xs:string" minOccurs="0" />
@@ -42,7 +48,7 @@
     <xs:choice>
       <xs:any maxOccurs="unbounded" processContents="skip" />
     </xs:choice>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="maps">
@@ -57,7 +63,7 @@
       <xs:element name="type" type="xs:string" minOccurs="0" />
       <xs:element name="options" type="xs:anyType" />
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="secrets">
@@ -79,7 +85,7 @@
       <xs:element name="path" type="xs:string" />
       <xs:element name="variables" type="epv:variables" minOccurs="0" />
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="images">
@@ -92,7 +98,7 @@
     <xs:choice>
       <xs:any maxOccurs="unbounded" processContents="skip"/>
     </xs:choice>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="builds">
@@ -119,7 +125,7 @@
       <xs:element name="mount-path" type="xs:string" minOccurs="0" />
       <xs:element name="add" type="epv:rows_list_string" />
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="volumes">
@@ -130,10 +136,10 @@
 
   <xs:complexType name="container_volume_from_node">
     <xs:all>
-      <xs:element name="from" type="xs:string" />
+      <xs:element name="from" type="epv:paas_token" />
       <xs:element name="mount-path" type="xs:string" />
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="container_volume_persistent_node">
@@ -144,7 +150,7 @@
       <xs:element name="storage-provider" type="xs:string" minOccurs="0"/>
       <xs:element name="storage-size" type="xs:string" minOccurs="0"/>
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="container_volume_embedded_node">
@@ -153,7 +159,7 @@
       <xs:element name="add" type="epv:rows_list_string"/>
       <xs:element name="writables" type="epv:rows_list_string" minOccurs="0"/>
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="container_volume_map_node">
@@ -161,7 +167,7 @@
       <xs:element name="mount-path" type="xs:string" />
       <xs:element name="from-map" type="xs:string" />
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="container_volume_secret_node">
@@ -169,7 +175,7 @@
       <xs:element name="mount-path" type="xs:string" />
       <xs:element name="from-secret" type="xs:string" />
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="container_volumes_list">
@@ -190,7 +196,7 @@
       <xs:element name="volumes" type="epv:container_volumes_list" minOccurs="0" />
       <xs:element name="variables" type="epv:variables" minOccurs="0" />
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="pod_node">
@@ -205,7 +211,7 @@
         </xs:complexType>
       </xs:element>
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="pods">
@@ -223,7 +229,7 @@
 
   <xs:complexType name="service_node">
     <xs:all>
-      <xs:element name="pod" type="xs:string" minOccurs="0"/>
+      <xs:element name="pod" type="epv:paas_token" minOccurs="0"/>
       <xs:element name="internal" type="xs:boolean" default="false" minOccurs="0"/>
       <xs:element name="protocol" type="xs:string" minOccurs="0"/>
       <xs:element name="ports">
@@ -234,7 +240,7 @@
         </xs:complexType>
       </xs:element>
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="services">
@@ -251,7 +257,7 @@
 
   <xs:complexType name="ingress_service">
     <xs:all>
-      <xs:element name="name" type="xs:string" />
+      <xs:element name="name" type="epv:paas_token" />
       <xs:element name="port" type="xs:int" />
     </xs:all>
   </xs:complexType>
@@ -277,7 +283,7 @@
       <xs:element name="service" type="epv:ingress_service" minOccurs="0" />
       <xs:element name="paths" type="epv:ingress_paths" minOccurs="0" />
     </xs:all>
-    <xs:attribute name="name" type="xs:NMTOKEN" />
+    <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
   <xs:complexType name="ingresses">

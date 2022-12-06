@@ -157,9 +157,9 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
     );
 
     $cd->addVolume(
-        name: 'other_name',
+        name: 'other-name',
         volume: new CompiledDeployment\Volume\Volume(
-            name: 'other_name-jobid',
+            name: 'other-name-jobid',
             paths: [
                 'vendor',
             ],
@@ -337,7 +337,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                     servicePort: 9876,
                 ),
             ],
-            tlsSecret: 'demo_vault',
+            tlsSecret: 'demo-vault',
             httpsBackend: false,
         )
     );
@@ -351,7 +351,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
             defaultServiceName: 'demo',
             defaultServicePort: 8181,
             paths: [],
-            tlsSecret: 'demo_vault',
+            tlsSecret: 'demo-vault',
             httpsBackend: true,
         )
     );

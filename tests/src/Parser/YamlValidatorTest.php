@@ -102,7 +102,7 @@ volumes:
     local-path: "/foo/bar" #optional local path where store data in the volume
     add: #folder or file, from .paas.yaml where is located to add to the volume
       - 'extra'
-  other_name: #Name of the volume
+  other-name: #Name of the volume
     add: #folder or file, from .paas.yaml where is located to add to the volume
       - 'vendor'
 
@@ -200,7 +200,7 @@ ingresses:
   demo: #rule name
     host: demo-paas.teknoo.software
     tls:
-      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
     service: #default service
       name: demo
       port: 8080
@@ -213,7 +213,7 @@ ingresses:
     host: demo-secure.teknoo.software
     https-backend: true
     tls:
-      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
     service: #default service
       name: demo
       port: 8181
@@ -249,8 +249,29 @@ EOF;
             )
         );
     }
+    public function testNotValidConfWithNonValidName()
+    {
+        $configuration = $this->getYamlArray();
+        $configuration['services']['php_service'] = $configuration['services']['php-service'];
+        unset($configuration['services']['php-service']);
 
-    public function testNotValidConf()
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())->method('success');
+        $promise->expects(self::once())->method('fail');
+
+        $xsd = $this->getXsdFile();
+
+        self::assertInstanceOf(
+            YamlValidator::class,
+            $this->buildValidator()->validate(
+                $configuration,
+                $xsd,
+                $promise
+            )
+        );
+    }
+
+    public function testNotValidConfWithMissingParts()
     {
         $configuration = $this->getYamlArray();
         unset($configuration['pods']);

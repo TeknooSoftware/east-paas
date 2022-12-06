@@ -998,7 +998,7 @@ volumes:
     local-path: "/foo/bar" #optional local path where store data in the volume
     add: #folder or file, from .paas.yaml where is located to add to the volume
       - 'extra'
-  other_name: #Name of the volume
+  other-name: #Name of the volume
     add: #folder or file, from .paas.yaml where is located to add to the volume
       - 'vendor'
 
@@ -1096,7 +1096,7 @@ ingresses:
   demo: #rule name
     host: demo-paas.teknoo.software
     tls:
-      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
     service: #default service
       name: demo
       port: 8080
@@ -1109,7 +1109,7 @@ ingresses:
     host: demo-secure.teknoo.software
     https-backend: true
     tls:
-      secret: "demo_vault" #Configure the orchestrator to fetch value from vault
+      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
     service: #default service
       name: demo
       port: 8181
@@ -1871,7 +1871,7 @@ EOF;
                         "hosts": [
                             "demo-paas.teknoo.software"
                         ],
-                        "secretName": "{$prefix}demo_vault-secret"
+                        "secretName": "{$prefix}demo-vault-secret"
                     }
                 ]
             }
@@ -1915,7 +1915,7 @@ EOF;
                         "hosts": [
                             "demo-secure.teknoo.software"
                         ],
-                        "secretName": "{$prefix}demo_vault-secret"
+                        "secretName": "{$prefix}demo-vault-secret"
                     }
                 ]
             }
