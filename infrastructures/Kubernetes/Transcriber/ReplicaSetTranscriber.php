@@ -47,7 +47,7 @@ use function sleep;
 use function substr;
 
 /**
- * "Deployment transcriber" to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsController
+ * "Deployment transcriber" to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsSet
  * manifest.
  *
  * @license     http://teknoo.software/license/mit         MIT License
@@ -352,12 +352,13 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     $name = $prefixer($pod->getName());
                     $rcRepository = $client->replicaSets();
 
-                    $ctl = $rcRepository->setLabelSelector(['name' => $name])->first();
+                    $previousReplicaSet = $rcRepository->setLabelSelector(['name' => $name])->first();
                     $version = 1;
-                    if (null !== $ctl) {
+                    if (null !== $previousReplicaSet) {
+                        $annotations = $previousReplicaSet->toArray();
                         $oldVersion = (
                             (int) substr(
-                                string:($ctl->toArray()['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
+                                string: ($annotations['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
                                 offset: 1,
                             )
                         );
@@ -369,7 +370,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     return;
                 }
 
-                $kubeController = self::convertToReplicaSet(
+                $kubeSet = self::convertToReplicaSet(
                     name: $name,
                     pod: $pod,
                     images: $images,
@@ -380,14 +381,15 @@ class ReplicaSetTranscriber implements DeploymentInterface
                 );
 
                 try {
-                    $result = $rcRepository->create($kubeController);
+                    $result = $rcRepository->create($kubeSet);
 
                     $result = self::cleanResult($result);
 
                     $promise->success($result);
 
-                    if (null !== $ctl) {
-                        $ctl = $ctl->updateModel(
+                    if (null !== $previousReplicaSet) {
+                        //Set previous set to 0 replicas
+                        $previousReplicaSet = $previousReplicaSet->updateModel(
                             static function (array &$attribute): array {
                                 $attribute['spec']['replicas'] = 0;
 
@@ -395,15 +397,17 @@ class ReplicaSetTranscriber implements DeploymentInterface
                             }
                         );
 
-                        $rcRepository->patch($ctl);
+                        $rcRepository->patch($previousReplicaSet);
 
+                        //Waiting ending all pods of previous set
                         $pods = $client->pods();
                         $labelSelector = ['vname' => $name . '-v' . $oldVersion,];
                         while (null !== $pods->setLabelSelector($labelSelector)->first()) {
                             sleep($podDeletionWaitTime);
                         }
 
-                        $rcRepository->delete($ctl);
+                        //Delete previous Set
+                        $rcRepository->delete($previousReplicaSet);
                     }
                 } catch (Throwable $error) {
                     $promise->fail($error);
