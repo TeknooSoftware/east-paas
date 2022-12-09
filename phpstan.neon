@@ -24,7 +24,7 @@ parameters:
             path: infrastructures/Composer/ComposerHook.php
         -
             message: '#mixed#'
-            path: infrastructures/Kubernetes/Transcriber/ReplicaSetTranscriber.php
+            path: infrastructures/Kubernetes/Transcriber/DeploymentTranscriber.php
         -
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php

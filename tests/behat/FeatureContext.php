@@ -1404,9 +1404,9 @@ EOF;
     }
 
     /**
-     * @Then some kunbernetes manifests have been created
+     * @Then some Kubernetes manifests have been created
      */
-    public function someKunbernetesManifestsHaveBeenCreated()
+    public function someKubernetesManifestsHaveBeenCreated()
     {
         $hncSuffix = self::$hncSuffix;
         $nameHnc = trim($hncSuffix, '-');
@@ -1531,10 +1531,10 @@ EOF;
             }
         }
     ],
-    "Maclof\\Kubernetes\\Models\\ReplicaSet": [
+    "Maclof\\Kubernetes\\Models\\Deployment": [
         {
             "metadata": {
-                "name": "{$prefix}php-pods-ctrl-v1",
+                "name": "{$prefix}php-pods-ctrl",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "{$prefix}php-pods"
@@ -1545,6 +1545,13 @@ EOF;
             },
             "spec": {
                 "replicas": 2,
+                "strategy": {
+                    "type": "RollingUpdate",
+                    "rollingUpdate": {
+                        "maxSurge": 1,
+                        "maxUnavailable": 0
+                    }
+                },
                 "selector": {
                     "matchLabels": {
                         "vname": "{$prefix}php-pods-v1"
@@ -1691,7 +1698,7 @@ EOF;
         },
         {
             "metadata": {
-                "name": "{$prefix}demo-ctrl-v1",
+                "name": "{$prefix}demo-ctrl",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "{$prefix}demo"
@@ -1702,6 +1709,13 @@ EOF;
             },
             "spec": {
                 "replicas": 1,
+                "strategy": {
+                    "type": "RollingUpdate",
+                    "rollingUpdate": {
+                        "maxSurge": 1,
+                        "maxUnavailable": 0
+                    }
+                },
                 "selector": {
                     "matchLabels": {
                         "vname": "{$prefix}demo-v1"

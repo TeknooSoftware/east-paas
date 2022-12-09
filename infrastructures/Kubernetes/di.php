@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ReplicaSetTranscriber as RSTranscriberAlias;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
@@ -107,13 +107,13 @@ return [
         return new $className();
     },
 
-    RSTranscriberAlias::class . ':class' => RSTranscriberAlias::class,
-    RSTranscriberAlias::class => static function (
+    DeploymentTranscriber::class . ':class' => DeploymentTranscriber::class,
+    DeploymentTranscriber::class => static function (
         ContainerInterface $container
-    ): RSTranscriberAlias {
-        $className = $container->get(RSTranscriberAlias::class . ':class');
-        if (!is_a($className, RSTranscriberAlias::class, true)) {
-            throw new DomainException("The class $className is not a rc transcriber");
+    ): DeploymentTranscriber {
+        $className = $container->get(DeploymentTranscriber::class . ':class');
+        if (!is_a($className, DeploymentTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a deployment transcriber");
         }
 
         return new $className();
@@ -167,7 +167,7 @@ return [
         $collection->add(10, $container->get(SecretTranscriber::class));
         $collection->add(10, $container->get(ConfigMapTranscriber::class));
         $collection->add(10, $container->get(VolumeTranscriber::class));
-        $collection->add(30, $container->get(RSTranscriberAlias::class));
+        $collection->add(30, $container->get(DeploymentTranscriber::class));
         $collection->add(40, $container->get(ServiceTranscriber::class));
         $collection->add(50, $container->get(IngressTranscriber::class));
 

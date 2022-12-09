@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\Models\ReplicaSet;
+use Maclof\Kubernetes\Models\Deployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -53,7 +53,7 @@ use function substr;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class ReplicaSetTranscriber implements DeploymentInterface
+class DeploymentTranscriber implements DeploymentInterface
 {
     use CommonTrait;
 
@@ -62,11 +62,6 @@ class ReplicaSetTranscriber implements DeploymentInterface
     private const VOLUME_SUFFIX = '-volume';
     private const SECRET_SUFFIX = '-secret';
     private const MAP_SUFFIX = '-map';
-
-    public function __construct(
-        private readonly int $podDeletionWaitTime = 5,
-    ) {
-    }
 
     /**
      * @param array<string, > $specs
@@ -255,7 +250,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
 
         $specs = [
             'metadata' => [
-                'name' => $name . self::NAME_SUFFIX . '-v' . $version,
+                'name' => $name . self::NAME_SUFFIX,
                 'namespace' => $namespace,
                 'labels' => [
                     'name' => $prefixer($pod->getName()),
@@ -266,6 +261,13 @@ class ReplicaSetTranscriber implements DeploymentInterface
             ],
             'spec' => [
                 'replicas' => $pod->getReplicas(),
+                'strategy' => [
+                    'type' => 'RollingUpdate',
+                    'rollingUpdate' => [
+                        'maxSurge' => 1,
+                        'maxUnavailable' => 0,
+                    ],
+                ],
                 'selector' => [
                     'matchLabels' => [
                         'vname' => $name . '-v' . $version,
@@ -303,7 +305,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param array<string, Volume>|Volume[] $volumes
      */
-    private static function convertToReplicaSet(
+    private static function convertToDeployment(
         string $name,
         Pod $pod,
         array $images,
@@ -311,8 +313,8 @@ class ReplicaSetTranscriber implements DeploymentInterface
         string $namespace,
         int $version,
         callable $prefixer,
-    ): ReplicaSet {
-        return new ReplicaSet(
+    ): Deployment {
+        return new Deployment(
             static::writeSpec(
                 $name,
                 $pod,
@@ -330,7 +332,6 @@ class ReplicaSetTranscriber implements DeploymentInterface
         KubernetesClient $client,
         PromiseInterface $promise
     ): TranscriberInterface {
-        $podDeletionWaitTime = $this->podDeletionWaitTime;
         $compiledDeployment->foreachPod(
             static function (
                 Pod $pod,
@@ -341,7 +342,6 @@ class ReplicaSetTranscriber implements DeploymentInterface
             ) use (
                 $client,
                 $promise,
-                $podDeletionWaitTime,
             ): void {
                 $prefixer = self::createPrefixer($prefix);
                 try {
@@ -350,12 +350,12 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     }
 
                     $name = $prefixer($pod->getName());
-                    $rcRepository = $client->replicaSets();
+                    $rcRepository = $client->deployments();
 
-                    $previousReplicaSet = $rcRepository->setLabelSelector(['name' => $name])->first();
+                    $previousDeployment = $rcRepository->setLabelSelector(['name' => $name])->first();
                     $version = 1;
-                    if (null !== $previousReplicaSet) {
-                        $annotations = $previousReplicaSet->toArray();
+                    if (null !== $previousDeployment) {
+                        $annotations = $previousDeployment->toArray();
                         $oldVersion = (
                             (int) substr(
                                 string: ($annotations['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
@@ -370,7 +370,7 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     return;
                 }
 
-                $kubeSet = self::convertToReplicaSet(
+                $kubeSet = self::convertToDeployment(
                     name: $name,
                     pod: $pod,
                     images: $images,
@@ -386,29 +386,6 @@ class ReplicaSetTranscriber implements DeploymentInterface
                     $result = self::cleanResult($result);
 
                     $promise->success($result);
-
-                    if (null !== $previousReplicaSet) {
-                        //Set previous set to 0 replicas
-                        $previousReplicaSet = $previousReplicaSet->updateModel(
-                            static function (array &$attribute): array {
-                                $attribute['spec']['replicas'] = 0;
-
-                                return $attribute;
-                            }
-                        );
-
-                        $rcRepository->patch($previousReplicaSet);
-
-                        //Waiting ending all pods of previous set
-                        $pods = $client->pods();
-                        $labelSelector = ['vname' => $name . '-v' . $oldVersion,];
-                        while (null !== $pods->setLabelSelector($labelSelector)->first()) {
-                            sleep($podDeletionWaitTime);
-                        }
-
-                        //Delete previous Set
-                        $rcRepository->delete($previousReplicaSet);
-                    }
                 } catch (Throwable $error) {
                     $promise->fail($error);
                 }
