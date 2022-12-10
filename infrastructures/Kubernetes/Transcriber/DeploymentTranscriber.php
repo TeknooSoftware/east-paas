@@ -270,7 +270,7 @@ class DeploymentTranscriber implements DeploymentInterface
                 ],
                 'selector' => [
                     'matchLabels' => [
-                        'vname' => $name . '-v' . $version,
+                        'name' => $name,
                     ],
                 ],
                 'template' => [

@@ -1554,7 +1554,7 @@ EOF;
                 },
                 "selector": {
                     "matchLabels": {
-                        "vname": "{$prefix}php-pods-v1"
+                        "name": "{$prefix}php-pods"
                     }
                 },
                 "template": {
@@ -1718,7 +1718,7 @@ EOF;
                 },
                 "selector": {
                     "matchLabels": {
-                        "vname": "{$prefix}demo-v1"
+                        "name": "{$prefix}demo"
                     }
                 },
                 "template": {
