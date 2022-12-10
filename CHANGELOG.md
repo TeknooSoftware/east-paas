@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.131] - 2022-12-10
+### Dev Release
+- Add regex to paas xsd validation to support identifier with only alphanumeric characters and the `-`
+- Replace ReplicaSet by Deployment
+- Kubernetes : Use apply instead of create/update
+- RollingUpgrade strategy : can define max unavailable and upgrading pods in same time
+
 ## [0.0.130] - 2022-12-06
 ### Dev Release
 - Remove deprecated from Symfony 6.2

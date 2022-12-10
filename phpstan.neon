@@ -21,6 +21,9 @@ parameters:
             path: infrastructures/Composer/ComposerHook.php
         -
             message: '#mixed#'
+            path: infrastructures/Kubernetes/Driver.php
+        -
+            message: '#mixed#'
             path: infrastructures/Kubernetes/Transcriber/DeploymentTranscriber.php
         -
             message: '#SecretTranscriber::encode#'
