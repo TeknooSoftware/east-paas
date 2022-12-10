@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\Models\NamespaceModel as KubeNamespace;
 use Maclof\Kubernetes\Models\SubnamespaceAnchor;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -98,15 +97,11 @@ class NamespaceTranscriber implements GenericTranscriberInterface
                 }
 
                 try {
-                    $namespaceRepository = $client->namespaces();
                     $subnamespacesAnchorsRepository = $client->subnamespacesAnchors();
 
-                    $result = null;
-                    if (!$namespaceRepository->exists($namespace)) {
-                        $result = $subnamespacesAnchorsRepository->create(
-                            self::convertToSubnamespace($parts, $namespace)
-                        );
-                    }
+                    $result = $subnamespacesAnchorsRepository->apply(
+                        self::convertToSubnamespace($parts, $namespace)
+                    );
 
                     $result = self::cleanResult($result);
 

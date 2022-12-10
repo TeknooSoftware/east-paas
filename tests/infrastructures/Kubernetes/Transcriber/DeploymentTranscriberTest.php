@@ -161,11 +161,8 @@ class DeploymentTranscriberTest extends TestCase
             );
 
         $rcRepo->expects(self::exactly(3))
-            ->method('create')
+            ->method('apply')
             ->willReturn(['foo']);
-
-        $rcRepo->expects(self::never())
-            ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::exactly(3))->method('success')->with(['foo']);
@@ -272,11 +269,8 @@ class DeploymentTranscriberTest extends TestCase
             );
 
         $rcRepo->expects(self::exactly(2))
-            ->method('create')
+            ->method('apply')
             ->willReturn(['foo']);
-
-        $rcRepo->expects(self::never())
-            ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::exactly(2))->method('success')->with(['foo']);
@@ -339,11 +333,8 @@ class DeploymentTranscriberTest extends TestCase
             );
 
         $repo->expects(self::once())
-            ->method('create')
+            ->method('apply')
             ->willReturn(['foo']);
-
-        $repo->expects(self::never())
-            ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())->method('success')->with(['foo']);
@@ -401,7 +392,7 @@ class DeploymentTranscriberTest extends TestCase
 
         $call = 0;
         $repo->expects(self::exactly(2))
-            ->method('create')
+            ->method('apply')
             ->willReturnCallback(
                 function () use (&$call) {
                     if (0 < $call++) {
@@ -411,9 +402,6 @@ class DeploymentTranscriberTest extends TestCase
                     return ['foo'];
                 },
             );
-
-        $repo->expects(self::never())
-            ->method('update');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())->method('success')->with(['foo']);

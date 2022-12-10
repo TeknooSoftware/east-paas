@@ -116,7 +116,7 @@ class ServiceTranscriber implements ExposingInterface
                         $serviceRepository->delete($kubeService);
                     }
 
-                    $result = $serviceRepository->create($kubeService);
+                    $result = $serviceRepository->apply($kubeService);
 
                     $result = self::cleanResult($result);
 

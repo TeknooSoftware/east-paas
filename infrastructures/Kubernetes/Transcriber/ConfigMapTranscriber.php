@@ -93,12 +93,7 @@ class ConfigMapTranscriber implements DeploymentInterface
                     }
 
                     $sRepository = $client->configMaps();
-                    $name = $kubeConfigMap->getMetadata('name') ?? $prefixer($configMap->getName() . self::NAME_SUFFIX);
-                    if ($sRepository->exists($name)) {
-                        $result = $sRepository->update($kubeConfigMap);
-                    } else {
-                        $result = $sRepository->create($kubeConfigMap);
-                    }
+                    $result = $sRepository->apply($kubeConfigMap);
 
                     $result = self::cleanResult($result);
 

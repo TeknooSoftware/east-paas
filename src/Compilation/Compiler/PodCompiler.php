@@ -61,6 +61,9 @@ class PodCompiler implements CompilerInterface
 {
     private const KEY_CONTAINERS = 'containers';
     private const KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
+    private const KEY_UPGRADE = 'upgrade';
+    private const KEY_MAX_UPGRADING_PODS = 'max-upgrading-pods';
+    private const KEY_MAX_UNAVAILABLE_PODS = 'max-unavailable-pods';
     private const KEY_VOLUMES = 'volumes';
     private const KEY_MOUNT_PATH = 'mount-path';
     private const KEY_FROM = 'from';
@@ -366,6 +369,8 @@ class PodCompiler implements CompilerInterface
                     replicas: (int) ($podsList[self::KEY_REPLICAS] ?? 1),
                     containers: $containers,
                     ociRegistryConfigName: $podsList[self::KEY_OCI_REGISTRY_CONFIG_NAME] ?? $ociRegistryConfig,
+                    maxUpgradingPods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UPGRADING_PODS] ?? 1),
+                    maxUnavailablePods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UNAVAILABLE_PODS] ?? 0),
                 )
             );
         }

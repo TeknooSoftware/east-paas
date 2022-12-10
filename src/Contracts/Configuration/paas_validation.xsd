@@ -199,10 +199,19 @@
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
+  <xs:complexType name="pod_upgrade">
+    <xs:all>
+      <xs:element name="max-upgrading-pods" type="xs:int" minOccurs="0" />
+      <xs:element name="max-unavailable-pods" type="xs:int" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+
+
   <xs:complexType name="pod_node">
     <xs:all>
       <xs:element name="replicas" type="xs:int" minOccurs="0" />
       <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
+      <xs:element name="upgrade" type="epv:pod_upgrade" minOccurs="0" />
       <xs:element name="containers">
         <xs:complexType>
           <xs:choice>

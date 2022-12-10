@@ -102,15 +102,7 @@ class IngressTranscriberTest extends TestCase
             ]);
 
         $repoIngress->expects(self::exactly(2))
-            ->method('exists')
-            ->willReturnOnConsecutiveCalls(false, true);
-
-        $repoIngress->expects(self::exactly(1))
-            ->method('create')
-            ->willReturn(['foo']);
-
-        $repoIngress->expects(self::exactly(1))
-            ->method('update')
+            ->method('apply')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
@@ -170,13 +162,9 @@ class IngressTranscriberTest extends TestCase
             ->with('ingresses')
             ->willReturn($repo);
 
-        $repo->expects(self::exactly(2))
-            ->method('exists')
-            ->willReturnOnConsecutiveCalls(false, false);
-
         $counter = 0;
         $repo->expects(self::exactly(2))
-            ->method('create')
+            ->method('apply')
             ->willReturnCallback(function () use (&$counter) {
                 if (0 === $counter) {
                     $counter++;

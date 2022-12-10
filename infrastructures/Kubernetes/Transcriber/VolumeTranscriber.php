@@ -128,7 +128,7 @@ class VolumeTranscriber implements DeploymentInterface
                         $pvcRepository->delete($pvc);
                     }
 
-                    $result = $pvcRepository->create($pvc);
+                    $result = $pvcRepository->apply($pvc);
 
                     $result = self::cleanResult($result);
 

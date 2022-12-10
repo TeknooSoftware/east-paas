@@ -74,19 +74,7 @@ class SecretTranscriberTest extends TestCase
             ]);
 
         $seRepo->expects(self::exactly(3))
-            ->method('exists')
-            ->willReturnOnConsecutiveCalls(false, false, true);
-
-        $seRepo->expects(self::exactly(2))
-            ->method('create')
-            ->willReturn([
-                'foo' => 'bar',
-                'metadata' => ['managedFields' =>['foo']],
-                'data' => ['foo' => 'bar'],
-            ]);
-
-        $seRepo->expects(self::once())
-            ->method('update')
+            ->method('apply')
             ->willReturn([
                 'foo' => 'bar',
                 'metadata' => ['managedFields' =>['foo']],
@@ -116,7 +104,6 @@ class SecretTranscriberTest extends TestCase
             ->method('foreachSecret')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
-                $callback(new Secret('foo2', 'map', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
                 return $cd;
             });
 
@@ -126,20 +113,12 @@ class SecretTranscriberTest extends TestCase
             ->with('secrets')
             ->willReturn($repo);
 
-        $repo->expects(self::exactly(2))
-            ->method('exists')
-            ->willReturnOnConsecutiveCalls(false, true);
-
         $repo->expects(self::once())
-            ->method('create')
-            ->willReturn(['foo']);
-
-        $repo->expects(self::once())
-            ->method('update')
+            ->method('apply')
             ->willThrowException(new \Exception());
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with(['foo']);
+        $promise->expects(self::never())->method('success');
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(

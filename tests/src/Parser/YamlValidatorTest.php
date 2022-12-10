@@ -110,6 +110,9 @@ volumes:
 pods:
   php-pods: #podset name
     replicas: 2 #instance of pods
+    upgrade:
+        max-upgrading-pods: 2
+        max-unavailable-pods: 1
     containers:
       php-run: #Container name
         image: registry.teknoo.software/php-run #Container image to use

@@ -57,7 +57,7 @@ class DeploymentTranscriber implements DeploymentInterface
 {
     use CommonTrait;
 
-    private const NAME_SUFFIX = '-ctrl';
+    private const NAME_SUFFIX = '-dplmt';
     private const POD_SUFFIX = '-pod';
     private const VOLUME_SUFFIX = '-volume';
     private const SECRET_SUFFIX = '-secret';
@@ -264,8 +264,8 @@ class DeploymentTranscriber implements DeploymentInterface
                 'strategy' => [
                     'type' => 'RollingUpdate',
                     'rollingUpdate' => [
-                        'maxSurge' => 1,
-                        'maxUnavailable' => 0,
+                        'maxSurge' => $pod->getMaxUpgradingPods(),
+                        'maxUnavailable' => $pod->getMaxUnavailablePods(),
                     ],
                 ],
                 'selector' => [
@@ -381,7 +381,7 @@ class DeploymentTranscriber implements DeploymentInterface
                 );
 
                 try {
-                    $result = $rcRepository->create($kubeSet);
+                    $result = $rcRepository->apply($kubeSet);
 
                     $result = self::cleanResult($result);
 

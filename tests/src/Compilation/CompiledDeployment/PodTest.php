@@ -39,10 +39,12 @@ class PodTest extends TestCase
     private function buildObject(): Pod
     {
         return new Pod(
-            'foo',
-            2,
-            [$this->createMock(Container::class)],
-            'bar'
+            name: 'foo',
+            replicas: 2,
+            containers: [$this->createMock(Container::class)],
+            ociRegistryConfigName: 'bar',
+            maxUpgradingPods: 3,
+            maxUnavailablePods: 2
         );
     }
 
@@ -67,6 +69,22 @@ class PodTest extends TestCase
         self::assertEquals(
             'bar',
             $this->buildObject()->getOciRegistryConfigName()
+        );
+    }
+
+    public function testGetMaxUpgradingPods()
+    {
+        self::assertEquals(
+            3,
+            $this->buildObject()->getMaxUpgradingPods()
+        );
+    }
+
+    public function testGetMaxUnavailablePods()
+    {
+        self::assertEquals(
+            2,
+            $this->buildObject()->getMaxUnavailablePods()
         );
     }
 

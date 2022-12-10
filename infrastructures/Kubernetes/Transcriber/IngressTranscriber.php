@@ -217,12 +217,7 @@ class IngressTranscriber implements ExposingInterface
                     }
 
                     $ingressRepository = $client->ingresses();
-                    $name = $kubIngress->getMetadata('name') ?? $prefixer($ingress->getName() . self::NAME_SUFFIX);
-                    if ($ingressRepository->exists($name)) {
-                        $result = $ingressRepository->update($kubIngress);
-                    } else {
-                        $result = $ingressRepository->create($kubIngress);
-                    }
+                    $result = $ingressRepository->apply($kubIngress);
 
                     $result = self::cleanResult($result);
 

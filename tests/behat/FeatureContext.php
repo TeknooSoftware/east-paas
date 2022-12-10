@@ -1006,6 +1006,9 @@ volumes:
 pods:
   php-pods: #podset name
     replicas: 2 #instance of pods
+    upgrade:
+        max-upgrading-pods: 2
+        max-unavailable-pods: 1
     containers:
       php-run: #Container name
         image: registry.teknoo.software/php-run #Container image to use
@@ -1343,13 +1346,9 @@ EOF;
             ->method('__call')
             ->willReturn($repoMock);
 
-        $repoMock->expects(new AnyInvokedCountMatcher())
-            ->method('exists')
-            ->willReturn(false);
-
         $this->manifests = [];
         $repoMock->expects(new AnyInvokedCountMatcher())
-            ->method('create')
+            ->method('apply')
             ->willReturnCallback(
                 function (Model $model): array {
                     $this->manifests[$model::class][] = $model->toArray();
@@ -1534,7 +1533,7 @@ EOF;
     "Maclof\\Kubernetes\\Models\\Deployment": [
         {
             "metadata": {
-                "name": "{$prefix}php-pods-ctrl",
+                "name": "{$prefix}php-pods-dplmt",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "{$prefix}php-pods"
@@ -1548,8 +1547,8 @@ EOF;
                 "strategy": {
                     "type": "RollingUpdate",
                     "rollingUpdate": {
-                        "maxSurge": 1,
-                        "maxUnavailable": 0
+                        "maxSurge": 2,
+                        "maxUnavailable": 1
                     }
                 },
                 "selector": {
@@ -1698,7 +1697,7 @@ EOF;
         },
         {
             "metadata": {
-                "name": "{$prefix}demo-ctrl",
+                "name": "{$prefix}demo-dplmt",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "{$prefix}demo"

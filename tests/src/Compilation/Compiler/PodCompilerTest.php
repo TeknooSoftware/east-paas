@@ -51,6 +51,10 @@ class PodCompilerTest extends TestCase
             'node-pod' => [
                 'replicas' => 1,
                 'oci-registry-config-name' => 'foo',
+                'upgrade' => [
+                    'max-upgrading-pods' => 2,
+                    'max-unavailable-pods' => 1,
+                ],
                 'containers' => [
                     'node-react' => [
                         'replicas' => 3,

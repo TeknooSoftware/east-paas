@@ -134,12 +134,7 @@ class SecretTranscriber implements DeploymentInterface
                     }
 
                     $sRepository = $client->secrets();
-                    $name = $kubeSecret->getMetadata('name') ?? $prefixer($secret->getName() . self::NAME_SUFFIX);
-                    if ($sRepository->exists($name)) {
-                        $result = $sRepository->update($kubeSecret);
-                    } else {
-                        $result = $sRepository->create($kubeSecret);
-                    }
+                    $result = $sRepository->apply($kubeSecret);
 
                     $result = self::cleanResult($result);
 

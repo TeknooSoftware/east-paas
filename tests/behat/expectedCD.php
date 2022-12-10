@@ -193,6 +193,8 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
         pod: new CompiledDeployment\Pod(
             name: 'php-pods',
             replicas: 2,
+            maxUpgradingPods: 2,
+            maxUnavailablePods: 1,
             containers: [
                 new CompiledDeployment\Container(
                     name: 'php-run',

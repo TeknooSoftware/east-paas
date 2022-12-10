@@ -77,7 +77,7 @@ class ServiceTranscriberTest extends TestCase
             ->willReturnOnConsecutiveCalls(false, true);
 
         $repoService->expects(self::exactly(2))
-            ->method('create')
+            ->method('apply')
             ->willReturn(['foo']);
 
         $repoService->expects(self::once())
@@ -136,7 +136,7 @@ class ServiceTranscriberTest extends TestCase
 
         $counter = 0;
         $repo->expects(self::exactly(2))
-            ->method('create')
+            ->method('apply')
             ->willReturnCallback(function () use (&$counter) {
                 if (0 === $counter) {
                     $counter++;

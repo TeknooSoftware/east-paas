@@ -53,6 +53,8 @@ class Pod implements ImmutableInterface, IteratorAggregate
         private readonly int $replicas,
         private readonly array $containers,
         private readonly ?string $ociRegistryConfigName = null,
+        private readonly int $maxUpgradingPods = 1,
+        private readonly int $maxUnavailablePods = 0,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -78,5 +80,15 @@ class Pod implements ImmutableInterface, IteratorAggregate
     public function getOciRegistryConfigName(): ?string
     {
         return $this->ociRegistryConfigName;
+    }
+
+    public function getMaxUpgradingPods(): int
+    {
+        return $this->maxUpgradingPods;
+    }
+
+    public function getMaxUnavailablePods(): int
+    {
+        return $this->maxUnavailablePods;
     }
 }
