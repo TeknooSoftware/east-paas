@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.132] - 2022-12-11
+### Dev Release
+- Fix .paas.yml validation
+
 ## [0.0.131] - 2022-12-10
 ### Dev Release
 - Add regex to paas xsd validation to support identifier with only alphanumeric characters and the `-`
