@@ -64,7 +64,7 @@ class SendHistory implements DispatchHistoryInterface
         array $extra
     ): void {
         $this->dateTimeService->passMeTheDate(
-            function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $step, $extra) {
+            function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $step, $extra): void {
                 $history = new History(
                     previous: null,
                     message: $step,

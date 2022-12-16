@@ -75,10 +75,10 @@ class PushResult implements DispatchResultInterface
         array $extra = [],
     ): void {
         $this->dateTimeService->passMeTheDate(
-            function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $result, $manager, $extra) {
+            function (DateTimeInterface $now) use ($projectId, $envName, $jobId, $result, $manager, $extra): void {
                 /** @var Promise<array<string, mixed>, mixed, mixed> $promise */
                 $promise = new Promise(
-                    function ($normalizedResult) use ($projectId, $envName, $jobId, $manager, $now, $extra) {
+                    function ($normalizedResult) use ($projectId, $envName, $jobId, $manager, $now, $extra): void {
                         $history = new History(
                             previous: null,
                             message: DispatchResultInterface::class,
@@ -146,6 +146,7 @@ class PushResult implements DispatchResultInterface
             do {
                 $result[] = $currentException->getMessage();
             } while (null !== ($currentException = $currentException->getPrevious()));
+
             $result = array_values(array_unique($result));
         }
 
@@ -156,8 +157,8 @@ class PushResult implements DispatchResultInterface
                 $failure($exception);
                 $manager->stopErrorReporting();
             }
-        } catch (Throwable $error) {
-            $failure($error);
+        } catch (Throwable $throwable) {
+            $failure($throwable);
         }
 
         return $this;

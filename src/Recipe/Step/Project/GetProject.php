@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Project;
 use DomainException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Object\Project;
@@ -51,10 +52,10 @@ class GetProject
     {
         /** @var Promise<Project, mixed, mixed> $fetchedPromise */
         $fetchedPromise = new Promise(
-            static function (Project $project) use ($manager) {
+            static function (Project $project) use ($manager): void {
                 $manager->updateWorkPlan([Project::class => $project]);
             },
-            fn (Throwable $error) => $manager->error(
+            static fn(Throwable $error): ChefInterface => $manager->error(
                 new DomainException(
                     'teknoo.east.paas.error.recipe.project.not_found',
                     404,

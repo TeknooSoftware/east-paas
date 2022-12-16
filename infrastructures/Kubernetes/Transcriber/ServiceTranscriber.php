@@ -88,6 +88,7 @@ class ServiceTranscriber implements ExposingInterface
 
         return $specs;
     }
+
     private static function convertToService(Service $service, string $namespace, callable $prefixer): KubeService
     {
         return new KubeService(
@@ -101,7 +102,7 @@ class ServiceTranscriber implements ExposingInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachService(
-            static function (Service $service, string $namespace, string $prefix,) use ($client, $promise) {
+            static function (Service $service, string $namespace, string $prefix,) use ($client, $promise): void {
                 $prefixer = self::createPrefixer($prefix);
                 $kubeService = self::convertToService($service, $namespace, $prefixer);
 

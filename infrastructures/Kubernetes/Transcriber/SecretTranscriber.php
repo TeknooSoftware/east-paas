@@ -120,7 +120,7 @@ class SecretTranscriber implements DeploymentInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachSecret(
-            static function (Secret $secret, string $namespace, string $prefix,) use ($client, $promise) {
+            static function (Secret $secret, string $namespace, string $prefix,) use ($client, $promise): void {
                 $prefixer = self::createPrefixer($prefix);
                 $kubeSecret = self::convertToSecret($secret, $namespace, $prefixer);
 

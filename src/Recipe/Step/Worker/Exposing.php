@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -63,7 +64,7 @@ class Exposing
     ): self {
         /** @var Promise<array<string, mixed>, mixed, mixed> $promise */
         $promise = new Promise(
-            function (array $result) use ($projectId, $envName, $jobUnit) {
+            function (array $result) use ($projectId, $envName, $jobUnit): void {
                 ($this->dispatchHistory)(
                     $projectId,
                     $envName,
@@ -72,7 +73,7 @@ class Exposing
                     $result
                 );
             },
-            fn (Throwable $error) => $manager->error(
+            static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.cluster.exposing_error',
                     500,

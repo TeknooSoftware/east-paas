@@ -48,8 +48,8 @@ class YamlParser implements YamlParserInterface
     {
         try {
             $promise->success($this->parser->parse($value, $flags));
-        } catch (Throwable $error) {
-            $promise->fail($error);
+        } catch (Throwable $throwable) {
+            $promise->fail($throwable);
         }
 
         return $this;

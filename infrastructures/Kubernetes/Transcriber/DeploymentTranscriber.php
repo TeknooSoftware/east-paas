@@ -82,7 +82,7 @@ class DeploymentTranscriber implements DeploymentInterface
                 'image' => $imgUrl,
                 'imagePullPolicy' => 'Always',
                 'ports' => array_map(
-                    fn ($port) => ['containerPort' => $port,],
+                    static fn($port): array => ['containerPort' => $port,],
                     $container->getListen()
                 )
             ];
@@ -301,6 +301,7 @@ class DeploymentTranscriber implements DeploymentInterface
 
         return $specs;
     }
+
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param array<string, Volume>|Volume[] $volumes
@@ -386,8 +387,8 @@ class DeploymentTranscriber implements DeploymentInterface
                     $result = self::cleanResult($result);
 
                     $promise->success($result);
-                } catch (Throwable $error) {
-                    $promise->fail($error);
+                } catch (Throwable $throwable) {
+                    $promise->fail($throwable);
                 }
             }
         );

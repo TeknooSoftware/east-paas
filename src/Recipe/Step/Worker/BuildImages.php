@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
@@ -62,7 +63,7 @@ class BuildImages
     ): self {
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
-            function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
+            function (string $buildSuccess) use ($projectId, $envName, $jobUnit): void {
                 ($this->dispatchHistory)(
                     $projectId,
                     $envName,
@@ -71,7 +72,7 @@ class BuildImages
                     ['build_output' => $buildSuccess]
                 );
             },
-            fn (Throwable $error) => $manager->error(
+            static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.images.building_error',
                     500,

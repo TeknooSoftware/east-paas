@@ -199,7 +199,7 @@ class IngressTranscriber implements ExposingInterface
                 $defaultIngressService,
                 $defaultIngressPort,
                 $defaultIngressAnnotations,
-            ) {
+            ): void {
                 $prefixer = self::createPrefixer($prefix);
                 $kubIngress = self::convertToIngress(
                     $ingress,

@@ -51,7 +51,7 @@ class SaveJob
         /** @var Promise<Job, mixed, mixed> $savedPromise */
         $savedPromise = new Promise(
             null,
-            static fn (Throwable $error) => $chef->error(
+            static fn (Throwable $error): ChefInterface => $chef->error(
                 new RuntimeException(
                     message: 'teknoo.east.paas.job.save_error',
                     code: 500,

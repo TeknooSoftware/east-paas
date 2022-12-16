@@ -59,8 +59,8 @@ class Deserializer implements DeserializerInterface
                     context: $context
                 )
             );
-        } catch (Throwable $error) {
-            $promise->fail($error);
+        } catch (Throwable $throwable) {
+            $promise->fail($throwable);
         }
 
         return $this;

@@ -84,7 +84,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
     /**
      * @var array<string, mixed>
      */
-    private array $configuration;
+    private array $configuration = [];
 
     /**
      * @param array<string, CompilerInterface> $compilers
@@ -150,7 +150,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
         try {
             /** @var Promise<array<string, mixed>, mixed, array<string, mixed>> $configurationPromise */
             $configurationPromise = new Promise(
-                function ($result, PromiseInterface $next) {
+                function ($result, PromiseInterface $next): void {
                     $this->configuration = $result;
 
                     $next->success($result);
@@ -175,7 +175,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
              * > $parsedPromise
              */
             $parsedPromise = new Promise(
-                fn ($result, PromiseInterface $next) => $this->validator->validate(
+                fn ($result, PromiseInterface $next): YamlValidator => $this->validator->validate(
                     $result,
                     $this->factory->getSchema(),
                     $next

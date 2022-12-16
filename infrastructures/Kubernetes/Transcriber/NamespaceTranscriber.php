@@ -86,7 +86,7 @@ class NamespaceTranscriber implements GenericTranscriberInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->forNamespace(
-            static function (string $namespace, bool $hierarchicalNamespaces) use ($client, $promise) {
+            static function (string $namespace, bool $hierarchicalNamespaces) use ($client, $promise): void {
                 $namespace = strtolower($namespace);
                 $parts = explode('-', $namespace);
 

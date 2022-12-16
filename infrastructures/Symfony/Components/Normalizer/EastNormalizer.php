@@ -42,7 +42,7 @@ class EastNormalizer extends BaseEastNormalizer
     /**
      * @param array<string, mixed> $context
      */
-    public function normalize($object, $format = null, array $context = [])
+    public function normalize(mixed $object, ?string $format = null, array $context = []): array
     {
         $data = parent::normalize($object, $format, $context);
 

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.133] - 2022-12-16
+### Dev Release
+- QA Fixes
+
 ## [0.0.132] - 2022-12-11
 ### Dev Release
 - Fix .paas.yml validation

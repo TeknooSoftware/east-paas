@@ -68,7 +68,7 @@ class PrepareJob
                 $manager,
                 $client,
                 $errorFactory,
-            ) {
+            ): void {
                 $project->prepareJob($job, $now, $environment);
 
                 $job->isRunnable(

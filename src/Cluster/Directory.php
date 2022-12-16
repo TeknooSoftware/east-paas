@@ -42,7 +42,7 @@ class Directory
     /**
      * @var array<string, DriverInterface>
      */
-    private array $clients;
+    private array $clients = [];
 
     public function register(string $type, DriverInterface $client): self
     {

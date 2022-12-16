@@ -130,6 +130,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
         if ($this->filesystem instanceof Filesystem) {
             $this->filesystem = clone $this->filesystem;
         }
+
         $this->rand = null;
 
         $this->updateStates();

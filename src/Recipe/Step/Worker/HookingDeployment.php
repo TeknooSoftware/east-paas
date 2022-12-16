@@ -61,7 +61,7 @@ class HookingDeployment
     ): self {
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
-            function (string $buildSuccess) use ($projectId, $envName, $jobUnit) {
+            function (string $buildSuccess) use ($projectId, $envName, $jobUnit): void {
                 ($this->dispatchHistory)(
                     $projectId,
                     $envName,
@@ -70,22 +70,14 @@ class HookingDeployment
                     ['hook_output' => $buildSuccess]
                 );
             },
-            fn (Throwable $error) => throw $error,
+            static fn(Throwable $error) => throw $error,
         );
 
         $workspace->runInRepositoryPath(
-            function (
-                $path
-            ) use (
-                $compiledDeployment,
-                $promise,
-                $jobUnit,
-                $workspace,
-                $manager,
-            ) {
+            static function ($path) use ($compiledDeployment, $promise, $jobUnit, $workspace, $manager): void {
                 try {
                     $compiledDeployment->foreachHook(
-                        static function (HookInterface $hook) use ($path, $promise, $jobUnit, $workspace) {
+                        static function (HookInterface $hook) use ($path, $promise, $jobUnit, $workspace): void {
                             if ($hook instanceof HookAwareInterface) {
                                 $hook->setContext($jobUnit, $workspace);
                             }

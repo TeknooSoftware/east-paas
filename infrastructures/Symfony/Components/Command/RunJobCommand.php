@@ -50,6 +50,9 @@ use function is_string;
  */
 class RunJobCommand extends Command
 {
+    /**
+     * @var string
+     */
     private const FILE_ARGUMENT_NAME = 'file';
 
     public function __construct(

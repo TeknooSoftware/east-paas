@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
@@ -57,10 +58,10 @@ class ConfigureCloningAgent
     ): self {
         /** @var Promise<CloningAgentInterface, mixed, mixed> $promise */
         $promise = new Promise(
-            static function (CloningAgentInterface $agent) use ($manager) {
+            static function (CloningAgentInterface $agent) use ($manager): void {
                 $manager->updateWorkPlan([CloningAgentInterface::class => $agent]);
             },
-            fn (Throwable $error) => $manager->error(
+            static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.agent.configuration_error',
                     500,

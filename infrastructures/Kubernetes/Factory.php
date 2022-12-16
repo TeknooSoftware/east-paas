@@ -93,8 +93,8 @@ class Factory implements ClientFactoryInterface
     {
         try {
             $fileName = tempnam($this->tmpDir, 'east-paas-kube-') . '.paas';
-        } catch (Throwable $error) {
-            throw new RuntimeException('Bad file temp name in K3s factory', 0, $error);
+        } catch (Throwable $throwable) {
+            throw new RuntimeException('Bad file temp name in K3s factory', 0, $throwable);
         }
 
         file_put_contents($fileName, $value);

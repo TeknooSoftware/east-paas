@@ -69,7 +69,7 @@ class Running implements StateInterface
             }
 
             $this->getWorkspace()->runInRepositoryPath(
-                function ($repositoryPath, $workspacePath) use ($options, $promise) {
+                function ($repositoryPath, $workspacePath) use ($options, $promise): void {
                     $this->gitProcess->setWorkingDirectory($workspacePath);
 
                     $this->gitProcess->setEnv([

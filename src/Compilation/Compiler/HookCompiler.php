@@ -51,7 +51,7 @@ class HookCompiler implements CompilerInterface
     /**
      * @var array<string, HookInterface> $hooksLibrary
      */
-    private array $hooksLibrary;
+    private array $hooksLibrary = [];
 
     /**
      * @param iterable<string, HookInterface> $hooksLibrary

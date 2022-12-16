@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
@@ -51,12 +52,12 @@ class CompileDeployment
     ): self {
         /** @var Promise<CompiledDeploymentInterface, mixed, mixed> $promise */
         $promise = new Promise(
-            static function (CompiledDeploymentInterface $deployment) use ($manager) {
+            static function (CompiledDeploymentInterface $deployment) use ($manager): void {
                 $manager->updateWorkPlan([
                     CompiledDeploymentInterface::class => $deployment,
                 ]);
             },
-            fn (Throwable $error) => $manager->error(
+            static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.configuration.compilation_error',
                     500,

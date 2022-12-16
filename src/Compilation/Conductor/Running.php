@@ -83,7 +83,7 @@ class Running implements StateInterface
                         $storageIdentifier,
                         $storageSize,
                         $ociRegistryConfig,
-                    ) {
+                    ): void {
                         $compiler->compile(
                             $configuration,
                             $compiledDeployment,

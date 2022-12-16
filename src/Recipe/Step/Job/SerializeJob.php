@@ -30,6 +30,7 @@ use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\East\Paas\Object\Job;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Throwable;
 
@@ -55,10 +56,10 @@ class SerializeJob
     {
         /** @var Promise<string, mixed, mixed> $serializedPromise */
         $serializedPromise = new Promise(
-            static function (string $jobSerialized) use ($manager) {
+            static function (string $jobSerialized) use ($manager): void {
                 $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
             },
-            fn (Throwable $error) => $manager->error(
+            static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.job.serialization_error',
                     500,

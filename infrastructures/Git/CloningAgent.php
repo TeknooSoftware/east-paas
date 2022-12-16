@@ -169,13 +169,13 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         if (!str_starts_with($sourceRepository->getPullUrl(), 'http')) {
             $workspace->writeFile(
                 new File($this->privateKeyFilename, Visibility::Private, $this->getSshIdentity()->getPrivateKey()),
-                function ($path) {
+                function ($path): void {
                     $this->gitProcess->setWorkingDirectory($path);
                 }
             );
         } else {
             $workspace->runInRepositoryPath(
-                function ($repositoryPath, $path) {
+                function ($repositoryPath, $path): void {
                     $this->gitProcess->setWorkingDirectory($path);
                 }
             );

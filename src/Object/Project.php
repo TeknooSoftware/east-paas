@@ -118,8 +118,8 @@ class Project implements
                 ->with('imagesRegistry', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0)),
             (new Callback(Draft::class))
-                ->call(function (Project $project, AssertionInterface $assertion) {
-                    $project->isNotInState([Executable::class], function () use ($assertion) {
+                ->call(static function (Project $project, AssertionInterface $assertion): void {
+                    $project->isNotInState([Executable::class], static function () use ($assertion): void {
                         $assertion->isValid();
                     });
                 }),

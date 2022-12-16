@@ -147,10 +147,10 @@ class JobUnit implements JobUnitInterface
             $selectedClients = [];
             /** @var Promise<ClusterClientInterface, mixed, mixed> $clusterPromise */
             $clusterPromise = new Promise(
-                static function (ClusterClientInterface $client) use (&$selectedClients) {
+                static function (ClusterClientInterface $client) use (&$selectedClients): void {
                     $selectedClients[] = $client;
                 },
-                fn (Throwable $error) => throw $error,
+                static fn(Throwable $error) => throw $error,
             );
 
             foreach ($this->clusters as $cluster) {
@@ -230,7 +230,7 @@ class JobUnit implements JobUnitInterface
     {
         $pattern = '#((?:\$|R)\{[A-Za-z]\w*\})#iS';
 
-        $updateClosure = function (&$values, callable $recursive) use ($pattern) {
+        $updateClosure = function (&$values, callable $recursive) use ($pattern): void {
             foreach ($values as $name => &$value) {
                 if (is_array($value)) {
                     $recursive($value, $recursive);

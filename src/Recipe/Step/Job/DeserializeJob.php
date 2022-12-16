@@ -30,6 +30,7 @@ use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Throwable;
 
@@ -59,11 +60,13 @@ class DeserializeJob
             JobUnitInterface::class,
             'json',
             new Promise(
-                static function (JobUnitInterface $jobUnit) use ($manager) {
+                static function (JobUnitInterface $jobUnit) use ($manager): void {
                     $manager->updateWorkPlan([JobUnitInterface::class => $jobUnit]);
-                    $jobUnit->runWithExtra(fn ($extra) => $manager->updateWorkPlan(['extra' => $extra]));
+                    $jobUnit->runWithExtra(
+                        static fn($extra): ChefInterface => $manager->updateWorkPlan(['extra' => $extra])
+                    );
                 },
-                fn (Throwable $error) => $manager->error(
+                static fn(Throwable $error): ChefInterface => $manager->error(
                     new RuntimeException(
                         'teknoo.east.paas.error.recipe.job.mal_formed',
                         400,

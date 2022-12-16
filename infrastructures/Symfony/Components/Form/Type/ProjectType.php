@@ -77,12 +77,13 @@ class ProjectType extends AbstractType
              */
             public function mapDataToForms($data, $forms): void
             {
+                $form = null;
                 if (!$data instanceof Project) {
                     return;
                 }
 
                 $visitors = array_map(
-                    fn (FormInterface $form): callable => $form->setData(...),
+                    static fn(FormInterface $form): callable => $form->setData(...),
                     iterator_to_array($forms)
                 );
                 $data->visit($visitors);

@@ -177,7 +177,7 @@ class Cluster implements
 
         /** @var Promise<Environment, mixed, mixed> $equalPromise */
         $equalPromise = new Promise(
-            fn () => $job->addCluster($this)
+            fn (): Job => $job->addCluster($this)
         );
 
         $environment->isEqualTo(

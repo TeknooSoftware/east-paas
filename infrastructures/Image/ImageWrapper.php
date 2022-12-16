@@ -146,7 +146,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
     ): BuilderInterface {
         $processes = [];
         $compiledDeployment->foreachBuildable(
-            function (BuildableInterface $image) use (&$processes, $workingPath, $compiledDeployment) {
+            function (BuildableInterface $image) use (&$processes, $workingPath, $compiledDeployment): void {
                 $newImage = $image->withRegistry((string) $this->getUrl());
                 $compiledDeployment->updateBuildable($image, $newImage);
 
@@ -227,7 +227,14 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
     ): BuilderInterface {
         $processes = [];
         $compiledDeployment->foreachVolume(
-            function (string $name, VolumeInterface $volume) use (&$processes, $workingPath, $compiledDeployment) {
+            function (
+                string $name,
+                VolumeInterface $volume
+            ) use (
+                &$processes,
+                $workingPath,
+                $compiledDeployment
+            ): void {
                 if (!$volume instanceof Volume) {
                     return;
                 }

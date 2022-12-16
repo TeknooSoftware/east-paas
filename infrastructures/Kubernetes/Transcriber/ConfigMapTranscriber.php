@@ -83,7 +83,7 @@ class ConfigMapTranscriber implements DeploymentInterface
         PromiseInterface $promise
     ): TranscriberInterface {
         $compiledDeployment->foreachMap(
-            static function (Map $configMap, string $namespace, string $prefix) use ($client, $promise) {
+            static function (Map $configMap, string $namespace, string $prefix) use ($client, $promise): void {
                 $prefixer = self::createPrefixer($prefix);
                 $kubeConfigMap = self::convertToConfigMap($configMap, $namespace, $prefixer);
 

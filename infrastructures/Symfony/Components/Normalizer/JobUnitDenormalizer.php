@@ -48,7 +48,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
     private DenormalizerInterface $denormalizer;
 
     public function __construct(
-        private bool $hierarchicalNamespacesDefaultValue = false,
+        private readonly bool $hierarchicalNamespacesDefaultValue = false,
     ) {
     }
 
@@ -62,7 +62,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
     /**
      * @param array<string, mixed> $context
      */
-    public function denormalize($data, $class, $format = null, array $context = array()): JobUnit
+    public function denormalize($data, $class, $format = null, array $context = []): JobUnit
     {
         if (!is_array($data) || JobUnitInterface::class !== $class) {
             throw new RuntimeException('Error, this object is not managed by this denormalizer');

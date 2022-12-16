@@ -235,7 +235,7 @@ class PodCompiler implements CompilerInterface
                 $volumeFrom,
                 $mountPath,
                 new Promise(
-                    static function (VolumeInterface $volume) use (&$containerVolumes, $volumeName) {
+                    static function (VolumeInterface $volume) use (&$containerVolumes, $volumeName): void {
                         $containerVolumes[(string) $volumeName] = $volume;
                     },
                     static function (Throwable $error): never {
@@ -285,6 +285,7 @@ class PodCompiler implements CompilerInterface
             foreach ($variables[self::KEY_IMPORT_SECRETS] as $name) {
                 $variables[self::KEY_IMPORT_SECRETS . '-' . $index++] = new SecretReference($name, null, true);
             }
+
             unset($variables[self::KEY_IMPORT_SECRETS]);
         }
 
@@ -292,6 +293,7 @@ class PodCompiler implements CompilerInterface
             foreach ($variables[self::KEY_FROM_SECRETS] as $varName => $key) {
                 $variables[(string) $varName] = new SecretReference(...explode('.', (string) $key));
             }
+
             unset($variables[self::KEY_FROM_SECRETS]);
         }
 
@@ -300,6 +302,7 @@ class PodCompiler implements CompilerInterface
             foreach ($variables[self::KEY_IMPORT_MAPS] as $name) {
                 $variables[self::KEY_IMPORT_MAPS . '-' . $index++] = new MapReference($name, null, true);
             }
+
             unset($variables[self::KEY_IMPORT_MAPS]);
         }
 
@@ -307,6 +310,7 @@ class PodCompiler implements CompilerInterface
             foreach ($variables[self::KEY_FROM_MAPS] as $varName => $key) {
                 $variables[(string) $varName] = new MapReference(...explode('.', (string) $key));
             }
+
             unset($variables[self::KEY_FROM_MAPS]);
         }
 

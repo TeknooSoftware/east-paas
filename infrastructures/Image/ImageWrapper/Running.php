@@ -68,7 +68,7 @@ class Running implements StateInterface
 
     private function hash(): Closure
     {
-        return fn(string $name) => substr(hash('sha256', $this->projectId . $name), 0, 10);
+        return fn(string $name): string => substr(hash('sha256', $this->projectId . $name), 0, 10);
     }
 
     private function generateShellScript(): Closure
@@ -105,7 +105,7 @@ class Running implements StateInterface
                     $imageName,
                     $imageShortName,
                 ],
-                $this->templates[$template]
+                (string) $this->templates[$template]
             );
         };
     }

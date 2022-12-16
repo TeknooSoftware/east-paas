@@ -51,8 +51,8 @@ class Normalizer implements NormalizerInterface
     ): NormalizerInterface {
         try {
             $promise->success($this->normalizer->normalize($object, $format, $context));
-        } catch (Throwable $error) {
-            $promise->fail($error);
+        } catch (Throwable $throwable) {
+            $promise->fail($throwable);
         }
 
         return $this;

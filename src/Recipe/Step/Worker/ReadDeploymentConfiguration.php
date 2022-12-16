@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -51,7 +52,7 @@ class ReadDeploymentConfiguration
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
             null,
-            fn (Throwable $error) => $manager->error(
+            static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.configuration.read_error',
                     500,

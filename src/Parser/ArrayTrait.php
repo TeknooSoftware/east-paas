@@ -52,7 +52,7 @@ trait ArrayTrait
         $this->propertyAccessor->getValue(
             $dictionary,
             $path,
-            static function ($value) use ($callback, &$default) {
+            static function ($value) use ($callback, &$default): void {
                 $callback($value ?? $default);
             },
             $default

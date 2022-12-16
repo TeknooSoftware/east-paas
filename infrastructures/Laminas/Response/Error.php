@@ -84,7 +84,7 @@ class Error implements
     }
 
     /**
-     * @return array<string, array<int, string>|int|string>
+     * @return array{type: string, title: string, status: int, detail: string[]&mixed[]}
      */
     public function jsonSerialize(): array
     {

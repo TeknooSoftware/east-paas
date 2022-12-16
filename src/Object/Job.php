@@ -111,11 +111,16 @@ class Job implements
         return [
             (new Property(Terminated::class))
                 ->with('history', new IsInstanceOf(History::class))
-                ->with('history', new Property\Callback(function (History $history, Property\Callback $assertion) {
-                    if ($history->isFinal()) {
-                        $assertion->isValid($history);
-                    }
-                })),
+                ->with(
+                    'history',
+                    new Property\Callback(
+                        static function (History $history, Property\Callback $assertion): void {
+                            if ($history->isFinal()) {
+                                $assertion->isValid($history);
+                            }
+                        }
+                    ),
+                ),
 
             (new Property(Executing::class))
                 ->with('project', new IsInstanceOf(Project::class))
@@ -124,11 +129,16 @@ class Job implements
                 ->with('imagesRegistry', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0))
                 ->with('history', new IsInstanceOf(History::class))
-                ->with('history', new Property\Callback(function (History $history, Property\Callback $assertion) {
-                    if (!$history->isFinal()) {
-                        $assertion->isValid($history);
-                    }
-                })),
+                ->with(
+                    'history',
+                    new Property\Callback(
+                        static function (History $history, Property\Callback $assertion): void {
+                            if (!$history->isFinal()) {
+                                $assertion->isValid($history);
+                            }
+                        }
+                    )
+                ),
 
             (new Property(Validating::class))
                 ->with('project', new IsInstanceOf(Project::class))
@@ -139,10 +149,10 @@ class Job implements
                 ->with('history', new IsEmpty()),
 
             (new Callback(Pending::class))
-                ->call(function (Job $job, AssertionInterface $assertion) {
+                ->call(static function (Job $job, AssertionInterface $assertion): void {
                     $job->isNotInState(
                         [Validating::class, Executing::class, Terminated::class],
-                        function ($statesList) use ($assertion) {
+                        static function ($statesList) use ($assertion): void {
                             if (empty($statesList)) {
                                 $assertion->isValid();
                             }

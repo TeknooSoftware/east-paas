@@ -100,7 +100,7 @@ class ImageCompiler implements CompilerInterface
                 $isLibrary,
                 $tag,
                 $variables
-            ) {
+            ): void {
                 $parts = explode('/', (string) $buildName);
                 $imageName = array_pop($parts);
 
@@ -122,7 +122,7 @@ class ImageCompiler implements CompilerInterface
             }
 
             $workspace->runInRepositoryPath(
-                fn ($root) => $addImage($root . $config[self::KEY_PATH])
+                static fn($root) => $addImage($root . $config[self::KEY_PATH])
             );
         }
 

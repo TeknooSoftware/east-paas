@@ -51,8 +51,8 @@ class Serializer implements SerializerInterface
     ): SerializerInterface {
         try {
             $promise->success($this->serializer->serialize($data, $format, $context));
-        } catch (Throwable $error) {
-            $promise->fail($error);
+        } catch (Throwable $throwable) {
+            $promise->fail($throwable);
         }
 
         return $this;

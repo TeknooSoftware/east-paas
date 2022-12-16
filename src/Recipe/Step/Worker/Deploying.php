@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Cluster\Collection;
@@ -64,7 +65,7 @@ class Deploying
     ): self {
         /** @var Promise<array<string, mixed>, mixed, mixed> $promise */
         $promise = new Promise(
-            function (array $result) use ($projectId, $envName, $jobUnit) {
+            function (array $result) use ($projectId, $envName, $jobUnit): void {
                 ($this->dispatchHistory)(
                     $projectId,
                     $envName,
@@ -73,7 +74,7 @@ class Deploying
                     $result
                 );
             },
-            fn (Throwable $error) => $manager->error(
+            static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.cluster.deployment_error',
                     500,

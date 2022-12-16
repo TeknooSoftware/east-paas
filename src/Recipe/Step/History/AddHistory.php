@@ -40,7 +40,7 @@ class AddHistory
 {
     public function __invoke(Job $job, History $history, ManagerInterface $manager): self
     {
-        $job->addFromHistory($history, static function (History $history) use ($manager) {
+        $job->addFromHistory($history, static function (History $history) use ($manager): void {
             $manager->updateWorkPlan([History::class => $history]);
         });
 
