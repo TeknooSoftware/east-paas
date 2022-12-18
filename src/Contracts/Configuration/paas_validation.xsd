@@ -188,6 +188,34 @@
     </xs:choice>
   </xs:complexType>
 
+  <xs:complexType name="health_check_prob_command">
+    <xs:choice>
+      <xs:any maxOccurs="unbounded" processContents="skip" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="health_check_prob_http">
+    <xs:all>
+      <xs:element name="port" type="xs:int" minOccurs="0" />
+      <xs:element name="path" type="xs:string" minOccurs="1" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="health_check_prob">
+    <xs:choice minOccurs="0" maxOccurs="1">
+      <xs:element name="command" type="epv:health_check_prob_command" minOccurs="1" />
+      <xs:element name="http" type="epv:health_check_prob_http" minOccurs="1" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="health_check">
+    <xs:all>
+      <xs:element name="initial-delay-seconds" type="xs:int" minOccurs="0" />
+      <xs:element name="period-seconds" type="xs:int" minOccurs="1" />
+      <xs:element name="probe" type="epv:health_check_prob" minOccurs="1" />
+    </xs:all>
+  </xs:complexType>
+
   <xs:complexType name="container_node">
     <xs:all>
       <xs:element name="image" type="xs:string" />
@@ -195,6 +223,7 @@
       <xs:element name="listen" type="epv:rows_list_int" minOccurs="0" />
       <xs:element name="volumes" type="epv:container_volumes_list" minOccurs="0" />
       <xs:element name="variables" type="epv:variables" minOccurs="0" />
+      <xs:element name="healthcheck" type="epv:health_check" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
