@@ -31,6 +31,7 @@ use Maclof\Kubernetes\Repositories\PodRepository;
 use Maclof\Kubernetes\Repositories\DeploymentRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -80,7 +81,14 @@ class DeploymentTranscriberTest extends TestCase
                     [80],
                     ['foo' => $volume1->import('/foo')],
                     ['foo' => 'bar', 'bar' => 'foo'],
-                    $this->createMock(HealthCheck::class),
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Command,
+                        command: ['ps', 'aux', 'php'],
+                        path: null,
+                        port: null,
+                    ),
                 );
                 $c2 = new Container(
                     'c2',
@@ -100,7 +108,14 @@ class DeploymentTranscriberTest extends TestCase
                         'secret2' => new SecretReference('foo', null, true),
                         'map2' => new MapReference('foo', null, true),
                     ],
-                    $this->createMock(HealthCheck::class),
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Http,
+                        command: null,
+                        path: '/status',
+                        port: 8080,
+                    ),
                 );
                 $c3 = new Container(
                     'c3',
@@ -109,7 +124,7 @@ class DeploymentTranscriberTest extends TestCase
                     [8080],
                     [],
                     ['foo' => 'bar', 'bar' => 'foo'],
-                    $this->createMock(HealthCheck::class),
+                    null,
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
@@ -216,7 +231,14 @@ class DeploymentTranscriberTest extends TestCase
                     [80],
                     ['foo' => $volume1->import('/foo')],
                     ['foo' => 'bar', 'bar' => 'foo'],
-                    $this->createMock(HealthCheck::class),
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Command,
+                        command: ['ps', 'aux', 'php'],
+                        path: null,
+                        port: null,
+                    ),
                 );
                 $c2 = new Container(
                     'c2',
@@ -236,7 +258,14 @@ class DeploymentTranscriberTest extends TestCase
                         'secret2' => new SecretReference('foo', null, true),
                         'map2' => new MapReference('foo', null, true),
                     ],
-                    $this->createMock(HealthCheck::class),
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Http,
+                        command: null,
+                        path: '/status',
+                        port: 8080,
+                    ),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1], 'foo');
@@ -332,7 +361,14 @@ class DeploymentTranscriberTest extends TestCase
                     [80],
                     ['foo' => $volume1->import('/foo')],
                     [],
-                    $this->createMock(HealthCheck::class),
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Command,
+                        command: ['ps', 'aux', 'php'],
+                        path: null,
+                        port: null,
+                    ),
                 );
                 $c2 = new Container(
                     'c2',
@@ -341,7 +377,14 @@ class DeploymentTranscriberTest extends TestCase
                     [80],
                     ['bar' => $volume2->import('/bar')],
                     [],
-                    $this->createMock(HealthCheck::class),
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Http,
+                        command: null,
+                        path: '/status',
+                        port: 8080,
+                    ),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
@@ -412,7 +455,14 @@ class DeploymentTranscriberTest extends TestCase
                     [80],
                     ['foo' => $volume1->import('/foo')],
                     [],
-                    $this->createMock(HealthCheck::class),
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Command,
+                        command: ['ps', 'aux', 'php'],
+                        path: null,
+                        port: null,
+                    ),
                 );
                 $c2 = new Container(
                     'c2',
@@ -421,7 +471,14 @@ class DeploymentTranscriberTest extends TestCase
                     [80],
                     ['bar' => $volume2->import('/bar')],
                     [],
-                    $this->createMock(HealthCheck::class),
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Http,
+                        command: null,
+                        path: '/status',
+                        port: 8080,
+                    ),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);

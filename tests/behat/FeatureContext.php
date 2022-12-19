@@ -1662,7 +1662,18 @@ EOF;
                                         "mountPath": "/vault",
                                         "readOnly": false
                                     }
-                                ]
+                                ],
+                                "livenessProbe": {
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 30,
+                                    "exec": {
+                                        "command": [
+                                            "ps",
+                                            "aux",
+                                            "php"
+                                        ]
+                                    }
+                                }
                             }
                         ],
                         "initContainers": [
@@ -1763,7 +1774,15 @@ EOF;
                                     {
                                         "containerPort": 8181
                                     }
-                                ]
+                                ],
+                                "livenessProbe": {
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 30,
+                                    "httpGet": {
+                                        "path": "/status",
+                                        "port": 8080
+                                    }
+                                }
                             },
                             {
                                 "name": "blackfire",

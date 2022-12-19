@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.134] - 2022-12-19
+### Dev Release
+- Support liveness probe and healtcheck features
+
 ## [0.0.133] - 2022-12-16
 ### Dev Release
 - QA Fixes

@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Maclof\Kubernetes\Client as KubernetesClient;
 use Maclof\Kubernetes\Models\Deployment;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -158,6 +159,26 @@ class DeploymentTranscriber implements DeploymentInterface
 
             if (!empty($volumesMount)) {
                 $spec['volumeMounts'] = $volumesMount;
+            }
+
+            if (null !== ($hc = $container->getHealthCheck())) {
+                $spec['livenessProbe'] = match($hc->getType()) {
+                    HealthCheckType::Command => [
+                        'initialDelaySeconds' => $hc->getInitialDelay(),
+                        'periodSeconds' => $hc->getPeriod(),
+                        'exec' => [
+                            'command' => $hc->getCommand(),
+                        ],
+                    ],
+                    HealthCheckType::Http => [
+                        'initialDelaySeconds' => $hc->getInitialDelay(),
+                        'periodSeconds' => $hc->getPeriod(),
+                        'httpGet' => [
+                            'path' => $hc->getPath(),
+                            'port' => $hc->getPort(),
+                        ],
+                    ],
+                };
             }
 
             $specs['spec']['template']['spec']['containers'][] = $spec;
