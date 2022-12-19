@@ -67,6 +67,9 @@ class HealthCheck implements ImmutableInterface
         return $this->type;
     }
 
+    /**
+     * @return string[]|null
+     */
     public function getCommand(): ?array
     {
         return $this->command;
