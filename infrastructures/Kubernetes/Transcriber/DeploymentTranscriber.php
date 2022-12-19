@@ -162,7 +162,7 @@ class DeploymentTranscriber implements DeploymentInterface
             }
 
             if (null !== ($hc = $container->getHealthCheck())) {
-                $spec['livenessProbe'] = match($hc->getType()) {
+                $spec['livenessProbe'] = match ($hc->getType()) {
                     HealthCheckType::Command => [
                         'initialDelaySeconds' => $hc->getInitialDelay(),
                         'periodSeconds' => $hc->getPeriod(),
