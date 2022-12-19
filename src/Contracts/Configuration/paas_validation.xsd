@@ -210,7 +210,7 @@
 
   <xs:complexType name="health_check">
     <xs:all>
-      <xs:element name="initial-delay-seconds" type="xs:int" minOccurs="0" />
+      <xs:element name="initial-delay-seconds" type="xs:int" minOccurs="1" />
       <xs:element name="period-seconds" type="xs:int" minOccurs="1" />
       <xs:element name="probe" type="epv:health_check_prob" minOccurs="1" />
     </xs:all>

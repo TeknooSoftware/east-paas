@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 
 use DomainException;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -354,11 +355,11 @@ class CompiledDeploymentTest extends TestCase
                 )
                 ->addPod(
                     'bar',
-                    new Pod('bar', 1, [new Container('bar', 'foo', '1.2', [80], [], [])])
+                    new Pod('bar', 1, [new Container('bar', 'foo', '1.2', [80], [], [], $this->createMock(CompiledDeployment\HealthCheck::class),)])
                 )
                 ->addPod(
                     'bar',
-                    new Pod('bar', 1, [new Container('bar', 'registry/foo', '1.2', [80], [], [])])
+                    new Pod('bar', 1, [new Container('bar', 'registry/foo', '1.2', [80], [], [], $this->createMock(CompiledDeployment\HealthCheck::class),)])
                 )
         );
     }
@@ -461,7 +462,8 @@ class CompiledDeploymentTest extends TestCase
                         [
                             'foo3' => new Volume('foo3', [], 'bar', '/mount')
                         ],
-                        []
+                        [],
+                        $this->createMock(CompiledDeployment\HealthCheck::class),
                     )
                 ]
             )
@@ -506,17 +508,31 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->addPod(
             'foo1',
-            new Pod('foo1', 1, [new Container('foo1', 'foo', '1.2', [80], [], [])])
+            new Pod('foo1', 1, [new Container('foo1', 'foo', '1.2', [80], [], [], $this->createMock(CompiledDeployment\HealthCheck::class),)])
         );
 
         $cd->addPod(
             'foo2',
-            new Pod('foo2', 1, [new Container('foo2', 'foo', '1.2', [80], [], [])])
+            new Pod('foo2', 1, [new Container('foo2', 'foo', '1.2', [80], [], [], $this->createMock(CompiledDeployment\HealthCheck::class),)])
         );
 
         $cd->addPod(
             'bar1',
-            new Pod('bar1', 1, [new Container('registry/bar1', 'bar', '1.2', [80], [], [])])
+            new Pod(
+                'bar1',
+                1,
+                [
+                    new Container(
+                        'registry/bar1',
+                        'bar',
+                        '1.2',
+                        [80],
+                        [],
+                        [],
+                        $this->createMock(HealthCheck::class),
+                    )
+                ]
+            )
         );
 
         $count = 0;
@@ -582,7 +598,8 @@ class CompiledDeploymentTest extends TestCase
                         [
                             'foo' => $foo
                         ],
-                        []
+                        [],
+                        $this->createMock(HealthCheck::class),
                     ),
                     new Container(
                         'foo2',
@@ -594,7 +611,8 @@ class CompiledDeploymentTest extends TestCase
                         [
                             'foo' => $foo
                         ],
-                        []
+                        [],
+                        $this->createMock(HealthCheck::class),
                     )
                 ]
             )
@@ -619,7 +637,8 @@ class CompiledDeploymentTest extends TestCase
                             'bar' => $bar,
                             'p1' => new PersistentVolume('p1', '/mnt', 'foo', '/mount'),
                         ],
-                        []
+                        [],
+                        $this->createMock(HealthCheck::class),
                     )
                 ]
             )
@@ -639,7 +658,8 @@ class CompiledDeploymentTest extends TestCase
                             80
                         ],
                         [],
-                        []
+                        [],
+                        $this->createMock(HealthCheck::class),
                     )
                 ]
             )

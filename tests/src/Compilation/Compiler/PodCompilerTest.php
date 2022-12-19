@@ -60,7 +60,17 @@ class PodCompilerTest extends TestCase
                         'replicas' => 3,
                         'image' => 'node-react',
                         'version' => 123,
-                        'listen' => [8181]
+                        'listen' => [8181],
+                        'healthcheck' => [
+                            'initial-delay-seconds' => 10,
+                            'period-seconds' => 30,
+                            'probe' => [
+                                'http' => [
+                                    'port' => 8080,
+                                    'path' => '/status',
+                                ],
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -71,7 +81,18 @@ class PodCompilerTest extends TestCase
                         'replicas' => 3,
                         'image' => 'php-react',
                         'version' => 7.4,
-                        'listen' => [8080]
+                        'listen' => [8080],
+                        'healthcheck' => [
+                            'initial-delay-seconds' => 10,
+                            'period-seconds' => 30,
+                            'probe' => [
+                                'command' => [
+                                    'ps',
+                                    'aux',
+                                    'php',
+                                ],
+                            ],
+                        ],
                     ],
                     'php-composer' => [
                         'replicas' => 3,

@@ -26,82 +26,74 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
- * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\Container
+ * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck
+ * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType
  */
-class ContainerTest extends TestCase
+class HealthCheckTest extends TestCase
 {
-    private function buildObject(): Container
+    private function buildObject(): HealthCheck
     {
-        return new Container(
-            name: 'foo',
-            image: 'bar',
-            version: '1.2',
-            listen: [80],
-            volumes: ['foo', 'bar'],
-            variables: ['bar' => 'foo'],
-            healthCheck: $this->createMock(HealthCheck::class),
+        return new HealthCheck(
+            initialDelay: 12,
+            period: 24,
+            type: HealthCheckType::Command,
+            command: ['foo'],
+            port: 8080,
+            path: '/foo',
         );
     }
 
-    public function testGetName()
+    public function testGetInitialDelay()
     {
         self::assertEquals(
-            'foo',
-            $this->buildObject()->getName(),
+            12,
+            $this->buildObject()->getInitialDelay(),
         );
     }
 
-    public function testGetImage()
+    public function testGetPeriod()
     {
         self::assertEquals(
-            'bar',
-            $this->buildObject()->getImage(),
+            24,
+            $this->buildObject()->getPeriod(),
         );
     }
 
-    public function testGetVersion()
+    public function testGetType()
     {
         self::assertEquals(
-            '1.2',
-            $this->buildObject()->getVersion(),
+            HealthCheckType::Command,
+            $this->buildObject()->getType(),
         );
     }
 
-    public function testGetListen()
+    public function testGetCommand()
     {
         self::assertEquals(
-            [80],
-            $this->buildObject()->getListen(),
+            ['foo'],
+            $this->buildObject()->getCommand(),
         );
     }
 
-    public function testGetVolumes()
+    public function testGetPort()
     {
         self::assertEquals(
-            ['foo', 'bar'],
-            $this->buildObject()->getVolumes(),
+            8080,
+            $this->buildObject()->getPort(),
         );
     }
 
-    public function testGetVariables()
+    public function testGetPath()
     {
         self::assertEquals(
-            ['bar' => 'foo'],
-            $this->buildObject()->getVariables(),
-        );
-    }
-
-    public function testGetHealthcheck()
-    {
-        self::assertInstanceOf(
-            HealthCheck::class,
-            $this->buildObject()->getHealthCheck(),
+            '/foo',
+            $this->buildObject()->getPath(),
         );
     }
 }

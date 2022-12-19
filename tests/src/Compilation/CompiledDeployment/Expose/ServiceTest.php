@@ -33,6 +33,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service
+ * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport
  */
 class ServiceTest extends TestCase
 {

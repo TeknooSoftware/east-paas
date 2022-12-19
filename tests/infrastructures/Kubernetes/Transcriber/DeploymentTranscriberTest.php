@@ -30,6 +30,7 @@ use Maclof\Kubernetes\Models\Deployment;
 use Maclof\Kubernetes\Repositories\PodRepository;
 use Maclof\Kubernetes\Repositories\DeploymentRepository;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -72,7 +73,15 @@ class DeploymentTranscriberTest extends TestCase
                 $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
                 $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
 
-                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], ['foo' => 'bar', 'bar' => 'foo']);
+                $c1 = new Container(
+                    'c1',
+                    'foo',
+                    '7.4',
+                    [80],
+                    ['foo' => $volume1->import('/foo')],
+                    ['foo' => 'bar', 'bar' => 'foo'],
+                    $this->createMock(HealthCheck::class),
+                );
                 $c2 = new Container(
                     'c2',
                     'bar',
@@ -90,9 +99,18 @@ class DeploymentTranscriberTest extends TestCase
                         'map' => new MapReference('foo', 'bar'),
                         'secret2' => new SecretReference('foo', null, true),
                         'map2' => new MapReference('foo', null, true),
-                    ]
+                    ],
+                    $this->createMock(HealthCheck::class),
                 );
-                $c3 = new Container('c3', 'alpine', '3.16', [8080], [], ['foo' => 'bar', 'bar' => 'foo']);
+                $c3 = new Container(
+                    'c3',
+                    'alpine',
+                    '3.16',
+                    [8080],
+                    [],
+                    ['foo' => 'bar', 'bar' => 'foo'],
+                    $this->createMock(HealthCheck::class),
+                );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2, $c3]);
@@ -191,7 +209,15 @@ class DeploymentTranscriberTest extends TestCase
                 $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
                 $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
 
-                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], ['foo' => 'bar', 'bar' => 'foo']);
+                $c1 = new Container(
+                    'c1',
+                    'foo',
+                    '7.4',
+                    [80],
+                    ['foo' => $volume1->import('/foo')],
+                    ['foo' => 'bar', 'bar' => 'foo'],
+                    $this->createMock(HealthCheck::class),
+                );
                 $c2 = new Container(
                     'c2',
                     'bar',
@@ -209,7 +235,8 @@ class DeploymentTranscriberTest extends TestCase
                         'map' => new MapReference('foo', 'bar'),
                         'secret2' => new SecretReference('foo', null, true),
                         'map2' => new MapReference('foo', null, true),
-                    ]
+                    ],
+                    $this->createMock(HealthCheck::class),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1], 'foo');
@@ -298,8 +325,24 @@ class DeploymentTranscriberTest extends TestCase
                 $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
                 $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
 
-                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], []);
-                $c2 = new Container('c2', 'bar', '7.4', [80], ['bar' => $volume2->import('/bar')], []);
+                $c1 = new Container(
+                    'c1',
+                    'foo',
+                    '7.4',
+                    [80],
+                    ['foo' => $volume1->import('/foo')],
+                    [],
+                    $this->createMock(HealthCheck::class),
+                );
+                $c2 = new Container(
+                    'c2',
+                    'bar',
+                    '7.4',
+                    [80],
+                    ['bar' => $volume2->import('/bar')],
+                    [],
+                    $this->createMock(HealthCheck::class),
+                );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2]);
@@ -362,8 +405,24 @@ class DeploymentTranscriberTest extends TestCase
                 $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
                 $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
 
-                $c1 = new Container('c1', 'foo', '7.4', [80], ['foo' => $volume1->import('/foo')], []);
-                $c2 = new Container('c2', 'bar', '7.4', [80], ['bar' => $volume2->import('/bar')], []);
+                $c1 = new Container(
+                    'c1',
+                    'foo',
+                    '7.4',
+                    [80],
+                    ['foo' => $volume1->import('/foo')],
+                    [],
+                    $this->createMock(HealthCheck::class),
+                );
+                $c2 = new Container(
+                    'c2',
+                    'bar',
+                    '7.4',
+                    [80],
+                    ['bar' => $volume2->import('/bar')],
+                    [],
+                    $this->createMock(HealthCheck::class),
+                );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
                 $pod2 = new Pod('p2', 1, [$c2]);

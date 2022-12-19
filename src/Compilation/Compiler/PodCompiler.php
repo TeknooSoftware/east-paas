@@ -26,6 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
 use RuntimeException;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\Recipe\Promise\Promise;
@@ -84,6 +86,14 @@ class PodCompiler implements CompilerInterface
     private const KEY_LISTEN = 'listen';
     private const KEY_VARIABLES = 'variables';
     private const KEY_REPLICAS = 'replicas';
+    private const KEY_HEALTHCHECK = 'healthcheck';
+    private const KEY_INITIAL_DELAY_SCDS = 'initial-delay-seconds';
+    private const KEY_PERIOD_SCDS = 'period-seconds';
+    private const KEY_PROBE = 'probe';
+    private const KEY_COMMAND = 'command';
+    private const KEY_HTTP = 'http';
+    private const KEY_PORT = 'port';
+    private const KEY_PATH = 'path';
     private const VALUE_LATEST = 'latest';
     private const VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
 
@@ -356,13 +366,39 @@ class PodCompiler implements CompilerInterface
 
                 $variables = $this->processVariables($config[self::KEY_VARIABLES] ?? []);
 
+                $healthCheck = null;
+                if (!empty($config[self::KEY_HEALTHCHECK])) {
+                    $hcc = $config[self::KEY_HEALTHCHECK];
+                    $probe = $hcc[self::KEY_PROBE];
+                    if (!empty($probe[self::KEY_COMMAND])) {
+                        $hcType = HealthCheckType::Command;
+                    } else {
+                        $hcType = HealthCheckType::Http;
+                    }
+
+                    $port = null;
+                    if (!empty($probe[self::KEY_HTTP][self::KEY_PORT])) {
+                        $port = (int) $probe[self::KEY_HTTP][self::KEY_PORT];
+                    }
+
+                    $healthCheck = new HealthCheck(
+                        initialDelay: (int) ($hcc[self::KEY_INITIAL_DELAY_SCDS]),
+                        period: (int) ($hcc[self::KEY_PERIOD_SCDS]),
+                        type: $hcType,
+                        command: $probe[self::KEY_COMMAND] ?? null,
+                        port: $port,
+                        path: $probe[self::KEY_HTTP][self::KEY_PATH] ?? null,
+                    );
+                }
+
                 $containers[] = new Container(
                     $name,
                     $image,
                     $version,
                     (array) array_map('intval', (array) ($config[self::KEY_LISTEN] ?? [])),
                     $containerVolumes,
-                    $variables
+                    $variables,
+                    $healthCheck,
                 );
             }
 

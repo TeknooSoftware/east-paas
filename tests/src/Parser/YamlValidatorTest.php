@@ -156,10 +156,10 @@ pods:
           import-secrets:
             - 'map-vault2'
         healthcheck:
-          initial-delay-seconds: 10
-          period-seconds: 30
+          initial-delay-seconds: 15
+          period-seconds: 35
           probe:
-            command: ['ps', 'aux' 'php']
+            command: ['ps', 'aux', 'php']
   demo:
     replicas: 1
     containers:

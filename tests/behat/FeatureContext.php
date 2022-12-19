@@ -1051,6 +1051,11 @@ pods:
             KEY2: 'map-vault.key2'
           import-secrets:
             - 'map-vault2'
+        healthcheck:
+          initial-delay-seconds: 10
+          period-seconds: 30
+          probe:
+            command: ['ps', 'aux', 'php']
   demo:
     replicas: 1
     containers:
@@ -1069,6 +1074,13 @@ pods:
             mount-path: '/etc/nginx/conf.d/'
             add:
               - 'nginx/conf.d/default.conf'
+        healthcheck:
+          initial-delay-seconds: 10
+          period-seconds: 30
+          probe:
+            http:
+              port: 8080
+              path: '/status'
       blackfire:
         image: 'blackfire/blackfire'
         version: '2'

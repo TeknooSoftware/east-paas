@@ -53,7 +53,8 @@ class Container implements ImmutableInterface
         private readonly ?string $version,
         private readonly array $listen,
         private readonly array $volumes,
-        private readonly array $variables
+        private readonly array $variables,
+        private readonly ?HealthCheck $healthCheck,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -95,5 +96,10 @@ class Container implements ImmutableInterface
     public function getVariables(): array
     {
         return $this->variables;
+    }
+
+    public function getHealthCheck(): ?HealthCheck
+    {
+        return $this->healthCheck;
     }
 }
