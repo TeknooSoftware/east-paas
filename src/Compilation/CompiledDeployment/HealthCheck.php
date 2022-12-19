@@ -47,7 +47,6 @@ class HealthCheck implements ImmutableInterface
         private readonly ?array $command,
         private readonly ?int $port,
         private readonly ?string $path,
-
     ) {
         $this->uniqueConstructorCheck();
     }
