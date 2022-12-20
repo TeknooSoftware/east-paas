@@ -198,13 +198,28 @@
     <xs:all>
       <xs:element name="port" type="xs:int" minOccurs="0" />
       <xs:element name="path" type="xs:string" minOccurs="1" />
+      <xs:element name="is-secure" type="xs:boolean" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="health_check_prob_tcp">
+    <xs:all>
+      <xs:element name="port" type="xs:int" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="health_check_threshold">
+    <xs:all>
+      <xs:element name="failure" type="xs:int" minOccurs="0" />
+      <xs:element name="success" type="xs:int" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 
   <xs:complexType name="health_check_prob">
     <xs:choice minOccurs="0" maxOccurs="1">
-      <xs:element name="command" type="epv:health_check_prob_command" minOccurs="1" />
-      <xs:element name="http" type="epv:health_check_prob_http" minOccurs="1" />
+      <xs:element name="command" type="epv:health_check_prob_command" />
+      <xs:element name="http" type="epv:health_check_prob_http" />
+      <xs:element name="tcp" type="epv:health_check_prob_tcp" />
     </xs:choice>
   </xs:complexType>
 
@@ -213,6 +228,7 @@
       <xs:element name="initial-delay-seconds" type="xs:int" minOccurs="1" />
       <xs:element name="period-seconds" type="xs:int" minOccurs="1" />
       <xs:element name="probe" type="epv:health_check_prob" minOccurs="1" />
+      <xs:element name="threshold" type="epv:health_check_threshold" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 

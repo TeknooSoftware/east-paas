@@ -46,6 +46,9 @@ class HealthCheckTest extends TestCase
             command: ['foo'],
             port: 8080,
             path: '/foo',
+            isSecure: true,
+            successThreshold: 23,
+            failureThreshold: 45,
         );
     }
 
@@ -94,6 +97,29 @@ class HealthCheckTest extends TestCase
         self::assertEquals(
             '/foo',
             $this->buildObject()->getPath(),
+        );
+    }
+
+    public function testIsSecure()
+    {
+        self::assertTrue(
+            $this->buildObject()->isSecure(),
+        );
+    }
+
+    public function testGetSuccessThreshold()
+    {
+        self::assertEquals(
+            23,
+            $this->buildObject()->getSuccessThreshold(),
+        );
+    }
+
+    public function testGetFailureThreshold()
+    {
+        self::assertEquals(
+            45,
+            $this->buildObject()->getFailureThreshold(),
         );
     }
 }

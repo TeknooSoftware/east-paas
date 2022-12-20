@@ -1081,6 +1081,21 @@ pods:
             http:
               port: 8080
               path: '/status'
+              is-secure: true
+          threshold:
+            success: 3
+            failure: 2
+      waf:
+        image: registry.hub.docker.com/library/waf
+        version: alpine
+        listen: #Port listen by the container
+          - 8181
+        healthcheck:
+          initial-delay-seconds: 10
+          period-seconds: 30
+          probe:
+            tcp:
+              port: 8181
       blackfire:
         image: 'blackfire/blackfire'
         version: '2'
@@ -1672,7 +1687,9 @@ EOF;
                                             "aux",
                                             "php"
                                         ]
-                                    }
+                                    },
+                                    "successThreshold": 1,
+                                    "failureThreshold": 1
                                 }
                             }
                         ],
@@ -1757,6 +1774,7 @@ EOF;
                             {
                                 "hostnames": [
                                     "nginx",
+                                    "waf",
                                     "blackfire"
                                 ],
                                 "ip": "127.0.0.1"
@@ -1780,8 +1798,30 @@ EOF;
                                     "periodSeconds": 30,
                                     "httpGet": {
                                         "path": "/status",
-                                        "port": 8080
+                                        "port": 8080,
+                                        "scheme": "HTTPS"
+                                    },
+                                    "successThreshold": 3,
+                                    "failureThreshold": 2
+                                }
+                            },
+                            {
+                                "name": "waf",
+                                "image": "registry.hub.docker.com/library/waf:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": [
+                                    {
+                                        "containerPort": 8181
                                     }
+                                ],
+                                "livenessProbe": {
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 30,
+                                    "tcpSocket": {
+                                        "port": 8181
+                                    },
+                                    "successThreshold": 1,
+                                    "failureThreshold": 1
                                 }
                             },
                             {

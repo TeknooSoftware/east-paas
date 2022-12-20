@@ -88,6 +88,9 @@ class DeploymentTranscriberTest extends TestCase
                         command: ['ps', 'aux', 'php'],
                         path: null,
                         port: null,
+                        isSecure: null,
+                        successThreshold: 4,
+                        failureThreshold: 7,
                     ),
                 );
                 $c2 = new Container(
@@ -115,6 +118,9 @@ class DeploymentTranscriberTest extends TestCase
                         command: null,
                         path: '/status',
                         port: 8080,
+                        isSecure: true,
+                        successThreshold: 3,
+                        failureThreshold: 6,
                     ),
                 );
                 $c3 = new Container(
@@ -126,9 +132,28 @@ class DeploymentTranscriberTest extends TestCase
                     ['foo' => 'bar', 'bar' => 'foo'],
                     null,
                 );
+                $c4 = new Container(
+                    'c4',
+                    'alpine',
+                    '3.16',
+                    [8080],
+                    [],
+                    [],
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Tcp,
+                        command: null,
+                        path: null,
+                        port: 8080,
+                        isSecure: null,
+                        successThreshold: 1,
+                        failureThreshold: 2,
+                    ),
+                );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2, $c3]);
+                $pod2 = new Pod('p2', 1, [$c2, $c3, $c4]);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
@@ -238,6 +263,9 @@ class DeploymentTranscriberTest extends TestCase
                         command: ['ps', 'aux', 'php'],
                         path: null,
                         port: null,
+                        isSecure: null,
+                        successThreshold: 2,
+                        failureThreshold: 5,
                     ),
                 );
                 $c2 = new Container(
@@ -265,11 +293,33 @@ class DeploymentTranscriberTest extends TestCase
                         command: null,
                         path: '/status',
                         port: 8080,
+                        isSecure: false,
+                        successThreshold: 5,
+                        failureThreshold: 3,
+                    ),
+                );
+                $c3 = new Container(
+                    'c4',
+                    'alpine',
+                    '3.16',
+                    [8080],
+                    [],
+                    [],
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Tcp,
+                        command: null,
+                        path: null,
+                        port: 8080,
+                        isSecure: null,
+                        successThreshold: 4,
+                        failureThreshold: 1,
                     ),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1], 'foo');
-                $pod2 = new Pod('p2', 1, [$c2]);
+                $pod2 = new Pod('p2', 1, [$c2, $c3]);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
@@ -368,6 +418,9 @@ class DeploymentTranscriberTest extends TestCase
                         command: ['ps', 'aux', 'php'],
                         path: null,
                         port: null,
+                        isSecure: null,
+                        successThreshold: 12,
+                        failureThreshold: 23,
                     ),
                 );
                 $c2 = new Container(
@@ -384,11 +437,33 @@ class DeploymentTranscriberTest extends TestCase
                         command: null,
                         path: '/status',
                         port: 8080,
+                        isSecure: true,
+                        successThreshold: 1,
+                        failureThreshold: 2,
+                    ),
+                );
+                $c3 = new Container(
+                    'c4',
+                    'alpine',
+                    '3.16',
+                    [8080],
+                    [],
+                    [],
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Tcp,
+                        command: null,
+                        path: null,
+                        port: 8080,
+                        isSecure: null,
+                        successThreshold: 1,
+                        failureThreshold: 2,
                     ),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2]);
+                $pod2 = new Pod('p2', 1, [$c2, $c3]);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');
@@ -462,6 +537,9 @@ class DeploymentTranscriberTest extends TestCase
                         command: ['ps', 'aux', 'php'],
                         path: null,
                         port: null,
+                        isSecure: null,
+                        successThreshold: 1,
+                        failureThreshold: 2,
                     ),
                 );
                 $c2 = new Container(
@@ -478,6 +556,9 @@ class DeploymentTranscriberTest extends TestCase
                         command: null,
                         path: '/status',
                         port: 8080,
+                        isSecure: false,
+                        successThreshold: 1,
+                        failureThreshold: 2,
                     ),
                 );
 

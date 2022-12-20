@@ -70,6 +70,25 @@ class PodCompilerTest extends TestCase
                                     'path' => '/status',
                                 ],
                             ],
+                            'threshold' => [
+                                'success' => 23,
+                                'failure' => 45,
+                            ],
+                        ],
+                    ],
+                    'waf' => [
+                        'replicas' => 1,
+                        'image' => 'nginx-waf',
+                        'version' => 1,
+                        'listen' => [8181],
+                        'healthcheck' => [
+                            'initial-delay-seconds' => 10,
+                            'period-seconds' => 30,
+                            'probe' => [
+                                'tcp' => [
+                                    'port' => 8080,
+                                ],
+                            ],
                         ],
                     ],
                 ],

@@ -26,6 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
 
 /**
+ * Enum to define type of healthcheck :
+ * - Http : run a HTTP request to the localhost, to the defined path. Must return 200
+ * - Command: run a command, it must return 0
+ * - Tcp : test a valid tcp handshake
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -35,4 +39,6 @@ enum HealthCheckType: string
     case Http = 'http';
 
     case Command = 'command';
+
+    case Tcp = 'tcp';
 }

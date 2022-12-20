@@ -274,6 +274,17 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                 http:
                   port: 8080
                   path: '/status'
+          waf:
+            image: registry.hub.docker.com/library/waf
+            version: alpine
+            listen: #Port listen by the container
+              - 8181
+            healthcheck:
+              initial-delay-seconds: 10
+              period-seconds: 30
+              probe:
+                tcp:
+                  port: 8181
           blackfire:
             image: 'blackfire/blackfire'
             version: '2'

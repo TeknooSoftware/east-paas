@@ -29,6 +29,7 @@ use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
+ * Immutable value object, representing a healtcheck configuration to detect when a container is crashed
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -47,6 +48,9 @@ class HealthCheck implements ImmutableInterface
         private readonly ?array $command,
         private readonly ?int $port,
         private readonly ?string $path,
+        private readonly ?bool $isSecure,
+        private readonly int $successThreshold,
+        private readonly int $failureThreshold,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -82,5 +86,20 @@ class HealthCheck implements ImmutableInterface
     public function getPath(): ?string
     {
         return $this->path;
+    }
+
+    public function isSecure(): ?bool
+    {
+        return $this->isSecure;
+    }
+
+    public function getSuccessThreshold(): int
+    {
+        return $this->successThreshold;
+    }
+
+    public function getFailureThreshold(): int
+    {
+        return $this->failureThreshold;
     }
 }

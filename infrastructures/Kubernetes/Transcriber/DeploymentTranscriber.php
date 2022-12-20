@@ -169,6 +169,17 @@ class DeploymentTranscriber implements DeploymentInterface
                         'exec' => [
                             'command' => $hc->getCommand(),
                         ],
+                        'successThreshold' => $hc->getSuccessThreshold(),
+                        'failureThreshold' => $hc->getFailureThreshold(),
+                    ],
+                    HealthCheckType::Tcp => [
+                        'initialDelaySeconds' => $hc->getInitialDelay(),
+                        'periodSeconds' => $hc->getPeriod(),
+                        'tcpSocket' => [
+                            'port' => $hc->getPort(),
+                        ],
+                        'successThreshold' => $hc->getSuccessThreshold(),
+                        'failureThreshold' => $hc->getFailureThreshold(),
                     ],
                     HealthCheckType::Http => [
                         'initialDelaySeconds' => $hc->getInitialDelay(),
@@ -176,7 +187,10 @@ class DeploymentTranscriber implements DeploymentInterface
                         'httpGet' => [
                             'path' => $hc->getPath(),
                             'port' => $hc->getPort(),
+                            'scheme' => $hc->isSecure() ? 'HTTPS' : 'HTTP',
                         ],
+                        'successThreshold' => $hc->getSuccessThreshold(),
+                        'failureThreshold' => $hc->getFailureThreshold(),
                     ],
                 };
             }

@@ -91,9 +91,14 @@ class PodCompiler implements CompilerInterface
     private const KEY_PERIOD_SCDS = 'period-seconds';
     private const KEY_PROBE = 'probe';
     private const KEY_COMMAND = 'command';
+    private const KEY_TCP = 'tcp';
     private const KEY_HTTP = 'http';
     private const KEY_PORT = 'port';
     private const KEY_PATH = 'path';
+    private const KEY_IS_SECURE = 'is-secure';
+    private const KEY_THRESHOLD = 'threshold';
+    private const KEY_FAILURE = 'failure';
+    private const KEY_SUCCESS = 'success';
     private const VALUE_LATEST = 'latest';
     private const VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
 
@@ -372,11 +377,16 @@ class PodCompiler implements CompilerInterface
                     $probe = $hcc[self::KEY_PROBE];
                     if (!empty($probe[self::KEY_COMMAND])) {
                         $hcType = HealthCheckType::Command;
+                    } elseif (!empty($probe[self::KEY_TCP])) {
+                        $hcType = HealthCheckType::Tcp;
                     } else {
                         $hcType = HealthCheckType::Http;
                     }
 
                     $port = null;
+                    if (!empty($probe[self::KEY_TCP][self::KEY_PORT])) {
+                        $port = (int) $probe[self::KEY_TCP][self::KEY_PORT];
+                    }
                     if (!empty($probe[self::KEY_HTTP][self::KEY_PORT])) {
                         $port = (int) $probe[self::KEY_HTTP][self::KEY_PORT];
                     }
@@ -388,6 +398,9 @@ class PodCompiler implements CompilerInterface
                         command: $probe[self::KEY_COMMAND] ?? null,
                         port: $port,
                         path: $probe[self::KEY_HTTP][self::KEY_PATH] ?? null,
+                        isSecure: !empty($probe[self::KEY_HTTP][self::KEY_IS_SECURE]),
+                        successThreshold: (int) ($hcc[self::KEY_THRESHOLD][self::KEY_SUCCESS] ?? 1),
+                        failureThreshold: (int) ($hcc[self::KEY_THRESHOLD][self::KEY_FAILURE] ?? 1),
                     );
                 }
 
