@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
-use Maclof\Kubernetes\Client as KubClient;
-use Maclof\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Client as KubClient;
+use Teknoo\Kubernetes\RepositoryRegistry;
 use Psr\Http\Client\ClientInterface;
 use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;

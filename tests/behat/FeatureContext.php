@@ -11,10 +11,10 @@ use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\Persistence\ObjectManager;
-use Maclof\Kubernetes\Client;
-use Maclof\Kubernetes\Models\Model;
-use Maclof\Kubernetes\Repositories\Repository;
-use Maclof\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Client;
+use Teknoo\Kubernetes\Model\Model;
+use Teknoo\Kubernetes\Repository\Repository;
+use Teknoo\Kubernetes\RepositoryRegistry;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\Generator;
@@ -1445,7 +1445,7 @@ EOF;
         $hncManifest = '';
         if (self::$useHnc) {
             $hncManifest = <<<"EOF"
-"Maclof\\Kubernetes\\Models\\SubnamespaceAnchor": [
+"Teknoo\\Kubernetes\\Model\\SubnamespaceAnchor": [
         {
             "metadata": {
                 "name": "{$nameHnc}",
@@ -1464,7 +1464,7 @@ EOF;
 
         $excepted = <<<"EOF"
 {
-    $hncManifest"Maclof\\Kubernetes\\Models\\Secret": [
+    $hncManifest"Teknoo\\Kubernetes\\Model\\Secret": [
         {
             "metadata": {
                 "name": "{$prefix}map-vault-secret",
@@ -1507,7 +1507,7 @@ EOF;
             }
         }
     ],
-    "Maclof\\Kubernetes\\Models\\ConfigMap": [
+    "Teknoo\\Kubernetes\\Model\\ConfigMap": [
         {
             "metadata": {
                 "name": "{$prefix}map1-map",
@@ -1535,7 +1535,7 @@ EOF;
             }
         }
     ],
-    "Maclof\\Kubernetes\\Models\\PersistentVolumeClaim": [
+    "Teknoo\\Kubernetes\\Model\\PersistentVolumeClaim": [
         {
             "metadata": {
                 "name": "{$prefix}data",
@@ -1557,7 +1557,7 @@ EOF;
             }
         }
     ],
-    "Maclof\\Kubernetes\\Models\\Deployment": [
+    "Teknoo\\Kubernetes\\Model\\Deployment": [
         {
             "metadata": {
                 "name": "{$prefix}php-pods-dplmt",
@@ -1850,7 +1850,7 @@ EOF;
             }
         }
     ],
-    "Maclof\\Kubernetes\\Models\\Service": [
+    "Teknoo\\Kubernetes\\Model\\Service": [
         {
             "metadata": {
                 "name": "{$prefix}php-service",
@@ -1904,7 +1904,7 @@ EOF;
             }
         }
     ],
-    "Maclof\\Kubernetes\\Models\\Ingress": [
+    "Teknoo\\Kubernetes\\Model\\Ingress": [
         {
             "metadata": {
                 "name": "{$prefix}demo-ingress",

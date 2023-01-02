@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\Models\Deployment;
+use Teknoo\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\Recipe\Promise\PromiseInterface;

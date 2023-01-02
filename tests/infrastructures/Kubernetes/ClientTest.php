@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
-use Maclof\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;

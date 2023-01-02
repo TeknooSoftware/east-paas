@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Maclof\Kubernetes\Client as KubeClient;
-use Maclof\Kubernetes\Repositories\ServiceRepository;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Repository\ServiceRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\Recipe\Promise\PromiseInterface;

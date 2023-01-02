@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\Models\PersistentVolumeClaim;
+use Teknoo\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\Model\PersistentVolumeClaim;
 use SebastianBergmann\GlobalState\Snapshot;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;

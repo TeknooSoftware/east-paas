@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\Models\Ingress as KubeIngress;
+use Teknoo\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\Model\Ingress as KubeIngress;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;

@@ -25,9 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
-use Maclof\Kubernetes\Client as KubClient;
-use Maclof\Kubernetes\Client as KubernetesClient;
-use Maclof\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Client as KubClient;
+use Teknoo\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\RepositoryRegistry;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Factory;

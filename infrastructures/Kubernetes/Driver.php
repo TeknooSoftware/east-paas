@@ -29,7 +29,7 @@ use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Generator;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Running;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
-use Maclof\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -44,7 +44,7 @@ use Teknoo\States\Proxy\ProxyTrait;
 
 /**
  * Client driver able to perform a deployment and expose services on a kubernetes cluster from a
- * CompiledDeploymentInterface instance. This driver is built on the Kubernetes Client of Maclof.
+ * CompiledDeploymentInterface instance. This driver is built on the Kubernetes Client of Teknoo.
  *
  * This class has two state :
  * - Generator for instance created via the DI, only able to clone self

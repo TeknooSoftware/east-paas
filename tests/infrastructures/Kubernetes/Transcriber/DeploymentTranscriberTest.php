@@ -25,10 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Maclof\Kubernetes\Client as KubeClient;
-use Maclof\Kubernetes\Models\Deployment;
-use Maclof\Kubernetes\Repositories\PodRepository;
-use Maclof\Kubernetes\Repositories\DeploymentRepository;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Model\Deployment;
+use Teknoo\Kubernetes\Repository\PodRepository;
+use Teknoo\Kubernetes\Repository\DeploymentRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
@@ -214,7 +214,7 @@ class DeploymentTranscriberTest extends TestCase
         $pRepo->expects(self::any(3))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
-                new \Maclof\Kubernetes\Models\Pod(['metadata' => ['name' => 'foo']]),
+                new \Teknoo\Kubernetes\Model\Pod(['metadata' => ['name' => 'foo']]),
                 null,
             );
 
@@ -370,7 +370,7 @@ class DeploymentTranscriberTest extends TestCase
         $pRepo->expects(self::any())
             ->method('first')
             ->willReturnOnConsecutiveCalls(
-                new \Maclof\Kubernetes\Models\Pod(['metadata' => ['name' => 'foo']]),
+                new \Teknoo\Kubernetes\Model\Pod(['metadata' => ['name' => 'foo']]),
                 null,
             );
 

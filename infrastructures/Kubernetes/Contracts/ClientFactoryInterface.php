@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts;
 
-use Maclof\Kubernetes\Client;
-use Maclof\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Client;
+use Teknoo\Kubernetes\RepositoryRegistry;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
 /**

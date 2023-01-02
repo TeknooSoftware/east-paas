@@ -5,6 +5,9 @@ parameters:
             message: '#::cleanResult#'
             path: infrastructures/Kubernetes/Transcriber
         -
+            message: '#constructor expects array#'
+            path: infrastructures/Kubernetes/Transcriber
+        -
             message: '#Anonymous function should return [a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
             path: infrastructures/
         -

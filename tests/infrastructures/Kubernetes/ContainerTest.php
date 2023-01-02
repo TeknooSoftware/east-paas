@@ -27,7 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
 use DI\Container;
 use DI\ContainerBuilder;
-use Maclof\Kubernetes\Client as KubClient;
+use Teknoo\Kubernetes\Client as KubClient;
 use Psr\Http\Client\ClientInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;

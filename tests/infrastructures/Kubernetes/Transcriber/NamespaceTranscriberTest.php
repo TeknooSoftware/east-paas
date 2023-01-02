@@ -26,8 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Exception;
-use Maclof\Kubernetes\Client as KubeClient;
-use Maclof\Kubernetes\Repositories\SubnamespaceAnchorRepository;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
