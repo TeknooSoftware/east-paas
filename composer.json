@@ -86,10 +86,7 @@
         "symfony/yaml": "^6.2",
         "symfony/psr-http-message-bridge": "^2.1",
         "symfony/framework-bundle": "^6.2",
-        "teknoo/bridge-phpdi-symfony": "^5.2",
-        "illuminate/collections": "^9.44",
-        "illuminate/contracts": "^9.44",
-        "illuminate/support": "^9.44"
+        "teknoo/bridge-phpdi-symfony": "^5.2"
     },
     "autoload": {
         "psr-4": {
