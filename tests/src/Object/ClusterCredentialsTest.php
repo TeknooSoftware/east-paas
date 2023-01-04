@@ -63,11 +63,11 @@ class ClusterCredentialsTest extends TestCase
         );
     }
 
-    public function testGetServerCertificate()
+    public function testGetClientCertificate()
     {
         self::assertEquals(
             'certBar',
-            $this->generateObjectPopulated()->getServerCertificate()
+            $this->generateObjectPopulated()->getClientCertificate()
         );
     }
 
@@ -118,7 +118,7 @@ class ClusterCredentialsTest extends TestCase
             ->with([
                 '@class' => ClusterCredentials::class,
                 'id' => '123',
-                'server_certificate' => 'certBar',
+                'client_certificate' => 'certBar',
                 'token' => 'barFoo',
                 'username' => 'barFoo2',
                 'password' => 'barBar',

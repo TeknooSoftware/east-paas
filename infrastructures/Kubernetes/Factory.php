@@ -69,8 +69,11 @@ class Factory implements ClientFactoryInterface
         ];
 
         if (null !== $credentials) {
-            if (!empty($content = $credentials->getToken())) {
-                $options['token'] = $this->write($content);
+            if (!empty($content = $credentials->getClientCertificate())) {
+                $options['certificate'] = $this->write($content);
+                $options['key'] = $this->write($credentials->getToken());
+            } elseif (!empty($content = $credentials->getToken())) {
+                $options['token'] = $content;
             }
 
             if (!empty($content = $credentials->getUsername())) {

@@ -59,7 +59,7 @@ class FactoryTest extends TestCase
         unset($factory);
     }
 
-    public function testInvokeWithServerCertificateOnBadPath()
+    public function testInvokeWithClientCertificateOnBadPath()
     {
         $factory = new Factory(
             '/../../../../lol/',
@@ -76,7 +76,7 @@ class FactoryTest extends TestCase
         $factory('foo', $credential);
     }
 
-    public function testInvokeWithServerCertificate()
+    public function testInvokeWithClientCertificate()
     {
         $factory = $this->buildFactory();
 
@@ -93,12 +93,26 @@ class FactoryTest extends TestCase
         unset($factory);
     }
 
+    public function testInvokeWithToken()
+    {
+        $factory = $this->buildFactory();
+
+        $credential = new ClusterCredentials(
+            token: 'privateBar',
+        );
+
+        $client = $factory('foo', $credential);
+
+        self::assertInstanceOf(KubClient::class, $client);
+
+        unset($factory);
+    }
+
     public function testInvokeWithUserCredentials()
     {
         $factory = $this->buildFactory();
 
         $credential = new ClusterCredentials(
-            '',
             '',
             '',
             'foo',
@@ -117,7 +131,6 @@ class FactoryTest extends TestCase
         $factory = $this->buildFactory();
 
         $credential = new ClusterCredentials(
-            '',
             '',
             '',
             'foo',

@@ -556,7 +556,7 @@ class FeatureContext implements Context
                 ->setIdentity(
                     (
                         new ClusterCredentials(
-                            serverCertificate:  'fooBar',
+                            clientCertificate:  'fooBar',
                             token:  'fooBar',
                         )
                     )->setId('cluster-auth-id')
@@ -730,7 +730,7 @@ class FeatureContext implements Context
                     'identity' => [
                         '@class' => ClusterCredentials::class,
                         'id' => 'cluster-auth-id',
-                        'server_certificate' => 'fooBar',
+                        'client_certificate' => 'fooBar',
                         'token' => 'fooBar',
                         'username' => '',
                         'password' => '',

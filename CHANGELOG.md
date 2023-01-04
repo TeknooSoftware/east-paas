@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.135] - 2023-01-04
+### Dev Release
+- Migrate to Teknoo Kubernetes Client
+
 ## [0.0.134] - 2022-12-19
 ### Dev Release
 - Support liveness probe and healtcheck features
