@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [0.0.136] - 2023-01-08
+### Dev Release
+- Teknoo Kubernetes Client 0.31
+- Fix Kubernetes Factory
+
 ## [0.0.135] - 2023-01-04
 ### Dev Release
 - Migrate to Teknoo Kubernetes Client
