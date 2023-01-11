@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.0.0] - 2023-01-11
+### Stable Release
+- First stable release
+
 ## [0.0.136] - 2023-01-08
 ### Dev Release
 - Teknoo Kubernetes Client 0.31
