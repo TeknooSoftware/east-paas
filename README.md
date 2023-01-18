@@ -138,7 +138,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
    
     paas: #Dedicated to compiler
       version: v1
-
+    
     #Config
     maps:
       map1:
@@ -147,7 +147,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
       map2:
         foo: bar
         bar: R{foo}
-
+    
     #Secrets provider
     secrets:
       map-vault:
@@ -165,18 +165,18 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
         options:
           foo: bar
           bar: foo
-
+    
     #Custom image, not available in the library
     images:
       foo:
         build-name: foo
         tag: latest
         path: '/images/${FOO}'
-
+    
     #Hook to build the project before container, Called in this order
-    builds:
+    builds:  
       composer-build: #Name of the step
-        composer:
+        composer: 
           action: install #Hook to call
           arguments:
             - 'no-dev'
@@ -184,7 +184,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
             - 'classmap-authoritative'
       custom-hook:
         hook-id: foo bar
-
+    
     #Volume to build to use with container
     volumes:
       extra: #Name of the volume
@@ -194,7 +194,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
       other-name: #Name of the volume
         add: #folder or file, from .paas.yaml where is located to add to the volume
           - 'vendor'
-
+    
     #Pods (set of container)
     pods:
       php-pods: #podset name
@@ -226,6 +226,11 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
               data: #Persistent volume, can not be pre-populated
                 mount-path: '/opt/data'
                 persistent: true
+                storage-size: 3Gi
+              data-replicated: #Persistent volume, can not be pre-populated
+                mount-path: '/opt/data'
+                persistent: true
+                storage-provider: 'replicated-provider'
                 storage-size: 3Gi
               map:
                 mount-path: '/map'
@@ -274,6 +279,10 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                 http:
                   port: 8080
                   path: '/status'
+                  is-secure: true
+              threshold:
+                success: 3
+                failure: 2
           waf:
             image: registry.hub.docker.com/library/waf
             version: alpine
@@ -293,7 +302,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
             variables:
               BLACKFIRE_SERVER_ID: 'foo'
               BLACKFIRE_SERVER_TOKEN: 'bar'
-
+    
     #Pods expositions
     services:
       php-service: #Service name
@@ -309,7 +318,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
             target: 8080 #Pod's port targeted
           - listen: 8181 #Port listened
             target: 8181 #Pod's port targeted
-
+    
     #Ingresses configuration
     ingresses:
       demo: #rule name

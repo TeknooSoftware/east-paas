@@ -220,6 +220,13 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                             storageSize: '3Gi',
                             resetOnDeployment: false,
                         ),
+                        'data-replicated' => new CompiledDeployment\Volume\PersistentVolume(
+                            name: 'data-replicated',
+                            mountPath: '/opt/data-replicated',
+                            storageIdentifier: 'replicated-provider',
+                            storageSize: '3Gi',
+                            resetOnDeployment: false,
+                        ),
                         'map' => new CompiledDeployment\Volume\MapVolume(
                             name: 'map',
                             mountPath: '/map',

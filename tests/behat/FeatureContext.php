@@ -1034,6 +1034,11 @@ pods:
             mount-path: '/opt/data'
             persistent: true
             storage-size: 3Gi
+          data-replicated: #Persistent volume, can not be pre-populated
+            mount-path: '/opt/data-replicated'
+            persistent: true
+            storage-provider: 'replicated-provider'
+            storage-size: 3Gi
           map:
             mount-path: '/map'
             from-map: 'map2'
@@ -1555,6 +1560,26 @@ EOF;
                     }
                 }
             }
+        },
+        {
+            "metadata": {
+                "name": "{$prefix}data-replicated",
+                "namespace": "behat-test{$hncSuffix}",
+                "labels": {
+                    "name": "{$prefix}data-replicated"
+                }
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "storageClassName": "replicated-provider",
+                "resources": {
+                    "requests": {
+                        "storage": "3Gi"
+                    }
+                }
+            }
         }
     ],
     "Teknoo\\Kubernetes\\Model\\Deployment": [
@@ -1668,6 +1693,11 @@ EOF;
                                         "readOnly": false
                                     },
                                     {
+                                        "name": "data-replicated-volume",
+                                        "mountPath": "/opt/data-replicated",
+                                        "readOnly": false
+                                    },
+                                    {
                                         "name": "map-volume",
                                         "mountPath": "/map",
                                         "readOnly": false
@@ -1716,6 +1746,12 @@ EOF;
                                 "name": "data-volume",
                                 "persistentVolumeClaim": {
                                     "claimName": "{$prefix}data"
+                                }
+                            },
+                            {
+                                "name": "data-replicated-volume",
+                                "persistentVolumeClaim": {
+                                    "claimName": "{$prefix}data-replicated"
                                 }
                             },
                             {
