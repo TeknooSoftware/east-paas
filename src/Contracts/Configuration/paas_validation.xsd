@@ -244,19 +244,33 @@
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
 
+  <xs:simpleType name="upgrade_strategy" final="restriction" >
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="rolling-upgrade" />
+      <xs:enumeration value="recreate" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="pod_upgrade">
     <xs:all>
+      <xs:element name="strategy" type="epv:upgrade_strategy" minOccurs="0" />
       <xs:element name="max-upgrading-pods" type="xs:int" minOccurs="0" />
       <xs:element name="max-unavailable-pods" type="xs:int" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 
+  <xs:complexType name="pod_security">
+    <xs:all>
+      <xs:element name="fs-group" type="xs:int" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
 
   <xs:complexType name="pod_node">
     <xs:all>
       <xs:element name="replicas" type="xs:int" minOccurs="0" />
       <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
       <xs:element name="upgrade" type="epv:pod_upgrade" minOccurs="0" />
+      <xs:element name="security" type="epv:pod_security" minOccurs="0" />
       <xs:element name="containers">
         <xs:complexType>
           <xs:choice>

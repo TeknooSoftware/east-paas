@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\Kubernetes\Repository\PodRepository;
@@ -153,7 +154,7 @@ class DeploymentTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2, $c3, $c4]);
+                $pod2 = new Pod('p2', 1, [$c2, $c3, $c4], upgradeStrategy: UpgradeStrategy::Recreate, fsGroup: 1000);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
@@ -319,7 +320,7 @@ class DeploymentTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1], 'foo');
-                $pod2 = new Pod('p2', 1, [$c2, $c3]);
+                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
@@ -463,7 +464,7 @@ class DeploymentTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2, $c3]);
+                $pod2 = new Pod('p2', 1, [$c2, $c3], upgradeStrategy: UpgradeStrategy::RollingUpgrade, fsGroup: 1000);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');
@@ -563,7 +564,7 @@ class DeploymentTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2]);
+                $pod2 = new Pod('p2', 1, [$c2], fsGroup: 1000);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');

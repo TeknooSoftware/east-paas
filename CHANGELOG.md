@@ -1,5 +1,16 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.1.0] - 2023-01-20
+### Stable Release
+- Add `UpgradeStrategy` in pod definition : `upgrade.strategy: "recreate" or "rolling-upgrade"`
+  - To kill old pod before or after the upgrade 
+    - `rolling-upgrade` to kill after the pod, when it is healthy
+    - `recreate` to kill before when a resource can not be shared by two pod
+    - `rolling-upgrade` is default behavior
+- Add `FsGroup` in pod definition to implement the FsGroup behavior in Kubernetes :  
+  - all processes of the container are also part of the supplementary group ID with `FsGroup` value. 
+  - The owner of mounted volumes and any files created in that volume will be Group ID with `FsGroup` value.
+
 ## [1.0.0] - 2023-01-11
 ### Stable Release
 - First stable release

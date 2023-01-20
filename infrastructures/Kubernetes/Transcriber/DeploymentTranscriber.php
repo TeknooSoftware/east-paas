@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
@@ -296,13 +297,7 @@ class DeploymentTranscriber implements DeploymentInterface
             ],
             'spec' => [
                 'replicas' => $pod->getReplicas(),
-                'strategy' => [
-                    'type' => 'RollingUpdate',
-                    'rollingUpdate' => [
-                        'maxSurge' => $pod->getMaxUpgradingPods(),
-                        'maxUnavailable' => $pod->getMaxUnavailablePods(),
-                    ],
-                ],
+                'strategy' => [],
                 'selector' => [
                     'matchLabels' => [
                         'name' => $name,
@@ -325,10 +320,27 @@ class DeploymentTranscriber implements DeploymentInterface
             ],
         ];
 
+        $specs['spec']['strategy'] = match ($pod->getUpgradeStrategy()) {
+            UpgradeStrategy::RollingUpgrade => [
+                'type' => 'RollingUpdate',
+                'rollingUpdate' => [
+                    'maxSurge' => $pod->getMaxUpgradingPods(),
+                    'maxUnavailable' => $pod->getMaxUnavailablePods(),
+                ],
+            ],
+            UpgradeStrategy::Recreate => [
+                'type' => 'Recreate',
+            ],
+        };
+
         if (!empty($imagePullSecretsName = $pod->getOciRegistryConfigName())) {
             $specs['spec']['template']['spec']['imagePullSecrets'] = [
                 ['name' => $imagePullSecretsName,],
             ];
+        }
+
+        if (null !== ($fsGroup = $pod->getFsGroup())) {
+            $specs['spec']['template']['spec']['securityContext']['fsGroup'] = $fsGroup;
         }
 
         self::convertToVolumes($specs, $volumes, $prefixer);

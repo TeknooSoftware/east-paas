@@ -73,6 +73,7 @@ use Traversable;
 
 use function base64_encode;
 use function dirname;
+use function file_get_contents;
 use function json_decode;
 use function json_encode;
 use function random_int;
@@ -942,214 +943,7 @@ class FeatureContext implements Context
                 ConductorInterface $conductor,
                 PromiseInterface $promise
             ): JobWorkspaceInterface {
-                $conf = <<<'EOF'
-paas: #Dedicated to compiler
-  version: v1
-
-#Config
-maps:
-  map1:
-    key1: value1
-    key2: ${FOO}
-  map2:
-    foo: bar
-    bar: R{foo}
-
-#Secrets provider
-secrets:
-  map-vault:
-    provider: map #Internal secrets, must be passed in this file
-    options:
-      key1: value1
-      key2: ${FOO}
-  map-vault2:
-    provider: map #Internal secrets, must be passed in this file
-    options:
-      hello: R{world}
-  volume-vault:
-    provider: map
-    type: foo
-    options:
-      foo: bar
-      bar: foo
-
-#Custom image, not available in the library
-images:
-  foo:
-    build-name: foo
-    tag: latest
-    path: '/images/${FOO}'
-
-#Hook to build the project before container, Called in this order
-builds:  
-  composer-build: #Name of the step
-    composer: 
-      action: install #Hook to call
-      arguments:
-        - 'no-dev'
-        - 'optimize-autoloader'
-        - 'classmap-authoritative'
-  custom-hook:
-    hook-id: foo bar
-
-#Volume to build to use with container
-volumes:
-  extra: #Name of the volume
-    local-path: "/foo/bar" #optional local path where store data in the volume
-    add: #folder or file, from .paas.yaml where is located to add to the volume
-      - 'extra'
-  other-name: #Name of the volume
-    add: #folder or file, from .paas.yaml where is located to add to the volume
-      - 'vendor'
-
-#Pods (set of container)
-pods:
-  php-pods: #podset name
-    replicas: 2 #instance of pods
-    upgrade:
-        max-upgrading-pods: 2
-        max-unavailable-pods: 1
-    containers:
-      php-run: #Container name
-        image: registry.teknoo.software/php-run #Container image to use
-        version: 7.4
-        listen: #Port listen by the container
-          - 8080
-        volumes: #Volumes to link
-          extra:
-            from: 'extra'
-            mount-path: '/opt/extra' #Path where volume will be mount
-          app:
-            mount-path: '/opt/app' #Path where data will be stored
-            add: #folder or file, from .paas.yaml where is located to add to the volume
-              - 'src'
-              - 'var'
-              - 'vendor'
-              - 'composer.json'
-              - 'composer.lock'
-              - 'composer.phar'
-            writables:
-              - 'var/*'
-          data: #Persistent volume, can not be pre-populated
-            mount-path: '/opt/data'
-            persistent: true
-            storage-size: 3Gi
-          data-replicated: #Persistent volume, can not be pre-populated
-            mount-path: '/opt/data-replicated'
-            persistent: true
-            storage-provider: 'replicated-provider'
-            storage-size: 3Gi
-          map:
-            mount-path: '/map'
-            from-map: 'map2'
-          vault:
-            mount-path: '/vault'
-            from-secret: 'volume-vault'
-        variables: #To define some environment variables
-          SERVER_SCRIPT: '/opt/app/src/server.php'
-          from-maps:
-            KEY0: 'map1.key0'
-          import-maps:
-            - 'map2'
-          from-secrets: #To fetch some value from secret/vault
-            KEY1: 'map-vault.key1'
-            KEY2: 'map-vault.key2'
-          import-secrets:
-            - 'map-vault2'
-        healthcheck:
-          initial-delay-seconds: 10
-          period-seconds: 30
-          probe:
-            command: ['ps', 'aux', 'php']
-  demo:
-    replicas: 1
-    containers:
-      nginx:
-        image: registry.hub.docker.com/library/nginx
-        version: alpine
-        listen: #Port listen by the container
-          - 8080
-          - 8181
-        volumes:
-          www:
-            mount-path: '/var'
-            add:
-              - 'nginx/www'
-          config:
-            mount-path: '/etc/nginx/conf.d/'
-            add:
-              - 'nginx/conf.d/default.conf'
-        healthcheck:
-          initial-delay-seconds: 10
-          period-seconds: 30
-          probe:
-            http:
-              port: 8080
-              path: '/status'
-              is-secure: true
-          threshold:
-            success: 3
-            failure: 2
-      waf:
-        image: registry.hub.docker.com/library/waf
-        version: alpine
-        listen: #Port listen by the container
-          - 8181
-        healthcheck:
-          initial-delay-seconds: 10
-          period-seconds: 30
-          probe:
-            tcp:
-              port: 8181
-      blackfire:
-        image: 'blackfire/blackfire'
-        version: '2'
-        listen:
-          - 8307
-        variables:
-          BLACKFIRE_SERVER_ID: 'foo'
-          BLACKFIRE_SERVER_TOKEN: 'bar'
-
-#Pods expositions
-services:
-  php-service: #Service name
-    pod: "php-pods" #Pod name, use service name by default
-    internal: false #If false, a load balancer is use to access it from outside
-    protocol: 'TCP' #Or UDP
-    ports:
-      - listen: 9876 #Port listened
-        target: 8080 #Pod's port targeted
-  demo: #Service name
-    ports:
-      - listen: 8080 #Port listened
-        target: 8080 #Pod's port targeted
-      - listen: 8181 #Port listened
-        target: 8181 #Pod's port targeted
-
-#Ingresses configuration
-ingresses:
-  demo: #rule name
-    host: demo-paas.teknoo.software
-    tls:
-      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
-    service: #default service
-      name: demo
-      port: 8080
-    paths:
-      - path: /php
-        service:
-          name: php-service
-          port: 9876
-  demo-secure: #rule name
-    host: demo-secure.teknoo.software
-    https-backend: true
-    tls:
-      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
-    service: #default service
-      name: demo
-      port: 8181
-
-EOF;
+                $conf = file_get_contents(__DIR__ . '/paas.yaml');
 
                 $conductor->prepare(
                     $conf,
@@ -1773,10 +1567,10 @@ EOF;
         },
         {
             "metadata": {
-                "name": "{$prefix}demo-dplmt",
+                "name": "{$prefix}shell-dplmt",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "{$prefix}demo"
+                    "name": "{$prefix}shell"
                 },
                 "annotations": {
                     "teknoo.space.version": "v1"
@@ -1790,6 +1584,57 @@ EOF;
                         "maxSurge": 1,
                         "maxUnavailable": 0
                     }
+                },
+                "selector": {
+                    "matchLabels": {
+                        "name": "{$prefix}shell"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "name": "{$prefix}shell-pod",
+                        "namespace": "behat-test{$hncSuffix}",
+                        "labels": {
+                            "name": "{$prefix}shell",
+                            "vname": "{$prefix}shell-v1"
+                        }
+                    },
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "sleep"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "sleep",
+                                "image": "registry.hub.docker.com/bash:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": []
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "metadata": {
+                "name": "{$prefix}demo-dplmt",
+                "namespace": "behat-test{$hncSuffix}",
+                "labels": {
+                    "name": "{$prefix}demo"
+                },
+                "annotations": {
+                    "teknoo.space.version": "v1"
+                }
+            },
+            "spec": {
+                "replicas": 1,
+                "strategy": {
+                    "type": "Recreate"
                 },
                 "selector": {
                     "matchLabels": {
@@ -1880,7 +1725,10 @@ EOF;
                                     }
                                 ]
                             }
-                        ]
+                        ],
+                        "securityContext": {
+                            "fsGroup": 1000
+                        }
                     }
                 }
             }

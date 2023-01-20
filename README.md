@@ -254,8 +254,18 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
               period-seconds: 30
               probe:
                 command: ['ps', 'aux', 'php']
+      shell:
+        replicas: 1
+          containers:
+            sleep:
+              image: registry.hub.docker.com/bash
+              version: alpine
       demo:
         replicas: 1
+        security:
+          fs-group: 1000
+        upgrade:
+            strategy: recreate
         containers:
           nginx:
             image: registry.hub.docker.com/library/nginx

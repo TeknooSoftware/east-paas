@@ -57,7 +57,6 @@ class PodCompilerTest extends TestCase
                 ],
                 'containers' => [
                     'node-react' => [
-                        'replicas' => 3,
                         'image' => 'node-react',
                         'version' => 123,
                         'listen' => [8181],
@@ -77,7 +76,6 @@ class PodCompilerTest extends TestCase
                         ],
                     ],
                     'waf' => [
-                        'replicas' => 1,
                         'image' => 'nginx-waf',
                         'version' => 1,
                         'listen' => [8181],
@@ -93,11 +91,25 @@ class PodCompilerTest extends TestCase
                     ],
                 ],
             ],
-            'php-pod' => [
+            'shell' => [
                 'replicas' => 1,
+                'upgrade' => [
+                    'strategy' => 'recreate',
+                ],
                 'containers' => [
                     'php-react' => [
-                        'replicas' => 3,
+                        'image' => 'php-react',
+                        'version' => 7.4,
+                    ],
+                ],
+            ],
+            'php-pod' => [
+                'replicas' => 1,
+                'security' => [
+                    'fs-group' => 1234,
+                ],
+                'containers' => [
+                    'php-react' => [
                         'image' => 'php-react',
                         'version' => 7.4,
                         'listen' => [8080],
@@ -114,7 +126,6 @@ class PodCompilerTest extends TestCase
                         ],
                     ],
                     'php-composer' => [
-                        'replicas' => 3,
                         'image' => 'registry/lib/php-composer',
                         'variables' => [
                             'from-secrets' => [
@@ -201,7 +212,7 @@ class PodCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(2))->method('addPod');
+        $compiledDeployment->expects(self::exactly(3))->method('addPod');
         $compiledDeployment->expects(self::exactly(1))
             ->method('importVolume')
             ->willReturnCallback(
@@ -236,6 +247,7 @@ class PodCompilerTest extends TestCase
     {
         $definitions = $this->getDefinitionsArray();
         unset($definitions['node-pod']);
+        unset($definitions['shell']);
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
@@ -272,6 +284,7 @@ class PodCompilerTest extends TestCase
     {
         $definitions = $this->getDefinitionsArray();
         unset($definitions['node-pod']);
+        unset($definitions['shell']);
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
@@ -308,6 +321,7 @@ class PodCompilerTest extends TestCase
     {
         $definitions = $this->getDefinitionsArray();
         unset($definitions['node-pod']);
+        unset($definitions['shell']);
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);

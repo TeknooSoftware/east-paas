@@ -195,6 +195,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
             replicas: 2,
             maxUpgradingPods: 2,
             maxUnavailablePods: 1,
+            fsGroup: null,
             containers: [
                 new CompiledDeployment\Container(
                     name: 'php-run',
@@ -283,10 +284,31 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
     );
 
     $cd->addPod(
+        name: 'shell',
+        pod: new CompiledDeployment\Pod(
+            name: 'shell',
+            replicas: 1,
+            containers: [
+                new CompiledDeployment\Container(
+                    name: 'sleep',
+                    image: 'registry.hub.docker.com/bash',
+                    version: 'alpine',
+                    listen: [],
+                    volumes: [],
+                    variables: [],
+                    healthCheck: null,
+                ),
+            ],
+        ),
+    );
+
+    $cd->addPod(
         name: 'demo',
         pod: new CompiledDeployment\Pod(
             name: 'demo',
             replicas: 1,
+            fsGroup: 1000,
+            upgradeStrategy: CompiledDeployment\UpgradeStrategy::Recreate,
             containers: [
                 new CompiledDeployment\Container(
                     name: 'nginx',

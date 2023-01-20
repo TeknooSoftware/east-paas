@@ -29,6 +29,7 @@ use RuntimeException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -64,8 +65,11 @@ class PodCompiler implements CompilerInterface
     private const KEY_CONTAINERS = 'containers';
     private const KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
     private const KEY_UPGRADE = 'upgrade';
+    private const KEY_SECURITY = 'security';
     private const KEY_MAX_UPGRADING_PODS = 'max-upgrading-pods';
+    private const KEY_FS_GROUP = 'fs-group';
     private const KEY_MAX_UNAVAILABLE_PODS = 'max-unavailable-pods';
+    private const KEY_STRATEGY = 'strategy';
     private const KEY_VOLUMES = 'volumes';
     private const KEY_MOUNT_PATH = 'mount-path';
     private const KEY_FROM = 'from';
@@ -415,6 +419,16 @@ class PodCompiler implements CompilerInterface
                 );
             }
 
+            $fsGroup = null;
+            if (isset($podsList[self::KEY_SECURITY][self::KEY_FS_GROUP])) {
+                $fsGroup = (int) $podsList[self::KEY_SECURITY][self::KEY_FS_GROUP];
+            }
+
+            $upgradeStrategy = UpgradeStrategy::RollingUpgrade;
+            if (isset($podsList[self::KEY_UPGRADE][self::KEY_STRATEGY])) {
+                $upgradeStrategy = UpgradeStrategy::from($podsList[self::KEY_UPGRADE][self::KEY_STRATEGY]);
+            }
+
             $compiledDeployment->addPod(
                 $nameSet,
                 new Pod(
@@ -424,6 +438,8 @@ class PodCompiler implements CompilerInterface
                     ociRegistryConfigName: $podsList[self::KEY_OCI_REGISTRY_CONFIG_NAME] ?? $ociRegistryConfig,
                     maxUpgradingPods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UPGRADING_PODS] ?? 1),
                     maxUnavailablePods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UNAVAILABLE_PODS] ?? 0),
+                    upgradeStrategy: $upgradeStrategy,
+                    fsGroup: $fsGroup,
                 )
             );
         }

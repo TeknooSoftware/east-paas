@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -44,7 +45,9 @@ class PodTest extends TestCase
             containers: [$this->createMock(Container::class)],
             ociRegistryConfigName: 'bar',
             maxUpgradingPods: 3,
-            maxUnavailablePods: 2
+            maxUnavailablePods: 2,
+            upgradeStrategy: UpgradeStrategy::RollingUpgrade,
+            fsGroup: 123,
         );
     }
 
@@ -85,6 +88,22 @@ class PodTest extends TestCase
         self::assertEquals(
             2,
             $this->buildObject()->getMaxUnavailablePods()
+        );
+    }
+
+    public function testGetUpgradeStrategy()
+    {
+        self::assertEquals(
+            UpgradeStrategy::RollingUpgrade,
+            $this->buildObject()->getUpgradeStrategy()
+        );
+    }
+
+    public function testGetFsGroup()
+    {
+        self::assertEquals(
+            123,
+            $this->buildObject()->getFsGroup()
         );
     }
 

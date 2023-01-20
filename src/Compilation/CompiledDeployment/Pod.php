@@ -55,6 +55,8 @@ class Pod implements ImmutableInterface, IteratorAggregate
         private readonly ?string $ociRegistryConfigName = null,
         private readonly int $maxUpgradingPods = 1,
         private readonly int $maxUnavailablePods = 0,
+        private readonly UpgradeStrategy $upgradeStrategy = UpgradeStrategy::RollingUpgrade,
+        private readonly ?int $fsGroup = null,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -90,5 +92,15 @@ class Pod implements ImmutableInterface, IteratorAggregate
     public function getMaxUnavailablePods(): int
     {
         return $this->maxUnavailablePods;
+    }
+
+    public function getUpgradeStrategy(): UpgradeStrategy
+    {
+        return $this->upgradeStrategy;
+    }
+
+    public function getFsGroup(): ?int
+    {
+        return $this->fsGroup;
     }
 }
