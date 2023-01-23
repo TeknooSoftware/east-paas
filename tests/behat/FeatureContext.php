@@ -228,6 +228,10 @@ class FeatureContext implements Context
 
     private array $manifests = [];
 
+    public bool $slowDb = false;
+
+    public bool $slowBuilder = false;
+
     /**
      * Initializes context.
      *
@@ -249,6 +253,7 @@ class FeatureContext implements Context
     public function thePlatformIsBooted()
     {
         $this->initiateSymfonyKernel();
+
         $this->sfContainer->set(ObjectManager::class, $this->buildObjectManager());
         $this->sfContainer->get(DatesService::class)
             ->setCurrentDate(new DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
@@ -353,6 +358,8 @@ class FeatureContext implements Context
         $this->envName = null;
         $this->repositoryUrl = null;
         $this->response = null;
+        $this->slowDb = false;
+        $this->slowBuilder = false;
     }
 
     public function getRepository(string $className)
@@ -380,15 +387,25 @@ class FeatureContext implements Context
 
     public function buildObjectManager()
     {
-        $this->objectManager = new class([$this, 'getRepository']) implements ObjectManager {
+        $this->objectManager = new class([$this, 'getRepository'], $this) implements ObjectManager {
             private $repositories;
 
-            public function __construct(callable $repositories){
+            public function __construct(
+                callable $repositories,
+                private FeatureContext $context,
+            ){
                 $this->repositories = $repositories;
             }
 
             public function find($className, $id) {}
-            public function persist($object) {}
+            public function persist($object) {
+                if ($this->context->slowDb) {
+                    $expectedTime = time() + 20;
+                    while (time() < $expectedTime) {
+                        $x = str_repeat('x', 100000);
+                    }
+                }
+            }
             public function remove($object) {}
             public function merge($object) {}
             public function clear($objectName = null) {}
@@ -1049,7 +1066,12 @@ class FeatureContext implements Context
      */
     public function anImageBuilder()
     {
-        $builder = new class implements BuilderInterface {
+        $builder = new class ($this) implements BuilderInterface {
+            public function __construct(
+                private FeatureContext $context
+            ) {
+            }
+
             public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface
             {
                 return clone $this;
@@ -1060,6 +1082,13 @@ class FeatureContext implements Context
                 string $workingPath,
                 PromiseInterface $promise
             ): BuilderInterface {
+                if ($this->context->slowBuilder) {
+                    $expectedTime = time() + 20;
+                    while (time() < $expectedTime) {
+                        $x = str_repeat('x', 100000);
+                    }
+                }
+
                 $promise->success('foo');
 
                 return $this;
@@ -1080,6 +1109,22 @@ class FeatureContext implements Context
             BuilderInterface::class,
             $builder
         );
+    }
+
+    /**
+     * @Given simulate a very slowly database
+     */
+    public function simulateAVerySlowlyDatabase()
+    {
+        $this->slowDb = true;
+    }
+
+    /**
+     * @Given simulate a too long image building
+     */
+    public function simulateATooLongImageBuilding()
+    {
+        $this->slowBuilder = true;
     }
 
     /**
@@ -1125,7 +1170,18 @@ class FeatureContext implements Context
 
         $mock->expects(new AnyInvokedCountMatcher())
             ->method('isSuccessful')
-            ->willReturn(true);
+            ->willReturnCallback(
+                function () {
+                    if ($this->slowBuilder) {
+                        $expectedTime = time() + 20;
+                        while (time() < $expectedTime) {
+                            $x = str_repeat('x', 100000);
+                        }
+                    }
+
+                    return true;
+                }
+            );
 
         $this->sfContainer->set(
             ProcessFactoryInterface::class,

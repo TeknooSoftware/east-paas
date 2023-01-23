@@ -49,6 +49,24 @@ Feature: Start a job, by running a new deployment on a worker
     Then I must obtain an HTTP answer with this status code equals to "200".
     And with the final history at date "2018-10-01 02:03:04 UTC" in the body
 
+  Scenario: Return an error 500 when the job takes too long
+    Given I have a configured platform
+    And the platform is booted
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
+    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    And simulate a too long image building
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "500".
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"Error, time limit exceeded","status":500,"detail":["Error, time limit exceeded"]}'
+
   Scenario: Return a valid JSON answer when the job exists with hierarchical namespace and paas file is valid
     Given I have a configured platform
     And the platform is booted
