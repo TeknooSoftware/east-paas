@@ -31,6 +31,9 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
+use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
+use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
+use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -67,6 +70,8 @@ class RunJob implements RunJobInterface
     public function __construct(
         RecipeInterface $recipe,
         private readonly DispatchHistoryInterface $stepDispatchHistory,
+        private readonly Ping $stepPing,
+        private readonly SetTimeLimit $stepSetTimeLimit,
         private readonly ReceiveJob $stepReceiveJob,
         private readonly DeserializeJob $stepDeserializeJob,
         private readonly PrepareWorkspace $stepPrepareWorkspace,
@@ -84,6 +89,7 @@ class RunJob implements RunJobInterface
         private readonly Exposing $stepExposing,
         iterable $additionalSteps,
         private readonly DispatchResultInterface $stepDispatchResult,
+        private readonly UnsetTimeLimit $stepUnsetTimeLimit,
         private readonly SendHistoryInterface $stepSendHistoryInterface,
     ) {
         $this->additionalSteps = $additionalSteps;
@@ -98,17 +104,31 @@ class RunJob implements RunJobInterface
 
         //Startup Run
         $recipe = $recipe->cook(
+            $this->stepPing,
+            Ping::class,
+            [],
+            RunJobInterface::STEP_CONFIG_PING,
+        );
+
+        $recipe = $recipe->cook(
+            $this->stepSetTimeLimit,
+            SetTimeLimit::class,
+            [],
+            RunJobInterface::STEP_SET_TIMEOUT,
+        );
+
+        $recipe = $recipe->cook(
             $this->stepReceiveJob,
             ReceiveJob::class,
             [],
-            RunJobInterface::STEP_RECEIVE_JOB
+            RunJobInterface::STEP_RECEIVE_JOB,
         );
 
         $recipe = $recipe->cook(
             $this->stepDeserializeJob,
             DeserializeJob::class,
             [],
-            RunJobInterface::STEP_DESERIALIZE_JOB
+            RunJobInterface::STEP_DESERIALIZE_JOB,
         );
 
         //Prepare workspace
@@ -116,39 +136,39 @@ class RunJob implements RunJobInterface
             $notification,
             PrepareWorkspace::class,
             $notificationMapping,
-            RunJobInterface::STEP_PREPARE_WORKSPACE
+            RunJobInterface::STEP_PREPARE_WORKSPACE,
         );
         $recipe = $recipe->cook(
             $this->stepPrepareWorkspace,
             PrepareWorkspace::class,
             [],
-            RunJobInterface::STEP_PREPARE_WORKSPACE
+            RunJobInterface::STEP_PREPARE_WORKSPACE,
         );
 
         $recipe = $recipe->cook(
             $notification,
             ConfigureCloningAgent::class,
             $notificationMapping,
-            RunJobInterface::STEP_CONFIGURE_CLONING_AGENT
+            RunJobInterface::STEP_CONFIGURE_CLONING_AGENT,
         );
         $recipe = $recipe->cook(
             $this->stepConfigureCloningAgent,
             ConfigureCloningAgent::class,
             [],
-            RunJobInterface::STEP_CONFIGURE_CLONING_AGENT
+            RunJobInterface::STEP_CONFIGURE_CLONING_AGENT,
         );
 
         $recipe = $recipe->cook(
             $notification,
             CloneRepository::class,
             $notificationMapping,
-            RunJobInterface::STEP_CLONE_REPOSITORY
+            RunJobInterface::STEP_CLONE_REPOSITORY,
         );
         $recipe = $recipe->cook(
             $this->stepCloneRepository,
             CloneRepository::class,
             [],
-            RunJobInterface::STEP_CLONE_REPOSITORY
+            RunJobInterface::STEP_CLONE_REPOSITORY,
         );
 
         //Configure Deployment
@@ -156,39 +176,39 @@ class RunJob implements RunJobInterface
             $notification,
             ConfigureConductor::class,
             $notificationMapping,
-            RunJobInterface::STEP_CONFIGURE_CONDUCTOR
+            RunJobInterface::STEP_CONFIGURE_CONDUCTOR,
         );
         $recipe = $recipe->cook(
             $this->stepConfigureConductor,
             ConfigureConductor::class,
             [],
-            RunJobInterface::STEP_CONFIGURE_CONDUCTOR
+            RunJobInterface::STEP_CONFIGURE_CONDUCTOR,
         );
 
         $recipe = $recipe->cook(
             $notification,
             ReadDeploymentConfiguration::class,
             $notificationMapping,
-            RunJobInterface::STEP_READ_DEPLOYMENT_CONFIGURATION
+            RunJobInterface::STEP_READ_DEPLOYMENT_CONFIGURATION,
         );
         $recipe = $recipe->cook(
             $this->stepReadDeploymentConfiguration,
             ReadDeploymentConfiguration::class,
             [],
-            RunJobInterface::STEP_READ_DEPLOYMENT_CONFIGURATION
+            RunJobInterface::STEP_READ_DEPLOYMENT_CONFIGURATION,
         );
 
         $recipe = $recipe->cook(
             $notification,
             CompileDeployment::class,
             $notificationMapping,
-            RunJobInterface::STEP_COMPILE_DEPLOYMENT
+            RunJobInterface::STEP_COMPILE_DEPLOYMENT,
         );
         $recipe = $recipe->cook(
             $this->stepCompileDeployment,
             CompileDeployment::class,
             [],
-            RunJobInterface::STEP_COMPILE_DEPLOYMENT
+            RunJobInterface::STEP_COMPILE_DEPLOYMENT,
         );
 
         //Configure Build Image
@@ -196,52 +216,52 @@ class RunJob implements RunJobInterface
             $notification,
             HookingDeployment::class,
             $notificationMapping,
-            RunJobInterface::STEP_HOOK_PRE_BUILD_CONTAINER
+            RunJobInterface::STEP_HOOK_PRE_BUILD_CONTAINER,
         );
         $recipe = $recipe->cook(
             $this->stepHookingDeployment,
             HookingDeployment::class,
             [],
-            RunJobInterface::STEP_HOOK_PRE_BUILD_CONTAINER
+            RunJobInterface::STEP_HOOK_PRE_BUILD_CONTAINER,
         );
 
         $recipe = $recipe->cook(
             $notification,
             ConfigureImagesBuilder::class,
             $notificationMapping,
-            RunJobInterface::STEP_CONNECT_CONTAINER_REPOSITORY
+            RunJobInterface::STEP_CONNECT_CONTAINER_REPOSITORY,
         );
         $recipe = $recipe->cook(
             $this->stepConfigureImagesBuilder,
             ConfigureImagesBuilder::class,
             [],
-            RunJobInterface::STEP_CONNECT_CONTAINER_REPOSITORY
+            RunJobInterface::STEP_CONNECT_CONTAINER_REPOSITORY,
         );
 
         $recipe = $recipe->cook(
             $notification,
             BuildImages::class,
             $notificationMapping,
-            RunJobInterface::STEP_BUILD_IMAGE
+            RunJobInterface::STEP_BUILD_IMAGE,
         );
         $recipe = $recipe->cook(
             $this->stepBuildImages,
             BuildImages::class,
             [],
-            RunJobInterface::STEP_BUILD_IMAGE
+            RunJobInterface::STEP_BUILD_IMAGE,
         );
 
         $recipe = $recipe->cook(
             $notification,
             BuildVolumes::class,
             $notificationMapping,
-            RunJobInterface::STEP_BUILD_VOLUME
+            RunJobInterface::STEP_BUILD_VOLUME,
         );
         $recipe = $recipe->cook(
             $this->stepBuildVolumes,
             BuildVolumes::class,
             [],
-            RunJobInterface::STEP_BUILD_VOLUME
+            RunJobInterface::STEP_BUILD_VOLUME,
         );
 
         //Do Deployment
@@ -249,39 +269,39 @@ class RunJob implements RunJobInterface
             $notification,
             ConfigureClusterClient::class,
             $notificationMapping,
-            RunJobInterface::STEP_CONNECT_MASTER
+            RunJobInterface::STEP_CONNECT_MASTER,
         );
         $recipe = $recipe->cook(
             $this->stepConfigureClusterClient,
             ConfigureClusterClient::class,
             [],
-            RunJobInterface::STEP_CONNECT_MASTER
+            RunJobInterface::STEP_CONNECT_MASTER,
         );
 
         $recipe = $recipe->cook(
             $notification,
             Deploying::class,
             $notificationMapping,
-            RunJobInterface::STEP_DEPLOYING
+            RunJobInterface::STEP_DEPLOYING,
         );
         $recipe = $recipe->cook(
             $this->stepDeploying,
             Deploying::class,
             [],
-            RunJobInterface::STEP_DEPLOYING
+            RunJobInterface::STEP_DEPLOYING,
         );
 
         $recipe = $recipe->cook(
             $notification,
             Exposing::class,
             $notificationMapping,
-            RunJobInterface::STEP_EXPOSING
+            RunJobInterface::STEP_EXPOSING,
         );
         $recipe = $recipe->cook(
             $this->stepExposing,
             Exposing::class,
             [],
-            RunJobInterface::STEP_EXPOSING
+            RunJobInterface::STEP_EXPOSING,
         );
 
         $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
@@ -301,6 +321,14 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_SEND_HISTORY
         );
 
+        $recipe = $recipe->cook(
+            $this->stepUnsetTimeLimit,
+            UnsetTimeLimit::class,
+            [],
+            RunJobInterface::STEP_UNSET_TIMEOUT
+        );
+
+        $recipe = $recipe->onError(new Bowl($this->stepUnsetTimeLimit, []));
         return $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
     }
 }

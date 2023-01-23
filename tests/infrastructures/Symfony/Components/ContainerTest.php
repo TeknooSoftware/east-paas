@@ -30,9 +30,9 @@ use DI\ContainerBuilder;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Symfony\Component\HttpClient\HttplugClient;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
 use Symfony\Component\Yaml\Parser;
+use Teknoo\East\Foundation\Command\Executor;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
@@ -66,6 +66,13 @@ class ContainerTest extends TestCase
     protected function buildContainer() : Container
     {
         $containerDefinition = new ContainerBuilder();
+        $containerDefinition->addDefinitions(
+            [
+                Executor::class => function () {
+                    return $this->createMock(Executor::class);
+                }
+            ],
+        );
         $containerDefinition->addDefinitions(__DIR__.'/../../../../infrastructures/Symfony/Components/di.php');
 
         return $containerDefinition->build();
@@ -179,7 +186,6 @@ class ContainerTest extends TestCase
     public function testDisplayHistory()
     {
         $container = $this->buildContainer();
-        $container->set(DatesService::class, $this->createMock(DatesService::class));
 
         self::assertInstanceOf(
             DisplayHistoryHandler::class,
@@ -190,8 +196,6 @@ class ContainerTest extends TestCase
     public function testDisplayResult()
     {
         $container = $this->buildContainer();
-        $container->set(DatesService::class, $this->createMock(DatesService::class));
-        $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
 
         self::assertInstanceOf(
             DisplayResultHandler::class,

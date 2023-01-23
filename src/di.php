@@ -27,6 +27,8 @@ namespace Teknoo\Tests\East\Paas;
 
 use Psr\Container\ContainerInterface;
 use RuntimeException;
+use Teknoo\East\Foundation\Liveness\PingService;
+use Teknoo\East\Foundation\Liveness\TimeoutService;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
@@ -101,6 +103,9 @@ use Teknoo\East\Paas\Loader\AccountLoader;
 use Teknoo\East\Paas\Loader\ClusterLoader;
 use Teknoo\East\Paas\Loader\JobLoader;
 use Teknoo\East\Paas\Loader\ProjectLoader;
+use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
+use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
+use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -317,9 +322,28 @@ return [
 
     //Job
     GetVariables::class => create(),
+    Ping::class => create()
+        ->constructor(
+            get(PingService::class)
+        ),
     DispatchError::class => create()
         ->constructor(
             get(ErrorFactoryInterface::class),
+        ),
+    SetTimeLimit::class => static function (ContainerInterface $container): SetTimeLimit {
+        $seconds = 5 * 60;
+        if ($container->has('teknoo.east.paas.worker.time_limit')) {
+            $seconds = (int)$container->get('teknoo.east.paas.worker.time_limit');
+        }
+
+        return new SetTimeLimit(
+            $container->get(TimeoutService::class),
+            $seconds,
+        );
+    },
+    UnsetTimeLimit::class => create()
+        ->constructor(
+            get(TimeoutService::class),
         ),
 
     //Project
@@ -526,6 +550,8 @@ return [
     NewJob::class => create()
         ->constructor(
             get(OriginalRecipeInterface::class),
+            get(Ping::class),
+            get(SetTimeLimit::class),
             get(GetProject::class),
             get(GetEnvironment::class),
             get(GetVariables::class),
@@ -536,6 +562,7 @@ return [
             get(NewJobStepsInterface::class),
             get(DispatchJobInterface::class),
             get(SendJobInterface::class),
+            get(UnsetTimeLimit::class),
             get(DispatchError::class),
             get(NewJobErrorsHandlersInterface::class),
         ),
@@ -544,6 +571,8 @@ return [
     AddHistory::class => create()
         ->constructor(
             get(OriginalRecipeInterface::class),
+            get(Ping::class),
+            get(SetTimeLimit::class),
             get(ReceiveHistory::class),
             get(DeserializeHistory::class),
             get(GetProject::class),
@@ -552,6 +581,7 @@ return [
             get(SaveJob::class),
             get(AddHistoryStepsInterface::class),
             get(SendHistoryInterface::class),
+            get(UnsetTimeLimit::class),
             get(DispatchError::class),
         ),
 
@@ -560,6 +590,8 @@ return [
         ->constructor(
             get(OriginalRecipeInterface::class),
             get(DHI::class),
+            get(Ping::class),
+            get(SetTimeLimit::class),
             get(ReceiveJob::class),
             get(DeserializeJob::class),
             get(PrepareWorkspace::class),
@@ -577,6 +609,7 @@ return [
             get(Exposing::class),
             get(RunJobStepsInterface::class),
             get(DRI::class),
+            get(UnsetTimeLimit::class),
             get(SendHistoryInterface::class),
         ),
 

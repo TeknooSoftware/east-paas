@@ -35,6 +35,9 @@ use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
 use Teknoo\East\Paas\Recipe\Step\Job\GetJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
+use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
+use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
+use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\Recipe\CookbookInterface;
 use Teknoo\Recipe\RecipeInterface;
@@ -53,6 +56,8 @@ class AddHistoryTest extends TestCase
     {
         return new AddHistory(
             $this->createMock(RecipeInterface::class),
+            $this->createMock(Ping::class),
+            $this->createMock(SetTimeLimit::class),
             $this->createMock(ReceiveHistory::class),
             $this->createMock(DeserializeHistory::class),
             $this->createMock(GetProject::class),
@@ -64,6 +69,7 @@ class AddHistoryTest extends TestCase
                 12 => static function () {},
             ],
             $this->createMock(SendHistoryInterface::class),
+            $this->createMock(UnsetTimeLimit::class),
             $this->createMock(DispatchError::class),
         );
     }

@@ -36,6 +36,9 @@ use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
 use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
+use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
+use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
+use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\Recipe\CookbookInterface;
@@ -55,6 +58,8 @@ class NewJobTest extends TestCase
     {
         return new NewJob(
             $this->createMock(RecipeInterface::class),
+            $this->createMock(Ping::class),
+            $this->createMock(SetTimeLimit::class),
             $this->createMock(GetProject::class),
             $this->createMock(GetEnvironment::class),
             $this->createMock(GetVariables::class),
@@ -68,6 +73,7 @@ class NewJobTest extends TestCase
             ],
             $this->createMock(DispatchJobInterface::class),
             $this->createMock(SendJobInterface::class),
+            $this->createMock(UnsetTimeLimit::class),
             $this->createMock(DispatchError::class),
             [
                 24 => static function () {},

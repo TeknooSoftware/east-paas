@@ -36,6 +36,8 @@ use Teknoo\Recipe\CookbookInterface;
 interface RunJobInterface extends CookbookInterface
 {
     //Startup Run
+    final public const STEP_CONFIG_PING = 5;
+    final public const STEP_SET_TIMEOUT = 6;
     final public const STEP_RECEIVE_JOB = 10;
     final public const STEP_DESERIALIZE_JOB = 20;
 
@@ -62,4 +64,5 @@ interface RunJobInterface extends CookbookInterface
 
     final public const STEP_FINAL = 160;
     final public const STEP_SEND_HISTORY = 170;
+    final public const STEP_UNSET_TIMEOUT = 180;
 }

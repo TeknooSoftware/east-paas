@@ -34,6 +34,9 @@ use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SerializeJob;
 use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
+use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
+use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
+use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
@@ -58,6 +61,8 @@ class NewJob implements NewJobInterface
      */
     public function __construct(
         RecipeInterface $recipe,
+        private readonly Ping $stepPing,
+        private readonly SetTimeLimit $stepSetTimeLimit,
         private readonly GetProject $stepGetProject,
         private readonly GetEnvironment $stepGetEnvironment,
         private readonly GetVariables $stepGetVariables,
@@ -68,6 +73,7 @@ class NewJob implements NewJobInterface
         iterable $additionalSteps,
         private readonly DispatchJobInterface $stepDispatchJob,
         private readonly SendJobInterface $stepSendJob,
+        private readonly UnsetTimeLimit $stepUnsetTimeLimit,
         private readonly DispatchError $stepDispatchError,
         iterable $additionalErrorHandlers,
     ) {
@@ -78,6 +84,8 @@ class NewJob implements NewJobInterface
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
+        $recipe = $recipe->cook($this->stepPing, Ping::class, [], 5);
+        $recipe = $recipe->cook($this->stepSetTimeLimit, SetTimeLimit::class, [], 6);
         $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 10);
         $recipe = $recipe->cook($this->stepGetEnvironment, GetEnvironment::class, [], 20);
         $recipe = $recipe->cook($this->stepGetVariables, GetVariables::class, [], 30);
@@ -96,9 +104,11 @@ class NewJob implements NewJobInterface
         );
 
         $recipe = $recipe->cook($this->stepSendJob, SendJobInterface::class, [], 100);
+        $recipe = $recipe->cook($this->stepUnsetTimeLimit, UnsetTimeLimit::class, [], 110);
 
         $recipe = $this->registerAdditionalErrorHandler($recipe, $this->additionalErrorHandlers);
 
+        $recipe = $recipe->onError(new Bowl($this->stepUnsetTimeLimit, []));
         return $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));
     }
 }

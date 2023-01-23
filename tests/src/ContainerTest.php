@@ -33,6 +33,7 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use Teknoo\East\Foundation\Liveness\PingService;
 use Teknoo\East\Foundation\Recipe\RecipeInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
@@ -99,6 +100,9 @@ use Teknoo\East\Paas\Loader\ClusterLoader;
 use Teknoo\East\Paas\Loader\JobLoader;
 use Teknoo\East\Paas\Loader\ProjectLoader;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory;
+use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
+use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
+use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -1330,6 +1334,40 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             \Traversable::class,
             $steps->getIterator()
+        );
+    }
+
+    public function testPing()
+    {
+        $container = $this->buildContainer();
+        $container->set(PingService::class, $this->createMock(PingService::class));
+
+        self::assertInstanceOf(
+            Ping::class,
+            $container->get(Ping::class)
+        );
+    }
+
+    public function testSetTimeLimit()
+    {
+        $container = $this->buildContainer();
+        $container->set(PingService::class, $this->createMock(SetTimeLimit::class));
+        $container->set('teknoo.east.paas.worker.time_limit', 120);
+
+        self::assertInstanceOf(
+            SetTimeLimit::class,
+            $container->get(SetTimeLimit::class)
+        );
+    }
+
+    public function testUnsetTimeLimit()
+    {
+        $container = $this->buildContainer();
+        $container->set(PingService::class, $this->createMock(UnsetTimeLimit::class));
+
+        self::assertInstanceOf(
+            UnsetTimeLimit::class,
+            $container->get(UnsetTimeLimit::class)
         );
     }
 }

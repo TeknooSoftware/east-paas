@@ -30,8 +30,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Teknoo\East\Foundation\Command\Executor;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
@@ -58,7 +58,7 @@ class RunJobCommand extends Command
     public function __construct(
         string $name,
         string $description,
-        private readonly ManagerInterface $manager,
+        private readonly Executor $executor,
         private readonly Client $client,
         private readonly RunJobInterface $runJob,
         private readonly MessageFactoryInterface $messageFactory,
@@ -99,13 +99,15 @@ class RunJobCommand extends Command
         $client->setOutput($output);
 
         $workPlan = [
-            'request' => $request,
-            'client' => $client,
             OutputInterface::class => $output,
         ];
 
-        $this->manager->read($this->runJob);
-        $this->manager->process($workPlan);
+        $this->executor->execute(
+            $this->runJob,
+            $request,
+            $client,
+            $workPlan,
+        );
 
         $client->sendResponse(null, true);
 

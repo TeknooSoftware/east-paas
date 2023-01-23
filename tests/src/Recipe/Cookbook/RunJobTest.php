@@ -32,6 +32,9 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
 use Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
+use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
+use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
+use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
@@ -63,6 +66,8 @@ class RunJobTest extends TestCase
         return new RunJob(
             $this->createMock(RecipeInterface::class),
             $this->createMock(DispatchHistoryInterface::class),
+            $this->createMock(Ping::class),
+            $this->createMock(SetTimeLimit::class),
             $this->createMock(ReceiveJob::class),
             $this->createMock(DeserializeJob::class),
             $this->createMock(PrepareWorkspace::class),
@@ -83,6 +88,7 @@ class RunJobTest extends TestCase
                 12 => static function () {},
             ],
             $this->createMock(DispatchResultInterface::class),
+            $this->createMock(UnsetTimeLimit::class),
             $this->createMock(SendHistoryInterface::class),
         );
     }

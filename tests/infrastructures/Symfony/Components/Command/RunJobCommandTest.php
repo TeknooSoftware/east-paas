@@ -32,8 +32,8 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Teknoo\East\Foundation\Command\Executor;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
@@ -47,7 +47,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayRe
  */
 class RunJobCommandTest extends TestCase
 {
-    private ?ManagerInterface $manager = null;
+    private ?Executor $Executor = null;
 
     private ?Client $client = null;
 
@@ -62,15 +62,15 @@ class RunJobCommandTest extends TestCase
     private ?DisplayResultHandler $stepDisplayResult = null;
 
     /**
-     * @return ManagerInterface|MockObject
+     * @return Executor|MockObject
      */
-    private function getManagerMock(): ManagerInterface
+    private function getExecutorMock(): Executor
     {
-        if (!$this->manager instanceof ManagerInterface) {
-            $this->manager = $this->createMock(ManagerInterface::class);
+        if (!$this->Executor instanceof Executor) {
+            $this->Executor = $this->createMock(Executor::class);
         }
 
-        return $this->manager;
+        return $this->Executor;
     }
     
     /**
@@ -150,7 +150,7 @@ class RunJobCommandTest extends TestCase
         return new RunJobCommand(
             'teknoo:paas:run-job',
             'Run a job',
-            $this->getManagerMock(),
+            $this->getExecutorMock(),
             $this->getClientMock(),
             $this->getRunJobMock(),
             $this->getMessageFactoryMock(),

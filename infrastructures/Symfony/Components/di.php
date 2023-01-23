@@ -30,8 +30,8 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpClient\HttplugClient;
+use Teknoo\East\Foundation\Command\Executor;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-use Teknoo\East\Foundation\Manager\Manager;
 use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
@@ -74,7 +74,7 @@ $entries = [
         ->constructor(
             get('teknoo.east.paas.symfony.command.run_job.name'),
             get('teknoo.east.paas.symfony.command.run_job.description'),
-            create(Manager::class),
+            get(Executor::class),
             create(Client::class),
             get(RunJobInterface::class . ':proxy'),
             get(MessageFactoryInterface::class),
