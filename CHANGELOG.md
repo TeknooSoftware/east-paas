@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.2.0] - 2023-01-24
+### Stable Release
+- Add Ping step, using Foundation Ping service, to allow dev to implement pings actions
+- Add SetTimeLimit and UnsetTimeLimit services to kill to long operations. 
+   By default, the limit is fixed to 5minutes and can be overrided by defining 
+   the key `teknoo.east.paas.worker.time_limit` (in seconds)
+
 ## [1.1.0] - 2023-01-20
 ### Stable Release
 - Add `UpgradeStrategy` in pod definition : `upgrade.strategy: "recreate" or "rolling-upgrade"`
