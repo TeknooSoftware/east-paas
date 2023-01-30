@@ -23,29 +23,21 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Configuration;
+namespace Teknoo\East\Paas\Contracts\Compilation;
 
 /**
- * To define service able to parse a path of key' split by a dot, to read / pass the value of a
- * multidimensional array to a callable
+ * To define extender able to complete / extends PaaS configuration with some predefined by administrators
+ * configurations
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface PropertyAccessorInterface
+interface ExtenderInterface
 {
     /**
-     * @param array<string, mixed> $array
+     * @param array<string, mixed> $definitions
      */
-    public function setValue(array &$array, string $propertyPath, mixed $value): PropertyAccessorInterface;
-
-    /**
-     * @param array<string, mixed> $array
-     */
-    public function getValue(
-        array $array,
-        string $propertyPath,
-        callable $callback,
-        mixed $default = null
-    ): PropertyAccessorInterface;
+    public function extends(
+        array &$definitions,
+    ): ExtenderInterface;
 }

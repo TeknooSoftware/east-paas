@@ -116,7 +116,12 @@ return [
             throw new DomainException("The class $className is not a deployment transcriber");
         }
 
-        return new $className();
+        $requireLabel = 'paas.east.teknoo.net/provide';
+        if ($container->has('teknoo.east.paas.kubernetes.deployment.require_label')) {
+            $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.deployment.require_label');
+        }
+
+        return new $className($requireLabel);
     },
 
     SecretTranscriber::class . ':class' => SecretTranscriber::class,

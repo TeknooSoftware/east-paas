@@ -25,12 +25,17 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
+use DomainException;
+use InvalidArgumentException;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+
+use function is_string;
 
 /**
  * Compilation module able to convert `ingresses` sections in paas.yaml file as Ingress instance.
@@ -39,8 +44,10 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class IngressCompiler implements CompilerInterface
+class IngressCompiler implements CompilerInterface, ExtenderInterface
 {
+    use MergeTrait;
+
     private const KEY_HOST = 'host';
     private const KEY_TLS = 'tls';
     private const KEY_PROVIDER = 'provider';
@@ -51,6 +58,15 @@ class IngressCompiler implements CompilerInterface
     private const KEY_PATHS = 'paths';
     private const KEY_PATH = 'path';
     private const KEY_HTTPS_BACKEND = 'https-backend';
+    private const KEY_EXTENDS = 'extends';
+
+    /**
+     * @param array<string, array<string, mixed>> $library
+     */
+    public function __construct(
+        private readonly array $library,
+    ) {
+    }
 
     public function compile(
         array &$definitions,
@@ -89,6 +105,32 @@ class IngressCompiler implements CompilerInterface
                     !empty($config[self::KEY_HTTPS_BACKEND]),
                 )
             );
+        }
+
+        return $this;
+    }
+
+    public function extends(
+        array &$definitions,
+    ): ExtenderInterface {
+        foreach ($definitions as &$config) {
+            if (!isset($config[self::KEY_EXTENDS])) {
+                continue;
+            }
+
+            $libName = $config[self::KEY_EXTENDS];
+            if (!is_string($libName)) {
+                throw new InvalidArgumentException("teknoo.east.paas.error.recipe.job.extends-need-string", 400);
+            }
+
+            if (!isset($this->library[$libName])) {
+                throw new DomainException(
+                    "teknoo.east.paas.error.recipe.job.extends-not-available:ingress:$libName",
+                    400
+                );
+            }
+
+            $config = self::arrayMergeRecursiveDistinct($this->library[$libName], $config);
         }
 
         return $this;

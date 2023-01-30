@@ -58,4 +58,16 @@ trait ArrayTrait
             $default
         );
     }
+
+    /**
+     * @param array<string, mixed> $dictionary
+     */
+    private function replace(array &$dictionary, string $path, mixed $value): void
+    {
+        $this->propertyAccessor->setValue(
+            $dictionary,
+            $path,
+            $value,
+        );
+    }
 }

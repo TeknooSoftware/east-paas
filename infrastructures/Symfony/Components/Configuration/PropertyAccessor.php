@@ -42,7 +42,7 @@ class PropertyAccessor implements PropertyAccessorInterface
     ) {
     }
 
-    public function setValue(array $array, string $propertyPath, mixed $value): PropertyAccessorInterface
+    public function setValue(array &$array, string $propertyPath, mixed $value): PropertyAccessorInterface
     {
         $this->propertyAccessor->setValue($array, $propertyPath, $value);
 

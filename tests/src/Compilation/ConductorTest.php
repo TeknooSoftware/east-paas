@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
+use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentFactoryInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -124,6 +125,26 @@ class ConductorTest extends TestCase
         if (empty($compilers)) {
             $compilers = [
                 '[secrets]' => $this->createMock(CompilerInterface::class),
+                '[services]' => new class implements CompilerInterface, ExtenderInterface {
+                    public function compile(
+                        array &$definitions,
+                        CompiledDeploymentInterface $compiledDeployment,
+                        JobWorkspaceInterface $workspace,
+                        JobUnitInterface $job,
+                        ?string $storageIdentifier = null,
+                        ?string $defaultStorageSize = null,
+                        ?string $ociRegistryConfig = null,
+                    ): CompilerInterface {
+                        return $this;
+                    }
+
+                    public function extends(
+                        array &$definitions,
+                    ): ExtenderInterface {
+                        $definitions['foo'] = 'bar';
+                        return $this;
+                    }
+                },
                 '[volumes]' => $this->createMock(CompilerInterface::class),
             ];
         }

@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.3.0] - 2023-01-30
+### Stable Release
+- Add `Require` option on pod to place them on nodes with the necessary capacities (`NodeSelector` or `nodeAffinity` 
+  behavior).
+- Add `extends` options on `container`, `pod`, `service` and `ingress` to allow adminisrators to provide defaults 
+  configurations.
+
 ## [1.2.0] - 2023-01-24
 ### Stable Release
 - Add Ping step, using Foundation Ping service, to allow dev to implement pings actions

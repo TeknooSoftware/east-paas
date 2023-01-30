@@ -199,6 +199,9 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
     pods:
       php-pods: #podset name
         replicas: 2 #instance of pods
+        requires:
+          - 'x86_64'
+          - 'avx'
         upgrade:
             max-upgrading-pods: 2
             max-unavailable-pods: 1
@@ -258,8 +261,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
         replicas: 1
           containers:
             sleep:
-              image: registry.hub.docker.com/bash
-              version: alpine
+              extends: 'bash'
       demo:
         replicas: 1
         security:

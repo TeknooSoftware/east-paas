@@ -25,12 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
+use DomainException;
+use InvalidArgumentException;
 use RuntimeException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
+use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -49,6 +52,7 @@ use Throwable;
 use function array_map;
 use function array_pop;
 use function explode;
+use function is_string;
 
 /**
  * Compilation module able to convert `pods` sections in paas.yaml file as Pod instance.
@@ -60,14 +64,17 @@ use function explode;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class PodCompiler implements CompilerInterface
+class PodCompiler implements CompilerInterface, ExtenderInterface
 {
+    use MergeTrait;
+
     private const KEY_CONTAINERS = 'containers';
     private const KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
     private const KEY_UPGRADE = 'upgrade';
     private const KEY_SECURITY = 'security';
     private const KEY_MAX_UPGRADING_PODS = 'max-upgrading-pods';
     private const KEY_FS_GROUP = 'fs-group';
+    private const KEY_REQUIRES = 'requires';
     private const KEY_MAX_UNAVAILABLE_PODS = 'max-unavailable-pods';
     private const KEY_STRATEGY = 'strategy';
     private const KEY_VOLUMES = 'volumes';
@@ -105,6 +112,17 @@ class PodCompiler implements CompilerInterface
     private const KEY_SUCCESS = 'success';
     private const VALUE_LATEST = 'latest';
     private const VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
+    private const KEY_EXTENDS = 'extends';
+
+    /**
+     * @param array<string, array<string, mixed>> $podsLibrary
+     * @param array<string, array<string, mixed>> $containersLibrary
+     */
+    public function __construct(
+        private readonly array $podsLibrary,
+        private readonly array $containersLibrary,
+    ) {
+    }
 
     /**
      * @param array<string, mixed> $volumeDefinition
@@ -440,8 +458,53 @@ class PodCompiler implements CompilerInterface
                     maxUnavailablePods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UNAVAILABLE_PODS] ?? 0),
                     upgradeStrategy: $upgradeStrategy,
                     fsGroup: $fsGroup,
+                    requires: (array) ($podsList[self::KEY_REQUIRES] ?? []),
                 )
             );
+        }
+
+        return $this;
+    }
+
+    public function extends(
+        array &$definitions,
+    ): ExtenderInterface {
+        foreach ($definitions as &$config) {
+            if (isset($config[self::KEY_EXTENDS])) {
+                $libName = $config[self::KEY_EXTENDS];
+                if (!is_string($libName)) {
+                    throw new InvalidArgumentException("teknoo.east.paas.error.recipe.job.extends-need-string", 400);
+                }
+
+                if (!isset($this->podsLibrary[$libName])) {
+                    throw new DomainException(
+                        "teknoo.east.paas.error.recipe.job.extends-not-available:pods:$libName",
+                        400
+                    );
+                }
+
+                $config = self::arrayMergeRecursiveDistinct($this->podsLibrary[$libName], $config);
+            }
+
+            foreach ($config[self::KEY_CONTAINERS] as &$subCconfig) {
+                if (!isset($subCconfig[self::KEY_EXTENDS])) {
+                    continue;
+                }
+
+                $libName = $subCconfig[self::KEY_EXTENDS];
+                if (!is_string($libName)) {
+                    throw new InvalidArgumentException("teknoo.east.paas.error.recipe.job.extends-need-string", 400);
+                }
+
+                if (!isset($this->containersLibrary[$libName])) {
+                    throw new DomainException(
+                        "teknoo.east.paas.error.recipe.job.extends-not-available:containers:$libName",
+                        400
+                    );
+                }
+
+                $subCconfig = self::arrayMergeRecursiveDistinct($this->containersLibrary[$libName], $subCconfig);
+            }
         }
 
         return $this;

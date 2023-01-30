@@ -53,6 +53,9 @@ parameters:
             message: '#mixed#' #array validated by validation schema
             path:  src/Compilation/
         -
+            message: '#array<string>, array given#' #array validated by validation schema
+            path:  src/Compilation/
+        -
             message: '#version is never read, only written#'
             path:  src/Compilation/CompiledDeployment.php
         -

@@ -48,6 +48,7 @@ class PodTest extends TestCase
             maxUnavailablePods: 2,
             upgradeStrategy: UpgradeStrategy::RollingUpgrade,
             fsGroup: 123,
+            requires: ['foo', 'bar'],
         );
     }
 
@@ -104,6 +105,15 @@ class PodTest extends TestCase
         self::assertEquals(
             123,
             $this->buildObject()->getFsGroup()
+        );
+    }
+
+
+    public function testGetRequires()
+    {
+        self::assertEquals(
+            ['foo', 'bar'],
+            $this->buildObject()->getRequires()
         );
     }
 

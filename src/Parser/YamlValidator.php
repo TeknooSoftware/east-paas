@@ -35,6 +35,7 @@ use function array_flip;
 use function is_array;
 use function is_string;
 use function is_scalar;
+use function libxml_clear_errors;
 use function libxml_get_last_error;
 
 /**
@@ -79,6 +80,7 @@ class YamlValidator
         'name',
         'port',
         'paths',
+        'requires',
         'containers',
         'oci-registry-config-name',
         'healthcheck',
@@ -115,6 +117,7 @@ class YamlValidator
         'add',
         'writables',
         'image',
+        'extends',
         'latest',
         'listen',
         'replicas',
@@ -223,6 +226,7 @@ class YamlValidator
             $xmlError = $error;
         } finally {
             $libError = libxml_get_last_error();
+            libxml_clear_errors();
 
             if ($xmlError || false !== $libError) {
                 $exception = new RuntimeException((string) ($xmlError ?? $libError->message));

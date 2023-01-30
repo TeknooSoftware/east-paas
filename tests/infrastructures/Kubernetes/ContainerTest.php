@@ -192,6 +192,7 @@ class ContainerTest extends TestCase
     public function testDeploymentTranscriber()
     {
         $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.deployment.require_label', 'foo');
         self::assertInstanceOf(
             DeploymentTranscriber::class,
             $container->get(DeploymentTranscriber::class)

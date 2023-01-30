@@ -154,7 +154,14 @@ class DeploymentTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2, $c3, $c4], upgradeStrategy: UpgradeStrategy::Recreate, fsGroup: 1000);
+                $pod2 = new Pod(
+                    'p2',
+                    1,
+                    [$c2, $c3, $c4],
+                    upgradeStrategy: UpgradeStrategy::Recreate,
+                    fsGroup: 1000,
+                    requires: ['x86_64', 'avx'],
+                );
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
@@ -320,7 +327,7 @@ class DeploymentTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1], 'foo');
-                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000);
+                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000, requires: ['x86_64', 'avx'],);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
@@ -564,7 +571,7 @@ class DeploymentTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2], fsGroup: 1000);
+                $pod2 = new Pod('p2', 1, [$c2], fsGroup: 1000, requires: ['x86_64', 'avx'],);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');

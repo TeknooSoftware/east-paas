@@ -25,7 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use DomainException;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -35,12 +38,23 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Compilation\Compiler\IngressCompiler
+ * @covers \Teknoo\East\Paas\Compilation\Compiler\MergeTrait
  */
 class IngressCompilerTest extends TestCase
 {
     public function buildCompiler(): IngressCompiler
     {
-        return new IngressCompiler();
+        return new IngressCompiler(
+            [
+                'foo-ext' => [
+                    'host' => 'demo2-paas.teknoo.software',
+                    'tls' => [
+                        'cert' => 'foo',
+                        'key' => 'bar',
+                    ],
+                ]
+            ]
+        );
     }
 
     private function getDefinitionsArray(): array
@@ -153,6 +167,111 @@ class IngressCompilerTest extends TestCase
                 $workspace,
                 $jobUnit
             )
+        );
+    }
+
+    public function testCompileWithWrongExtends()
+    {
+        $definitions = [
+            'demo' => [
+                'extends' => new stdClass(),
+                'host' => 'demo-paas.teknoo.software',
+                'tls' => [
+                    'cert' => 'foo',
+                    'key' => 'bar',
+                ],
+                'service' => [
+                    'name' => 'php-react',
+                    'port' => 80
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder->extends(
+            $definitions,
+        );
+    }
+
+    public function testCompileWithNonExistantExtends()
+    {
+        $definitions = [
+            'demo' => [
+                'extends' => 'other',
+                'host' => 'demo-paas.teknoo.software',
+                'tls' => [
+                    'cert' => 'foo',
+                    'key' => 'bar',
+                ],
+                'service' => [
+                    'name' => 'php-react',
+                    'port' => 80
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        $this->expectException(DomainException::class);
+        $builder->extends(
+            $definitions,
+        );
+    }
+
+    public function testCompileWithExtends()
+    {
+        $definitions = [
+            'demo' => [
+                'extends' => 'foo-ext',
+            ],
+            'demo-secure' => [
+                'host' => 'demo-paas.teknoo.software',
+                'extends' => 'foo-ext',
+            ],
+            'demo3-secure' => [
+                'host' => 'demo-paas3.teknoo.software',
+                'tls' => [
+                    'cert' => 'foo',
+                    'key' => 'bar',
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        self::assertInstanceOf(
+            IngressCompiler::class,
+            $builder->extends(
+                $definitions,
+            )
+        );
+
+        self::assertEquals(
+            $definitions,
+            [
+                'demo' => [
+                    'extends' => 'foo-ext',
+                    'host' => 'demo2-paas.teknoo.software',
+                    'tls' => [
+                        'cert' => 'foo',
+                        'key' => 'bar',
+                    ],
+                ],
+                'demo-secure' => [
+                    'host' => 'demo-paas.teknoo.software',
+                    'extends' => 'foo-ext',
+                    'tls' => [
+                        'cert' => 'foo',
+                        'key' => 'bar',
+                    ],
+                ],
+                'demo3-secure' => [
+                    'host' => 'demo-paas3.teknoo.software',
+                    'tls' => [
+                        'cert' => 'foo',
+                        'key' => 'bar',
+                    ],
+                ],
+            ]
         );
     }
 }

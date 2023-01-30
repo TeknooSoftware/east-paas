@@ -25,7 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use DomainException;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
@@ -42,7 +45,23 @@ class PodCompilerTest extends TestCase
 {
     public function buildCompiler(): PodCompiler
     {
-        return new PodCompiler();
+        return new PodCompiler(
+            [
+                'foo-ext' => [
+                    'replicas' => 2,
+                    'oci-registry-config-name' => 'bar',
+                    'upgrade' => [
+                        'max-upgrading-pods' => 2,
+                        'max-unavailable-pods' => 1,
+                    ],
+                ],
+            ],
+            [
+                'bar-ext' => [
+                    'image' => 'mongo-react',
+                ]
+            ]
+        );
     }
 
     private function getDefinitionsArray(): array
@@ -96,6 +115,7 @@ class PodCompilerTest extends TestCase
                 'upgrade' => [
                     'strategy' => 'recreate',
                 ],
+                'requires' => 'x86_64',
                 'containers' => [
                     'php-react' => [
                         'image' => 'php-react',
@@ -256,7 +276,7 @@ class PodCompilerTest extends TestCase
             ->method('importVolume')
             ->willReturnCallback(
                 function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment) {
-                    $promise->fail(new \DomainException('foo'));
+                    $promise->fail(new DomainException('foo'));
 
                     return $compiledDeployment;
                 }
@@ -265,7 +285,7 @@ class PodCompilerTest extends TestCase
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class );
 
-        $this->expectException(\DomainException::class);
+        $this->expectException(DomainException::class);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -293,7 +313,7 @@ class PodCompilerTest extends TestCase
             ->method('importVolume')
             ->willReturnCallback(
                 function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment) {
-                    $promise->fail(new \DomainException('foo'));
+                    $promise->fail(new DomainException('foo'));
 
                     return $compiledDeployment;
                 }
@@ -330,7 +350,7 @@ class PodCompilerTest extends TestCase
             ->method('importVolume')
             ->willReturnCallback(
                 function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment) {
-                    $promise->fail(new \DomainException('foo'));
+                    $promise->fail(new DomainException('foo'));
 
                     return $compiledDeployment;
                 }
@@ -379,6 +399,183 @@ class PodCompilerTest extends TestCase
                 'fooBar',
                 'fooBar',
             )
+        );
+    }
+
+    public function testCompileWithWrongExtends()
+    {
+        $definitions = [
+            'shell' => [
+                'extends' => new stdClass(),
+                'upgrade' => [
+                    'strategy' => 'recreate',
+                ],
+                'requires' => 'x86_64',
+                'containers' => [
+                    'php-react' => [
+                        'image' => 'php-react',
+                        'version' => 7.4,
+                    ],
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder->extends(
+            $definitions,
+        );
+    }
+
+    public function testCompileWithWrongExtendsInContainer()
+    {
+        $definitions = [
+            'shell' => [
+                'upgrade' => [
+                    'strategy' => 'recreate',
+                ],
+                'requires' => 'x86_64',
+                'containers' => [
+                    'php-react' => [
+                        'image' => 'php-react',
+                        'extends' => new stdClass(),
+                        'version' => 7.4,
+                    ],
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder->extends(
+            $definitions,
+        );
+    }
+
+    public function testCompileWithNonExistantExtends()
+    {
+        $definitions = [
+            'shell' => [
+                'extends' => 'other',
+                'upgrade' => [
+                    'strategy' => 'recreate',
+                ],
+                'requires' => 'x86_64',
+                'containers' => [
+                    'php-react' => [
+                        'image' => 'php-react',
+                        'version' => 7.4,
+                    ],
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        $this->expectException(DomainException::class);
+        $builder->extends(
+            $definitions,
+        );
+    }
+
+    public function testCompileWithNonExistantExtendsInContainer()
+    {
+        $definitions = [
+            'shell' => [
+                'upgrade' => [
+                    'strategy' => 'recreate',
+                ],
+                'requires' => 'x86_64',
+                'containers' => [
+                    'php-react' => [
+                        'image' => 'php-react',
+                        'extends' => 'other',
+                        'version' => 7.4,
+                    ],
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        $this->expectException(DomainException::class);
+        $builder->extends(
+            $definitions,
+        );
+    }
+
+
+    public function testCompileWithExtends()
+    {
+        $definitions = [
+            'node-pod' => [
+                'extends' => 'foo-ext',
+                'upgrade' => [
+                    'max-upgrading-pods' => 2,
+                ],
+                'containers' => [
+                    'node-react' => [
+                        'image' => 'node-react',
+                        'version' => 123,
+                        'listen' => [8181],
+                    ],
+                ],
+            ],
+            'shell' => [
+                'replicas' => 1,
+                'upgrade' => [
+                    'strategy' => 'recreate',
+                ],
+                'requires' => 'x86_64',
+                'containers' => [
+                    'php-react' => [
+                        'extends' => 'bar-ext',
+                        'version' => 7.4,
+                    ],
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $builder->extends(
+                $definitions,
+            )
+        );
+
+        self::assertEquals(
+            $definitions,
+            [
+                'node-pod' => [
+                    'extends' => 'foo-ext',
+                    'replicas' => 2,
+                    'oci-registry-config-name' => 'bar',
+                    'upgrade' => [
+                        'max-upgrading-pods' => 2,
+                        'max-unavailable-pods' => 1,
+                    ],
+                    'containers' => [
+                        'node-react' => [
+                            'image' => 'node-react',
+                            'version' => 123,
+                            'listen' => [8181],
+                        ],
+                    ],
+                ],
+                'shell' => [
+                    'replicas' => 1,
+                    'upgrade' => [
+                        'strategy' => 'recreate',
+                    ],
+                    'requires' => 'x86_64',
+                    'containers' => [
+                        'php-react' => [
+                            'extends' => 'bar-ext',
+                            'image' => 'mongo-react',
+                            'version' => 7.4,
+                        ],
+                    ],
+                ],
+            ]
         );
     }
 }

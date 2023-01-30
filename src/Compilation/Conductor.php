@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Compilation;
 
 use RuntimeException;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Compilation\Conductor\Generator;
 use Teknoo\East\Paas\Compilation\Conductor\Running;
@@ -148,8 +149,8 @@ class Conductor implements ConductorInterface, AutomatedInterface
     public function prepare(string $configuration, PromiseInterface $promise): ConductorInterface
     {
         try {
-            /** @var Promise<array<string, mixed>, mixed, array<string, mixed>> $configurationPromise */
-            $configurationPromise = new Promise(
+            /** @var Promise<array<string, mixed>, mixed, array<string, mixed>> $configuredPromise */
+            $configuredPromise = new Promise(
                 function ($result, PromiseInterface $next): void {
                     $this->configuration = $result;
 
@@ -158,12 +159,42 @@ class Conductor implements ConductorInterface, AutomatedInterface
                 allowNext: true
             );
 
-            /** @var Promise<array<int|string, mixed>, mixed, array<string, mixed>> $validatorPromise */
-            $validatorPromise = new Promise(
+            /** @var Promise<array<int|string, mixed>, mixed, array<string, mixed>> $validatedPromise */
+            $validatedPromise = new Promise(
                 fn ($result, PromiseInterface $next) => $this->getJob()->updateVariablesIn(
                     $result,
                     $next
                 ),
+                allowNext: true
+            );
+
+            $parsedPromise = new Promise(
+                function (array $result): array {
+                    foreach ($this->compilers as $pattern => $compiler) {
+                        if (!$compiler instanceof ExtenderInterface) {
+                            continue;
+                        }
+
+                        $this->extract(
+                            $result,
+                            $pattern,
+                            [],
+                            function (
+                                $configuration
+                            ) use (
+                                $compiler,
+                                &$result,
+                                $pattern,
+                            ): void {
+                                $compiler->extends($configuration);
+
+                                $this->replace($result, $pattern, $configuration);
+                            }
+                        );
+                    }
+
+                    return $result;
+                },
                 allowNext: true
             );
 
@@ -172,9 +203,9 @@ class Conductor implements ConductorInterface, AutomatedInterface
              *     array<mixed, mixed>,
              *     mixed,
              *     PromiseInterface<array<int|string, mixed>, mixed>
-             * > $parsedPromise
+             * > $extendedPromise
              */
-            $parsedPromise = new Promise(
+            $extendedPromise = new Promise(
                 fn ($result, PromiseInterface $next): YamlValidator => $this->validator->validate(
                     $result,
                     $this->factory->getSchema(),
@@ -186,8 +217,9 @@ class Conductor implements ConductorInterface, AutomatedInterface
             $this->parseYaml(
                 $configuration,
                 $parsedPromise
-                    ->next($validatorPromise, autoCall: true)
-                    ->next($configurationPromise, autoCall: true)
+                    ->next($extendedPromise, autoCall: true)
+                    ->next($validatedPromise, autoCall: true)
+                    ->next($configuredPromise, autoCall: true)
                     ->next($promise, autoCall: true)
             );
         } catch (Throwable $error) {

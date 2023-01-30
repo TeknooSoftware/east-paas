@@ -25,7 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use DomainException;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
@@ -37,12 +40,24 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @covers \Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler
+ * @covers \Teknoo\East\Paas\Compilation\Compiler\MergeTrait
  */
 class ServiceCompilerTest extends TestCase
 {
     public function buildCompiler(): ServiceCompiler
     {
-        return new ServiceCompiler();
+        return new ServiceCompiler(
+            [
+                'foo-ext' => [
+                    'ports' => [
+                        [
+                            'listen' => 80,
+                            'target' => 8080,
+                        ],
+                    ],
+                ],
+            ],
+        );
     }
 
     private function getDefinitionsArray(): array
@@ -151,6 +166,121 @@ class ServiceCompilerTest extends TestCase
                 $workspace,
                 $jobUnit
             )
+        );
+    }
+
+    public function testCompileWithWrongExtends()
+    {
+        $definitions = [
+            'php-react' => [
+                'extends' => new stdClass(),
+                'internal' => false,
+                'ports' => [
+                    [
+                        'listen' => 80,
+                        'target' => 8080,
+                    ],
+                ],
+            ]
+        ];
+        $builder = $this->buildCompiler();
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder->extends(
+            $definitions,
+        );
+    }
+
+    public function testCompileWithNonExistantExtends()
+    {
+        $definitions = [
+            'php-react' => [
+                'extends' => 'other',
+                'internal' => false,
+                'ports' => [
+                    [
+                        'listen' => 80,
+                        'target' => 8080,
+                    ],
+                ],
+            ]
+        ];
+        $builder = $this->buildCompiler();
+
+        $this->expectException(DomainException::class);
+        $builder->extends(
+            $definitions,
+        );
+    }
+
+    public function testCompileWithExtends()
+    {
+        $definitions = [
+            'php-react' => [
+                'extends' => 'foo-ext',
+                'internal' => false,
+            ],
+            'php-internal' => [
+                'extends' => 'foo-ext',
+                'internal' => true,
+                'ports' => [
+                    [
+                        'listen' => 1234,
+                    ],
+                ],
+            ],
+            'php-filled' => [
+                'internal' => true,
+                'ports' => [
+                    [
+                        'listen' => 1234,
+                        'target' => 8080,
+                    ],
+                ],
+            ],
+        ];
+        $builder = $this->buildCompiler();
+
+        self::assertInstanceOf(
+            ServiceCompiler::class,
+            $builder->extends(
+                $definitions,
+            )
+        );
+
+        self::assertEquals(
+            $definitions,
+            [
+                'php-react' => [
+                    'extends' => 'foo-ext',
+                    'internal' => false,
+                    'ports' => [
+                        [
+                            'listen' => 80,
+                            'target' => 8080,
+                        ],
+                    ],
+                ],
+                'php-internal' => [
+                    'extends' => 'foo-ext',
+                    'internal' => true,
+                    'ports' => [
+                        [
+                            'listen' => 1234,
+                            'target' => 8080,
+                        ],
+                    ],
+                ],
+                'php-filled' => [
+                    'internal' => true,
+                    'ports' => [
+                        [
+                            'listen' => 1234,
+                            'target' => 8080,
+                        ],
+                    ],
+                ],
+            ]
         );
     }
 }

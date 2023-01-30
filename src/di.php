@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas;
 
 use Psr\Container\ContainerInterface;
 use RuntimeException;
+use Teknoo\East\Common\Query\Expr\In;
 use Teknoo\East\Foundation\Liveness\PingService;
 use Teknoo\East\Foundation\Liveness\TimeoutService;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -202,10 +203,39 @@ return [
         return new ImageCompiler($imagesLibrary);
     },
     MapCompiler::class => create(),
-    IngressCompiler::class => create(),
-    PodCompiler::class => create(),
+    IngressCompiler::class => static function (ContainerInterface $container): IngressCompiler {
+        $library = [];
+
+        if ($container->has('teknoo.east.paas.ingresses.library')) {
+            $library = $container->get('teknoo.east.paas.ingresses.library');
+        }
+
+        return new IngressCompiler($library);
+    },
+    PodCompiler::class => static function (ContainerInterface $container): PodCompiler {
+        $podslibrary = [];
+        $containerslibrary = [];
+
+        if ($container->has('teknoo.east.paas.pods.library')) {
+            $podslibrary = $container->get('teknoo.east.paas.pods.library');
+        }
+
+        if ($container->has('teknoo.east.paas.containers.library')) {
+            $containerslibrary = $container->get('teknoo.east.paas.containers.library');
+        }
+
+        return new PodCompiler($podslibrary, $containerslibrary);
+    },
     SecretCompiler::class => create(),
-    ServiceCompiler::class => create(),
+    ServiceCompiler::class => static function (ContainerInterface $container): ServiceCompiler {
+        $library = [];
+
+        if ($container->has('teknoo.east.paas.services.library')) {
+            $library = $container->get('teknoo.east.paas.services.library');
+        }
+
+        return new ServiceCompiler($library);
+    },
     VolumeCompiler::class => create(),
 
     CompilerCollectionInterface::class => static function (ContainerInterface $container): CompilerCollectionInterface {

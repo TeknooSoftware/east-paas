@@ -23,29 +23,31 @@ declare(strict_types=1);
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 
-namespace Teknoo\East\Paas\Contracts\Configuration;
+namespace Teknoo\East\Paas\Compilation\Compiler;
+
+use function is_array;
 
 /**
- * To define service able to parse a path of key' split by a dot, to read / pass the value of a
- * multidimensional array to a callable
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-interface PropertyAccessorInterface
+trait MergeTrait
 {
     /**
-     * @param array<string, mixed> $array
+     * @param array<string, mixed> $array1
+     * @param array<string, mixed> $array2
+     * @return array<string, mixed>
      */
-    public function setValue(array &$array, string $propertyPath, mixed $value): PropertyAccessorInterface;
+    private static function arrayMergeRecursiveDistinct(array $array1, array &$array2): array
+    {
+        foreach ($array2 as $key => &$value) {
+            if (is_array($value) && isset($array1[$key]) && is_array($array1[$key])) {
+                $array1[$key] = self::arrayMergeRecursiveDistinct($array1[$key], $value);
+            } else {
+                $array1[$key] = $value;
+            }
+        }
 
-    /**
-     * @param array<string, mixed> $array
-     */
-    public function getValue(
-        array $array,
-        string $propertyPath,
-        callable $callback,
-        mixed $default = null
-    ): PropertyAccessorInterface;
+        return $array1;
+    }
 }

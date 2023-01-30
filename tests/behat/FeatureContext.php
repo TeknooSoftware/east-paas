@@ -11,6 +11,7 @@ use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\Persistence\ObjectManager;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\Repository;
@@ -73,6 +74,7 @@ use Traversable;
 
 use function base64_encode;
 use function dirname;
+use function file_exists;
 use function file_get_contents;
 use function json_decode;
 use function json_encode;
@@ -232,6 +234,10 @@ class FeatureContext implements Context
 
     public bool $slowBuilder = false;
 
+    private ?string $paasFile = null;
+
+    public array $additionalsParameters = [];
+
     /**
      * Initializes context.
      *
@@ -312,6 +318,10 @@ class FeatureContext implements Context
                 $container->setParameter('container.autowiring.strict_mode', true);
                 $container->setParameter('container.dumper.inline_class_loader', true);
 
+                foreach ($this->context->additionalsParameters as $name => &$params) {
+                    $container->setParameter($name, $params);
+                }
+
                 $container->set(ObjectManager::class, $this->context->buildObjectManager());
             }
 
@@ -360,6 +370,7 @@ class FeatureContext implements Context
         $this->response = null;
         $this->slowDb = false;
         $this->slowBuilder = false;
+        $this->paasFile = null;
     }
 
     public function getRepository(string $className)
@@ -516,6 +527,7 @@ class FeatureContext implements Context
         $this->buildRepository(User::class);
 
         self::$useHnc = false;
+        $this->additionalsParameters = [];
     }
 
     /**
@@ -929,12 +941,122 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given a project with a complete paas file
+     */
+    public function aProjectWithACompletePaasFile()
+    {
+        $this->paasFile = __DIR__ . '/paas.yaml';
+    }
+
+    /**
+     * @Given a project with a paas file using extends
+     */
+    public function aProjectWithAPaasFileUsingExtends()
+    {
+        $this->paasFile = __DIR__ . '/paas.with-extends.yaml';
+    }
+
+    /**
+     * @Given extensions libraries provided by administrators
+     */
+    public function extensionsLibrariesProvidedByAdministrators()
+    {
+        $this->additionalsParameters['teknoo.east.paas.ingresses.library'] = [
+            'demo-extends' => [
+                'service' => [
+                    'name' => 'demo',
+                    'port' => 8080,
+                ],
+            ],
+        ];
+
+        $this->additionalsParameters['teknoo.east.paas.pods.library'] = [
+            'php-pods-extends' => [
+                'replicas' => 2,
+                'requires' => [
+                    'x86_64',
+                    'avx',
+                ],
+                'upgrade' => [
+                    'max-upgrading-pods' => 2,
+                    'max-unavailable-pods' => 1,
+                ],
+                'containers' => [
+                    'php-run' => [
+                        'image' => 'registry.teknoo.software/php-run',
+                        'version' => 7.4,
+                        'listen' => [8080],
+                        'volumes' => [
+                            'extra' => [
+                                'from' => 'extra',
+                                'mount-path' => '/opt/extra',
+                            ],
+                            'data' => [
+                                'mount-path' => '/opt/data',
+                                'persistent' => true,
+                                'storage-size' => '3Gi',
+                            ],
+                            'data-replicated' => [
+                                'mount-path' => '/opt/data-replicated',
+                                'persistent' => true,
+                                'storage-provider' => 'replicated-provider',
+                                'storage-size' => '3Gi',
+                            ],
+                            'map' => [
+                                'mount-path' => '/map',
+                                'from-map' => 'map2',
+                            ],
+                        ],
+                        'variables' => [
+                            'SERVER_SCRIPT' => '${SERVER_SCRIPT}',
+                        ],
+                        'healthcheck' => [
+                            'initial-delay-seconds' => 10,
+                            'period-seconds' => 30,
+                            'probe' => [
+                                'command' => ['ps', 'aux', 'php'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->additionalsParameters['teknoo.east.paas.containers.library'] =  [
+            'bash-extends' => [
+                'image' => 'registry.hub.docker.com/bash',
+                'version' => 'alpine',
+            ],
+        ];
+
+        $this->additionalsParameters['teknoo.east.paas.services.library'] = [
+            'php-pods-extends' => [
+                'pod' => 'php-pods',
+                'internal' => false,
+                'protocol' => Transport::Tcp->value,
+                'ports' => [
+                    [
+                        'listen' => 9876,
+                        'target' => 8080,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+
+    /**
      * @Given a job workspace agent
      */
     public function aJobWorkspaceAgent()
     {
-        $workspace = new class implements JobWorkspaceInterface {
+        $workspace = new class ($this->paasFile) implements JobWorkspaceInterface {
             use ImmutableTrait;
+
+            public function __construct(
+                private readonly ?string $paasFile,
+            ) {
+            }
 
             public function setJob(JobUnitInterface $job): JobWorkspaceInterface
             {
@@ -960,7 +1082,11 @@ class FeatureContext implements Context
                 ConductorInterface $conductor,
                 PromiseInterface $promise
             ): JobWorkspaceInterface {
-                $conf = file_get_contents(__DIR__ . '/paas.yaml');
+                if (empty($this->paasFile) || !file_exists($this->paasFile)) {
+                    throw new RuntimeException('Error, the paas file was not defined for this test');
+                }
+
+                $conf = file_get_contents($this->paasFile);
 
                 $conductor->prepare(
                     $conf,
@@ -1573,6 +1699,32 @@ EOF;
                                 }
                             }
                         ],
+                        "affinity": {
+                            "nodeAffinity": {
+                                "requiredDuringSchedulingIgnoredDuringExecution": {
+                                    "nodeSelectorTerms": [
+                                        {
+                                            "matchExpressions": [
+                                                {
+                                                    "key": "paas.east.teknoo.net/provide",
+                                                    "operator": "In",
+                                                    "values": [
+                                                        "x86_64"
+                                                    ]
+                                                },
+                                                {
+                                                    "key": "paas.east.teknoo.net/provide",
+                                                    "operator": "In",
+                                                    "values": [
+                                                        "avx"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        },
                         "initContainers": [
                             {
                                 "name": "extra-jobid",

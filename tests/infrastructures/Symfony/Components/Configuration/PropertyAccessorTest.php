@@ -61,13 +61,15 @@ class PropertyAccessorTest extends TestCase
     public function testSetValueBadArray()
     {
         $this->expectException(\TypeError::class);
-        $this->buildAccessor()->setValue(new \stdClass(), 'foo', 'bar');
+        $a = new \stdClass();
+        $this->buildAccessor()->setValue($a, 'foo', 'bar');
     }
 
     public function testSetValueBadPath()
     {
         $this->expectException(\TypeError::class);
-        $this->buildAccessor()->setValue(['foo'], new \stdClass(), 'bar');
+        $a = ['foo'];
+        $this->buildAccessor()->setValue($a, new \stdClass(), 'bar');
     }
 
     public function testSetValue()

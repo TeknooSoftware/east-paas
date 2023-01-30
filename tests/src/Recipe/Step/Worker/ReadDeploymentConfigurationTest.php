@@ -101,4 +101,39 @@ class ReadDeploymentConfigurationTest extends TestCase
             )
         );
     }
+
+    public function testInvokeOnErrorWithMessage()
+    {
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $conductor = $this->createMock(ConductorInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
+        $client = $this->createMock(EastClient::class);
+
+        $workspace->expects(self::once())
+            ->method('loadDeploymentIntoConductor')
+            ->with($conductor)
+            ->willReturnCallback(
+                function ($conductor, PromiseInterface $promise) use ($workspace) {
+                    $promise->fail(new \Exception('foo', 400));
+
+                    return $workspace;
+                }
+            );
+
+        $manager->expects(self::never())
+            ->method('updateWorkPlan');
+
+        $manager->expects(self::once())
+            ->method('error');
+
+        self::assertInstanceOf(
+            ReadDeploymentConfiguration::class,
+            ($this->buildStep())(
+                $workspace,
+                $conductor,
+                $client,
+                $manager
+            )
+        );
+    }
 }

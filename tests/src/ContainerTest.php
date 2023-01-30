@@ -995,11 +995,28 @@ class ContainerTest extends TestCase
             IngressCompiler::class,
             $container->get(IngressCompiler::class)
         );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.ingresses.library', ['foo' => []]);
+
+        self::assertInstanceOf(
+            IngressCompiler::class,
+            $container->get(IngressCompiler::class)
+        );
     }
 
     public function testPodCompiler()
     {
         $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.pods.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.containers.library', ['foo' => []]);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -1030,6 +1047,14 @@ class ContainerTest extends TestCase
     public function testServiceCompiler()
     {
         $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            ServiceCompiler::class,
+            $container->get(ServiceCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.services.library', ['foo' => []]);
 
         self::assertInstanceOf(
             ServiceCompiler::class,

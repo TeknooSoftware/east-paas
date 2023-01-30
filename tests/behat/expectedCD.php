@@ -196,6 +196,10 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
             maxUpgradingPods: 2,
             maxUnavailablePods: 1,
             fsGroup: null,
+            requires: [
+                'x86_64',
+                'avx',
+            ],
             containers: [
                 new CompiledDeployment\Container(
                     name: 'php-run',

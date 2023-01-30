@@ -235,6 +235,7 @@
   <xs:complexType name="container_node">
     <xs:all>
       <xs:element name="image" type="xs:string" />
+      <xs:element name="extends" type="xs:string" minOccurs="0" />
       <xs:element name="version" type="xs:string" minOccurs="0" />
       <xs:element name="listen" type="epv:rows_list_int" minOccurs="0" />
       <xs:element name="volumes" type="epv:container_volumes_list" minOccurs="0" />
@@ -267,10 +268,12 @@
 
   <xs:complexType name="pod_node">
     <xs:all>
+      <xs:element name="extends" type="xs:string" minOccurs="0" />
       <xs:element name="replicas" type="xs:int" minOccurs="0" />
       <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
       <xs:element name="upgrade" type="epv:pod_upgrade" minOccurs="0" />
       <xs:element name="security" type="epv:pod_security" minOccurs="0" />
+      <xs:element name="requires" type="epv:rows_list_string" minOccurs="0" />
       <xs:element name="containers">
         <xs:complexType>
           <xs:choice>
@@ -297,6 +300,7 @@
 
   <xs:complexType name="service_node">
     <xs:all>
+      <xs:element name="extends" type="xs:string" minOccurs="0" />
       <xs:element name="pod" type="epv:paas_token" minOccurs="0"/>
       <xs:element name="internal" type="xs:boolean" default="false" minOccurs="0"/>
       <xs:element name="protocol" type="xs:string" minOccurs="0"/>
@@ -345,6 +349,7 @@
 
   <xs:complexType name="ingress_node">
     <xs:all>
+      <xs:element name="extends" type="xs:string" minOccurs="0" />
       <xs:element name="host" type="xs:string" />
       <xs:element name="https-backend" type="xs:boolean" minOccurs="0" />
       <xs:element name="tls" type="epv:ingress_tls" />

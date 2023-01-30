@@ -52,13 +52,25 @@ class ReadDeploymentConfiguration
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
             null,
-            static fn(Throwable $error): ChefInterface => $manager->error(
-                new RuntimeException(
-                    'teknoo.east.paas.error.recipe.configuration.read_error',
-                    500,
-                    $error
-                )
-            )
+            static function (Throwable $error) use ($manager): ChefInterface {
+                $message = 'teknoo.east.paas.error.recipe.configuration.read_error';
+                if (!empty($error->getMessage())) {
+                    $message = $error->getMessage();
+                }
+
+                $code = 500;
+                if (!empty($error->getCode())) {
+                    $code = $error->getCode();
+                }
+
+                return $manager->error(
+                    new RuntimeException(
+                        $message,
+                        $code,
+                        $error,
+                    )
+                );
+            },
         );
 
         $workspace->loadDeploymentIntoConductor($conductor, $promise);

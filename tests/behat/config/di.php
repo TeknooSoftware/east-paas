@@ -25,7 +25,8 @@ use function DI\get;
 
 return [
     'teknoo.east.paas.worker.global_variables' => [
-        'ROOT' => \dirname(__DIR__)
+        'ROOT' => \dirname(__DIR__),
+        'SERVER_SCRIPT' => '/opt/app/src/server.php',
     ],
     'teknoo.east.paas.root_dir' => __DIR__ . '../../',
     'teknoo.east.paas.project_configuration_filename' => '.paas.yaml',

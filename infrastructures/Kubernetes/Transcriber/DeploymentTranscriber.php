@@ -65,6 +65,11 @@ class DeploymentTranscriber implements DeploymentInterface
     private const SECRET_SUFFIX = '-secret';
     private const MAP_SUFFIX = '-map';
 
+    public function __construct(
+        private readonly string $requireLabel = 'paas.east.teknoo.net/provide'
+    ) {
+    }
+
     /**
      * @param array<string, > $specs
      * @param array<string, array<string, Image>>|Image[][] $images
@@ -273,6 +278,7 @@ class DeploymentTranscriber implements DeploymentInterface
         string $namespace,
         int $version,
         callable $prefixer,
+        string $requireLabel,
     ): array {
         $hostAlias = [
             'hostnames' => [],
@@ -343,6 +349,27 @@ class DeploymentTranscriber implements DeploymentInterface
             $specs['spec']['template']['spec']['securityContext']['fsGroup'] = $fsGroup;
         }
 
+        if (!empty($requires = $pod->getRequires())) {
+            $exprs = [];
+            foreach ($requires as $require) {
+                $exprs[] = [
+                    'key' => $requireLabel,
+                    'operator' => 'In',
+                    'values' => [$require],
+                ];
+            }
+
+            $specs['spec']['template']['spec']['affinity']['nodeAffinity'] = [
+                'requiredDuringSchedulingIgnoredDuringExecution' => [
+                    'nodeSelectorTerms' => [
+                        [
+                            'matchExpressions' => $exprs,
+                        ],
+                    ],
+                ],
+            ];
+        }
+
         self::convertToVolumes($specs, $volumes, $prefixer);
         self::convertToContainer($specs, $pod, $images, $prefixer);
 
@@ -361,6 +388,7 @@ class DeploymentTranscriber implements DeploymentInterface
         string $namespace,
         int $version,
         callable $prefixer,
+        string $requireLabel,
     ): Deployment {
         return new Deployment(
             static::writeSpec(
@@ -371,6 +399,7 @@ class DeploymentTranscriber implements DeploymentInterface
                 $namespace,
                 $version,
                 $prefixer,
+                $requireLabel,
             )
         );
     }
@@ -380,6 +409,7 @@ class DeploymentTranscriber implements DeploymentInterface
         KubernetesClient $client,
         PromiseInterface $promise
     ): TranscriberInterface {
+        $requireLabel = $this->requireLabel;
         $compiledDeployment->foreachPod(
             static function (
                 Pod $pod,
@@ -390,6 +420,7 @@ class DeploymentTranscriber implements DeploymentInterface
             ) use (
                 $client,
                 $promise,
+                $requireLabel
             ): void {
                 $prefixer = self::createPrefixer($prefix);
                 try {
@@ -426,6 +457,7 @@ class DeploymentTranscriber implements DeploymentInterface
                     namespace: $namespace,
                     version: $version,
                     prefixer: $prefixer,
+                    requireLabel:$requireLabel,
                 );
 
                 try {

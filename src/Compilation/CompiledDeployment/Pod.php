@@ -47,6 +47,7 @@ class Pod implements ImmutableInterface, IteratorAggregate
 
     /**
      * @param array<int, Container> $containers
+     * @param string[] $requires
      */
     public function __construct(
         private readonly string $name,
@@ -57,6 +58,7 @@ class Pod implements ImmutableInterface, IteratorAggregate
         private readonly int $maxUnavailablePods = 0,
         private readonly UpgradeStrategy $upgradeStrategy = UpgradeStrategy::RollingUpgrade,
         private readonly ?int $fsGroup = null,
+        private readonly array $requires = [],
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -102,5 +104,13 @@ class Pod implements ImmutableInterface, IteratorAggregate
     public function getFsGroup(): ?int
     {
         return $this->fsGroup;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getRequires(): array
+    {
+        return $this->requires;
     }
 }
