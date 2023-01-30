@@ -66,7 +66,7 @@ class DeploymentTranscriber implements DeploymentInterface
     private const MAP_SUFFIX = '-map';
 
     public function __construct(
-        private readonly string $requireLabel = 'paas.east.teknoo.net/provide'
+        private readonly string $requireLabel = 'paas.east.teknoo.net'
     ) {
     }
 
@@ -353,9 +353,8 @@ class DeploymentTranscriber implements DeploymentInterface
             $exprs = [];
             foreach ($requires as $require) {
                 $exprs[] = [
-                    'key' => $requireLabel,
-                    'operator' => 'In',
-                    'values' => [$require],
+                    'key' => "$requireLabel/$require",
+                    'operator' => 'Exists',
                 ];
             }
 

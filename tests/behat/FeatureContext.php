@@ -1706,18 +1706,12 @@ EOF;
                                         {
                                             "matchExpressions": [
                                                 {
-                                                    "key": "paas.east.teknoo.net/provide",
-                                                    "operator": "In",
-                                                    "values": [
-                                                        "x86_64"
-                                                    ]
+                                                    "key": "paas.east.teknoo.net/x86_64",
+                                                    "operator": "Exists"
                                                 },
                                                 {
-                                                    "key": "paas.east.teknoo.net/provide",
-                                                    "operator": "In",
-                                                    "values": [
-                                                        "avx"
-                                                    ]
+                                                    "key": "paas.east.teknoo.net/avx",
+                                                    "operator": "Exists"
                                                 }
                                             ]
                                         }
