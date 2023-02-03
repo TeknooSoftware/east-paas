@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.3.1] - 2023-02-03
+### Stable Release
+- Update dev libs to support PHPUnit 10 and remove unused phploc
+
 ## [1.3.0] - 2023-01-30
 ### Stable Release
 - Add `Require` option on pod to place them on nodes with the necessary capacities (`NodeSelector` or `nodeAffinity` 
