@@ -70,12 +70,11 @@
 ### Dev Release
 - Fix behavior with hierarchical namespaces
 - Fix behat tests
-- Add prefix field into project to prefix all elements (maps, secrets, pods, services, ingress, and persistant volumes)
+- Add prefix into project for all elements (maps, secrets, pods, services, ingress, and persistant volumes)
   during deployment. References in the `paas.yml` must be without this prefix. This prefix is automatically passed to
   new job created and job unit json export.
-- Add substitution method `R{XXXX}` in addition of `${XXX}` to prefix (when it is defined, else the XXX value is
-  directly used) to substitute to the prefixed name an alias passed as variable to a container (like the service name
-  of the database).
+- Add substitution `R{XXXX}` in addition of `${XXX}` to prefix (when it's defined, else the value is
+  directly used) the name passed into a container (like the service name of the database).
 
 ## [0.0.128] - 2022-12-01
 ### Dev Release
