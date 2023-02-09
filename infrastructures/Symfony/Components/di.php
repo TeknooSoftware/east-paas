@@ -61,7 +61,7 @@ use function DI\create;
 use function DI\get;
 use function DI\value;
 
-$entries = [
+return [
     'teknoo.east.paas.symfony.command.run_job.name' => value('teknoo:paas:run_job'),
     'teknoo.east.paas.symfony.command.run_job.description' => value(
         'Run job manually from json file, without PaaS server'
@@ -102,25 +102,3 @@ $entries = [
     DispatchResultInterface::class => get(PushResult::class),
     DispatchHistoryInterface::class => get(SendHistory::class),
 ];
-
-if (class_exists(HttplugClient::class)) {
-    $entries['teknoo.east.paas.kubernetes.http.client'] = static function (
-        ContainerInterface $container
-    ): ClientInterface {
-        $verify = true;
-        if ($container->has('teknoo.east.paas.symfony.http.client.ssl.verify')) {
-            $verify = (bool) $container->get('teknoo.east.paas.symfony.http.client.ssl.verify');
-        }
-
-        return new HttplugClient(
-            HttpClient::create(
-                [
-                    'verify_host' => $verify,
-                    'verify_peer' => $verify,
-                ]
-            )
-        );
-    };
-}
-
-return $entries;

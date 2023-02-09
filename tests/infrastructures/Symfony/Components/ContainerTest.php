@@ -218,15 +218,4 @@ class ContainerTest extends TestCase
             $container->get(RunJobCommand::class)
         );
     }
-
-    public function testHttplugClient()
-    {
-        $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.symfony.http.client.ssl.verify', true);
-
-        self::assertInstanceOf(
-            ClientInterface::class,
-            $container->get('teknoo.east.paas.kubernetes.http.client')
-        );
-    }
 }

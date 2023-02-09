@@ -56,7 +56,12 @@ return [
             $client = $container->get('teknoo.east.paas.kubernetes.http.client');
         }
 
-        return new Factory($tempDir, $client);
+        $sslVerify = true;
+        if ($container->has('teknoo.east.paas.kubernetes.ssl.verify')) {
+            $sslVerify = (bool) $container->get('teknoo.east.paas.kubernetes.ssl.verify');
+        }
+
+        return new Factory($tempDir, $client, $sslVerify);
     },
 
     IngressTranscriber::class . ':class' => IngressTranscriber::class,

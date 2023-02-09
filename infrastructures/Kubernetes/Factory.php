@@ -56,6 +56,7 @@ class Factory implements ClientFactoryInterface
     public function __construct(
         private readonly string $tmpDir,
         private readonly ?ClientInterface $httpClient = null,
+        private readonly bool $sslVerify = true,
     ) {
     }
 
@@ -66,6 +67,7 @@ class Factory implements ClientFactoryInterface
     ): KubClient {
         $options = [
             'master' => $master,
+            'verify' => $this->sslVerify,
         ];
 
         if (null !== $credentials) {
