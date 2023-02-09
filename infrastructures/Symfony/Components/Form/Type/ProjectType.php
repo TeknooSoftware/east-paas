@@ -101,7 +101,7 @@ class ProjectType extends AbstractType
 
                 $forms = iterator_to_array($forms);
                 $data->setName($forms['name']->getData());
-                $data->setPrefix($forms['prefix']->getData());
+                $data->setPrefix((string) $forms['prefix']->getData());
                 $data->setSourceRepository($forms['sourceRepository']->getData());
                 $data->setImagesRegistry($forms['imagesRegistry']->getData());
                 $data->setClusters($forms['clusters']->getData());

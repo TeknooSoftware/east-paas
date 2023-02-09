@@ -52,6 +52,8 @@ class ClusterCredentials implements
 
     private string $clientCertificate = '';
 
+    private string $clientKey = '';
+
     private string $token = '';
 
     private string $username = '';
@@ -60,6 +62,7 @@ class ClusterCredentials implements
 
     public function __construct(
         string $clientCertificate = '',
+        string $clientKey = '',
         string $token = '',
         string $username = '',
         string $password = '',
@@ -67,6 +70,7 @@ class ClusterCredentials implements
         $this->uniqueConstructorCheck();
 
         $this->clientCertificate = $clientCertificate;
+        $this->clientKey = $clientKey;
         $this->token = $token;
         $this->username = $username;
         $this->password = $password;
@@ -80,6 +84,11 @@ class ClusterCredentials implements
     public function getClientCertificate(): string
     {
         return $this->clientCertificate;
+    }
+
+    public function getClientKey(): string
+    {
+        return $this->clientKey;
     }
 
     public function __toString(): string
@@ -108,6 +117,7 @@ class ClusterCredentials implements
             '@class' => self::class,
             'id' => $this->getId(),
             'client_certificate' => $this->getClientCertificate(),
+            'client_key' => $this->getClientKey(),
             'token' => $this->getToken(),
             'username' => $this->getUsername(),
             'password' => $this->getPassword(),

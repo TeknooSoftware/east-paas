@@ -1,12 +1,13 @@
 # Teknoo Software - PaaS - Change Log
 
-## [1.4.0] - 2023-02-xx
+## [1.4.0] - 2023-02-09
 ### Stable Release
 - Use Teknoo Kubernetes Client 1.1
 - Support Kubernetes authentication with certificate
 - Remove default implementation of `teknoo.east.paas.kubernetes.http.client`, use Kubernetes Client behavior instead
 - Remove option `teknoo.east.paas.symfony.http.client.ssl.verify` use `teknoo.east.paas.kubernetes.ssl.verify` instead.
   (The option come back).
+- Add Client key in Cluster credential 
 
 ## [1.3.1] - 2023-02-03
 ### Stable Release

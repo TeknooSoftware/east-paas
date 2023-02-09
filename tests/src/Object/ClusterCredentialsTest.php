@@ -44,7 +44,7 @@ class ClusterCredentialsTest extends TestCase
      */
     public function buildObject(): ClusterCredentials
     {
-        return new ClusterCredentials('certBar', 'barFoo', 'barFoo2', 'barBar');
+        return new ClusterCredentials('certBar', 'keyFoo', 'barFoo', 'barFoo2', 'barBar');
     }
 
     public function testGetName()
@@ -68,6 +68,14 @@ class ClusterCredentialsTest extends TestCase
         self::assertEquals(
             'certBar',
             $this->generateObjectPopulated()->getClientCertificate()
+        );
+    }
+
+    public function testGetClientFoo()
+    {
+        self::assertEquals(
+            'keyFoo',
+            $this->generateObjectPopulated()->getClientKey()
         );
     }
 
@@ -119,6 +127,7 @@ class ClusterCredentialsTest extends TestCase
                 '@class' => ClusterCredentials::class,
                 'id' => '123',
                 'client_certificate' => 'certBar',
+                'client_key' => 'keyFoo',
                 'token' => 'barFoo',
                 'username' => 'barFoo2',
                 'password' => 'barBar',

@@ -85,7 +85,7 @@
         "symfony/var-exporter": "^6.2",
         "symfony/yaml": "^6.2",
         "teknoo/bridge-phpdi-symfony": "^5.2",
-        "teknoo/kubernetes-client": "^1.0.0"
+        "teknoo/kubernetes-client": "^1.1"
     },
     "autoload": {
         "psr-4": {
@@ -124,6 +124,11 @@
         "thanks": {
             "name": "teknoo/east-foundation",
             "url": "https://github.com/TeknooSoftware/east-foundation"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
         }
     }
 }
