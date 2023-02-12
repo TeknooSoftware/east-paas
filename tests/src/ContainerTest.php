@@ -33,7 +33,8 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
-use Teknoo\East\Foundation\Liveness\PingService;
+use Teknoo\East\Foundation\Liveness\PingServiceInterface;
+use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 use Teknoo\East\Foundation\Recipe\RecipeInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
@@ -825,6 +826,8 @@ class ContainerTest extends TestCase
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
         $container->set(SendJobInterface::class, $this->createMock(SendJobInterface::class));
+        $container->set(PingServiceInterface::class, $this->createMock(PingServiceInterface::class));
+        $container->set(TimeoutServiceInterface::class, $this->createMock(TimeoutServiceInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -850,6 +853,8 @@ class ContainerTest extends TestCase
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(SendJobInterface::class, $this->createMock(SendJobInterface::class));
         $container->set(SendHistoryInterface::class, $this->createMock(SendHistoryInterface::class));
+        $container->set(PingServiceInterface::class, $this->createMock(PingServiceInterface::class));
+        $container->set(TimeoutServiceInterface::class, $this->createMock(TimeoutServiceInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -883,6 +888,8 @@ class ContainerTest extends TestCase
         $container->set(DispatchResultInterface::class, $this->createMock(DispatchResultInterface::class));
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(SendHistoryInterface::class, $this->createMock(SendHistoryInterface::class));
+        $container->set(PingServiceInterface::class, $this->createMock(PingServiceInterface::class));
+        $container->set(TimeoutServiceInterface::class, $this->createMock(TimeoutServiceInterface::class));
 
         self::assertInstanceOf(
             CookbookInterface::class,
@@ -1365,7 +1372,7 @@ class ContainerTest extends TestCase
     public function testPing()
     {
         $container = $this->buildContainer();
-        $container->set(PingService::class, $this->createMock(PingService::class));
+        $container->set(PingServiceInterface::class, $this->createMock(PingServiceInterface::class));
 
         self::assertInstanceOf(
             Ping::class,
@@ -1376,7 +1383,7 @@ class ContainerTest extends TestCase
     public function testSetTimeLimit()
     {
         $container = $this->buildContainer();
-        $container->set(PingService::class, $this->createMock(SetTimeLimit::class));
+        $container->set(TimeoutServiceInterface::class, $this->createMock(TimeoutServiceInterface::class));
         $container->set('teknoo.east.paas.worker.time_limit', 120);
 
         self::assertInstanceOf(
@@ -1388,7 +1395,7 @@ class ContainerTest extends TestCase
     public function testUnsetTimeLimit()
     {
         $container = $this->buildContainer();
-        $container->set(PingService::class, $this->createMock(UnsetTimeLimit::class));
+        $container->set(TimeoutServiceInterface::class, $this->createMock(TimeoutServiceInterface::class));
 
         self::assertInstanceOf(
             UnsetTimeLimit::class,

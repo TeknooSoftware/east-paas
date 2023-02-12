@@ -86,7 +86,17 @@ class VolumeTranscriberTest extends TestCase
             ->method('delete');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(3))->method('success')->withConsecutive([['foo']], [[]], [['foo']]);
+        $promise->expects(self::exactly(3))
+            ->method('success')
+            ->with(
+                $this->callback(
+                    fn ($value) => match ($value) {
+                        ['foo'] => true,
+                        [] => true,
+                        default => false,
+                    }
+                )
+            );
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(

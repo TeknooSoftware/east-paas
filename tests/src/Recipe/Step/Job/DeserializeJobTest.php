@@ -151,9 +151,14 @@ class DeserializeJobTest extends TestCase
 
         $manager->expects(self::exactly(2))
             ->method('updateWorkPlan')
-            ->withConsecutive(
-                [[JobUnitInterface::class => $job]],
-                [['extra' => ['foo' => 'bar']]]
+            ->with(
+                $this->callback(
+                    fn ($value) => match ($value) {
+                        [JobUnitInterface::class => $job] => true,
+                        ['extra' => ['foo' => 'bar']] => true,
+                        default => false,
+                    }
+                )
             )
             ->willReturnSelf();
 

@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Misc;
 
-use Teknoo\East\Foundation\Liveness\TimeoutService;
+use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 
 /**
  * Step to configure timeout to kill too long operation
@@ -36,7 +36,7 @@ use Teknoo\East\Foundation\Liveness\TimeoutService;
 class SetTimeLimit
 {
     public function __construct(
-        private readonly TimeoutService $timeoutService,
+        private readonly TimeoutServiceInterface $timeoutService,
         private readonly int $seconds,
     ) {
     }

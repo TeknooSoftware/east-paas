@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.4.1] - 2023-02-12
+### Stable Release
+- Remove phpcpd and upgrade phpunit.xml
+
 ## [1.4.0] - 2023-02-09
 ### Stable Release
 - Use Teknoo Kubernetes Client 1.1

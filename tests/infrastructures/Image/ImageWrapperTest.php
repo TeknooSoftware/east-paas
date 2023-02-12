@@ -421,9 +421,14 @@ class ImageWrapperTest extends TestCase
 
         $cd->expects(self::exactly(2))
             ->method('addVolume')
-            ->withConsecutive(
-                ['foo'],
-                ['bar']
+            ->with(
+                $this->callback(
+                    fn ($value) => match ($value) {
+                        'foo' => true,
+                        'bar' => true,
+                        default => false,
+                    }
+                )
             )
             ->willReturnCallback(function ($name, Volume $volume) use ($cd) {
                 self::assertEquals(0, \strpos((string) $volume->getUrl(), 'repository.teknoo.run'));
@@ -489,9 +494,14 @@ class ImageWrapperTest extends TestCase
 
         $cd->expects(self::exactly(2))
             ->method('addVolume')
-            ->withConsecutive(
-                ['foo'],
-                ['bar']
+            ->with(
+                $this->callback(
+                    fn ($value) => match ($value) {
+                        'foo' => true,
+                        'bar' => true,
+                        default => false,
+                    }
+                )
             )
             ->willReturnCallback(function ($name, Volume $volume) use ($cd) {
                 self::assertEquals(0, \strpos((string) $volume->getUrl(), 'repository.teknoo.run'));

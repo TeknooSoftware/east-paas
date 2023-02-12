@@ -59,11 +59,13 @@ class FactoryTest extends TestCase
         unset($factory);
     }
 
-    public function testInvokeWithClientCertificateOnBadPath()
+    public function testInvokeWithClientCertificateOnException()
     {
         $factory = new Factory(
             '/../../../../lol/',
             null,
+            false,
+            fn () => throw new \RuntimeException(),
         );
 
         $credential = new ClusterCredentials(
@@ -73,7 +75,32 @@ class FactoryTest extends TestCase
         );
 
         $this->expectException(\RuntimeException::class);
-        $factory('foo', $credential);
+        $factory(
+            'foo',
+            $credential,
+        );
+    }
+
+    public function testInvokeWithClientCertificateOnBadPath()
+    {
+        $factory = new Factory(
+            '/../../../../lol/',
+            null,
+            false,
+            fn() => false,
+        );
+
+        $credential = new ClusterCredentials(
+            'foo',
+            'privateBar',
+            'publicBar'
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $factory(
+            'foo',
+            $credential,
+        );
     }
 
     public function testInvokeWithClientCertificate()

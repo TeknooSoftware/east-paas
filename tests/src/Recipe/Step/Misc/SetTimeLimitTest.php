@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Liveness\TimeoutService;
+use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
 
 use function set_time_limit;
@@ -40,8 +41,9 @@ class SetTimeLimitTest extends TestCase
 {
     public function buildStep(): SetTimeLimit
     {
+        $mock = $this->createMock(TimeoutServiceInterface::class);
         return new SetTimeLimit(
-            $this->createMock(TimeoutService::class),
+            $mock,
             5*60
         );
     }

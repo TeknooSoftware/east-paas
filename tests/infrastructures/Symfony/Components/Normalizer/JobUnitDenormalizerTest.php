@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Normalizer;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer;
@@ -38,6 +39,8 @@ use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Cluster;
+use function func_get_args;
+use function in_array;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -95,6 +98,37 @@ class JobUnitDenormalizerTest extends TestCase
         $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['foo' => 'bar'], 'foo');
     }
 
+    public function buildParametersVerification(
+        mixed $srepo,
+        mixed $iregistry,
+        mixed $env,
+        mixed $clusters,
+        mixed $history
+    ): callable {
+        return function () use ($srepo, $iregistry, $env, $clusters, $history) {
+            $args = func_get_args();
+            $expectedArgs = [
+                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
+                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
+                [['env' => 'bar'], Environment::class],
+                [[['cluster' => 'bar']], Cluster::class.'[]'],
+                [['history' => 'bar'], History::class]
+            ];
+
+            if (in_array($args, $expectedArgs)) {
+                throw new InvalidArgumentException('Not expected argument');
+            }
+
+            return match ($args[1]) {
+                GitRepository::class => $srepo,
+                ImageRegistry::class => $iregistry,
+                Environment::class => $env,
+                Cluster::class.'[]' => $clusters,
+                History::class => $history,
+            };
+        };
+    }
+
     public function testDenormalizeWithoutSourceRepository()
     {
         $this->expectException(\RuntimeException::class);
@@ -102,13 +136,6 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::any())
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
             ->willReturnOnConsecutiveCalls(
                 null,
                 $iregistry = $this->createMock(ImageRegistryInterface::class),
@@ -146,13 +173,6 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::any())
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
                 null,
@@ -190,13 +210,6 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::any())
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
                 $iregistry = $this->createMock(ImageRegistryInterface::class),
@@ -234,13 +247,6 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::any())
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
                 $iregistry = $this->createMock(ImageRegistryInterface::class),
@@ -278,13 +284,6 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::any())
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
                 $iregistry = $this->createMock(ImageRegistryInterface::class),
@@ -322,13 +321,6 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::any())
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
                 $iregistry = $this->createMock(ImageRegistryInterface::class),
@@ -364,19 +356,14 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::exactly(5))
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+            ->willReturnCallback(
+                $this->buildParametersVerification(
+                    $srepo = $this->createMock(SourceRepositoryInterface::class),
+                    $iregistry = $this->createMock(ImageRegistryInterface::class),
+                    $env = $this->createMock(Environment::class),
+                    $clusters = [$this->createMock(Cluster::class)],
+                    $history = $this->createMock(History::class),
+                )
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -423,19 +410,14 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::exactly(5))
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+            ->willReturnCallback(
+                $this->buildParametersVerification(
+                    $srepo = $this->createMock(SourceRepositoryInterface::class),
+                    $iregistry = $this->createMock(ImageRegistryInterface::class),
+                    $env = $this->createMock(Environment::class),
+                    $clusters = [$this->createMock(Cluster::class)],
+                    $history = $this->createMock(History::class),
+                )
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -484,19 +466,14 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::exactly(5))
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+            ->willReturnCallback(
+                $this->buildParametersVerification(
+                    $srepo = $this->createMock(SourceRepositoryInterface::class),
+                    $iregistry = $this->createMock(ImageRegistryInterface::class),
+                    $env = $this->createMock(Environment::class),
+                    $clusters = [$this->createMock(Cluster::class)],
+                    $history = $this->createMock(History::class),
+                )
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -545,19 +522,14 @@ class JobUnitDenormalizerTest extends TestCase
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects(self::exactly(5))
             ->method('denormalize')
-            ->withConsecutive(
-                [['url' => 'foo', '@class' => GitRepository::class], GitRepository::class],
-                [['url' => 'foo', '@class' => ImageRegistry::class], ImageRegistry::class],
-                [['env' => 'bar'], Environment::class],
-                [[['cluster' => 'bar']], Cluster::class.'[]'],
-                [['history' => 'bar'], History::class]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+            ->willReturnCallback(
+                $this->buildParametersVerification(
+                    $srepo = $this->createMock(SourceRepositoryInterface::class),
+                    $iregistry = $this->createMock(ImageRegistryInterface::class),
+                    $env = $this->createMock(Environment::class),
+                    $clusters = [$this->createMock(Cluster::class)],
+                    $history = $this->createMock(History::class),
+                )
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";

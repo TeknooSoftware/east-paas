@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Foundation\Liveness\PingService;
+use Teknoo\East\Foundation\Liveness\PingServiceInterface;
 use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
 
 /**
@@ -38,7 +38,7 @@ class PingTest extends TestCase
 {
     public function buildStep(): Ping
     {
-        return new Ping($this->createMock(PingService::class));
+        return new Ping($this->createMock(PingServiceInterface::class));
     }
 
     public function testInvoke()

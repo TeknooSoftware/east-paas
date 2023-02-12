@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Liveness\TimeoutService;
+use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 
 /**
@@ -38,7 +39,10 @@ class UnsetTimeLimitTest extends TestCase
 {
     public function buildStep(): UnsetTimeLimit
     {
-        return new UnsetTimeLimit($this->createMock(TimeoutService::class));
+        $mock = $this->createMock(TimeoutServiceInterface::class);
+        return new UnsetTimeLimit(
+            $mock
+        );
     }
 
     public function testInvoke()

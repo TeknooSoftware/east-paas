@@ -71,7 +71,16 @@ class NamespaceTranscriberTest extends TestCase
             ->method('apply');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->withConsecutive([[]],  [[]]);
+        $promise->expects(self::exactly(2))
+            ->method('success')
+            ->with(
+                $this->callback(
+                    fn ($value) => match ($value) {
+                        [] => true,
+                        default => false,
+                    }
+                )
+            );
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(

@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Misc;
 
-use Teknoo\East\Foundation\Liveness\PingService;
+use Teknoo\East\Foundation\Liveness\PingServiceInterface;
 
 /**
  * Step to ping some element to ensure the liveliness of the agent
@@ -36,7 +36,7 @@ use Teknoo\East\Foundation\Liveness\PingService;
 class Ping
 {
     public function __construct(
-        private readonly PingService $pingService,
+        private readonly PingServiceInterface $pingService,
     ) {
     }
 

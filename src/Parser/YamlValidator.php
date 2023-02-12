@@ -37,6 +37,9 @@ use function is_string;
 use function is_scalar;
 use function libxml_clear_errors;
 use function libxml_get_last_error;
+use function set_error_handler;
+
+use const E_WARNING;
 
 /**
  * Object able to validate a Yaml structure. As there is no standardized validation system in yaml,
@@ -218,6 +221,11 @@ class YamlValidator
     public function validate(array $values, string $schema, PromiseInterface $promise): self
     {
         $xmlError = null;
+        $previousHandler = set_error_handler(
+            fn (int $errno, string $errstr) => throw new RuntimeException($errstr, $errno),
+            E_WARNING
+        );
+
         try {
             $document = $this->convert($values);
 
@@ -225,6 +233,8 @@ class YamlValidator
         } catch (Throwable $error) {
             $xmlError = $error;
         } finally {
+            set_error_handler($previousHandler);
+
             $libError = libxml_get_last_error();
             libxml_clear_errors();
 

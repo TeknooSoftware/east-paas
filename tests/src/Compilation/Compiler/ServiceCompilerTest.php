@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use function func_get_args;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -121,39 +122,49 @@ class ServiceCompilerTest extends TestCase
         $compiledDeployment
             ->expects(self::exactly(3))
             ->method('addService')
-            ->withConsecutive(
-                [
-                    'php-react',
-                    new Service(
+            ->willReturnCallback(
+                function () use ($compiledDeployment) {
+                    $args = func_get_args();
+                    $expectedArgs1 = [
                         'php-react',
-                        'php-react',
-                        [80 => 8080],
-                        Transport::Tcp,
-                        false,
-                    ),
-                ],
-                [
-                    'php-internal',
-                    new Service(
-                        'php-internal',
-                        'php-internal',
-                        [80 => 8080],
-                        Transport::Tcp,
-                        true,
-                    ),
-                ],
-                [
-                    'php-udp',
-                    new Service(
+                        new Service(
+                            'php-react',
+                            'php-react',
+                            [80 => 8080],
+                            Transport::Tcp,
+                            false,
+                        ),
+                    ];
+
+                    $expectedArgs2 = [
+                            'php-internal',
+                            new Service(
+                                'php-internal',
+                                'php-internal',
+                                [80 => 8080],
+                                Transport::Tcp,
+                                true,
+                            ),
+                    ];
+
+                    $expectedArgs3 = [
                         'php-udp',
-                        'php-react',
-                        [81 => 8181],
-                        Transport::Udp,
-                        true,
-                    ),
-                ],
-            )
-        ;
+                        new Service(
+                            'php-udp',
+                            'php-react',
+                            [81 => 8181],
+                            Transport::Udp,
+                            true,
+                        ),
+                    ];
+
+                    if ($args == $expectedArgs1 || $args == $expectedArgs2 || $args == $expectedArgs3) {
+                        return $compiledDeployment;
+                    }
+
+                    throw new InvalidArgumentException('Not expected argument');
+                }
+            );
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class );

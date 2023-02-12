@@ -27,9 +27,8 @@ namespace Teknoo\Tests\East\Paas;
 
 use Psr\Container\ContainerInterface;
 use RuntimeException;
-use Teknoo\East\Common\Query\Expr\In;
-use Teknoo\East\Foundation\Liveness\PingService;
-use Teknoo\East\Foundation\Liveness\TimeoutService;
+use Teknoo\East\Foundation\Liveness\PingServiceInterface;
+use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
@@ -354,7 +353,7 @@ return [
     GetVariables::class => create(),
     Ping::class => create()
         ->constructor(
-            get(PingService::class)
+            get(PingServiceInterface::class)
         ),
     DispatchError::class => create()
         ->constructor(
@@ -367,13 +366,13 @@ return [
         }
 
         return new SetTimeLimit(
-            $container->get(TimeoutService::class),
+            $container->get(TimeoutServiceInterface::class),
             $seconds,
         );
     },
     UnsetTimeLimit::class => create()
         ->constructor(
-            get(TimeoutService::class),
+            get(TimeoutServiceInterface::class),
         ),
 
     //Project

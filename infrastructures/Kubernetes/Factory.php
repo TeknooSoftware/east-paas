@@ -31,7 +31,6 @@ use Psr\Http\Client\ClientInterface;
 use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
-use Throwable;
 
 use function chmod;
 use function file_exists;
@@ -53,11 +52,22 @@ class Factory implements ClientFactoryInterface
      */
     private array $files = [];
 
+    /**
+     * @var callable
+     */
+    private $tmpNameFunction;
+
     public function __construct(
         private readonly string $tmpDir,
         private readonly ?ClientInterface $httpClient = null,
         private readonly bool $sslVerify = true,
+        ?callable $tmpNameFunction = null,
     ) {
+        if ($tmpNameFunction) {
+            $this->tmpNameFunction = $tmpNameFunction;
+        } else {
+            $this->tmpNameFunction = tempnam(...);
+        }
     }
 
     public function __invoke(
@@ -101,13 +111,13 @@ class Factory implements ClientFactoryInterface
 
     private function write(string $value): string
     {
-        try {
-            $fileName = tempnam($this->tmpDir, 'east-paas-kube-') . '.paas';
-        } catch (Throwable $throwable) {
-            throw new RuntimeException('Bad file temp name in K3s factory', 0, $throwable);
+        $fileName = ($this->tmpNameFunction)($this->tmpDir, 'east-paas-kube-');
+
+        if (false === $fileName) {
+            throw new RuntimeException('Bad file temp name in K3s factory');
         }
 
-        file_put_contents($fileName, $value);
+        file_put_contents($fileName . '.paas', $value);
         chmod($fileName, 0500);
 
         $this->files[] = $fileName;
