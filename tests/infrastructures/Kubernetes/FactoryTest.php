@@ -108,9 +108,8 @@ class FactoryTest extends TestCase
         $factory = $this->buildFactory();
 
         $credential = new ClusterCredentials(
-            'foo',
-            'privateBar',
-            'publicBar'
+            clientCertificate: 'foo',
+            clientKey: 'privateBar',
         );
 
         $client = $factory('foo', $credential);
@@ -125,6 +124,7 @@ class FactoryTest extends TestCase
         $factory = $this->buildFactory();
 
         $credential = new ClusterCredentials(
+            caCertificate: 'caCert',
             token: 'privateBar',
         );
 
@@ -140,10 +140,8 @@ class FactoryTest extends TestCase
         $factory = $this->buildFactory();
 
         $credential = new ClusterCredentials(
-            '',
-            '',
-            'foo',
-            'bar'
+            username: 'foo',
+            password: 'bar'
         );
 
         $client = $factory('foo', $credential);

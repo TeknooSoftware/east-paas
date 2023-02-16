@@ -50,6 +50,8 @@ class ClusterCredentials implements
     use ObjectTrait;
     use ImmutableTrait;
 
+    private string $caCertificate = '';
+
     private string $clientCertificate = '';
 
     private string $clientKey = '';
@@ -61,6 +63,7 @@ class ClusterCredentials implements
     private string $password = '';
 
     public function __construct(
+        string $caCertificate = '',
         string $clientCertificate = '',
         string $clientKey = '',
         string $token = '',
@@ -69,6 +72,7 @@ class ClusterCredentials implements
     ) {
         $this->uniqueConstructorCheck();
 
+        $this->caCertificate = $caCertificate;
         $this->clientCertificate = $clientCertificate;
         $this->clientKey = $clientKey;
         $this->token = $token;
@@ -79,6 +83,11 @@ class ClusterCredentials implements
     public function getName(): string
     {
         return $this->username;
+    }
+
+    public function getCaCertificate(): string
+    {
+        return $this->caCertificate;
     }
 
     public function getClientCertificate(): string
@@ -116,6 +125,7 @@ class ClusterCredentials implements
         $normalizer->injectData([
             '@class' => self::class,
             'id' => $this->getId(),
+            'ca_certificate' => $this->getCaCertificate(),
             'client_certificate' => $this->getClientCertificate(),
             'client_key' => $this->getClientKey(),
             'token' => $this->getToken(),

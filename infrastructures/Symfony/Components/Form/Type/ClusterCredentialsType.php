@@ -53,6 +53,7 @@ class ClusterCredentialsType extends AbstractType
     {
         parent::buildForm($builder, $options);
 
+        $builder->add('caCertificate', TextareaType::class, ['required' => false]);
         $builder->add('clientCertificate', TextareaType::class, ['required' => false]);
         $builder->add('clientKey', TextareaType::class, ['required' => false]);
         $builder->add('token', TextareaType::class, ['required' => false]);
@@ -71,6 +72,7 @@ class ClusterCredentialsType extends AbstractType
                 }
 
                 $forms = iterator_to_array($forms);
+                $forms['caCertificate']->setData($data->getCaCertificate());
                 $forms['clientCertificate']->setData($data->getClientCertificate());
                 $forms['clientKey']->setData($data->getClientKey());
                 $forms['token']->setData($data->getToken());
@@ -86,11 +88,12 @@ class ClusterCredentialsType extends AbstractType
             {
                 $forms = iterator_to_array($forms);
                 $data = new ClusterCredentials(
-                    (string) $forms['clientCertificate']->getData(),
-                    (string) $forms['clientKey']->getData(),
-                    (string) $forms['token']->getData(),
-                    (string) $forms['username']->getData(),
-                    (string) $forms['password']->getData()
+                    caCertificate: (string) $forms['caCertificate']->getData(),
+                    clientCertificate: (string) $forms['clientCertificate']->getData(),
+                    clientKey: (string) $forms['clientKey']->getData(),
+                    token: (string) $forms['token']->getData(),
+                    username: (string) $forms['username']->getData(),
+                    password: (string) $forms['password']->getData()
                 );
             }
         });

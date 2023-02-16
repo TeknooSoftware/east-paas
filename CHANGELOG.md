@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.5.0] - 2023-02-16
+### Stable Release
+- Support CA Certificate for Kubernetes Client
+
 ## [1.4.1] - 2023-02-12
 ### Stable Release
 - Remove phpcpd and upgrade phpunit.xml

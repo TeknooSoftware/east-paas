@@ -54,6 +54,7 @@ class ClusterCredentialsTypeTest extends TestCase
     {
         return [
             'name' => 'fooBar',
+            'caCertificate' => 'babar',
             'clientCertificate' => 'babar',
             'clientKey' => 'babar',
             'token' => 'bar',
