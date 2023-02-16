@@ -121,8 +121,8 @@ class Factory implements ClientFactoryInterface
             throw new RuntimeException('Bad file temp name in K3s factory');
         }
 
-        file_put_contents($fileName . '.paas', $value);
-        chmod($fileName, 0500);
+        file_put_contents($fileName, $value);
+        chmod($fileName, 0555);
 
         $this->files[] = $fileName;
 
