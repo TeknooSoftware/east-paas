@@ -234,8 +234,8 @@
 
   <xs:complexType name="container_node">
     <xs:all>
-      <xs:element name="image" type="xs:string" />
       <xs:element name="extends" type="xs:string" minOccurs="0" />
+      <xs:element name="image" type="xs:string" />
       <xs:element name="version" type="xs:string" minOccurs="0" />
       <xs:element name="listen" type="epv:rows_list_int" minOccurs="0" />
       <xs:element name="volumes" type="epv:container_volumes_list" minOccurs="0" />
