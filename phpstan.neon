@@ -20,6 +20,9 @@ parameters:
             message: '#CloningAgent::\$sshIdentity#'
             path: infrastructures/Git/CloningAgent.php
         -
+            message: '#getSshIdentity\(\) is unused#'
+            path: infrastructures/Git/CloningAgent.php
+        -
             message: '#Cannot cast iterable#'
             path: infrastructures/Composer/ComposerHook.php
         -
@@ -114,3 +117,4 @@ services:
             earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
             earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
             implicitThrows: %exceptions.implicitThrows%
+            treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
