@@ -45,7 +45,7 @@
         "squizlabs/php_codesniffer": "^3.7.1",
         "phpstan/phpstan": "^1.10",
         "symfony/property-access": "^6.2.5",
-        "icanhazstring/composer-unused": "^0.8.6",
+        "icanhazstring/composer-unused": "^0.8.5",
         "behat/behat": "^3.12",
         "doctrine/common": "^3.4.3",
         "doctrine/mongodb-odm": "^2.4.2",
