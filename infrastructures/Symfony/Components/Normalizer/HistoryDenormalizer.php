@@ -27,14 +27,19 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
 use DateTime;
 use DateTimeInterface;
-use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\Exception\NotSupportedException;
 use Teknoo\East\Paas\Object\History;
 
 use function is_array;
 
 /**
  * Symfony denormalizer dedicated to PaaS History object.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -47,7 +52,7 @@ class HistoryDenormalizer implements DenormalizerInterface
     public function denormalize($data, $class, $format = null, array $context = []): History
     {
         if (!is_array($data) || History::class !== $class) {
-            throw new RuntimeException('Error, this object is not managed by this denormalizer');
+            throw new NotSupportedException('Error, this object is not managed by this denormalizer');
         }
 
         $previous = null;
@@ -61,7 +66,7 @@ class HistoryDenormalizer implements DenormalizerInterface
         }
 
         if (!$date instanceof DateTimeInterface) {
-            throw new RuntimeException('Bad denormalized date');
+            throw new NotSupportedException('Bad denormalized date');
         }
 
         return new History(

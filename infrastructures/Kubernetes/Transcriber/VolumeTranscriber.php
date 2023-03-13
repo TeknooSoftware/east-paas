@@ -27,7 +27,6 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\Model\PersistentVolumeClaim;
-use SebastianBergmann\GlobalState\Snapshot;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -36,11 +35,14 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Deployment
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
-use function array_map;
-
 /**
  * "Deployment transcriber" to translate CompiledDeployment's peristant volume to Kubernetes PVC
  * manifest.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -117,8 +119,8 @@ class VolumeTranscriber implements DeploymentInterface
                     }
 
                     $pvcRepository = $client->persistentVolumeClaims();
-                    $name = $pvc->getMetadata('name') ?? $prefixer($volume->getName());
-                    if ($pvcRepository->exists($name)) {
+                    $prefixedName = $pvc->getMetadata('name') ?? $prefixer($volume->getName());
+                    if ($pvcRepository->exists($prefixedName)) {
                         if (!$volume->isResetOnDeployment()) {
                             $promise->success([]);
 

@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Parser;
 use DOMDocument;
 use DOMElement;
 use RuntimeException;
+use Teknoo\East\Paas\Parser\Exception\ValidationException;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
@@ -45,6 +46,11 @@ use const E_WARNING;
  * Object able to validate a Yaml structure. As there is no standardized validation system in yaml,
  * but it is included in the XML Standard, this validator will convert the decoded Yaml array to a Xml stream
  * thanks to DOMDocument and validate it with the xsd `src/Contracts/Configuration/paas_validation.xsd`.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -222,7 +228,7 @@ class YamlValidator
     {
         $xmlError = null;
         $previousHandler = set_error_handler(
-            fn (int $errno, string $errstr) => throw new RuntimeException($errstr, $errno),
+            fn (int $errno, string $errstr) => throw new ValidationException($errstr, $errno),
             E_WARNING
         );
 

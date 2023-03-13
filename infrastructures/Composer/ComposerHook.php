@@ -27,13 +27,12 @@ namespace Teknoo\East\Paas\Infrastructures\Composer;
 
 use RuntimeException;
 use Symfony\Component\Process\Process;
+use Teknoo\East\Paas\Infrastructures\Composer\Exception\InvalidArgumentException;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Throwable;
 
-use function array_flip;
 use function array_merge;
-use function is_string;
 use function preg_match;
 use function reset;
 
@@ -49,6 +48,11 @@ use function reset;
  * - run-script
  * - update
  * - upgrade
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -158,23 +162,23 @@ class ComposerHook implements HookInterface
 
         foreach ([$cmd, ...$args] as &$value) {
             if (!is_scalar($value)) {
-                throw new RuntimeException('composer action and arguments must be scalars values');
+                throw new InvalidArgumentException('composer action and arguments must be scalars values');
             }
 
-            if (preg_match('#[\&\||<|>;]#S', (string) $value)) {
-                throw new RuntimeException('Pipe and redirection are forbidden');
+            if (preg_match('#[\&\|<>;]#S', (string) $value)) {
+                throw new InvalidArgumentException('Pipe and redirection are forbidden');
             }
         }
 
         if (!isset($grantedCommands[$cmd])) {
-            throw new RuntimeException("$cmd is forbidden");
+            throw new InvalidArgumentException("$cmd is forbidden");
         }
 
         $final = [$cmd];
         foreach ($args as &$arg) {
             $pattern = '#^' . implode('|', $grantedCommands[$cmd]) . '$#S';
             if (!preg_match($pattern, (string) $arg)) {
-                throw new RuntimeException("$arg is not a granted option for $cmd");
+                throw new InvalidArgumentException("$arg is not a granted option for $cmd");
             }
 
             $final[] = '--' . $arg;

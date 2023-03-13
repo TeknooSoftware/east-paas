@@ -25,10 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
-use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\Exception\NotSupportedException;
 use Teknoo\East\Paas\Job\JobUnit;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Object\Environment;
@@ -39,6 +39,11 @@ use function is_array;
 
 /**
  * Symfony denormalizer dedicated to PaaS JobUnitInterface object.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -65,7 +70,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
     public function denormalize($data, $class, $format = null, array $context = []): JobUnit
     {
         if (!is_array($data) || JobUnitInterface::class !== $class) {
-            throw new RuntimeException('Error, this object is not managed by this denormalizer');
+            throw new NotSupportedException('Error, this object is not managed by this denormalizer');
         }
 
         $hierarchicalNSDefaultValue = $context['hierarchical_namespaces'] ?? $this->hierarchicalNamespacesDefaultValue;
@@ -83,7 +88,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
         );
 
         if (!$sourceRepository instanceof SourceRepositoryInterface) {
-            throw new RuntimeException('Bad denormalized source repository');
+            throw new NotSupportedException('Bad denormalized source repository');
         }
 
         $imagesRegistry = $denormalizer->denormalize(
@@ -93,7 +98,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
             $context
         );
         if (!$imagesRegistry instanceof ImageRegistryInterface) {
-            throw new RuntimeException('Bad denormalized image repository');
+            throw new NotSupportedException('Bad denormalized image repository');
         }
 
         $environment = $denormalizer->denormalize(
@@ -104,23 +109,23 @@ class JobUnitDenormalizer implements DenormalizerInterface
         );
 
         if (!$environment instanceof Environment) {
-            throw new RuntimeException('Bad denormalized environment');
+            throw new NotSupportedException('Bad denormalized environment');
         }
 
         $clusters = $denormalizer->denormalize($data['clusters'], Cluster::class . '[]', $format, $context);
         if (empty($clusters) || !is_array($clusters)) {
-            throw new RuntimeException('Bad denormalized environment');
+            throw new NotSupportedException('Bad denormalized environment');
         }
 
         foreach ($clusters as $cluster) {
             if (!$cluster instanceof Cluster) {
-                throw new RuntimeException('Bad denormalized cluster');
+                throw new NotSupportedException('Bad denormalized cluster');
             }
         }
 
         $history = $denormalizer->denormalize($data['history'], History::class, $format, $context);
         if (!$history instanceof History) {
-            throw new RuntimeException('Bad denormalized history');
+            throw new NotSupportedException('Bad denormalized history');
         }
 
         $variables = ($data['variables'] ?? []) + ($context['variables'] ?? []);

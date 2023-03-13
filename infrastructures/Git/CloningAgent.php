@@ -28,10 +28,10 @@ namespace Teknoo\East\Paas\Infrastructures\Git;
 use InvalidArgumentException;
 use Symfony\Component\Process\Process;
 use LogicException;
-use RuntimeException;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running;
+use Teknoo\East\Paas\Infrastructures\Git\Exception\CloningErrorException;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
@@ -60,6 +60,10 @@ use function str_starts_with;
  * - Generator for instance created via the DI, only able to clone self
  * - Running, configured to be executed with a job, only available in a workplan.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -140,7 +144,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
 
         $isHttp = str_starts_with($repository->getPullUrl(), 'http');
         if (
-            (!$isHttp && !$identity instanceof SshIdentity)
+            !$isHttp && !$identity instanceof SshIdentity
         ) {
             throw new LogicException(
                 sprintf(
@@ -213,7 +217,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         $this->gitProcess->run();
 
         if (!$this->gitProcess->isSuccessFul()) {
-            throw new RuntimeException(
+            throw new CloningErrorException(
                 "Error while initializing repository: {$this->gitProcess->getErrorOutput()}"
             );
         }

@@ -43,6 +43,11 @@ use function iterator_to_array;
  * Symfony Form dedicated to manage translatable Account Object in a Symfony Website.
  * This form is placed in this namespace to use the good Symfony Form Doctrine Type to link an account to an user.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
@@ -108,7 +113,6 @@ class AccountType extends AbstractType
              */
             public function mapDataToForms($data, $forms): void
             {
-                $form = null;
                 if (!$data instanceof Account) {
                     return;
                 }

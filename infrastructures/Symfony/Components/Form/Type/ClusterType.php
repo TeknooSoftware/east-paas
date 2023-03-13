@@ -87,7 +87,6 @@ class ClusterType extends AbstractType
              */
             public function mapDataToForms($data, $forms): void
             {
-                $form = null;
                 if (!$data instanceof Cluster) {
                     return;
                 }

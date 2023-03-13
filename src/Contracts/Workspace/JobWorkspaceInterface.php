@@ -35,6 +35,11 @@ use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
  * To represent the dedicated file system manager used locally to perform the deployment, clone source,
  s* prepare deployment (get vendors, compile, do some stuf, etc...) compile oci images
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

@@ -26,11 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Image;
 
 use DomainException;
-use RuntimeException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Exception\UnsupportedIdentityException;
 use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Generator;
 use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Running;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
@@ -60,6 +60,11 @@ use function uniqid;
  * This class has two state :
  * - Generator for instance created via the DI, only able to clone self
  * - Running, configured to be executed with a job, only available in a workplan
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -126,7 +131,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
     public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface
     {
         if (null !== $auth && !$auth instanceof XRegistryAuth) {
-            throw new RuntimeException('Not Supported');
+            throw new UnsupportedIdentityException('Not Supported');
         }
 
         $that = clone $this;

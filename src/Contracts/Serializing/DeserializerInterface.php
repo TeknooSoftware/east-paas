@@ -30,7 +30,12 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * To define a service able to deserialize json object to an PHP object of this library.
  *
- *@license     http://teknoo.software/license/mit         MIT License
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
+ * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
 interface DeserializerInterface

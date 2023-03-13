@@ -41,6 +41,11 @@ use function strtolower;
 /**
  * "Exposing transcriber" to translate CompiledDeployment's namespace to Kubernetes namespace manifest.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
@@ -57,7 +62,7 @@ class NamespaceTranscriber implements GenericTranscriberInterface
         $namespaceChild = array_pop($parts);
         $namespaceParent = implode('-', $parts);
 
-        $specs = [
+        return [
             'metadata' => [
                 'name' => $namespaceChild,
                 'namespace' => $namespaceParent,
@@ -66,8 +71,6 @@ class NamespaceTranscriber implements GenericTranscriberInterface
                 ],
             ],
         ];
-
-        return $specs;
     }
 
     /**

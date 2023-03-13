@@ -25,10 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\BadTempFileException;
 use Teknoo\Kubernetes\Client as KubClient;
 use Teknoo\Kubernetes\RepositoryRegistry;
 use Psr\Http\Client\ClientInterface;
-use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
@@ -41,6 +41,11 @@ use function unlink;
 /**
  * Factory in the DI to create, on demand, a new `Kubernetes Client` instance,
  * needed to execute manifest on the remote Kubernetes manager.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -118,7 +123,7 @@ class Factory implements ClientFactoryInterface
         $fileName = ($this->tmpNameFunction)($this->tmpDir, 'east-paas-kube-');
 
         if (false === $fileName) {
-            throw new RuntimeException('Bad file temp name in K3s factory');
+            throw new BadTempFileException('Bad temp file name in K3s factory');
         }
 
         file_put_contents($fileName, $value);

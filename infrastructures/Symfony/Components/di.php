@@ -25,11 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony;
 
-use Psr\Container\ContainerInterface;
-use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\HttpClient\HttplugClient;
 use Teknoo\East\Foundation\Command\Executor;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Teknoo\East\FoundationBundle\Command\Client;
@@ -56,7 +52,6 @@ use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 
-use function class_exists;
 use function DI\create;
 use function DI\get;
 use function DI\value;

@@ -34,15 +34,13 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Deployment
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
-use function base64_encode;
-use function is_array;
-use function is_string;
-use function strlen;
-use function str_starts_with;
-use function substr;
-
 /**
  * "Deployment transcriber" to translate CompiledDeployment's map to Kubernetes ConfigMaps manifest.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

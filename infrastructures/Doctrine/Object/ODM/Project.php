@@ -33,6 +33,11 @@ use Teknoo\States\Doctrine\StandardTrait;
  * Project specialization in doctrine as document.
  * Implement States's Doctrine Document feature via the trait `Teknoo\States\Doctrine\StandardTrait`
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

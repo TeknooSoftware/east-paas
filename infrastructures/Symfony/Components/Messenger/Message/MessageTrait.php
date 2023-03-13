@@ -30,6 +30,11 @@ use Teknoo\Immutable\ImmutableTrait;
 /**
  * Trait to implement messages to send on Symfony Messenger with all needed data to be processed by handler.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

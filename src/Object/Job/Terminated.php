@@ -27,7 +27,6 @@ namespace Teknoo\East\Paas\Object\Job;
 
 use Closure;
 use RuntimeException;
-use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\State\StateInterface;
@@ -37,6 +36,12 @@ use Teknoo\States\State\StateTrait;
  * State representing a finished job, successful or not.
  *
  * @mixin Job
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

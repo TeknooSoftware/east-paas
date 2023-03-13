@@ -36,7 +36,6 @@ use Teknoo\States\State\StateTrait;
 
 use function array_keys;
 use function implode;
-use function set_time_limit;
 use function hash;
 use function str_replace;
 use function substr;
@@ -48,6 +47,11 @@ use const PHP_EOL;
  * State for the class ImageWrapper for the daughter instance present into the workplan
  *
  * @mixin ImageWrapper
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

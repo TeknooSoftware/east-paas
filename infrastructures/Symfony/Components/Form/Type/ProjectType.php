@@ -41,6 +41,11 @@ use function iterator_to_array;
 /**
  * Symfony form to edit East PaaS Project
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
@@ -77,7 +82,6 @@ class ProjectType extends AbstractType
              */
             public function mapDataToForms($data, $forms): void
             {
-                $form = null;
                 if (!$data instanceof Project) {
                     return;
                 }

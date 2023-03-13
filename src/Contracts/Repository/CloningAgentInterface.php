@@ -33,6 +33,11 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * To define service able to clone in a local filesystem a source repository specified to a project before
  * deploy it.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

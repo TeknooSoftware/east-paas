@@ -32,6 +32,11 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * Interface dedicated to hooks to implement hook aware of the job deployment, needing to
  * perform some tasks in the deployment workspace.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

@@ -30,6 +30,11 @@ use Teknoo\Immutable\ImmutableInterface;
 /**
  * Message object, for Symfony Messenger, about a new job to dispatch to a worker to be deployed.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

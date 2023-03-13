@@ -44,6 +44,11 @@ use function substr;
 /**
  * "Deployment transcriber" to translate CompiledDeployment's secrets to Kubernetes Secrets manifest.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
@@ -66,7 +71,7 @@ class SecretTranscriber implements DeploymentInterface
     protected static function encode(int | string | array $value): string | array
     {
         if (is_array($value)) {
-            foreach ($value as $key => &$subValue) {
+            foreach ($value as &$subValue) {
                 $subValue = self::encode($subValue);
             }
 

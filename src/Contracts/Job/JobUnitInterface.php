@@ -38,6 +38,11 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  * Interface to define unit representing the current deployment execution' called a job.
  * This is a projection of the persisted object Job, dedicated to the execution.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

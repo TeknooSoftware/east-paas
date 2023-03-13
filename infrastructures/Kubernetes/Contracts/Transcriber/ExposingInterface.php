@@ -29,6 +29,11 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber;
  * Specialized transcriber to convert CompiledDeployment's services and ingresses to Kubernetes
  * services and ingresses manifests.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

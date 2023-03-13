@@ -52,6 +52,11 @@ use function substr;
  * "Deployment transcriber" to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsSet
  * manifest.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
@@ -71,10 +76,77 @@ class DeploymentTranscriber implements DeploymentInterface
     }
 
     /**
+     * @param array<string, mixed> $spec
+     * @param array<string, SecretReference|MapReference|string> $variables
+     */
+    private static function convertVariables(array &$spec, array $variables, callable $prefixer): void
+    {
+        $envsVars = [];
+        foreach ($variables as $name => &$value) {
+            if ($value instanceof SecretReference) {
+                if ($value->isImportAll()) {
+                    $spec['envFrom'][] = [
+                        'secretRef' => [
+                            'name' => $prefixer($value->getName() . self::SECRET_SUFFIX),
+                        ],
+                    ];
+
+                    continue;
+                }
+
+                $envsVars[] = [
+                    'name' => $name,
+                    'valueFrom' => [
+                        'secretKeyRef' => [
+                            'name' => $prefixer($value->getName() . self::SECRET_SUFFIX),
+                            'key' => $value->getKey(),
+                        ],
+                    ],
+                ];
+
+                continue;
+            }
+
+            if ($value instanceof MapReference) {
+                if ($value->isImportAll()) {
+                    $spec['envFrom'][] = [
+                        'configMapRef' => [
+                            'name' => $prefixer($value->getName() . self::MAP_SUFFIX),
+                        ],
+                    ];
+
+                    continue;
+                }
+
+                $envsVars[] = [
+                    'name' => $name,
+                    'valueFrom' => [
+                        'configMapKeyRef' => [
+                            'name' => $prefixer($value->getName() . self::MAP_SUFFIX),
+                            'key' => $value->getKey(),
+                        ],
+                    ],
+                ];
+
+                continue;
+            }
+
+            $envsVars[] = [
+                'name' => $name,
+                'value' => $value
+            ];
+        }
+
+        if (!empty($envsVars)) {
+            $spec['env'] = $envsVars;
+        }
+    }
+
+    /**
      * @param array<string, > $specs
      * @param array<string, array<string, Image>>|Image[][] $images
      */
-    private static function convertToContainer(array &$specs, Pod $pod, array $images, callable $prefixer,): void
+    private static function convertToContainer(array &$specs, Pod $pod, array $images, callable $prefixer): void
     {
         foreach ($pod as $container) {
             if (isset($images[$container->getImage()][$container->getVersion()])) {
@@ -94,65 +166,7 @@ class DeploymentTranscriber implements DeploymentInterface
                 )
             ];
 
-            $envsVars = [];
-            foreach ($container->getVariables() as $name => &$value) {
-                if ($value instanceof SecretReference) {
-                    if ($value->isImportAll()) {
-                        $spec['envFrom'][] = [
-                            'secretRef' => [
-                                'name' => $prefixer($value->getName() . self::SECRET_SUFFIX),
-                            ],
-                        ];
-
-                        continue;
-                    }
-
-                    $envsVars[] = [
-                        'name' => $name,
-                        'valueFrom' => [
-                            'secretKeyRef' => [
-                                'name' => $prefixer($value->getName() . self::SECRET_SUFFIX),
-                                'key' => $value->getKey(),
-                            ],
-                        ],
-                    ];
-
-                    continue;
-                }
-
-                if ($value instanceof MapReference) {
-                    if ($value->isImportAll()) {
-                        $spec['envFrom'][] = [
-                            'configMapRef' => [
-                                'name' => $prefixer($value->getName() . self::MAP_SUFFIX),
-                            ],
-                        ];
-
-                        continue;
-                    }
-
-                    $envsVars[] = [
-                        'name' => $name,
-                        'valueFrom' => [
-                            'configMapKeyRef' => [
-                                'name' => $prefixer($value->getName() . self::MAP_SUFFIX),
-                                'key' => $value->getKey(),
-                            ],
-                        ],
-                    ];
-
-                    continue;
-                }
-
-                $envsVars[] = [
-                    'name' => $name,
-                    'value' => $value
-                ];
-            }
-
-            if (!empty($envsVars)) {
-                $spec['env'] = $envsVars;
-            }
+            self::convertVariables($spec, $container->getVariables(), $prefixer);
 
             $volumesMount = [];
             foreach ($container->getVolumes() as $volume) {

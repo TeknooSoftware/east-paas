@@ -33,6 +33,11 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
  * Default message handler for Symfony Messenger to handle a HistorySent and forward it to the defined handler.
  * If there are no defined handler, the message will be ignored, without throw any error.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

@@ -33,6 +33,11 @@ use Teknoo\East\Paas\Object\ClusterCredentials;
  * Interface defining a factory in the DI to create, on demand, a new `Kubernetes Client` instance,
  * needed to execute manifest on the remote Kubernetes manager.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

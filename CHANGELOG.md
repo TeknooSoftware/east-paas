@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.5.1] - 2023-03-13
+### Stable Release
+- Q/A
+
 ## [1.5.0] - 2023-02-16
 ### Stable Release
 - Support CA Certificate for Kubernetes Client

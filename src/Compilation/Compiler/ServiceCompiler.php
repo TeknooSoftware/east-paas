@@ -41,6 +41,11 @@ use function is_string;
  * Compilation module able to convert `services` sections in paas.yaml file as Service instance.
  * The Service instance will be pushed into the CompiledDeploymentInterface instance.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

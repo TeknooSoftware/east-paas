@@ -40,6 +40,11 @@ use function is_array;
  * the Image library. The Image instance will be pushed into the CompiledDeploymentInterface instance.
  * Dockerfile must be present in the source repository, in the path defined at the key `path` of this image.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

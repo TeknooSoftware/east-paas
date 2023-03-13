@@ -39,6 +39,11 @@ use Throwable;
  * Step to configure the cluster client with job's configuration and push it into the workplan.
  * (The client injected is a clone of the original client, the original is "immutable").
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

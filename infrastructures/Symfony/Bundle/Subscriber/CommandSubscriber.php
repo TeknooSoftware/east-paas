@@ -36,6 +36,11 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHa
  * Event subscriber, on console's events to update handlers of HistorySent and JobDone message in Symfony Messenger on
  * dedicated console handler to print messge on the standard output.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

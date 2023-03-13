@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation;
 
 use RuntimeException;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Compilation\Conductor\Generator;
@@ -54,6 +53,11 @@ use function str_replace;
 /**
  * Class to validate and prepare a deployment by compiling instructions from paas.yaml to objects understable by
  * deployments adapters and clusters's drivers, grouped into a summary object implemented via 'CompiledDeployment'.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

@@ -32,6 +32,11 @@ use Teknoo\Immutable\ImmutableTrait;
  * Immutable value object, representing a normalized Map. a collection key value, able to store some parameters and
  * configurations to use in your pods
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

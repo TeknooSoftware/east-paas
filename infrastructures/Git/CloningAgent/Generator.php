@@ -26,10 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
 
 use Closure;
-use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
-use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Object\GitRepository;
+use Teknoo\East\Paas\Infrastructures\Git\Exception\GeneratorStateException;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
@@ -38,6 +36,11 @@ use Teknoo\States\State\StateTrait;
  * a self cloning.
  *
  * @mixin CloningAgent
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -49,14 +52,14 @@ class Generator implements StateInterface
     private function getWorkspace(): Closure
     {
         return function (): never {
-            throw new RuntimeException('Agent is in generator state');
+            throw new GeneratorStateException('Agent is in generator state');
         };
     }
 
     private function getSourceRepository(): Closure
     {
         return function (): never {
-            throw new RuntimeException('Agent is in generator state');
+            throw new GeneratorStateException('Agent is in generator state');
         };
     }
 }

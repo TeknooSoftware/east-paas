@@ -27,12 +27,12 @@ namespace Teknoo\East\Paas\Compilation\Compiler;
 
 use DomainException;
 use InvalidArgumentException;
-use RuntimeException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
+use Teknoo\East\Paas\Compilation\Compiler\Exception\MissingAttributeException;
 use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -60,6 +60,11 @@ use function is_string;
  * If the pod define also some secrets, embedded volumes or persistent volumes, SecretVolume, EmbeddedVolume and
  * PersistentVolume will be also created and added to the CompiledDeploymentInterface instance and referenced
  * with the Pod instance.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -138,13 +143,13 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         $identifier = $volumeDefinition[self::KEY_STORAGE_IDENTIFIER] ?? $storageIdentifier;
 
         if (empty($identifier)) {
-            throw new RuntimeException("Missing 'storage-provider' in $volumeName pod volume definition");
+            throw new MissingAttributeException("Missing 'storage-provider' in $volumeName pod volume definition");
         }
 
         $storageSize = $volumeDefinition[self::KEY_STORAGE_SIZE] ?? $defaultStorageSize;
 
         if (empty($storageSize)) {
-            throw new RuntimeException("Missing 'storage-size' in $volumeName pod volume definition");
+            throw new MissingAttributeException("Missing 'storage-size' in $volumeName pod volume definition");
         }
 
         return new PersistentVolume(
@@ -219,7 +224,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
             if (empty($volumeDefinition[self::KEY_MOUNT_PATH])) {
-                throw new RuntimeException("Missing 'mount-path' in $volumeName pod volume definition");
+                throw new MissingAttributeException("Missing 'mount-path' in $volumeName pod volume definition");
             }
 
             $mountPath = $volumeDefinition[self::KEY_MOUNT_PATH];

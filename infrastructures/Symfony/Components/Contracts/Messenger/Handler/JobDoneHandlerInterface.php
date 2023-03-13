@@ -30,6 +30,11 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 /**
  * To define a Symfony Messenger Handler able to handle an JobDone message.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

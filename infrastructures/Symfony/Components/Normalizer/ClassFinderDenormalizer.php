@@ -25,9 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
-use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Exception\MissingClassAttributeException;
 
 use function class_exists;
 use function is_array;
@@ -35,6 +35,11 @@ use function is_array;
 /**
  * Symfony Denormalizer to find in the json's attribuute `@class` the true type of the object to help
  * Symfony denormalizer to select the good denormalizer dedicated to its class.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -65,13 +70,13 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
             || empty($data['@class'])
             || !class_exists($data['@class'], true)
         ) {
-            throw new RuntimeException('Error, this object is not managed by this denormalizer');
+            throw new MissingClassAttributeException('Error, this object is not managed by this denormalizer');
         }
 
-        $class = $data['@class'];
+        $decodedClass = $data['@class'];
         unset($data['@class']);
 
-        return $this->denormalizer->denormalize($data, $class, $format, $context);
+        return $this->denormalizer->denormalize($data, $decodedClass, $format, $context);
     }
 
     /**

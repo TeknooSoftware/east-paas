@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Object;
 
 use DateTimeInterface;
-use RuntimeException;
 use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
@@ -36,6 +35,7 @@ use Teknoo\East\Common\Contracts\Object\VisitableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
+use Teknoo\East\Paas\Object\Exception\MissingAccountException;
 use Teknoo\East\Paas\Object\Project\Draft;
 use Teknoo\East\Paas\Object\Project\Executable;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
@@ -53,6 +53,11 @@ use const PHP_INT_MAX;
  * Persisted object representing a project, in an Account, to deploy on clusters from a source repository.
  *
  * @method Project prepareJob(Job $job, DateTimeInterface $date, Environment $environment)
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -129,7 +134,7 @@ class Project implements
     public function getAccount(): Account
     {
         if (!$this->account instanceof Account) {
-            throw new RuntimeException('Error, the account has not been injected');
+            throw new MissingAccountException('Error, the account has not been injected');
         }
 
         return $this->account;

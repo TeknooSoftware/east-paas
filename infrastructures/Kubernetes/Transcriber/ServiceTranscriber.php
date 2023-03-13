@@ -39,6 +39,11 @@ use function strtolower;
 /**
  * "Exposing transcriber" to translate CompiledDeployment's services to Kubernetes Services manifest.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
@@ -69,7 +74,7 @@ class ServiceTranscriber implements ExposingInterface
             $type = 'ClusterIP';
         }
 
-        $specs = [
+        return [
             'metadata' => [
                 'name' => $prefixer($service->getName()),
                 'namespace' => $namespace,
@@ -85,8 +90,6 @@ class ServiceTranscriber implements ExposingInterface
                 'ports' => $ports,
             ],
         ];
-
-        return $specs;
     }
 
     private static function convertToService(Service $service, string $namespace, callable $prefixer): KubeService

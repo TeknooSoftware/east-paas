@@ -34,6 +34,11 @@ use Throwable;
  * Parser, built on Symfony Yaml paerser, able to read a yaml stream passed as string and return to a promise a valid
  * array. If the yaml is invalid, the fail method of the promise must be called.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */

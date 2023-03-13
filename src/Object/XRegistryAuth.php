@@ -33,10 +33,14 @@ use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
 use Teknoo\Immutable\ImmutableTrait;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
 /**
  * Immutable object storing value to perform a HTTP authentication on a image registry
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>

@@ -26,8 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 
 use Closure;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\GeneratorStateException;
 use Teknoo\Kubernetes\Client as KubernetesClient;
-use RuntimeException;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
@@ -39,6 +39,11 @@ use Teknoo\States\State\StateTrait;
  * a self cloning.
  *
  * @mixin Driver
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -55,7 +60,7 @@ class Generator implements StateInterface
             bool $runDeployment,
             bool $runExposing
         ): KubernetesClient {
-            throw new RuntimeException('Driver is in generator state');
+            throw new GeneratorStateException('Driver is in generator state');
         };
     }
 }

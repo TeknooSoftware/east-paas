@@ -26,9 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\Conductor;
 
 use Closure;
-use RuntimeException;
 use Teknoo\East\Paas\Compilation\Conductor;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Compilation\Exception\GeneratorStateException;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
@@ -37,6 +36,11 @@ use Teknoo\States\State\StateTrait;
  * a self cloning.
  *
  * @mixin Conductor
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -48,7 +52,7 @@ class Generator implements StateInterface
     private function getJob(): Closure
     {
         return function (): never {
-            throw new RuntimeException('Conductor is in generator state');
+            throw new GeneratorStateException('Conductor is in generator state');
         };
     }
 }

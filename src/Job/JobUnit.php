@@ -59,6 +59,11 @@ use function trim;
  * Unit representing the current deployment execution' called a job.
  * This is a projection of the persisted object Job, dedicated to the execution.
  *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
+ *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
@@ -231,7 +236,7 @@ class JobUnit implements JobUnitInterface
         $pattern = '#((?:\$|R)\{[A-Za-z]\w*\})#iS';
 
         $updateClosure = function (&$values, callable $recursive) use ($pattern): void {
-            foreach ($values as $name => &$value) {
+            foreach ($values as &$value) {
                 if (is_array($value)) {
                     $recursive($value, $recursive);
 

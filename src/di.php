@@ -26,10 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas;
 
 use Psr\Container\ContainerInterface;
-use RuntimeException;
 use Teknoo\East\Foundation\Liveness\PingServiceInterface;
 use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\Compiler\Exception\MissingAttributeException;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
@@ -146,7 +146,6 @@ use Traversable;
 
 use function DI\get;
 use function DI\create;
-use function DI\value;
 use function file_get_contents;
 use function is_dir;
 
@@ -193,7 +192,7 @@ return [
         $rootPath = $container->get('teknoo.east.paas.root_dir');
         foreach ($imagesLibrary as &$image) {
             if (empty($image['path']) || is_dir($image['path'])) {
-                throw new RuntimeException('Missing path');
+                throw new MissingAttributeException('Missing path');
             }
 
             $image['path'] = $rootPath . $image['path'];
@@ -500,9 +499,9 @@ return [
             $accessControl = $container->get(ObjectAccessControlInterface::class);
         }
 
-        $defaultErrorMapping = null;
+        $defaultErrorTemplate = null;
         if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
-            $defaultErrorMapping = $container->get('teknoo.east.common.cookbook.default_error_template');
+            $defaultErrorTemplate = $container->get('teknoo.east.common.cookbook.default_error_template');
         }
 
         return new class (
@@ -514,7 +513,8 @@ return [
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
             $accessControl,
-            $container->get(EditAccountEndPointStepsInterface::class)
+            $container->get(EditAccountEndPointStepsInterface::class),
+            $defaultErrorTemplate,
         ) extends AbstractEditObjectEndPoint implements EditAccountEndPointInterface {
         };
     },

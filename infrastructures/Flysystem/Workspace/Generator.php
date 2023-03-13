@@ -26,9 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
 
 use Closure;
-use RuntimeException;
+use Teknoo\East\Paas\Infrastructures\Flysystem\Exception\GeneratorStateException;
 use Teknoo\East\Paas\Infrastructures\Flysystem\Workspace;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
@@ -37,6 +36,11 @@ use Teknoo\States\State\StateTrait;
  * a self cloning.
  *
  * @mixin Workspace
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ *
+ * @link        http://teknoo.software/states Project website
  *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
@@ -54,7 +58,7 @@ class Generator implements StateInterface
     private function getWorkspacePath(): Closure
     {
         return function (): never {
-            throw new RuntimeException('Workspace is in generator state');
+            throw new GeneratorStateException('Workspace is in generator state');
         };
     }
 }
