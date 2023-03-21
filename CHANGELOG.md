@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.5.2] - 2023-03-21
+### Stable Release
+- Use East Common 1.9
+- Fix TeknooEastWebsite to TeknooEastPaas namespace in twig definitions and routes
+
 ## [1.5.1] - 2023-03-13
 ### Stable Release
 - Q/A

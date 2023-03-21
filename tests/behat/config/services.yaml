@@ -6,15 +6,15 @@ parameters:
   teknoo.east.paas.worker.add_history_pattern: 'https://localhost/project/{projectId}/environment/{envName}/job/{jobId}/log'
 
   #Admin view path
-  teknoo.east.paas.symfony.view.account.new.file: '@@TeknooEastWebsite/AdminAccount/new.html.twig'
-  teknoo.east.paas.symfony.view.account.edit.file: '@@TeknooEastWebsite/AdminAccount/edit.html.twig'
-  teknoo.east.paas.symfony.view.account.list.file: '@@TeknooEastWebsite/AdminAccount/list.html.twig'
+  teknoo.east.paas.symfony.view.account.new.file: '@@TeknooEastPaas/AdminAccount/new.html.twig'
+  teknoo.east.paas.symfony.view.account.edit.file: '@@TeknooEastPaas/AdminAccount/edit.html.twig'
+  teknoo.east.paas.symfony.view.account.list.file: '@@TeknooEastPaas/AdminAccount/list.html.twig'
 
-  teknoo.east.paas.symfony.view.project.new.file: '@@TeknooEastWebsite/AdminProject/new.html.twig'
-  teknoo.east.paas.symfony.view.project.edit.file: '@@TeknooEastWebsite/AdminProject/edit.html.twig'
-  teknoo.east.paas.symfony.view.project.list.file: '@@TeknooEastWebsite/AdminProject/list.html.twig'
+  teknoo.east.paas.symfony.view.project.new.file: '@@TeknooEastPaas/AdminProject/new.html.twig'
+  teknoo.east.paas.symfony.view.project.edit.file: '@@TeknooEastPaas/AdminProject/edit.html.twig'
+  teknoo.east.paas.symfony.view.project.list.file: '@@TeknooEastPaas/AdminProject/list.html.twig'
 
-  teknoo.east.paas.symfony.view.job.list.file: '@@TeknooEastWebsite/AdminJob/list.html.twig'
+  teknoo.east.paas.symfony.view.job.list.file: '@@TeknooEastPaas/AdminJob/list.html.twig'
 
   teknoo_website_hostname: 'localhost'
 

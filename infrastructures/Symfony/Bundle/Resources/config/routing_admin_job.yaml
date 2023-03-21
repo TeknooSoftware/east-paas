@@ -7,8 +7,8 @@ _teknoo_paas_admin_job_list:
         defaultOrderDirection: 'DESC'
         defaultOrderColumn: 'updatedAt'
         itemsPerPage: 20
-        template: '@@TeknooEastWebsite/AdminJob/list.html.twig'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        template: '@@TeknooEastPaas/AdminJob/list.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
 
 _teknoo_paas_admin_job_delete:
     path: '/job/delete/{id}'
@@ -19,4 +19,4 @@ _teknoo_paas_admin_job_delete:
         loader: '@Teknoo\East\Paas\Loader\JobLoader'
         deleter: '@teknoo.east.paas.deleting.job'
         route: '_teknoo_paas_admin_job_list'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'

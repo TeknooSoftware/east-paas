@@ -7,8 +7,8 @@ _teknoo_paas_admin_account_list:
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         defaultOrderDirection: 'ASC'
         itemsPerPage: 20
-        template: '@@TeknooEastWebsite/AdminAccount/list.html.twig'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        template: '@@TeknooEastPaas/AdminAccount/list.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
 
 _teknoo_paas_admin_account_edit:
     path: '/account/edit/{id}'
@@ -18,8 +18,8 @@ _teknoo_paas_admin_account_edit:
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         writer: '@Teknoo\East\Paas\Writer\AccountWriter'
         formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
-        template: '@@TeknooEastWebsite/AdminAccount/edit.html.twig'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        template: '@@TeknooEastPaas/AdminAccount/edit.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
         formOptions:
             "doctrine_type": "%teknoo.east.common.form_type.doctrine.class%"
             namespace_in_readonly: true
@@ -33,8 +33,8 @@ _teknoo_paas_admin_account_new:
         writer: '@Teknoo\East\Paas\Writer\AccountWriter'
         objectClass: 'Teknoo\East\Paas\Object\Account'
         formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
-        template: '@@TeknooEastWebsite/AdminAccount/new.html.twig'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        template: '@@TeknooEastPaas/AdminAccount/new.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
         formOptions: { "doctrine_type": "%teknoo.east.common.form_type.doctrine.class%"}
         route: '_teknoo_paas_admin_account_edit'
 
@@ -46,4 +46,4 @@ _teknoo_paas_admin_account_delete:
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         deleter: '@teknoo.east.paas.deleting.account'
         route: '_teknoo_paas_admin_account_list'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'

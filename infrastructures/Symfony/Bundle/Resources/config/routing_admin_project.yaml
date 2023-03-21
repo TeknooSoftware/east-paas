@@ -6,8 +6,8 @@ _teknoo_paas_admin_project_list:
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         defaultOrderDirection: 'ASC'
         itemsPerPage: 20
-        template: '@@TeknooEastWebsite/AdminProject/list.html.twig'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        template: '@@TeknooEastPaas/AdminProject/list.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
 
 _teknoo_paas_admin_project_edit:
     path: '/project/edit/{id}'
@@ -17,8 +17,8 @@ _teknoo_paas_admin_project_edit:
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
         formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
-        template: '@@TeknooEastWebsite/AdminProject/edit.html.twig'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        template: '@@TeknooEastPaas/AdminProject/edit.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
         formOptions: { }
 
 _teknoo_paas_admin_project_new:
@@ -31,8 +31,8 @@ _teknoo_paas_admin_project_new:
         writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
         objectClass: 'Teknoo\East\Paas\Object\Project'
         formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
-        template: '@@TeknooEastWebsite/AdminProject/new.html.twig'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        template: '@@TeknooEastPaas/AdminProject/new.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
         formOptions: { }
         route: '_teknoo_paas_admin_project_edit'
         accountKey: 'constructorArguments'
@@ -45,4 +45,4 @@ _teknoo_paas_admin_project_delete:
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         deleter: '@teknoo.east.paas.deleting.project'
         route: '_teknoo_paas_admin_project_list'
-        errorTemplate: '@@TeknooEastWebsite/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
