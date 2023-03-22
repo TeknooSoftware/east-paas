@@ -65,6 +65,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
+        $container->set('teknoo.east.paas.kubernetes.timeout', 30);
 
         self::assertInstanceOf(
             ClientFactoryInterface::class,

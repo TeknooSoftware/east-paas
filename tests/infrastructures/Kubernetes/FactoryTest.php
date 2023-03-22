@@ -65,6 +65,7 @@ class FactoryTest extends TestCase
             '/../../../../lol/',
             null,
             false,
+            30,
             fn () => throw new \RuntimeException(),
         );
 
@@ -87,6 +88,7 @@ class FactoryTest extends TestCase
             '/../../../../lol/',
             null,
             false,
+            30,
             fn() => false,
         );
 

@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.5.3] - 2023-03-22
+### Stable Release
+- Support Kubernetes client's timeout
+- Add DI key `teknoo.east.paas.kubernetes.timeout` to allow custom it. Default to no timeout.
+
 ## [1.5.2] - 2023-03-21
 ### Stable Release
 - Use East Common 1.9

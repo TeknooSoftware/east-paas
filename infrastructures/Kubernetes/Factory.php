@@ -63,6 +63,7 @@ class Factory implements ClientFactoryInterface
         private readonly string $tmpDir,
         private readonly ?ClientInterface $httpClient = null,
         private readonly bool $sslVerify = true,
+        private readonly ?int $timeout = null,
         ?callable $tmpNameFunction = null,
     ) {
         if ($tmpNameFunction) {
@@ -81,6 +82,10 @@ class Factory implements ClientFactoryInterface
             'master' => $master,
             'verify' => $this->sslVerify,
         ];
+
+        if (!empty($this->timeout)) {
+            $options['timeout'] = $this->timeout;
+        }
 
         if (null !== $credentials) {
             if (!empty($content = $credentials->getCaCertificate())) {

@@ -61,7 +61,12 @@ return [
             $sslVerify = (bool) $container->get('teknoo.east.paas.kubernetes.ssl.verify');
         }
 
-        return new Factory($tempDir, $client, $sslVerify);
+        $timeout = null;
+        if ($container->has('teknoo.east.paas.kubernetes.timeout')) {
+            $timeout = (int) $container->get('teknoo.east.paas.kubernetes.timeout');
+        }
+
+        return new Factory($tempDir, $client, $sslVerify, $timeout);
     },
 
     IngressTranscriber::class . ':class' => IngressTranscriber::class,
