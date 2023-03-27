@@ -25,9 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Behat\Transport;
 
+use RuntimeException;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
+
+use function explode;
+use function strlen;
+use function strpos;
+use function substr;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -50,8 +56,8 @@ class TransportFactory implements TransportFactoryInterface
      */
     private function extractUri(string $dsn): array
     {
-        $params = \substr($dsn, \strlen($this->protocol));
-        return \explode(':', $params);
+        $params = substr($dsn, strlen($this->protocol));
+        return explode(':', $params);
     }
 
     /**
@@ -60,12 +66,12 @@ class TransportFactory implements TransportFactoryInterface
     public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
         if (0 !== strpos($dsn, $this->protocol)) {
-            throw new \RuntimeException("The $dsn is not managed by this transport");
+            throw new RuntimeException("The $dsn is not managed by this transport");
         }
 
         $transport = clone $this->guzzleTransport;
 
-        list($method, $uri) = $this->extractUri($dsn);
+        [$method, $uri] = $this->extractUri($dsn);
         $transport->configure($method, 'https://' . $uri);
 
         return $transport;

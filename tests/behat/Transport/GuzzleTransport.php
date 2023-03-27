@@ -25,12 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Behat\Transport;
 
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\TransportInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
+
+use function str_replace;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -76,7 +79,7 @@ class GuzzleTransport implements TransportInterface
             $values[] = $param->getValue();
         }
 
-        return \str_replace($names, $values, $this->uri);
+        return str_replace($names, $values, $this->uri);
     }
 
     public function send(Envelope $envelope): Envelope
@@ -98,26 +101,26 @@ class GuzzleTransport implements TransportInterface
 
     public function receive(callable $handler): void
     {
-        throw new \LogicException('Not implemented');
+        throw new LogicException('Not implemented');
     }
 
     public function stop(): void
     {
-        throw new \LogicException('Not implemented');
+        throw new LogicException('Not implemented');
     }
 
     public function get(): iterable
     {
-        throw new \LogicException('Not implemented');
+        throw new LogicException('Not implemented');
     }
 
     public function ack(Envelope $envelope): void
     {
-        throw new \LogicException('Not implemented');
+        throw new LogicException('Not implemented');
     }
 
     public function reject(Envelope $envelope): void
     {
-        throw new \LogicException('Not implemented');
+        throw new LogicException('Not implemented');
     }
 }
