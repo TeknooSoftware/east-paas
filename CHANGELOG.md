@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.5.4] - 2023-04-11
+### Stable Release
+- Allow psr/http-message 2
+
 ## [1.5.3] - 2023-03-22
 ### Stable Release
 - Support Kubernetes client's timeout
