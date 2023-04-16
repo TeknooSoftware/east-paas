@@ -24,13 +24,13 @@ use function DI\decorate;
 use function DI\get;
 
 return [
-    'teknoo.east.paas.worker.global_variables' => [
+    'teknoo.east.paas.compilation.global_variables' => [
         'ROOT' => \dirname(__DIR__),
         'SERVER_SCRIPT' => '/opt/app/src/server.php',
     ],
     'teknoo.east.paas.root_dir' => __DIR__ . '../../',
     'teknoo.east.paas.project_configuration_filename' => '.paas.yaml',
-    'teknoo.east.paas.conductor.images_library' => [
+    'teknoo.east.paas.compilation.containers_images_library' => [
         'php-run-74' => [
             'build-name' => 'php-run',
             'tag' => '7.4',

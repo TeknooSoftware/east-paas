@@ -410,7 +410,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
 
         $container->set(DeserializerInterface::class, $this->createMock(DeserializerInterface::class));
-        $container->set('teknoo.east.paas.worker.global_variables', ['foo' => 'bar']);
+        $container->set('teknoo.east.paas.compilation.global_variables', ['foo' => 'bar']);
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
 
         self::assertInstanceOf(
@@ -878,7 +878,7 @@ class ContainerTest extends TestCase
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
         $container->set(BuilderInterface::class, $this->createMock(BuilderInterface::class));
         $container->set(Directory::class, $this->createMock(Directory::class));
-        $container->set('teknoo.east.paas.worker.global_variables', ['foo' => 'bar']);
+        $container->set('teknoo.east.paas.compilation.global_variables', ['foo' => 'bar']);
         $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
         $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
         $container->set(UriFactoryInterface::class, $this->createMock(UriFactoryInterface::class));
@@ -949,7 +949,7 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.root_dir', '/foo');
 
         $container->set(
-            'teknoo.east.paas.conductor.images_library',
+            'teknoo.east.paas.compilation.containers_images_library',
             [
                 'php-react-74' => [
                     'build-name' => 'php-react',
@@ -977,7 +977,7 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.root_dir', '/foo');
 
         $container->set(
-            'teknoo.east.paas.conductor.images_library',
+            'teknoo.east.paas.compilation.containers_images_library',
             [
                 'php-fpm-74' => [
                     'build-name' => 'php-fpm',
@@ -1004,7 +1004,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.ingresses.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.ingresses.library', ['foo' => []]);
 
         self::assertInstanceOf(
             IngressCompiler::class,
@@ -1022,8 +1022,8 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.pods.library', ['foo' => []]);
-        $container->set('teknoo.east.paas.containers.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.pods.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.containers.library', ['foo' => []]);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -1061,7 +1061,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.services.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.services.library', ['foo' => []]);
 
         self::assertInstanceOf(
             ServiceCompiler::class,
@@ -1102,7 +1102,7 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.root_dir', '/foo');
 
         $container->set(
-            'teknoo.east.paas.conductor.images_library',
+            'teknoo.east.paas.compilation.containers_images_library',
             [
                 'php-react-74' => [
                     'build-name' => 'php-react',
@@ -1143,7 +1143,7 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.root_dir', '/foo');
 
         $container->set(
-            'teknoo.east.paas.conductor.images_library',
+            'teknoo.east.paas.compilation.containers_images_library',
             [
                 'php-react-74' => [
                     'build-name' => 'php-react',
@@ -1183,7 +1183,7 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.default_oci_registry_config_name', 'foo');
 
         $container->set(
-            'teknoo.east.paas.conductor.images_library',
+            'teknoo.east.paas.compilation.containers_images_library',
             [
                 'php-react-74' => [
                     'build-name' => 'php-react',

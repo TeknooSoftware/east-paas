@@ -1,5 +1,17 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.6.0] - 2023-04-16
+### Stable Release
+- Rename `teknoo.east.paas.worker.global_variables` to `teknoo.east.paas.compilation.global_variables`
+- Rename `teknoo.east.paas.conductor.images_library` to `teknoo.east.paas.compilation.containers_images_library`
+- Rename `teknoo.east.paas.pods.library` to `teknoo.east.paas.compilation.pods.library`
+- Rename `teknoo.east.paas.containers.library` to `teknoo.east.paas.compilation.containers.library`
+- Rename `teknoo.east.paas.services.library` to `teknoo.east.paas.compilation.services.library`
+- Rename `teknoo.east.paas.ingresses.library` to `teknoo.east.paas.compilation.ingresses.library`
+- Update dev lib requirements
+- Support PHPUnit 10.1+
+- Migrate phpunit.xml
+
 ## [1.5.4] - 2023-04-11
 ### Stable Release
 - Allow psr/http-message 2

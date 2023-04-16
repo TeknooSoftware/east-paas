@@ -965,7 +965,7 @@ class FeatureContext implements Context
      */
     public function extensionsLibrariesProvidedByAdministrators()
     {
-        $this->additionalsParameters['teknoo.east.paas.ingresses.library'] = [
+        $this->additionalsParameters['teknoo.east.paas.compilation.ingresses.library'] = [
             'demo-extends' => [
                 'service' => [
                     'name' => 'demo',
@@ -974,7 +974,7 @@ class FeatureContext implements Context
             ],
         ];
 
-        $this->additionalsParameters['teknoo.east.paas.pods.library'] = [
+        $this->additionalsParameters['teknoo.east.paas.compilation.pods.library'] = [
             'php-pods-extends' => [
                 'replicas' => 2,
                 'requires' => [
@@ -1026,14 +1026,14 @@ class FeatureContext implements Context
             ],
         ];
 
-        $this->additionalsParameters['teknoo.east.paas.containers.library'] =  [
+        $this->additionalsParameters['teknoo.east.paas.compilation.containers.library'] =  [
             'bash-extends' => [
                 'image' => 'registry.hub.docker.com/bash',
                 'version' => 'alpine',
             ],
         ];
 
-        $this->additionalsParameters['teknoo.east.paas.services.library'] = [
+        $this->additionalsParameters['teknoo.east.paas.compilation.services.library'] = [
             'php-pods-extends' => [
                 'pod' => 'php-pods',
                 'internal' => false,
