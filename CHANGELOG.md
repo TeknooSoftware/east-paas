@@ -8,6 +8,7 @@
 - Rename `teknoo.east.paas.containers.library` to `teknoo.east.paas.compilation.containers.library`
 - Rename `teknoo.east.paas.services.library` to `teknoo.east.paas.compilation.services.library`
 - Rename `teknoo.east.paas.ingresses.library` to `teknoo.east.paas.compilation.ingresses.library`
+- These keys also accept iterators and are no longer mandatory.
 - Update dev lib requirements
 - Support PHPUnit 10.1+
 - Migrate phpunit.xml

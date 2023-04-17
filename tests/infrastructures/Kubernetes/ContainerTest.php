@@ -25,8 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
+use ArrayObject;
 use DI\Container;
 use DI\ContainerBuilder;
+use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\Kubernetes\Client as KubClient;
 use Psr\Http\Client\ClientInterface;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -168,13 +170,66 @@ class ContainerTest extends TestCase
         $container->get(IngressTranscriber::class);
     }
 
-    public function testIngressTranscriber()
+    public function testIngressTranscriberWithEmptyAnnotations()
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
         $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', []);
+
+        self::assertInstanceOf(
+            IngressTranscriber::class,
+            $container->get(IngressTranscriber::class)
+        );
+    }
+
+    public function testIngressTranscriberWithInvalidAnnotations()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', new \stdClass());
+
+        $this->expectException(InvalidArgumentException::class);
+        $container->get(IngressTranscriber::class);
+    }
+
+    public function testIngressTranscriberWithFullAnnotations()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', ['foo' => 'bar']);
+
+        self::assertInstanceOf(
+            IngressTranscriber::class,
+            $container->get(IngressTranscriber::class)
+        );
+    }
+
+    public function testIngressTranscriberWithMissingAnnotations()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
+
+        self::assertInstanceOf(
+            IngressTranscriber::class,
+            $container->get(IngressTranscriber::class)
+        );
+    }
+
+    public function testIngressTranscriberWithIterableAnnotations()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', new ArrayObject(['foo' => 'bar']));
 
         self::assertInstanceOf(
             IngressTranscriber::class,

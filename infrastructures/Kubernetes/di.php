@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 use DomainException;
 use Psr\Container\ContainerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
@@ -42,6 +43,9 @@ use function DI\decorate;
 use function DI\create;
 use function DI\get;
 use function is_a;
+use function is_array;
+use function is_iterable;
+use function iterator_to_array;
 use function sys_get_temp_dir;
 
 return [
@@ -91,7 +95,20 @@ return [
         }
 
         if ($container->has('teknoo.east.paas.kubernetes.ingress.default_annotations')) {
-            $defaultAnnotations = (array) $container->get('teknoo.east.paas.kubernetes.ingress.default_annotations');
+            $defaultAnnotations = $container->get('teknoo.east.paas.kubernetes.ingress.default_annotations');
+        }
+
+        if (!is_iterable($defaultAnnotations) && !is_array($defaultAnnotations)) {
+            throw new InvalidArgumentException(
+                "`teknoo.east.paas.kubernetes.ingress.default_annotations` must be an array or iterable"
+            );
+        }
+
+        if (!is_array($defaultAnnotations)) {
+            $defaultAnnotations = iterator_to_array(
+                iterator: $defaultAnnotations,
+                preserve_keys: true,
+            );
         }
 
         $className = $container->get(IngressTranscriber::class . ':class');

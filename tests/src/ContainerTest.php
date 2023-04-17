@@ -25,11 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas;
 
+use ArrayObject;
 use DI\Container;
 use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
+use stdClass;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
@@ -68,6 +70,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
@@ -970,6 +973,61 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testImageCompilerWithIterator()
+    {
+        $container = $this->buildContainer();
+
+        $container->set('teknoo.east.paas.root_dir', '/foo');
+
+        $container->set(
+            'teknoo.east.paas.compilation.containers_images_library',
+            new ArrayObject([
+                'php-react-74' => [
+                    'build-name' => 'php-react',
+                    'tag' => '7.4',
+                    'path' => '/library/php-react/7.4/',
+                ],
+                'php-fpm-74' => [
+                    'build-name' => 'php-fpm',
+                    'tag' => '7.4',
+                    'path' => '/library/php-fpm/7.4/',
+                ],
+            ])
+        );
+
+        self::assertInstanceOf(
+            ImageCompiler::class,
+            $container->get(ImageCompiler::class)
+        );
+    }
+
+    public function testImageCompilerWithoutLibrary()
+    {
+        $container = $this->buildContainer();
+
+        $container->set('teknoo.east.paas.root_dir', '/foo');
+
+        self::assertInstanceOf(
+            ImageCompiler::class,
+            $container->get(ImageCompiler::class)
+        );
+    }
+
+    public function testImageCompilerWithBadLibrary()
+    {
+        $container = $this->buildContainer();
+
+        $container->set('teknoo.east.paas.root_dir', '/foo');
+
+        $container->set(
+            'teknoo.east.paas.compilation.containers_images_library',
+            new stdClass()
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $container->get(ImageCompiler::class);
+    }
+
     public function testImageCompilerWithoutPathInDefinition()
     {
         $container = $this->buildContainer();
@@ -1012,6 +1070,60 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testIngressCompilerWithIterator()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            IngressCompiler::class,
+            $container->get(IngressCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.ingresses.library', new ArrayObject(['foo' => []]));
+
+        self::assertInstanceOf(
+            IngressCompiler::class,
+            $container->get(IngressCompiler::class)
+        );
+    }
+
+    public function testIngressCompilerWithoutLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            IngressCompiler::class,
+            $container->get(IngressCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            IngressCompiler::class,
+            $container->get(IngressCompiler::class)
+        );
+    }
+
+    public function testIngressCompilerWithBarLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            IngressCompiler::class,
+            $container->get(IngressCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.ingresses.library', new stdClass());
+
+        $this->expectException(InvalidArgumentException::class);
+        self::assertInstanceOf(
+            IngressCompiler::class,
+            $container->get(IngressCompiler::class)
+        );
+    }
+
     public function testPodCompiler()
     {
         $container = $this->buildContainer();
@@ -1029,6 +1141,115 @@ class ContainerTest extends TestCase
             PodCompiler::class,
             $container->get(PodCompiler::class)
         );
+    }
+
+    public function testPodCompilerWithPodIteratorLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.pods.library', new ArrayObject(['foo' => []]));
+        $container->set('teknoo.east.paas.compilation.containers.library', ['foo' => []]);
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+    }
+
+    public function testPodCompilerWithContainerIteratorLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.pods.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.containers.library', new ArrayObject(['foo' => []]));
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+    }
+
+    public function testPodCompilerWithoutPodLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.containers.library', ['foo' => []]);
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+    }
+
+    public function testPodCompilerWithoutContainerLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.pods.library', ['foo' => []]);
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+    }
+
+    public function testPodCompilerWithBadPodLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.pods.library', new stdClass());
+        $container->set('teknoo.east.paas.compilation.containers.library', ['foo' => []]);
+
+
+        $this->expectException(InvalidArgumentException::class);
+        $container->get(PodCompiler::class);
+    }
+
+    public function testPodCompilerWithBadContainerLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            PodCompiler::class,
+            $container->get(PodCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.pods.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.containers.library', new stdClass());
+
+        $this->expectException(InvalidArgumentException::class);
+        $container->get(PodCompiler::class);
     }
 
     public function testSecretCompiler()
@@ -1067,6 +1288,57 @@ class ContainerTest extends TestCase
             ServiceCompiler::class,
             $container->get(ServiceCompiler::class)
         );
+    }
+
+    public function testServiceCompilerWithIteratorLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            ServiceCompiler::class,
+            $container->get(ServiceCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.services.library', new ArrayObject(['foo' => []]));
+
+        self::assertInstanceOf(
+            ServiceCompiler::class,
+            $container->get(ServiceCompiler::class)
+        );
+    }
+
+    public function testServiceCompilerWithoutLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            ServiceCompiler::class,
+            $container->get(ServiceCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            ServiceCompiler::class,
+            $container->get(ServiceCompiler::class)
+        );
+    }
+
+    public function testServiceCompilerWithBadLib()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            ServiceCompiler::class,
+            $container->get(ServiceCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.services.library', new stdClass());
+
+        $this->expectException(InvalidArgumentException::class);
+        $container->get(ServiceCompiler::class);
     }
 
     public function testVolumeCompiler()

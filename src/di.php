@@ -65,6 +65,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface as DRI;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList;
@@ -147,7 +148,29 @@ use Traversable;
 use function DI\get;
 use function DI\create;
 use function file_get_contents;
+use function is_array;
 use function is_dir;
+use function is_iterable;
+use function iterator_to_array;
+
+$getArrayValues = static function (ContainerInterface $container, string $keyName, array $defaultValues = []): array {
+    $values = [];
+
+    if ($container->has($keyName)) {
+        $values = $container->get($keyName);
+    }
+    if (!is_iterable($values) && !is_array($values)) {
+        throw new InvalidArgumentException(
+            "`$keyName` must be an array or iterable"
+        );
+    }
+
+    if (!is_array($values)) {
+        $values = iterator_to_array($values);
+    }
+
+    return $values;
+};
 
 return [
     //Loaders
@@ -187,8 +210,9 @@ return [
     //Compiler
     HookCompiler::class => create()
         ->constructor(get(HooksCollectionInterface::class)),
-    ImageCompiler::class => static function (ContainerInterface $container): ImageCompiler {
-        $imagesLibrary = $container->get('teknoo.east.paas.compilation.containers_images_library');
+    ImageCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): ImageCompiler {
+        $imagesLibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.containers_images_library', []);
+
         $rootPath = $container->get('teknoo.east.paas.root_dir');
         foreach ($imagesLibrary as &$image) {
             if (empty($image['path']) || is_dir($image['path'])) {
@@ -201,38 +225,22 @@ return [
         return new ImageCompiler($imagesLibrary);
     },
     MapCompiler::class => create(),
-    IngressCompiler::class => static function (ContainerInterface $container): IngressCompiler {
-        $library = [];
-
-        if ($container->has('teknoo.east.paas.compilation.ingresses.library')) {
-            $library = $container->get('teknoo.east.paas.compilation.ingresses.library');
-        }
-
-        return new IngressCompiler($library);
+    IngressCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): IngressCompiler {
+        return new IngressCompiler(
+            $getArrayValues($container, 'teknoo.east.paas.compilation.ingresses.library', [])
+        );
     },
-    PodCompiler::class => static function (ContainerInterface $container): PodCompiler {
-        $podslibrary = [];
-        $containerslibrary = [];
-
-        if ($container->has('teknoo.east.paas.compilation.pods.library')) {
-            $podslibrary = $container->get('teknoo.east.paas.compilation.pods.library');
-        }
-
-        if ($container->has('teknoo.east.paas.compilation.containers.library')) {
-            $containerslibrary = $container->get('teknoo.east.paas.compilation.containers.library');
-        }
+    PodCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): PodCompiler {
+        $podslibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.pods.library', []);
+        $containerslibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.containers.library', []);
 
         return new PodCompiler($podslibrary, $containerslibrary);
     },
     SecretCompiler::class => create(),
-    ServiceCompiler::class => static function (ContainerInterface $container): ServiceCompiler {
-        $library = [];
-
-        if ($container->has('teknoo.east.paas.compilation.services.library')) {
-            $library = $container->get('teknoo.east.paas.compilation.services.library');
-        }
-
-        return new ServiceCompiler($library);
+    ServiceCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): ServiceCompiler {
+        return new ServiceCompiler(
+            $getArrayValues($container, 'teknoo.east.paas.compilation.services.library', [])
+        );
     },
     VolumeCompiler::class => create(),
 
@@ -316,10 +324,10 @@ return [
 
     //Job
     CreateNewJob::class => create(),
-    DeserializeJob::class => static function (ContainerInterface $container): DeserializeJob {
+    DeserializeJob::class => static function (ContainerInterface $container) use ($getArrayValues): DeserializeJob {
         return new DeserializeJob(
             $container->get(DeserializerInterface::class),
-            $container->get('teknoo.east.paas.compilation.global_variables'),
+            $getArrayValues($container, 'teknoo.east.paas.compilation.global_variables', []),
         );
     },
     GetJob::class => create()
