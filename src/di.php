@@ -159,6 +159,7 @@ $getArrayValues = static function (ContainerInterface $container, string $keyNam
     if ($container->has($keyName)) {
         $values = $container->get($keyName);
     }
+
     if (!is_iterable($values) && !is_array($values)) {
         throw new InvalidArgumentException(
             "`$keyName` must be an array or iterable"
