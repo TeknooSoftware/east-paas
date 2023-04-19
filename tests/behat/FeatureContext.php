@@ -11,6 +11,7 @@ use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\Persistence\ObjectManager;
+use Teknoo\East\Common\Contracts\Object\ObjectInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\Model;
@@ -90,139 +91,67 @@ use function var_export;
  */
 class FeatureContext implements Context
 {
-    /**
-     * @var KernelInterface
-     */
-    private $kernel;
+    private ?KernelInterface $kernel = null;
+
+    private ?Container $sfContainer = null;
+
+    private ?ObjectManager $objectManager = null;
 
     /**
-     * @var Container
+     * @var DocumentRepository[]
      */
-    private $sfContainer;
+    private array $repositories = [];
 
     /**
-     * @var ObjectManager
+     * @var array<ObjectInterface>
      */
-    private $objectManager;
-
-    /**
-     * @var DocumentRepository
-     */
-    private $repositories = [];
-
-    /**
-     * @var array
-     */
-    static private $objects = [];
+    private static array $objects = [];
 
     /** ARGUMENTS */
 
-    /**
-     * @var string
-     */
-    private $accountId;
+    private ?string $accountId = null;
 
-    /**
-     * @var Account
-     */
-    private $account;
+    private ?Account $account = null;
 
-    /**
-     * @var string
-     */
-    private $projectName;
+    private ?string $projectName = null;
 
-    /**
-     * @var string
-     */
     private static string $projectPrefix = '';
 
-    /**
-     * @var string
-     */
-    private $projectId;
+    private ?string $projectId = null;
 
-    /**
-     * @var Project
-     */
-    private $project;
+    private ?Project $project = null;
 
-    /**
-     * @var string
-     */
-    private $jobId;
+    private ?string $jobId = null;
 
-    /**
-     * @var string
-     */
-    private $jobDate;
+    private ?string $jobDate = null;
 
-    /**
-     * @var Job
-     */
-    private $job;
+    private ?Job $job = null;
 
-    /**
-     * @var string
-     */
-    private $calledUrl;
+    private ?string $calledUrl = null;
 
-    /**
-     * @var string
-     */
-    private $clusterName;
+    private ?string $clusterName = null;
 
-    /**
-     * @var Cluster
-     */
-    private $cluster;
+    private ?Cluster $cluster = null;
 
     private string $clusterType = 'behat';
 
-    /**
-     * @var string
-     */
-    private $envName;
+    private ?string $envName = null;
 
-    /**
-     * @var Environment
-     */
-    private $environment;
+    private ?Environment $environment = null;
 
-    /**
-     * @var string
-     */
-    private $repositoryUrl;
+    private ?string $repositoryUrl = null;
 
-    /**
-     * @var GitRepository
-     */
-    private $sourceRepository;
+    private ?GitRepository $sourceRepository = null;
 
-    /**
-     * @var ImageRegistry
-     */
-    private $imagesRegistry;
+    private ?ImageRegistry $imagesRegistry = null;
 
-    /**
-     * @var string
-     */
-    private $historyMessage;
+    private ?string $historyMessage = null;
 
-    /**
-     * @var string
-     */
-    private $historyDate;
+    private ?string $historyDate = null;
 
-    /**
-     * @var \Symfony\Component\HttpFoundation\Response
-     */
-    private $response;
+    private ?Response $response = null;
 
-    /**
-     * @var string
-     */
-    private $requestBody;
+    private ?string $requestBody = null;
 
     private static bool $useHnc = false;
 
@@ -398,7 +327,7 @@ class FeatureContext implements Context
 
     public function buildObjectManager()
     {
-        $this->objectManager = new class([$this, 'getRepository'], $this) implements ObjectManager {
+        $this->objectManager = new class($this->getRepository(...), $this) implements ObjectManager {
             private $repositories;
 
             public function __construct(
@@ -437,7 +366,7 @@ class FeatureContext implements Context
 
     private function buildRepository(string $className)
     {
-        $this->repositories[$className] = new class($className, [$this, 'getObject'], [$this, 'setObject'])
+        $this->repositories[$className] = new class($className, $this->getObject(...), $this->setObject(...))
             extends DocumentRepository {
             private $className;
             private $getter;
