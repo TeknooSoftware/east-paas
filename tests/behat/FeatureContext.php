@@ -977,7 +977,6 @@ class FeatureContext implements Context
         ];
     }
 
-
     /**
      * @Given a job workspace agent
      */
