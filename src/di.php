@@ -228,19 +228,19 @@ return [
     MapCompiler::class => create(),
     IngressCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): IngressCompiler {
         return new IngressCompiler(
-            $getArrayValues($container, 'teknoo.east.paas.compilation.ingresses.library', [])
+            $getArrayValues($container, 'teknoo.east.paas.compilation.ingresses_extends.library', [])
         );
     },
     PodCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): PodCompiler {
-        $podslibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.pods.library', []);
-        $containerslibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.containers.library', []);
+        $podslibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.pods_extends.library', []);
+        $containerslibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.containers_extends.library', []);
 
         return new PodCompiler($podslibrary, $containerslibrary);
     },
     SecretCompiler::class => create(),
     ServiceCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): ServiceCompiler {
         return new ServiceCompiler(
-            $getArrayValues($container, 'teknoo.east.paas.compilation.services.library', [])
+            $getArrayValues($container, 'teknoo.east.paas.compilation.services_extends.library', [])
         );
     },
     VolumeCompiler::class => create(),

@@ -4,10 +4,10 @@
 ### Stable Release
 - Rename `teknoo.east.paas.worker.global_variables` to `teknoo.east.paas.compilation.global_variables`
 - Rename `teknoo.east.paas.conductor.images_library` to `teknoo.east.paas.compilation.containers_images_library`
-- Rename `teknoo.east.paas.pods.library` to `teknoo.east.paas.compilation.pods.library`
-- Rename `teknoo.east.paas.containers.library` to `teknoo.east.paas.compilation.containers.library`
-- Rename `teknoo.east.paas.services.library` to `teknoo.east.paas.compilation.services.library`
-- Rename `teknoo.east.paas.ingresses.library` to `teknoo.east.paas.compilation.ingresses.library`
+- Rename `teknoo.east.paas.pods.library` to `teknoo.east.paas.compilation.pods_extends.library`
+- Rename `teknoo.east.paas.containers.library` to `teknoo.east.paas.compilation.containers_extends.library`
+- Rename `teknoo.east.paas.services.library` to `teknoo.east.paas.compilation.services_extends.library`
+- Rename `teknoo.east.paas.ingresses.library` to `teknoo.east.paas.compilation.ingresses_extends.library`
 - These keys also accept iterators and are no longer mandatory.
 - Update dev lib requirements
 - Support PHPUnit 10.1+

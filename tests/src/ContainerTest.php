@@ -1062,7 +1062,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.ingresses.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.ingresses_extends.library', ['foo' => []]);
 
         self::assertInstanceOf(
             IngressCompiler::class,
@@ -1080,7 +1080,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.ingresses.library', new ArrayObject(['foo' => []]));
+        $container->set('teknoo.east.paas.compilation.ingresses_extends.library', new ArrayObject(['foo' => []]));
 
         self::assertInstanceOf(
             IngressCompiler::class,
@@ -1115,7 +1115,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.ingresses.library', new stdClass());
+        $container->set('teknoo.east.paas.compilation.ingresses_extends.library', new stdClass());
 
         $this->expectException(InvalidArgumentException::class);
         self::assertInstanceOf(
@@ -1134,8 +1134,8 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.pods.library', ['foo' => []]);
-        $container->set('teknoo.east.paas.compilation.containers.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.pods_extends.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.containers_extends.library', ['foo' => []]);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -1153,8 +1153,8 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.pods.library', new ArrayObject(['foo' => []]));
-        $container->set('teknoo.east.paas.compilation.containers.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.pods_extends.library', new ArrayObject(['foo' => []]));
+        $container->set('teknoo.east.paas.compilation.containers_extends.library', ['foo' => []]);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -1172,8 +1172,8 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.pods.library', ['foo' => []]);
-        $container->set('teknoo.east.paas.compilation.containers.library', new ArrayObject(['foo' => []]));
+        $container->set('teknoo.east.paas.compilation.pods_extends.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.containers_extends.library', new ArrayObject(['foo' => []]));
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -1191,7 +1191,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.containers.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.containers_extends.library', ['foo' => []]);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -1209,7 +1209,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.pods.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.pods_extends.library', ['foo' => []]);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -1227,8 +1227,8 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.pods.library', new stdClass());
-        $container->set('teknoo.east.paas.compilation.containers.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.pods_extends.library', new stdClass());
+        $container->set('teknoo.east.paas.compilation.containers_extends.library', ['foo' => []]);
 
 
         $this->expectException(InvalidArgumentException::class);
@@ -1245,8 +1245,8 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.pods.library', ['foo' => []]);
-        $container->set('teknoo.east.paas.compilation.containers.library', new stdClass());
+        $container->set('teknoo.east.paas.compilation.pods_extends.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.containers_extends.library', new stdClass());
 
         $this->expectException(InvalidArgumentException::class);
         $container->get(PodCompiler::class);
@@ -1282,7 +1282,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.services.library', ['foo' => []]);
+        $container->set('teknoo.east.paas.compilation.services_extends.library', ['foo' => []]);
 
         self::assertInstanceOf(
             ServiceCompiler::class,
@@ -1300,7 +1300,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.services.library', new ArrayObject(['foo' => []]));
+        $container->set('teknoo.east.paas.compilation.services_extends.library', new ArrayObject(['foo' => []]));
 
         self::assertInstanceOf(
             ServiceCompiler::class,
@@ -1335,7 +1335,7 @@ class ContainerTest extends TestCase
         );
 
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.services.library', new stdClass());
+        $container->set('teknoo.east.paas.compilation.services_extends.library', new stdClass());
 
         $this->expectException(InvalidArgumentException::class);
         $container->get(ServiceCompiler::class);
