@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.6.1] - 2023-05-15
+### Stable Release
+- Update dev lib requirements
+- Update copyrights
+
 ## [1.6.0] - 2023-04-16
 ### Stable Release
 - Rename `teknoo.east.paas.worker.global_variables` to `teknoo.east.paas.compilation.global_variables`
