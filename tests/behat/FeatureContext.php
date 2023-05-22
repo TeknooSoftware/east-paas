@@ -1514,7 +1514,177 @@ EOF;
     "Teknoo\\Kubernetes\\Model\\Deployment": [
         {
             "metadata": {
-                "name": "{$prefix}php-pods-dplmt",
+                "name": "{$prefix}shell-dplmt",
+                "namespace": "behat-test{$hncSuffix}",
+                "labels": {
+                    "name": "{$prefix}shell"
+                },
+                "annotations": {
+                    "teknoo.space.version": "v1"
+                }
+            },
+            "spec": {
+                "replicas": 1,
+                "strategy": {
+                    "type": "RollingUpdate",
+                    "rollingUpdate": {
+                        "maxSurge": 1,
+                        "maxUnavailable": 0
+                    }
+                },
+                "selector": {
+                    "matchLabels": {
+                        "name": "{$prefix}shell"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "name": "{$prefix}shell-pod",
+                        "namespace": "behat-test{$hncSuffix}",
+                        "labels": {
+                            "name": "{$prefix}shell",
+                            "vname": "{$prefix}shell-v1"
+                        }
+                    },
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "sleep"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "sleep",
+                                "image": "registry.hub.docker.com/bash:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": []
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "metadata": {
+                "name": "{$prefix}demo-dplmt",
+                "namespace": "behat-test{$hncSuffix}",
+                "labels": {
+                    "name": "{$prefix}demo"
+                },
+                "annotations": {
+                    "teknoo.space.version": "v1"
+                }
+            },
+            "spec": {
+                "replicas": 1,
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "selector": {
+                    "matchLabels": {
+                        "name": "{$prefix}demo"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "name": "{$prefix}demo-pod",
+                        "namespace": "behat-test{$hncSuffix}",
+                        "labels": {
+                            "name": "{$prefix}demo",
+                            "vname": "{$prefix}demo-v1"
+                        }
+                    },
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "nginx",
+                                    "waf",
+                                    "blackfire"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "nginx",
+                                "image": "https://foo.bar/nginx-jobid:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080
+                                    },
+                                    {
+                                        "containerPort": 8181
+                                    }
+                                ],
+                                "livenessProbe": {
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 30,
+                                    "httpGet": {
+                                        "path": "/status",
+                                        "port": 8080,
+                                        "scheme": "HTTPS"
+                                    },
+                                    "successThreshold": 3,
+                                    "failureThreshold": 2
+                                }
+                            },
+                            {
+                                "name": "waf",
+                                "image": "registry.hub.docker.com/library/waf:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": [
+                                    {
+                                        "containerPort": 8181
+                                    }
+                                ],
+                                "livenessProbe": {
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 30,
+                                    "tcpSocket": {
+                                        "port": 8181
+                                    },
+                                    "successThreshold": 1,
+                                    "failureThreshold": 1
+                                }
+                            },
+                            {
+                                "name": "blackfire",
+                                "image": "blackfire/blackfire:2",
+                                "imagePullPolicy": "Always",
+                                "ports": [
+                                    {
+                                        "containerPort": 8307
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "BLACKFIRE_SERVER_ID",
+                                        "value": "foo"
+                                    },
+                                    {
+                                        "name": "BLACKFIRE_SERVER_TOKEN",
+                                        "value": "bar"
+                                    }
+                                ]
+                            }
+                        ],
+                        "securityContext": {
+                            "fsGroup": 1000
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "Teknoo\\Kubernetes\\Model\\StatefulSet": [
+        {
+            "metadata": {
+                "name": "{$prefix}php-pods-sfset",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
                     "name": "{$prefix}php-pods"
@@ -1525,6 +1695,7 @@ EOF;
             },
             "spec": {
                 "replicas": 2,
+                "serviceName": "{$prefix}php-pods",
                 "strategy": {
                     "type": "RollingUpdate",
                     "rollingUpdate": {
@@ -1716,174 +1887,6 @@ EOF;
                                 }
                             }
                         ]
-                    }
-                }
-            }
-        },
-        {
-            "metadata": {
-                "name": "{$prefix}shell-dplmt",
-                "namespace": "behat-test{$hncSuffix}",
-                "labels": {
-                    "name": "{$prefix}shell"
-                },
-                "annotations": {
-                    "teknoo.space.version": "v1"
-                }
-            },
-            "spec": {
-                "replicas": 1,
-                "strategy": {
-                    "type": "RollingUpdate",
-                    "rollingUpdate": {
-                        "maxSurge": 1,
-                        "maxUnavailable": 0
-                    }
-                },
-                "selector": {
-                    "matchLabels": {
-                        "name": "{$prefix}shell"
-                    }
-                },
-                "template": {
-                    "metadata": {
-                        "name": "{$prefix}shell-pod",
-                        "namespace": "behat-test{$hncSuffix}",
-                        "labels": {
-                            "name": "{$prefix}shell",
-                            "vname": "{$prefix}shell-v1"
-                        }
-                    },
-                    "spec": {
-                        "hostAliases": [
-                            {
-                                "hostnames": [
-                                    "sleep"
-                                ],
-                                "ip": "127.0.0.1"
-                            }
-                        ],
-                        "containers": [
-                            {
-                                "name": "sleep",
-                                "image": "registry.hub.docker.com/bash:alpine",
-                                "imagePullPolicy": "Always",
-                                "ports": []
-                            }
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            "metadata": {
-                "name": "{$prefix}demo-dplmt",
-                "namespace": "behat-test{$hncSuffix}",
-                "labels": {
-                    "name": "{$prefix}demo"
-                },
-                "annotations": {
-                    "teknoo.space.version": "v1"
-                }
-            },
-            "spec": {
-                "replicas": 1,
-                "strategy": {
-                    "type": "Recreate"
-                },
-                "selector": {
-                    "matchLabels": {
-                        "name": "{$prefix}demo"
-                    }
-                },
-                "template": {
-                    "metadata": {
-                        "name": "{$prefix}demo-pod",
-                        "namespace": "behat-test{$hncSuffix}",
-                        "labels": {
-                            "name": "{$prefix}demo",
-                            "vname": "{$prefix}demo-v1"
-                        }
-                    },
-                    "spec": {
-                        "hostAliases": [
-                            {
-                                "hostnames": [
-                                    "nginx",
-                                    "waf",
-                                    "blackfire"
-                                ],
-                                "ip": "127.0.0.1"
-                            }
-                        ],
-                        "containers": [
-                            {
-                                "name": "nginx",
-                                "image": "https://foo.bar/nginx-jobid:alpine",
-                                "imagePullPolicy": "Always",
-                                "ports": [
-                                    {
-                                        "containerPort": 8080
-                                    },
-                                    {
-                                        "containerPort": 8181
-                                    }
-                                ],
-                                "livenessProbe": {
-                                    "initialDelaySeconds": 10,
-                                    "periodSeconds": 30,
-                                    "httpGet": {
-                                        "path": "/status",
-                                        "port": 8080,
-                                        "scheme": "HTTPS"
-                                    },
-                                    "successThreshold": 3,
-                                    "failureThreshold": 2
-                                }
-                            },
-                            {
-                                "name": "waf",
-                                "image": "registry.hub.docker.com/library/waf:alpine",
-                                "imagePullPolicy": "Always",
-                                "ports": [
-                                    {
-                                        "containerPort": 8181
-                                    }
-                                ],
-                                "livenessProbe": {
-                                    "initialDelaySeconds": 10,
-                                    "periodSeconds": 30,
-                                    "tcpSocket": {
-                                        "port": 8181
-                                    },
-                                    "successThreshold": 1,
-                                    "failureThreshold": 1
-                                }
-                            },
-                            {
-                                "name": "blackfire",
-                                "image": "blackfire/blackfire:2",
-                                "imagePullPolicy": "Always",
-                                "ports": [
-                                    {
-                                        "containerPort": 8307
-                                    }
-                                ],
-                                "env": [
-                                    {
-                                        "name": "BLACKFIRE_SERVER_ID",
-                                        "value": "foo"
-                                    },
-                                    {
-                                        "name": "BLACKFIRE_SERVER_TOKEN",
-                                        "value": "bar"
-                                    }
-                                ]
-                            }
-                        ],
-                        "securityContext": {
-                            "fsGroup": 1000
-                        }
                     }
                 }
             }

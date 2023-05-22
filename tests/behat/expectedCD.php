@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Behat;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
+use function Symfony\Component\Translation\t;
 
 return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledDeployment {
     $cd = new CompiledDeployment(
@@ -305,6 +306,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                     ),
                 ),
             ],
+            isStateless: false,
         ),
     );
 

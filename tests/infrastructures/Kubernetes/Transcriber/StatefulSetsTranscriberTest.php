@@ -44,19 +44,19 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
-class DeploymentTranscriberTest extends TestCase
+class StatefulSetsTranscriberTest extends TestCase
 {
-    public function buildTranscriber(): DeploymentTranscriber
+    public function buildTranscriber(): StatefulSetsTranscriber
     {
-        return new DeploymentTranscriber();
+        return new StatefulSetsTranscriber();
     }
 
     public function testRun()
@@ -153,7 +153,7 @@ class DeploymentTranscriberTest extends TestCase
                     ),
                 );
 
-                $pod1 = new Pod('p1', 1, [$c1]);
+                $pod1 = new Pod('p1', 1, [$c1], isStateless: false);
                 $pod2 = new Pod(
                     'p2',
                     1,
@@ -161,16 +161,16 @@ class DeploymentTranscriberTest extends TestCase
                     upgradeStrategy: UpgradeStrategy::Recreate,
                     fsGroup: 1000,
                     requires: ['x86_64', 'avx'],
-                    isStateless: true,
+                    isStateless: false,
                 );
                 $pod3 = new Pod(
-                    'p2',
+                    'p3',
                     1,
                     [$c2, $c3, $c4],
                     upgradeStrategy: UpgradeStrategy::Recreate,
                     fsGroup: 1000,
                     requires: ['x86_64', 'avx'],
-                    isStateless: false,
+                    isStateless: true,
                 );
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
@@ -219,7 +219,7 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['deployments', [], $rcRepo],
+                ['statefulsets', [], $rcRepo],
                 ['pods', [], $pRepo],
             ]);
 
@@ -254,7 +254,7 @@ class DeploymentTranscriberTest extends TestCase
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
-            DeploymentTranscriber::class,
+            StatefulSetsTranscriber::class,
             $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
         );
     }
@@ -345,8 +345,8 @@ class DeploymentTranscriberTest extends TestCase
                     ),
                 );
 
-                $pod1 = new Pod('p1', 1, [$c1], 'foo');
-                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000, requires: ['x86_64', 'avx'],);
+                $pod1 = new Pod('p1', 1, [$c1], 'foo', isStateless: false);
+                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000, requires: ['x86_64', 'avx'], isStateless: false);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
@@ -375,7 +375,7 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['deployments', [], $rcRepo],
+                ['statefulsets', [], $rcRepo],
                 ['pods', [], $pRepo],
             ]);
 
@@ -410,7 +410,7 @@ class DeploymentTranscriberTest extends TestCase
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
-            DeploymentTranscriber::class,
+            StatefulSetsTranscriber::class,
             $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
         );
     }
@@ -489,8 +489,8 @@ class DeploymentTranscriberTest extends TestCase
                     ),
                 );
 
-                $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2, $c3], upgradeStrategy: UpgradeStrategy::RollingUpgrade, fsGroup: 1000);
+                $pod1 = new Pod('p1', 1, [$c1], isStateless: false);
+                $pod2 = new Pod('p2', 1, [$c2, $c3], upgradeStrategy: UpgradeStrategy::RollingUpgrade, fsGroup: 1000, isStateless: false);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');
@@ -500,7 +500,7 @@ class DeploymentTranscriberTest extends TestCase
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->expects(self::any())
             ->method('__call')
-            ->with('deployments')
+            ->with('statefulsets')
             ->willReturn($repo);
 
         $repo->expects(self::any())
@@ -529,7 +529,7 @@ class DeploymentTranscriberTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            DeploymentTranscriber::class,
+            StatefulSetsTranscriber::class,
             $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
         );
     }
@@ -589,8 +589,8 @@ class DeploymentTranscriberTest extends TestCase
                     ),
                 );
 
-                $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2], fsGroup: 1000, requires: ['x86_64', 'avx'],);
+                $pod1 = new Pod('p1', 1, [$c1], isStateless: false);
+                $pod2 = new Pod('p2', 1, [$c2], fsGroup: 1000, requires: ['x86_64', 'avx'], isStateless: false);
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');
@@ -600,7 +600,7 @@ class DeploymentTranscriberTest extends TestCase
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->expects(self::any())
             ->method('__call')
-            ->with('deployments')
+            ->with('statefulsets')
             ->willReturn($repo);
 
         $repo->expects(self::any())
@@ -632,7 +632,7 @@ class DeploymentTranscriberTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            DeploymentTranscriber::class,
+            StatefulSetsTranscriber::class,
             $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
         );
     }

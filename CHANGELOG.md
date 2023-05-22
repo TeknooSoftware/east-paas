@@ -1,5 +1,13 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.7.0] - 2023-05-22
+### Stable Release
+- Add `stateless` property to pod, set atomaticaly to true if a pod use a persistent storage, by default a pod is 
+  stateless.
+- Support StatefulSet and use it instead of Deployment for all stateful pod.
+- Add DI key `teknoo.east.paas.kubernetes.statefulSets.require_label` dedicated for statefulsets, like 
+ `teknoo.east.paas.kubernetes.deployment.require_label` used for deployment, to prefix all labels requirement.
+
 ## [1.6.1] - 2023-05-15
 ### Stable Release
 - Update dev lib requirements

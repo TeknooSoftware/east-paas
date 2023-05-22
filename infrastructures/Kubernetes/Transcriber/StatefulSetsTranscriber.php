@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\Kubernetes\Client as KubernetesClient;
-use Teknoo\Kubernetes\Model\Deployment;
+use Teknoo\Kubernetes\Model\StatefulSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -49,7 +49,7 @@ use function sleep;
 use function substr;
 
 /**
- * "Deployment transcriber" to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsSet
+ * "Stateful Sets transcriber" to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsSet
  * manifest.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -57,11 +57,11 @@ use function substr;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class DeploymentTranscriber implements DeploymentInterface
+class StatefulSetsTranscriber implements DeploymentInterface
 {
     use CommonTrait;
 
-    private const NAME_SUFFIX = '-dplmt';
+    private const NAME_SUFFIX = '-sfset';
     private const POD_SUFFIX = '-pod';
     private const VOLUME_SUFFIX = '-volume';
     private const SECRET_SUFFIX = '-secret';
@@ -314,6 +314,7 @@ class DeploymentTranscriber implements DeploymentInterface
             ],
             'spec' => [
                 'replicas' => $pod->getReplicas(),
+                'serviceName' => $prefixer($pod->getName()),
                 'strategy' => [],
                 'selector' => [
                     'matchLabels' => [
@@ -390,7 +391,7 @@ class DeploymentTranscriber implements DeploymentInterface
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param array<string, Volume>|Volume[] $volumes
      */
-    private static function convertToDeployment(
+    private static function convertToStatefullSets(
         string $name,
         Pod $pod,
         array $images,
@@ -399,8 +400,8 @@ class DeploymentTranscriber implements DeploymentInterface
         int $version,
         callable $prefixer,
         string $requireLabel,
-    ): Deployment {
-        return new Deployment(
+    ): StatefulSet {
+        return new StatefulSet(
             static::writeSpec(
                 $name,
                 $pod,
@@ -432,7 +433,7 @@ class DeploymentTranscriber implements DeploymentInterface
                 $promise,
                 $requireLabel
             ): void {
-                if (!$pod->isStateless()) {
+                if ($pod->isStateless()) {
                     return;
                 }
 
@@ -443,12 +444,12 @@ class DeploymentTranscriber implements DeploymentInterface
                     }
 
                     $name = $prefixer($pod->getName());
-                    $dRepository = $client->deployments();
+                    $sfsRepository = $client->statefulsets();
 
-                    $previousDeployment = $dRepository->setLabelSelector(['name' => $name])->first();
+                    $previousStatefulSet = $sfsRepository->setLabelSelector(['name' => $name])->first();
                     $version = 1;
-                    if (null !== $previousDeployment) {
-                        $annotations = $previousDeployment->toArray();
+                    if (null !== $previousStatefulSet) {
+                        $annotations = $previousStatefulSet->toArray();
                         $oldVersion = (
                             (int) substr(
                                 string: ($annotations['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
@@ -463,7 +464,7 @@ class DeploymentTranscriber implements DeploymentInterface
                     return;
                 }
 
-                $kubeSet = self::convertToDeployment(
+                $kubeSet = self::convertToStatefullSets(
                     name: $name,
                     pod: $pod,
                     images: $images,
@@ -475,7 +476,7 @@ class DeploymentTranscriber implements DeploymentInterface
                 );
 
                 try {
-                    $result = $dRepository->apply($kubeSet);
+                    $result = $sfsRepository->apply($kubeSet);
 
                     $result = self::cleanResult($result);
 

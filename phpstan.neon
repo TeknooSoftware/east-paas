@@ -32,6 +32,9 @@ parameters:
             message: '#mixed#'
             path: infrastructures/Kubernetes/Transcriber/DeploymentTranscriber.php
         -
+            message: '#mixed#'
+            path: infrastructures/Kubernetes/Transcriber/StatefulSetsTranscriber.php
+        -
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
         -

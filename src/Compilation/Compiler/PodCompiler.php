@@ -218,6 +218,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         CompiledDeploymentInterface $compiledDeployment,
         ?string $storageIdentifier,
         ?string $defaultStorageSize,
+        bool &$isStateless,
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
             if (empty($volumeDefinition[self::KEY_MOUNT_PATH])) {
@@ -227,6 +228,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             $mountPath = $volumeDefinition[self::KEY_MOUNT_PATH];
 
             if (isset($volumeDefinition[self::KEY_PERSISTENT])) {
+                $isStateless = false;
                 $containerVolumes[(string) $volumeName] = $this->buildPersistentVolume(
                     $volumeName,
                     $mountPath,
@@ -367,6 +369,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     ): CompilerInterface {
         foreach ($definitions as $nameSet => &$podsList) {
             $containers = [];
+            $isStateless = true;
             foreach ($podsList[self::KEY_CONTAINERS] as $name => &$config) {
                 $containerVolumes = [];
                 $embeddedVolumes = [];
@@ -378,6 +381,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                     $compiledDeployment,
                     $storageIdentifier,
                     $defaultStorageSize,
+                    $isStateless,
                 );
 
                 $image = $config[self::KEY_IMAGE];
@@ -461,6 +465,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                     upgradeStrategy: $upgradeStrategy,
                     fsGroup: $fsGroup,
                     requires: (array) ($podsList[self::KEY_REQUIRES] ?? []),
+                    isStateless: $isStateless,
                 )
             );
         }

@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscribe
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
 
 use function DI\decorate;
@@ -151,6 +152,23 @@ return [
         return new $className($requireLabel);
     },
 
+    StatefulSetsTranscriber::class . ':class' => StatefulSetsTranscriber::class,
+    StatefulSetsTranscriber::class => static function (
+        ContainerInterface $container
+    ): StatefulSetsTranscriber {
+        $className = $container->get(StatefulSetsTranscriber::class . ':class');
+        if (!is_a($className, StatefulSetsTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a deployment transcriber");
+        }
+
+        $requireLabel = 'paas.east.teknoo.net';
+        if ($container->has('teknoo.east.paas.kubernetes.statefulSets.require_label')) {
+            $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.statefulSets.require_label');
+        }
+
+        return new $className($requireLabel);
+    },
+
     SecretTranscriber::class . ':class' => SecretTranscriber::class,
     SecretTranscriber::class => static function (ContainerInterface $container): SecretTranscriber {
         $className = $container->get(SecretTranscriber::class . ':class');
@@ -200,6 +218,7 @@ return [
         $collection->add(10, $container->get(ConfigMapTranscriber::class));
         $collection->add(10, $container->get(VolumeTranscriber::class));
         $collection->add(30, $container->get(DeploymentTranscriber::class));
+        $collection->add(31, $container->get(StatefulSetsTranscriber::class));
         $collection->add(40, $container->get(ServiceTranscriber::class));
         $collection->add(50, $container->get(IngressTranscriber::class));
 

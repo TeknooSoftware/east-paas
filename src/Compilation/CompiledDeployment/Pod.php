@@ -61,6 +61,7 @@ class Pod implements ImmutableInterface, IteratorAggregate
         private readonly UpgradeStrategy $upgradeStrategy = UpgradeStrategy::RollingUpgrade,
         private readonly ?int $fsGroup = null,
         private readonly array $requires = [],
+        private readonly bool $isStateless = true,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -114,5 +115,10 @@ class Pod implements ImmutableInterface, IteratorAggregate
     public function getRequires(): array
     {
         return $this->requires;
+    }
+
+    public function isStateless(): bool
+    {
+        return $this->isStateless;
     }
 }

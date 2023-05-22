@@ -29,6 +29,7 @@ use ArrayObject;
 use DI\Container;
 use DI\ContainerBuilder;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber;
 use Teknoo\Kubernetes\Client as KubClient;
 use Psr\Http\Client\ClientInterface;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -252,6 +253,24 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             DeploymentTranscriber::class,
             $container->get(DeploymentTranscriber::class)
+        );
+    }
+
+    public function testStatefulSetsTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(StatefulSetsTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(StatefulSetsTranscriber::class);
+    }
+
+    public function testStatefulSetsTranscriber()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.statefulSets.require_label', 'foo');
+        self::assertInstanceOf(
+            StatefulSetsTranscriber::class,
+            $container->get(StatefulSetsTranscriber::class)
         );
     }
 

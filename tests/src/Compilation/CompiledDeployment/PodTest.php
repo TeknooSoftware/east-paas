@@ -49,6 +49,7 @@ class PodTest extends TestCase
             upgradeStrategy: UpgradeStrategy::RollingUpgrade,
             fsGroup: 123,
             requires: ['foo', 'bar'],
+            isStateless: false,
         );
     }
 
@@ -122,5 +123,10 @@ class PodTest extends TestCase
         foreach ($this->buildObject() as $container) {
             self::assertInstanceOf(Container::class, $container);
         }
+    }
+
+    public function testIsStateless()
+    {
+        self::assertIsBool($this->buildObject()->isStateless());
     }
 }
