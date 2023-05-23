@@ -27,13 +27,15 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Collection\PodCollection;
 use Teknoo\Kubernetes\Model\Deployment;
+use Teknoo\Kubernetes\Model\Pod as PodModel;
 use Teknoo\Kubernetes\Repository\PodRepository;
-use Teknoo\Kubernetes\Repository\DeploymentRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
+use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
@@ -209,7 +211,7 @@ class StatefulSetsTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $rcRepo = $this->createMock(DeploymentRepository::class);
+        $sfsRepo = $this->createMock(StatefulSetRepository::class);
         $pRepo = $this->createMock(PodRepository::class);
 
         $kubeClient->expects(self::atLeastOnce())
@@ -219,11 +221,11 @@ class StatefulSetsTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['statefulsets', [], $rcRepo],
+                ['statefulsets', [], $sfsRepo],
                 ['pods', [], $pRepo],
             ]);
 
-        $rcRepo->expects(self::any())
+        $sfsRepo->expects(self::any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -231,7 +233,7 @@ class StatefulSetsTranscriberTest extends TestCase
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $rcRepo->expects(self::exactly(3))
+        $sfsRepo->expects(self::exactly(3))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
@@ -239,13 +241,13 @@ class StatefulSetsTranscriberTest extends TestCase
             );
 
         $pRepo->expects(self::any(3))
-            ->method('first')
+            ->method('find')
             ->willReturnOnConsecutiveCalls(
-                new \Teknoo\Kubernetes\Model\Pod(['metadata' => ['name' => 'foo']]),
+                new PodCollection([new PodModel(['metadata' => ['name' => 'foo']])]),
                 null,
             );
 
-        $rcRepo->expects(self::exactly(3))
+        $sfsRepo->expects(self::exactly(3))
             ->method('apply')
             ->willReturn(['foo']);
 
@@ -345,8 +347,23 @@ class StatefulSetsTranscriberTest extends TestCase
                     ),
                 );
 
-                $pod1 = new Pod('p1', 1, [$c1], 'foo', isStateless: false);
-                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000, requires: ['x86_64', 'avx'], isStateless: false);
+                $pod1 = new Pod(
+                    name: 'p1',
+                    replicas: 1,
+                    containers: [$c1],
+                    ociRegistryConfigName: 'foo',
+                    isStateless: false,
+                    upgradeStrategy: UpgradeStrategy::Recreate
+                );
+                $pod2 = new Pod(
+                    name: 'p2',
+                    replicas: 1,
+                    containers: [$c2, $c3],
+                    fsGroup: 1000,
+                    requires: ['x86_64', 'avx'],
+                    isStateless: false,
+                    upgradeStrategy: UpgradeStrategy::Recreate,
+                );
 
                 $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
                 $callback(
@@ -365,7 +382,7 @@ class StatefulSetsTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $rcRepo = $this->createMock(DeploymentRepository::class);
+        $sfsRepo = $this->createMock(StatefulSetRepository::class);
         $pRepo = $this->createMock(PodRepository::class);
 
         $kubeClient->expects(self::atLeastOnce())
@@ -375,11 +392,11 @@ class StatefulSetsTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['statefulsets', [], $rcRepo],
+                ['statefulsets', [], $sfsRepo],
                 ['pods', [], $pRepo],
             ]);
 
-        $rcRepo->expects(self::any())
+        $sfsRepo->expects(self::any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -387,7 +404,7 @@ class StatefulSetsTranscriberTest extends TestCase
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $rcRepo->expects(self::exactly(2))
+        $sfsRepo->expects(self::exactly(2))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
@@ -395,14 +412,21 @@ class StatefulSetsTranscriberTest extends TestCase
             );
 
         $pRepo->expects(self::any())
-            ->method('first')
+            ->method('find')
             ->willReturnOnConsecutiveCalls(
-                new \Teknoo\Kubernetes\Model\Pod(['metadata' => ['name' => 'foo']]),
-                null,
+                new PodCollection([
+                    new PodModel(['metadata' => ['name' => 'foo']]),
+                    new PodModel(['metadata' => ['name' => 'foo']]),
+                ]),
+                new PodCollection([]),
             );
 
-        $rcRepo->expects(self::exactly(2))
+        $sfsRepo->expects(self::exactly(2))
             ->method('apply')
+            ->willReturn(['foo']);
+
+        $pRepo->expects(self::exactly(2))
+            ->method('delete')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
@@ -497,7 +521,7 @@ class StatefulSetsTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $repo = $this->createMock(DeploymentRepository::class);
+        $repo = $this->createMock(StatefulSetRepository::class);
         $kubeClient->expects(self::any())
             ->method('__call')
             ->with('statefulsets')
@@ -597,7 +621,7 @@ class StatefulSetsTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $repo = $this->createMock(DeploymentRepository::class);
+        $repo = $this->createMock(StatefulSetRepository::class);
         $kubeClient->expects(self::any())
             ->method('__call')
             ->with('statefulsets')

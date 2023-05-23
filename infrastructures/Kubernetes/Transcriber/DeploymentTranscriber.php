@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\InvalidArgumentException;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
@@ -309,7 +310,7 @@ class DeploymentTranscriber implements DeploymentInterface
                     'name' => $prefixer($pod->getName()),
                 ],
                 'annotations' => [
-                    'teknoo.space.version' => 'v' . $version,
+                    'teknoo.east.paas.version' => 'v' . $version,
                 ],
             ],
             'spec' => [
@@ -348,6 +349,9 @@ class DeploymentTranscriber implements DeploymentInterface
             UpgradeStrategy::Recreate => [
                 'type' => 'Recreate',
             ],
+            UpgradeStrategy::OnDelete => throw new InvalidArgumentException(
+                'OnDelete strategy is not available for stateless pod'
+            ),
         };
 
         if (!empty($imagePullSecretsName = $pod->getOciRegistryConfigName())) {
@@ -451,7 +455,7 @@ class DeploymentTranscriber implements DeploymentInterface
                         $annotations = $previousDeployment->toArray();
                         $oldVersion = (
                             (int) substr(
-                                string: ($annotations['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
+                                string: ($annotations['metadata']['annotations']['teknoo.east.paas.version'] ?? 'v1'),
                                 offset: 1,
                             )
                         );

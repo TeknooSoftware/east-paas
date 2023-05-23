@@ -309,7 +309,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                     'name' => $prefixer($pod->getName()),
                 ],
                 'annotations' => [
-                    'teknoo.space.version' => 'v' . $version,
+                    'teknoo.east.paas.version' => 'v' . $version,
                 ],
             ],
             'spec' => [
@@ -347,7 +347,10 @@ class StatefulSetsTranscriber implements DeploymentInterface
                 ],
             ],
             UpgradeStrategy::Recreate => [
-                'type' => 'Recreate',
+                'type' => 'OnDelete',
+            ],
+            UpgradeStrategy::OnDelete => [
+                'type' => 'OnDelete',
             ],
         };
 
@@ -452,7 +455,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                         $annotations = $previousStatefulSet->toArray();
                         $oldVersion = (
                             (int) substr(
-                                string: ($annotations['metadata']['annotations']['teknoo.space.version'] ?? 'v1'),
+                                string: ($annotations['metadata']['annotations']['teknoo.east.paas.version'] ?? 'v1'),
                                 offset: 1,
                             )
                         );
@@ -479,6 +482,19 @@ class StatefulSetsTranscriber implements DeploymentInterface
                     $result = $sfsRepository->apply($kubeSet);
 
                     $result = self::cleanResult($result);
+
+                    if (
+                        null !== $previousStatefulSet
+                        && UpgradeStrategy::Recreate === $pod->getUpgradeStrategy()
+                    ) {
+                        //If upgrade strategy is recreate, not natively available in kubernetes, we will delete current
+                        //pods
+                        $pods = $client->pods();
+                        $labelSelector = ['vname' => $name . '-v' . $oldVersion];
+                        foreach ($pods->setLabelSelector($labelSelector)->find() as $podModel) {
+                            $pods->delete($podModel);
+                        }
+                    }
 
                     $promise->success($result);
                 } catch (Throwable $throwable) {

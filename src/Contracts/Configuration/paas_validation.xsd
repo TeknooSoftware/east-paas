@@ -249,6 +249,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="rolling-upgrade" />
       <xs:enumeration value="recreate" />
+      <xs:enumeration value="on-delete" />
     </xs:restriction>
   </xs:simpleType>
 

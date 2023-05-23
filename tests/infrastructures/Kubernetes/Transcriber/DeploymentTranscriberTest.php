@@ -209,8 +209,7 @@ class DeploymentTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $rcRepo = $this->createMock(DeploymentRepository::class);
-        $pRepo = $this->createMock(PodRepository::class);
+        $dRepo = $this->createMock(DeploymentRepository::class);
 
         $kubeClient->expects(self::atLeastOnce())
             ->method('setNamespace')
@@ -219,33 +218,22 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['deployments', [], $rcRepo],
-                ['pods', [], $pRepo],
+                ['deployments', [], $dRepo],
             ]);
 
-        $rcRepo->expects(self::any())
+        $dRepo->expects(self::any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $pRepo->expects(self::any())
-            ->method('setLabelSelector')
-            ->willReturnSelf();
 
-        $rcRepo->expects(self::exactly(3))
+        $dRepo->expects(self::exactly(3))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
                 new Deployment(['metadata' => ['name' => 'foo']]),
             );
 
-        $pRepo->expects(self::any(3))
-            ->method('first')
-            ->willReturnOnConsecutiveCalls(
-                new \Teknoo\Kubernetes\Model\Pod(['metadata' => ['name' => 'foo']]),
-                null,
-            );
-
-        $rcRepo->expects(self::exactly(3))
+        $dRepo->expects(self::exactly(3))
             ->method('apply')
             ->willReturn(['foo']);
 
@@ -365,8 +353,7 @@ class DeploymentTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $rcRepo = $this->createMock(DeploymentRepository::class);
-        $pRepo = $this->createMock(PodRepository::class);
+        $dRepo = $this->createMock(DeploymentRepository::class);
 
         $kubeClient->expects(self::atLeastOnce())
             ->method('setNamespace')
@@ -375,33 +362,21 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient->expects(self::any())
             ->method('__call')
             ->willReturnMap([
-                ['deployments', [], $rcRepo],
-                ['pods', [], $pRepo],
+                ['deployments', [], $dRepo],
             ]);
 
-        $rcRepo->expects(self::any())
+        $dRepo->expects(self::any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $pRepo->expects(self::any())
-            ->method('setLabelSelector')
-            ->willReturnSelf();
-
-        $rcRepo->expects(self::exactly(2))
+        $dRepo->expects(self::exactly(2))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
                 new Deployment(['metadata' => ['name' => 'foo']]),
             );
 
-        $pRepo->expects(self::any())
-            ->method('first')
-            ->willReturnOnConsecutiveCalls(
-                new \Teknoo\Kubernetes\Model\Pod(['metadata' => ['name' => 'foo']]),
-                null,
-            );
-
-        $rcRepo->expects(self::exactly(2))
+        $dRepo->expects(self::exactly(2))
             ->method('apply')
             ->willReturn(['foo']);
 

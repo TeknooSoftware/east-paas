@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * East Paas.
  *
@@ -23,24 +21,18 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
+declare(strict_types=1);
+
+namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Exception;
+
+use InvalidArgumentException as BaseException;
 
 /**
- * Enum to define type of healthcheck :
- * - Http : run a HTTP request to the localhost, to the defined path. Must return 200
- * - Command: run a command, it must return 0
- * - Tcp : test a valid tcp handshake
- *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-enum UpgradeStrategy: string
+class InvalidArgumentException extends BaseException
 {
-    case RollingUpgrade = 'rolling-upgrade';
-
-    case Recreate = 'recreate';
-
-    case OnDelete = 'on-delete';
 }
