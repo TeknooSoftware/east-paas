@@ -59,6 +59,13 @@ class ProjectTest extends TestCase
         return new Project($this->createMock(Account::class));
     }
 
+    public function testStatesListDeclaration()
+    {
+        $rf = new \ReflectionMethod(Project::class, 'statesListDeclaration');
+        $rf->setAccessible(true);
+        self::assertIsArray($rf->getClosure()());
+    }
+
     public function testConstructor()
     {
         $object = $this->buildObject();

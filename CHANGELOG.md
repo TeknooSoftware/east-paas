@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.7.1] - 2023-06-07
+### Stable Release
+- Update Teknoo libs
+- Require Symfony 6.3 or newer
+
 ## [1.7.0] - 2023-05-22
 ### Stable Release
 - Add `stateless` property to pod, set atomaticaly to true if a pod use a persistent storage, by default a pod is 

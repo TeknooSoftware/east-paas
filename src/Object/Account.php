@@ -92,7 +92,7 @@ class Account implements
     /**
      * @return array<string>
      */
-    public static function statesListDeclaration(): array
+    protected static function statesListDeclaration(): array
     {
         return [
             Active::class,

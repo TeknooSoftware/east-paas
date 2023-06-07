@@ -62,6 +62,13 @@ class JobTest extends TestCase
         return new Job();
     }
 
+    public function testStatesListDeclaration()
+    {
+        $rf = new \ReflectionMethod(Job::class, 'statesListDeclaration');
+        $rf->setAccessible(true);
+        self::assertIsArray($rf->getClosure()());
+    }
+
     /**
      * @throws \Teknoo\States\Proxy\Exception\StateNotFound
      */

@@ -56,6 +56,13 @@ class AccountTest extends TestCase
         return new Account();
     }
 
+    public function testStatesListDeclaration()
+    {
+        $rf = new \ReflectionMethod(Account::class, 'statesListDeclaration');
+        $rf->setAccessible(true);
+        self::assertIsArray($rf->getClosure()());
+    }
+
     public function testGetName()
     {
         $object = $this->generateObjectPopulated(['name' => 'fooBar']);
