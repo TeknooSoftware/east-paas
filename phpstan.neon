@@ -24,7 +24,7 @@ parameters:
             path: infrastructures/Git/CloningAgent.php
         -
             message: '#Cannot cast iterable#'
-            path: infrastructures/Composer/ComposerHook.php
+            path: infrastructures/ProjectBuilding/
         -
             message: '#mixed#'
             path: infrastructures/Kubernetes/Driver.php

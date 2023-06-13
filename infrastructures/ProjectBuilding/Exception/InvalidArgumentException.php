@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\East\Paas\Infrastructures\Composer\Exception;
+namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception;
 
 use InvalidArgumentException as BaseException;
 

@@ -87,7 +87,7 @@
     "autoload": {
         "psr-4": {
             "Teknoo\\East\\Paas\\": "src/",
-            "Teknoo\\East\\Paas\\Infrastructures\\Composer\\": "infrastructures/Composer/",
+            "Teknoo\\East\\Paas\\Infrastructures\\ProjectBuilding\\": "infrastructures/ProjectBuilding/",
             "Teknoo\\East\\Paas\\Infrastructures\\Image\\": "infrastructures/Image/",
             "Teknoo\\East\\Paas\\Infrastructures\\Doctrine\\": "infrastructures/Doctrine/",
             "Teknoo\\East\\Paas\\Infrastructures\\Flysystem\\": "infrastructures/Flysystem/",
@@ -103,7 +103,7 @@
             "Teknoo\\Tests\\Behat\\Transport\\": "features/bootstrap/Transport",
             "Teknoo\\Tests\\East\\Paas\\Behat\\": "tests/behat/",
             "Teknoo\\Tests\\East\\Paas\\": "tests/src/",
-            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Composer\\": "tests/infrastructures/Composer/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\ProjectBuilding\\": "tests/infrastructures/ProjectBuilding/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Image\\": "tests/infrastructures/Image/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Doctrine\\\\": "tests/infrastructures/Doctrine/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Flysystem\\": "tests/infrastructures/Flysystem/",

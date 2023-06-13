@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.8.0] - 2023-06-13
+### Stable Release
+- Convert Composer namespace to ProjectBuild to host any dependencies managers
+- Initial support of npm, pip and make tools
+
 ## [1.7.1] - 2023-06-07
 ### Stable Release
 - Update Teknoo libs
