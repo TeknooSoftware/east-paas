@@ -4,6 +4,8 @@
 ### Stable Release
 - Convert Composer namespace to ProjectBuild to host any dependencies managers
 - Initial support of npm, pip and make tools
+- DI key `teknoo.east.paas.composer.phar.path` replaced by `teknoo.east.paas.composer.path`.
+  - `teknoo.east.paas.composer.phar.path` is deprecated.
 
 ## [1.7.1] - 2023-06-07
 ### Stable Release

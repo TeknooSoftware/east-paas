@@ -30,6 +30,7 @@ use DI\ContainerBuilder;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\ComposerHook;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\RuntimeException;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\MakeHook;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\NpmHook;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\PipHook;
@@ -52,7 +53,7 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    public function testComposerHook()
+    public function testComposerHookDeprecated()
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.composer.phar.path', '/foo/composer.phar');
@@ -61,6 +62,25 @@ class ContainerTest extends TestCase
             ComposerHook::class,
             $container->get(ComposerHook::class)
         );
+    }
+
+    public function testComposerHook()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.composer.path', '/foo/composer.phar');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $container->get(ComposerHook::class)
+        );
+    }
+
+    public function testComposerHookWithoutDIParameter()
+    {
+        $container = $this->buildContainer();
+
+        $this->expectException(RuntimeException::class);
+        $container->get(ComposerHook::class);
     }
 
     public function testComposerHookWithTimeout()

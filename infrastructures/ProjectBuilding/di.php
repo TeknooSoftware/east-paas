@@ -25,8 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding;
 
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\RuntimeException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
+
+use function trigger_error;
+
+use const E_USER_DEPRECATED;
 
 return [
     ComposerHook::class . ':factory' => static function (ContainerInterface $container): callable {
@@ -47,8 +52,20 @@ return [
     },
 
     ComposerHook::class => static function (ContainerInterface $container): ComposerHook {
+        if ($container->has('teknoo.east.paas.composer.path')) {
+            $binaryPath = $container->get('teknoo.east.paas.composer.path');
+        } elseif ($container->has('teknoo.east.paas.composer.phar.path')) {
+            @trigger_error(
+                "'teknoo.east.paas.composer.phar.path' is deprecated, use 'teknoo.east.paas.composer.path' instead",
+                E_USER_DEPRECATED
+            );
+            $binaryPath = $container->get('teknoo.east.paas.composer.phar.path');
+        } else {
+            throw new RuntimeException("'teknoo.east.paas.composer.phar.path' is missed in DI parameter");
+        }
+
         return new ComposerHook(
-            $container->get('teknoo.east.paas.composer.phar.path'),
+            $binaryPath,
             $container->get(ComposerHook::class . ':factory'),
         );
     },
