@@ -23,9 +23,9 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\East\Paas\Infrastructures\Composer\Exception;
+namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception;
 
-use InvalidArgumentException as BaseException;
+use RuntimeException as BaseException;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -33,6 +33,6 @@ use InvalidArgumentException as BaseException;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class InvalidArgumentException extends BaseException
+class RuntimeException extends BaseException
 {
 }

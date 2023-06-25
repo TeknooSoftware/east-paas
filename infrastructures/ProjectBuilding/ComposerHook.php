@@ -23,11 +23,11 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\East\Paas\Infrastructures\Composer;
+namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding;
 
 use RuntimeException;
 use Symfony\Component\Process\Process;
-use Teknoo\East\Paas\Infrastructures\Composer\Exception\InvalidArgumentException;
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\InvalidArgumentException;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Throwable;
@@ -54,41 +54,14 @@ use function reset;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class ComposerHook implements HookInterface
+class ComposerHook extends AbstractHook
 {
-    /**
-     * @var callable
-     */
-    private $factory;
-
-    private ?string $path = '';
-
-    private string $localPath = '';
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $options = [];
-
-    public function __construct(
-        private readonly string $binary,
-        callable $factory,
-    ) {
-        $this->factory = $factory;
-    }
-
-    public function setPath(string $path): HookInterface
-    {
-        $this->path = $path;
-
-        return $this;
-    }
-
     /**
      * @param array{action?: string|null, arguments?: iterable<string>} $options
      * @return string[]
+     * @throws InvalidArgumentException
      */
-    private function validateOptions(array $options): array
+    protected function validateOptions(array $options): array
     {
         $globalOptions = [
             'quiet',
@@ -182,47 +155,5 @@ class ComposerHook implements HookInterface
         }
 
         return $final;
-    }
-
-    /**
-     * @param array{action?: string|null, path?:string, arguments?: iterable<string>} $options
-     */
-    public function setOptions(array $options, PromiseInterface $promise): HookInterface
-    {
-        try {
-            $this->options = $this->validateOptions($options);
-
-            if (!empty($options['path'])) {
-                $this->localPath = $options['path'];
-            }
-        } catch (Throwable $error) {
-            $promise->fail($error);
-
-            return $this;
-        }
-
-        $promise->success();
-
-        return $this;
-    }
-
-    public function run(PromiseInterface $promise): HookInterface
-    {
-        $command = ($this->factory)([$this->binary, ...$this->options], $this->path . $this->localPath);
-        if (!$command instanceof Process) {
-            $promise->fail(new RuntimeException('Bad process manager'));
-
-            return $this;
-        }
-
-        $command->run();
-
-        if ($command->isSuccessful()) {
-            $promise->success($command->getOutput());
-        } else {
-            $promise->fail(new RuntimeException((string) $command->getErrorOutput()));
-        }
-
-        return $this;
     }
 }
