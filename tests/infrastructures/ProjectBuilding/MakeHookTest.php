@@ -23,24 +23,25 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Composer;
+namespace Teknoo\Tests\East\Paas\Infrastructures\ProjectBuilding;
 
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Infrastructures\Composer\ComposerHook;
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\MakeHook;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Composer\ComposerHook
+ * @covers \Teknoo\East\Paas\Infrastructures\ProjectBuilding\AbstractHook
+ * @covers \Teknoo\East\Paas\Infrastructures\ProjectBuilding\MakeHook
  */
-class ComposerHookTest extends TestCase
+class MakeHookTest extends TestCase
 {
-    public function buildHook(bool $success = true): ComposerHook
+    public function buildHook(bool $success = true): MakeHook
     {
-        return new ComposerHook(
-            __DIR__ . '/../../../composer.phar',
+        return new MakeHook(
+            __DIR__ . '/../../../make.phar',
             function () use ($success) {
                 $process = $this->createMock(Process::class);
                 $process->expects(self::any())->method('isSuccessful')->willReturn($success);
@@ -59,7 +60,7 @@ class ComposerHookTest extends TestCase
     public function testSetPath()
     {
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setPath('/foo')
         );
     }
@@ -70,7 +71,7 @@ class ComposerHookTest extends TestCase
         $this->buildHook()->setOptions(new \stdClass(), $this->createMock(PromiseInterface::class));
     }
 
-    public function testSetOptionsNottScalar()
+    public function testSetOptionsNotScalar()
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::never())->method('success');
@@ -92,7 +93,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setOptions(['install || rm -r /'], $promise)
         );
     }
@@ -104,7 +105,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setOptions(['install && rm -r /'], $promise)
         );
     }
@@ -116,7 +117,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setOptions(['action' => 'install', 'arguments' => [['foo']]], $promise)
         );
     }
@@ -128,7 +129,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['--no-dev || rm -r /']], $promise)
         );
     }
@@ -140,20 +141,8 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['--no-dev && rm -r /']], $promise)
-        );
-    }
-
-    public function testSetOptionsWithForbiddenCommand()
-    {
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ComposerHook::class,
-            $this->buildHook()->setOptions(['global', 'install'], $promise)
         );
     }
 
@@ -164,7 +153,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setOptions(['install'], $promise)
         );
     }
@@ -176,7 +165,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setOptions(['action' => 'install'], $promise)
         );
     }
@@ -188,27 +177,15 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['prefer-install']], $promise)
-        );
-    }
-
-    public function testSetOptionsWithActionAndForbiddenArguments()
-    {
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ComposerHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['foo']], $promise)
         );
     }
 
     public function testRunNotSfProcess()
     {
-        $hook = new ComposerHook(
-            __DIR__ . '/../../../composer.phar',
+        $hook = new MakeHook(
+            __DIR__ . '/../../../make.phar',
             static fn() => new \stdClass()
         );
 
@@ -217,7 +194,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $hook->run($promise)
         );
     }
@@ -229,7 +206,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook(true)->run($promise)
         );
     }
@@ -241,7 +218,7 @@ class ComposerHookTest extends TestCase
         $promise->expects(self::once())->method('fail');
 
         self::assertInstanceOf(
-            ComposerHook::class,
+            MakeHook::class,
             $this->buildHook(false)->run($promise)
         );
     }
