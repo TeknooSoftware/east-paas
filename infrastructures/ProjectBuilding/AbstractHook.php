@@ -104,6 +104,55 @@ abstract class AbstractHook implements HookInterface
      */
     abstract protected function validateOptions(array $options): array;
 
+    /**
+     * @param array<string, string[]> $grantedCommands
+     * @param array{0?: string, action?: string|null, arguments?: array<string>} $options
+     * @return string[]
+     * @throws InvalidArgumentException
+     */
+    protected function escapeOptions(
+        array $grantedCommands,
+        array $options,
+    ): array {
+        $args = [];
+        if (!isset($options['action'])) {
+            $cmd = (string) reset($options);
+        } else {
+            $cmd = $options['action'];
+            $args = $options['arguments'] ?? [];
+        }
+
+        foreach ([$cmd, ...$args] as &$value) {
+            if (!is_scalar($value)) {
+                throw new InvalidArgumentException('Action and arguments must be scalars values');
+            }
+
+            if (preg_match('#[\&\|<>;]#S', (string) $value)) {
+                throw new InvalidArgumentException('Pipe and redirection are forbidden');
+            }
+        }
+
+        if (!isset($grantedCommands[$cmd])) {
+            throw new InvalidArgumentException("$cmd is forbidden");
+        }
+
+        $final = [$cmd];
+        foreach ($args as &$arg) {
+            $pattern = '#^' . implode('|', $grantedCommands[$cmd]) . '$#S';
+            if (preg_match($pattern, (string) $arg)) {
+                if (1 === strlen($arg)) {
+                    $final[] = '-' . $arg;
+                } else {
+                    $final[] = '--' . $arg;
+                }
+            } else {
+                    $final[] = $arg;
+            }
+        }
+
+        return $final;
+    }
+
     public function run(PromiseInterface $promise): HookInterface
     {
         $command = ($this->factory)([$this->binary, ...$this->options], $this->path . $this->localPath);

@@ -57,7 +57,7 @@ use function reset;
 class ComposerHook extends AbstractHook
 {
     /**
-     * @param array{action?: string|null, arguments?: iterable<string>} $options
+     * @param array{action?: string|null, arguments?: array<string>} $options
      * @return string[]
      * @throws InvalidArgumentException
      */
@@ -122,38 +122,9 @@ class ComposerHook extends AbstractHook
             'upgrade' => array_merge($globalOptions, $dumpOptions, $installOptions),
         ];
 
-        $args = [];
-        if (!isset($options['action'])) {
-            $cmd = (string) reset($options);
-        } else {
-            $cmd = $options['action'];
-            $args = $options['arguments'] ?? [];
-        }
-
-        foreach ([$cmd, ...$args] as &$value) {
-            if (!is_scalar($value)) {
-                throw new InvalidArgumentException('composer action and arguments must be scalars values');
-            }
-
-            if (preg_match('#[\&\|<>;]#S', (string) $value)) {
-                throw new InvalidArgumentException('Pipe and redirection are forbidden');
-            }
-        }
-
-        if (!isset($grantedCommands[$cmd])) {
-            throw new InvalidArgumentException("$cmd is forbidden");
-        }
-
-        $final = [$cmd];
-        foreach ($args as &$arg) {
-            $pattern = '#^' . implode('|', $grantedCommands[$cmd]) . '$#S';
-            if (!preg_match($pattern, (string) $arg)) {
-                throw new InvalidArgumentException("$arg is not a granted option for $cmd");
-            }
-
-            $final[] = '--' . $arg;
-        }
-
-        return $final;
+        return $this->escapeOptions(
+            grantedCommands: $grantedCommands,
+            options: $options,
+        );
     }
 }

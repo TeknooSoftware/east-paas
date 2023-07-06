@@ -190,19 +190,7 @@ class PipHookTest extends TestCase
 
         self::assertInstanceOf(
             PipHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['prefer-install']], $promise)
-        );
-    }
-
-    public function testSetOptionsWithActionAndForbiddenArguments()
-    {
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['$']], $promise)
+            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['prefer-install', 'r', 'myfile.txt']], $promise)
         );
     }
 

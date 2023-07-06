@@ -194,18 +194,6 @@ class ComposerHookTest extends TestCase
         );
     }
 
-    public function testSetOptionsWithActionAndForbiddenArguments()
-    {
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            ComposerHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['foo']], $promise)
-        );
-    }
-
     public function testRunNotSfProcess()
     {
         $hook = new ComposerHook(

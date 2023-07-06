@@ -35,6 +35,7 @@ use Throwable;
 use function array_merge;
 use function preg_match;
 use function reset;
+use function strlen;
 
 /**
  * Hook to perform some operations with pip to install dependencies for Python Project.
@@ -52,7 +53,7 @@ use function reset;
 class PipHook extends AbstractHook
 {
     /**
-     * @param array{action?: string|null, arguments?: iterable<string>} $options
+     * @param array{action?: string|null, arguments?: array<string>} $options
      * @return string[]
      * @throws InvalidArgumentException
      */
@@ -68,7 +69,6 @@ class PipHook extends AbstractHook
         ];
 
         $installOptions = [
-            '[a-zA-Z0-9\-_"/]+',
             'r',
             'no-deps',
             'platform',
@@ -79,13 +79,11 @@ class PipHook extends AbstractHook
         ];
 
         $runOptions = [
-            '[a-zA-Z0-9\-_"/]+',
             'r',
             'no-clean',
         ];
 
         $debugOptions = [
-            '[a-zA-Z0-9\-_"/]+',
             'platform',
             'implementation',
         ];
@@ -97,38 +95,9 @@ class PipHook extends AbstractHook
             'debug' => array_merge($globalOptions, $debugOptions),
         ];
 
-        $args = [];
-        if (!isset($options['action'])) {
-            $cmd = (string) reset($options);
-        } else {
-            $cmd = $options['action'];
-            $args = $options['arguments'] ?? [];
-        }
-
-        foreach ([$cmd, ...$args] as &$value) {
-            if (!is_scalar($value)) {
-                throw new InvalidArgumentException('composer action and arguments must be scalars values');
-            }
-
-            if (preg_match('#[\&\|<>;]#S', (string) $value)) {
-                throw new InvalidArgumentException('Pipe and redirection are forbidden');
-            }
-        }
-
-        if (!isset($grantedCommands[$cmd])) {
-            throw new InvalidArgumentException("$cmd is forbidden");
-        }
-
-        $final = [$cmd];
-        foreach ($args as &$arg) {
-            $pattern = '#^' . implode('|', $grantedCommands[$cmd]) . '$#S';
-            if (!preg_match($pattern, (string) $arg)) {
-                throw new InvalidArgumentException("$arg is not a granted option for $cmd");
-            }
-
-            $final[] = '--' . $arg;
-        }
-
-        return $final;
+        return $this->escapeOptions(
+            grantedCommands: $grantedCommands,
+            options: $options,
+        );
     }
 }

@@ -52,42 +52,51 @@ use function reset;
 class NpmHook extends AbstractHook
 {
     /**
-     * @param array{action?: string|null, arguments?: iterable<string>} $options
+     * @param array{action?: string|null, arguments?: array<string>} $options
      * @return string[]
      * @throws InvalidArgumentException
      */
     protected function validateOptions(array $options): array
     {
-
-        $grantedCommands = [
-            'login' => true,
-            'install' => true,
-            'update' => true,
-            'test' => true,
+        $globalOptions = [
+            'ignore-scripts',
         ];
 
-        $args = [];
-        if (!isset($options['action'])) {
-            $cmd = (string) reset($options);
-        } else {
-            $cmd = $options['action'];
-            $args = $options['arguments'] ?? [];
-        }
+        $installOptions = [
+            'save',
+            'no-save',
+            'save-prod',
+            'save-optional',
+            'install-strategy',
+            'legacy-bundling',
+            'omit',
+            'strict-peer-deps',
+            'no-package-lock',
+            'foreground-scripts',
+            'ignore-scripts',
+            'no-audit',
+            'no-fund',
+            'dry-run',
+            'workspace',
+            'workspaces',
+            'include-workspace-root',
+            'no-install-links',
+        ];
 
-        foreach ([$cmd, ...$args] as &$value) {
-            if (!is_scalar($value)) {
-                throw new InvalidArgumentException('composer action and arguments must be scalars values');
-            }
+        $grantedCommands = [
+            'login' => [
+                'registry',
+                'scope',
+                'auth-type',
+            ],
+            'install' => array_merge($globalOptions, $installOptions),
+            'update' => array_merge($globalOptions, $installOptions),
+            'test' => array_merge($globalOptions, ['script-shell']),
+        ];
 
-            if (preg_match('#[\&\|<>;]#S', (string) $value)) {
-                throw new InvalidArgumentException('Pipe and redirection are forbidden');
-            }
-        }
-
-        if (!isset($grantedCommands[$cmd])) {
-            throw new InvalidArgumentException("$cmd is forbidden");
-        }
-
-        return [$cmd, ...$args];
+        return $this->escapeOptions(
+            grantedCommands: $grantedCommands,
+            options: $options,
+        );
     }
 }
