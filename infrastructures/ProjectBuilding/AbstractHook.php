@@ -138,7 +138,7 @@ abstract class AbstractHook implements HookInterface
 
         $final = [$cmd];
         foreach ($args as &$arg) {
-            $pattern = '#^' . implode('|', $grantedCommands[$cmd]) . '$#S';
+            $pattern = '#^(' . implode('|', $grantedCommands[$cmd]) . ')$#S';
             if (preg_match($pattern, (string) $arg)) {
                 if (1 === strlen($arg)) {
                     $final[] = '-' . $arg;
