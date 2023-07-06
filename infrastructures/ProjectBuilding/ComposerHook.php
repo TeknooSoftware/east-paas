@@ -99,9 +99,7 @@ class ComposerHook extends AbstractHook
             'optimize-autoloader',
         ];
 
-        $runOptions = [
-            '[a-zA-Z0-9\-_]+',
-        ];
+        $runOptions = [];
 
         $requireOptions = [
             'update-with-dependencies',

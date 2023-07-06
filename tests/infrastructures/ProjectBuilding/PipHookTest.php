@@ -38,11 +38,15 @@ use Symfony\Component\Process\Process;
  */
 class PipHookTest extends TestCase
 {
-    public function buildHook(bool $success = true): PipHook
+    public function buildHook(bool $success = true, ?array $expectedArguments = null): PipHook
     {
         return new PipHook(
-            __DIR__ . '/../../../pip.phar',
-            function () use ($success) {
+            $bin = __DIR__ . '/../../../pip.phar',
+            function (array $args) use ($bin, $success, $expectedArguments) {
+                if (null !== $expectedArguments) {
+                    self::assertEquals([$bin, ...$expectedArguments], $args);
+                }
+
                 $process = $this->createMock(Process::class);
                 $process->expects(self::any())->method('isSuccessful')->willReturn($success);
 
@@ -190,7 +194,7 @@ class PipHookTest extends TestCase
 
         self::assertInstanceOf(
             PipHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['prefer-install', 'r', 'myfile.txt']], $promise)
+            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promise)
         );
     }
 
@@ -213,13 +217,27 @@ class PipHookTest extends TestCase
 
     public function testRunProcessSuccess()
     {
+        $promiseOpt = $this->createMock(PromiseInterface::class);
+        $promiseOpt->expects(self::once())->method('success');
+        $promiseOpt->expects(self::never())->method('fail');
+
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())->method('success');
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
             PipHook::class,
-            $this->buildHook(true)->run($promise)
+            $this->buildHook(
+                    true,
+                    [
+                        'install',
+                        '--force-reinstall',
+                        '-r',
+                        'myfile.txt',
+                    ]
+                )
+                ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
+                ->run($promise)
         );
     }
 

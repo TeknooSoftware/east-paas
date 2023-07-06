@@ -38,11 +38,15 @@ use Symfony\Component\Process\Process;
  */
 class ComposerHookTest extends TestCase
 {
-    public function buildHook(bool $success = true): ComposerHook
+    public function buildHook(bool $success = true, ?array $expectedArguments = null): ComposerHook
     {
         return new ComposerHook(
-            __DIR__ . '/../../../composer.phar',
-            function () use ($success) {
+            $bin = __DIR__ . '/../../../composer.phar',
+            function (array $args) use ($bin, $success, $expectedArguments) {
+                if (null !== $expectedArguments) {
+                    self::assertEquals([$bin, ...$expectedArguments], $args);
+                }
+
                 $process = $this->createMock(Process::class);
                 $process->expects(self::any())->method('isSuccessful')->willReturn($success);
 
@@ -213,13 +217,24 @@ class ComposerHookTest extends TestCase
 
     public function testRunProcessSuccess()
     {
+        $promiseOpt = $this->createMock(PromiseInterface::class);
+        $promiseOpt->expects(self::once())->method('success');
+        $promiseOpt->expects(self::never())->method('fail');
+
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())->method('success');
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
             ComposerHook::class,
-            $this->buildHook(true)->run($promise)
+            $this->buildHook(
+                    true,
+                    [
+                        'install',
+                        '--prefer-install',
+                    ],
+                )->setOptions(['action' => 'install', 'arguments' => ['prefer-install']], $promiseOpt)
+                ->run($promise)
         );
     }
 

@@ -69,6 +69,7 @@ class PipHook extends AbstractHook
         ];
 
         $installOptions = [
+            'q',
             'r',
             'no-deps',
             'platform',
@@ -79,6 +80,7 @@ class PipHook extends AbstractHook
         ];
 
         $runOptions = [
+            'q',
             'r',
             'no-clean',
         ];

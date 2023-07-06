@@ -38,11 +38,15 @@ use Symfony\Component\Process\Process;
  */
 class NpmHookTest extends TestCase
 {
-    public function buildHook(bool $success = true): NpmHook
+    public function buildHook(bool $success = true, ?array $expectedArguments = null): NpmHook
     {
         return new NpmHook(
-            __DIR__ . '/../../../npm.phar',
-            function () use ($success) {
+            $bin = __DIR__ . '/../../../npm.phar',
+            function (array $args) use ($bin, $success, $expectedArguments) {
+                if (null !== $expectedArguments) {
+                    self::assertEquals([$bin, ...$expectedArguments], $args);
+                }
+
                 $process = $this->createMock(Process::class);
                 $process->expects(self::any())->method('isSuccessful')->willReturn($success);
 
@@ -190,7 +194,7 @@ class NpmHookTest extends TestCase
 
         self::assertInstanceOf(
             NpmHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['prefer-install']], $promise)
+            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['dry-run', 'foo']], $promise)
         );
     }
 
@@ -225,13 +229,26 @@ class NpmHookTest extends TestCase
 
     public function testRunProcessSuccess()
     {
+        $promiseOpt = $this->createMock(PromiseInterface::class);
+        $promiseOpt->expects(self::once())->method('success');
+        $promiseOpt->expects(self::never())->method('fail');
+
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())->method('success');
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
             NpmHook::class,
-            $this->buildHook(true)->run($promise)
+            $this->buildHook(
+                    true,
+                    [
+                        'install',
+                        '--dry-run',
+                        'foo',
+                    ]
+                )
+                ->setOptions(['action' => 'install', 'arguments' => ['dry-run', 'foo']], $promiseOpt)
+                ->run($promise)
         );
     }
 
