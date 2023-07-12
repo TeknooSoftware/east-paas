@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
+use Laminas\Diactoros\StreamFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
@@ -67,7 +68,7 @@ class ReceiveJobTest extends TestCase
 
         $message->expects(self::once())
             ->method('getBody')
-            ->willReturn('foo');
+            ->willReturn((new StreamFactory())->createStream('foo'));
 
         $chef->expects(self::once())
             ->method('updateWorkPlan')

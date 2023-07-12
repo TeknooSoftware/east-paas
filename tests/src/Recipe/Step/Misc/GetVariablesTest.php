@@ -25,11 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
+use Laminas\Diactoros\StreamFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
+use function json_encode;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -69,7 +71,9 @@ class GetVariablesTest extends TestCase
 
         $message->expects(self::any())->method('getHeader')->willReturn(['application/json']);
         $message->expects(self::any())->method('getBody')->willReturn(
-            \json_encode($data = ['foo' => 'bar'])
+            (new StreamFactory())->createStream(
+                json_encode($data = ['foo' => 'bar'])
+            )
         );
 
         $chef->expects(self::once())

@@ -31,13 +31,13 @@
         "ext-dom": "*",
         "ext-json": "*",
         "ext-libxml": "*",
-        "php-di/php-di": "^6.4",
+        "php-di/php-di": "^7.0.3",
         "psr/http-client": "^1.0.2",
         "teknoo/immutable": "^3.0.16",
         "teknoo/states": "^6.1.2",
         "teknoo/recipe": "^4.2.8",
-        "teknoo/east-foundation": "^6.2.11",
-        "teknoo/east-common": "^1.9.5"
+        "teknoo/east-foundation": "^7.0.0-beta1",
+        "teknoo/east-common": "^2.0.0-beta1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -53,10 +53,10 @@
         "doctrine/mongodb-odm-bundle": "^4.5.2",
         "doctrine/persistence": "^3.2",
         "guzzlehttp/guzzle": "^7.7",
-        "laminas/laminas-diactoros": "^2.25.2",
+        "laminas/laminas-diactoros": "^3",
         "league/flysystem": "^3.15.1",
-        "php-http/discovery": "^1.18",
-        "php-http/mock-client": "^1.5.1",
+        "php-http/discovery": "^1.19.1",
+        "php-http/mock-client": "^1.6",
         "psr/http-client":"^1.0.2",
         "symfony/config": "^6.3",
         "symfony/console": "^6.3",
@@ -81,7 +81,7 @@
         "symfony/validator": "^6.3",
         "symfony/var-exporter": "^6.3",
         "symfony/yaml": "^6.3",
-        "teknoo/bridge-phpdi-symfony": "^5.2.6",
+        "teknoo/bridge-phpdi-symfony": "^6.0.0-beta1",
         "teknoo/kubernetes-client": "^1.4.1"
     },
     "autoload": {
