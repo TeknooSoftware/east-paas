@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [1.8.2] - 2023-07-12
+### Stable Release
+- Fix hooks for  PIP
+
 ## [1.8.1] - 2023-07-06
 ### Stable Release
 - Fix hooks for  PIP and NPM

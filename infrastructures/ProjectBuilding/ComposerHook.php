@@ -25,16 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding;
 
-use RuntimeException;
-use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\InvalidArgumentException;
-use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Hook\HookInterface;
-use Throwable;
 
 use function array_merge;
-use function preg_match;
-use function reset;
 
 /**
  * Hook to perform some operations with composer to install dependencies for PHP Project.

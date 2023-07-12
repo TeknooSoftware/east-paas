@@ -29,6 +29,7 @@ use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\RuntimeException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 
+use function implode;
 use function trigger_error;
 
 use const E_USER_DEPRECATED;
@@ -120,7 +121,16 @@ return [
 
     PipHook::class . ':factory' => static function (ContainerInterface $container): callable {
         return function (array $command, string $cwd) use ($container): Process {
-            $process = new Process($command, $cwd);
+            $process = Process::fromShellCommandline(
+                command: implode(
+                    ' ',
+                    [
+                        'virtualenv -p python3 venv && . venv/bin/activate && ',
+                        ...$command,
+                    ],
+                ),
+                cwd: $cwd,
+            );
 
             $timeout = 0.0;
             if ($container->has('teknoo.east.paas.pip.timeout')) {
@@ -138,7 +148,7 @@ return [
     PipHook::class => static function (ContainerInterface $container): PipHook {
         return new PipHook(
             $container->get('teknoo.east.paas.pip.path'),
-            $container->get(NpmHook::class . ':factory'),
+            $container->get(PipHook::class . ':factory'),
         );
     },
 ];

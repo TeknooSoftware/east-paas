@@ -32,7 +32,6 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Throwable;
 
-use function array_merge;
 use function preg_match;
 use function reset;
 
