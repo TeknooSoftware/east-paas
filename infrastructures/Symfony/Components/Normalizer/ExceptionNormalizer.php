@@ -65,4 +65,14 @@ class ExceptionNormalizer implements NormalizerInterface
     {
         return $data instanceof Throwable;
     }
+
+    /**
+     * @return array<class-string|'*'|'object'|string, bool|null>
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Throwable::class => false,
+        ];
+    }
 }

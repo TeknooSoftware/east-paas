@@ -97,4 +97,9 @@ class HistoryDenormalizerTest extends TestCase
             $this->buildNormalizer()->denormalize(['previous' => ['message' => 'bar', 'date' => '2018-04-01 00:00:00 +0000', 'serial_number' => 123], 'message' => 'foo', 'date' => '2018-05-01 00:00:00 +0000', 'is_final' => false, 'extra' => ['hello' => 'world'], 'serial_number' => 0], History::class)
         );
     }
+
+    public function testGetSupportedTypes()
+    {
+        self::assertIsArray($this->buildNormalizer()->getSupportedTypes('array'));
+    }
 }

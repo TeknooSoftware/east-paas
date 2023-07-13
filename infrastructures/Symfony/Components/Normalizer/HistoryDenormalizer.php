@@ -83,4 +83,14 @@ class HistoryDenormalizer implements DenormalizerInterface
     {
         return is_array($data) && History::class === $type;
     }
+
+    /**
+     * @return array<class-string|'*'|'object'|string, bool|null>
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
 }

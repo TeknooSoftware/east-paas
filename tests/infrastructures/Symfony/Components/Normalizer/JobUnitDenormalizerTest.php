@@ -571,4 +571,9 @@ class JobUnitDenormalizerTest extends TestCase
                 ->denormalize($jobNormalized, JobUnitInterface::class, null, ['hierarchical_namespaces' => true])
         );
     }
+
+    public function testGetSupportedTypes()
+    {
+        self::assertIsArray($this->buildNormalizer()->getSupportedTypes('array'));
+    }
 }

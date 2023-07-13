@@ -67,4 +67,9 @@ class ExceptionNormalizerTest extends TestCase
             $this->buildNormalizer()->normalize(new \Exception('foo', 123))
         );
     }
+
+    public function testGetSupportedTypes()
+    {
+        self::assertIsArray($this->buildNormalizer()->getSupportedTypes('array'));
+    }
 }

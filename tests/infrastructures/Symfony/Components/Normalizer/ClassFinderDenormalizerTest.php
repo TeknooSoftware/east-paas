@@ -105,4 +105,9 @@ class ClassFinderDenormalizerTest extends TestCase
                 ->denormalize(['@class' => Environment::class, 'name'=>'foo'], 'foo')
         );
     }
+
+    public function testGetSupportedTypes()
+    {
+        self::assertIsArray($this->buildNormalizer()->getSupportedTypes('array'));
+    }
 }

@@ -86,4 +86,14 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
             && !empty($data['@class'])
             && class_exists($data['@class'], true);
     }
+
+    /**
+     * @return array<class-string|'*'|'object'|string, bool|null>
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
 }

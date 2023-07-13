@@ -150,4 +150,14 @@ class JobUnitDenormalizer implements DenormalizerInterface
     {
         return is_array($data) && JobUnitInterface::class === $type;
     }
+
+    /**
+     * @return array<class-string|'*'|'object'|string, bool|null>
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
 }
