@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.0.1] - 2023-07-14
+### Stable Release
+- Support PHP-DI Compilation
+
 ## [2.0.0] - 2023-07-13
 ### Stable Release
 - Support PHP-DI 7.0+

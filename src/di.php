@@ -145,7 +145,7 @@ use Teknoo\Recipe\Recipe;
 use Teknoo\Recipe\RecipeInterface as OriginalRecipeInterface;
 use Traversable;
 
-use function DI\get;
+use function DI\get as DIGet;
 use function DI\create;
 use function file_get_contents;
 use function is_array;
@@ -153,56 +153,68 @@ use function is_dir;
 use function is_iterable;
 use function iterator_to_array;
 
-$getArrayValues = static function (ContainerInterface $container, string $keyName, array $defaultValues = []): array {
-    $values = [];
-
-    if ($container->has($keyName)) {
-        $values = $container->get($keyName);
-    }
-
-    if (!is_iterable($values) && !is_array($values)) {
-        throw new InvalidArgumentException(
-            "`$keyName` must be an array or iterable"
-        );
-    }
-
-    if (!is_array($values)) {
-        $values = iterator_to_array($values);
-    }
-
-    return $values;
-};
-
 return [
+    'teknoo.east.paas.di.get_array.values' => static function (): object {
+        return new class () {
+            /**
+             * @param array<string, mixed> $defaultValues
+             * @return array<string, mixed>
+             */
+            public function __invoke(
+                ContainerInterface $container,
+                string $keyName,
+                array $defaultValues = [],
+            ): array {
+                $values = [];
+
+                if ($container->has($keyName)) {
+                    $values = $container->get($keyName);
+                }
+
+                if (!is_iterable($values) && !is_array($values)) {
+                    throw new InvalidArgumentException(
+                        "`$keyName` must be an array or iterable"
+                    );
+                }
+
+                if (!is_array($values)) {
+                    $values = iterator_to_array($values);
+                }
+
+                return $values;
+            }
+        };
+    },
+
     //Loaders
     AccountLoader::class => create(AccountLoader::class)
-        ->constructor(get(AccountRepositoryInterface::class)),
+        ->constructor(DIGet(AccountRepositoryInterface::class)),
     JobLoader::class => create(JobLoader::class)
-        ->constructor(get(JobRepositoryInterface::class)),
+        ->constructor(DIGet(JobRepositoryInterface::class)),
     ProjectLoader::class => create(ProjectLoader::class)
-        ->constructor(get(ProjectRepositoryInterface::class)),
+        ->constructor(DIGet(ProjectRepositoryInterface::class)),
     ClusterLoader::class => create(ClusterLoader::class)
-        ->constructor(get(ClusterRepositoryInterface::class)),
+        ->constructor(DIGet(ClusterRepositoryInterface::class)),
 
     //Writer
     AccountWriter::class => create(AccountWriter::class)
-        ->constructor(get(ManagerInterface::class), get(DatesService::class)),
+        ->constructor(DIGet(ManagerInterface::class), DIGet(DatesService::class)),
     ProjectWriter::class => create(ProjectWriter::class)
-        ->constructor(get(ManagerInterface::class), get(DatesService::class)),
+        ->constructor(DIGet(ManagerInterface::class), DIGet(DatesService::class)),
     JobWriter::class => create(JobWriter::class)
-        ->constructor(get(ManagerInterface::class), get(DatesService::class)),
+        ->constructor(DIGet(ManagerInterface::class), DIGet(DatesService::class)),
     ClusterWriter::class => create(ClusterWriter::class)
-        ->constructor(get(ManagerInterface::class), get(DatesService::class)),
+        ->constructor(DIGet(ManagerInterface::class), DIGet(DatesService::class)),
 
     //Deleting
     'teknoo.east.paas.deleting.account' => create(DeletingService::class)
-        ->constructor(get(AccountWriter::class), get(DatesService::class)),
+        ->constructor(DIGet(AccountWriter::class), DIGet(DatesService::class)),
     'teknoo.east.paas.deleting.project' => create(DeletingService::class)
-        ->constructor(get(ProjectWriter::class), get(DatesService::class)),
+        ->constructor(DIGet(ProjectWriter::class), DIGet(DatesService::class)),
     'teknoo.east.paas.deleting.job' => create(DeletingService::class)
-        ->constructor(get(JobWriter::class), get(DatesService::class)),
+        ->constructor(DIGet(JobWriter::class), DIGet(DatesService::class)),
     'teknoo.east.paas.deleting.cluster' => create(DeletingService::class)
-        ->constructor(get(ClusterWriter::class), get(DatesService::class)),
+        ->constructor(DIGet(ClusterWriter::class), DIGet(DatesService::class)),
 
     //YamlValidator
     YamlValidator::class => create(YamlValidator::class)
@@ -210,9 +222,13 @@ return [
 
     //Compiler
     HookCompiler::class => create()
-        ->constructor(get(HooksCollectionInterface::class)),
-    ImageCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): ImageCompiler {
-        $imagesLibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.containers_images_library', []);
+        ->constructor(DIGet(HooksCollectionInterface::class)),
+    ImageCompiler::class => static function (ContainerInterface $container): ImageCompiler {
+        $imagesLibrary = ($container->get('teknoo.east.paas.di.get_array.values'))(
+            $container,
+            'teknoo.east.paas.compilation.containers_images_library',
+            [],
+        );
 
         $rootPath = $container->get('teknoo.east.paas.root_dir');
         foreach ($imagesLibrary as &$image) {
@@ -226,21 +242,37 @@ return [
         return new ImageCompiler($imagesLibrary);
     },
     MapCompiler::class => create(),
-    IngressCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): IngressCompiler {
+    IngressCompiler::class => static function (ContainerInterface $container): IngressCompiler {
         return new IngressCompiler(
-            $getArrayValues($container, 'teknoo.east.paas.compilation.ingresses_extends.library', [])
+            ($container->get('teknoo.east.paas.di.get_array.values'))(
+                $container,
+                'teknoo.east.paas.compilation.ingresses_extends.library',
+                [],
+            )
         );
     },
-    PodCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): PodCompiler {
-        $podslibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.pods_extends.library', []);
-        $containerslibrary = $getArrayValues($container, 'teknoo.east.paas.compilation.containers_extends.library', []);
+    PodCompiler::class => static function (ContainerInterface $container): PodCompiler {
+        $podslibrary = ($container->get('teknoo.east.paas.di.get_array.values'))(
+            $container,
+            'teknoo.east.paas.compilation.pods_extends.library',
+            [],
+        );
+        $containerslibrary = ($container->get('teknoo.east.paas.di.get_array.values'))(
+            $container,
+            'teknoo.east.paas.compilation.containers_extends.library',
+            [],
+        );
 
         return new PodCompiler($podslibrary, $containerslibrary);
     },
     SecretCompiler::class => create(),
-    ServiceCompiler::class => static function (ContainerInterface $container) use ($getArrayValues): ServiceCompiler {
+    ServiceCompiler::class => static function (ContainerInterface $container): ServiceCompiler {
         return new ServiceCompiler(
-            $getArrayValues($container, 'teknoo.east.paas.compilation.services_extends.library', [])
+            ($container->get('teknoo.east.paas.di.get_array.values'))(
+                $container,
+                'teknoo.east.paas.compilation.services_extends.library',
+                [],
+            )
         );
     },
     VolumeCompiler::class => create(),
@@ -276,14 +308,14 @@ return [
     },
 
     //Conductor
-    CompiledDeploymentFactoryInterface::class => get(CompiledDeploymentFactory::class),
+    CompiledDeploymentFactoryInterface::class => DIGet(CompiledDeploymentFactory::class),
     CompiledDeploymentFactory::class => create()
         ->constructor(
             CompiledDeployment::class,
             (string) file_get_contents(__DIR__ . '/Contracts/Configuration/paas_validation.xsd'),
         ),
 
-    ConductorInterface::class => get(Conductor::class),
+    ConductorInterface::class => DIGet(Conductor::class),
     Conductor::class => static function (ContainerInterface $container): Conductor {
         $storageProvider = null;
         if ($container->has('teknoo.east.paas.default_storage_provider')) {
@@ -319,21 +351,25 @@ return [
     StepAddHistory::class => create(),
     DeserializeHistory::class => create()
         ->constructor(
-            get(DeserializerInterface::class),
+            DIGet(DeserializerInterface::class),
         ),
     ReceiveHistory::class => create(),
 
     //Job
     CreateNewJob::class => create(),
-    DeserializeJob::class => static function (ContainerInterface $container) use ($getArrayValues): DeserializeJob {
+    DeserializeJob::class => static function (ContainerInterface $container): DeserializeJob {
         return new DeserializeJob(
             $container->get(DeserializerInterface::class),
-            $getArrayValues($container, 'teknoo.east.paas.compilation.global_variables', []),
+            ($container->get('teknoo.east.paas.di.get_array.values'))(
+                $container,
+                'teknoo.east.paas.compilation.global_variables',
+                [],
+            ),
         );
     },
     GetJob::class => create()
         ->constructor(
-            get(JobLoader::class),
+            DIGet(JobLoader::class),
         ),
     PrepareJob::class => static function (ContainerInterface $container): PrepareJob {
         $prefereRealDate = true;
@@ -350,7 +386,7 @@ return [
 
     ReceiveJob::class => create(),
     SaveJob::class => create()
-        ->constructor(get(JobWriter::class)),
+        ->constructor(DIGet(JobWriter::class)),
     SerializeJob::class => static function (ContainerInterface $container): SerializeJob {
         return new SerializeJob(
             $container->get(SerializerInterface::class),
@@ -361,11 +397,11 @@ return [
     GetVariables::class => create(),
     Ping::class => create()
         ->constructor(
-            get(PingServiceInterface::class)
+            DIGet(PingServiceInterface::class)
         ),
     DispatchError::class => create()
         ->constructor(
-            get(ErrorFactoryInterface::class),
+            DIGet(ErrorFactoryInterface::class),
         ),
     SetTimeLimit::class => static function (ContainerInterface $container): SetTimeLimit {
         $seconds = 5 * 60;
@@ -380,61 +416,61 @@ return [
     },
     UnsetTimeLimit::class => create()
         ->constructor(
-            get(TimeoutServiceInterface::class),
+            DIGet(TimeoutServiceInterface::class),
         ),
 
     //Project
     GetEnvironment::class => create(),
     GetProject::class => create()
         ->constructor(
-            get(ProjectLoader::class),
+            DIGet(ProjectLoader::class),
         ),
 
     //Worker
     BuildImages::class => create()
         ->constructor(
-            get(DHI::class),
+            DIGet(DHI::class),
         ),
     BuildVolumes::class => create()
         ->constructor(
-            get(DHI::class),
+            DIGet(DHI::class),
         ),
     CloneRepository::class => create(),
     CompileDeployment::class => create(),
     ConfigureCloningAgent::class => create()
         ->constructor(
-            get(CloningAgentInterface::class),
+            DIGet(CloningAgentInterface::class),
         ),
     ConfigureConductor::class => create()
-        ->constructor(get(ConductorInterface::class)),
+        ->constructor(DIGet(ConductorInterface::class)),
     ConfigureImagesBuilder::class => create()
         ->constructor(
-            get(BuilderInterface::class),
+            DIGet(BuilderInterface::class),
         ),
     ConfigureClusterClient::class => create()
         ->constructor(
-            get(Directory::class),
+            DIGet(Directory::class),
         ),
     Deploying::class => create()
         ->constructor(
-            get(DHI::class),
+            DIGet(DHI::class),
         ),
     Exposing::class => create()
         ->constructor(
-            get(DHI::class),
+            DIGet(DHI::class),
         ),
     HookingDeployment::class => create()
         ->constructor(
-            get(DHI::class),
+            DIGet(DHI::class),
         ),
     PrepareWorkspace::class => create()
-        ->constructor(get(JobWorkspaceInterface::class)),
+        ->constructor(DIGet(JobWorkspaceInterface::class)),
     ReadDeploymentConfiguration::class => create(),
 
     SerialGenerator::class => create(),
 
     //Base recipe
-    OriginalRecipeInterface::class => get(Recipe::class),
+    OriginalRecipeInterface::class => DIGet(Recipe::class),
     Recipe::class => create(),
 
     //Cookbooks
@@ -471,7 +507,7 @@ return [
         };
     },
 
-    NewAccountEndPointInterface::class => get(NewAccountEndPoint::class),
+    NewAccountEndPointInterface::class => DIGet(NewAccountEndPoint::class),
     NewAccountEndPoint::class => static function (
         ContainerInterface $container
     ): NewAccountEndPoint {
@@ -556,7 +592,7 @@ return [
         };
     },
 
-    NewProjectEndPointInterface::class => get(NewProjectEndPoint::class),
+    NewProjectEndPointInterface::class => DIGet(NewProjectEndPoint::class),
     NewProjectEndPoint::class => static function (ContainerInterface $container): NewProjectEndPoint {
         $accessControl = null;
         if ($container->has(ObjectAccessControlInterface::class)) {
@@ -584,71 +620,71 @@ return [
         );
     },
 
-    NewJobInterface::class => get(NewJob::class),
+    NewJobInterface::class => DIGet(NewJob::class),
     NewJob::class => create()
         ->constructor(
-            get(OriginalRecipeInterface::class),
-            get(Ping::class),
-            get(SetTimeLimit::class),
-            get(GetProject::class),
-            get(GetEnvironment::class),
-            get(GetVariables::class),
-            get(CreateNewJob::class),
-            get(PrepareJob::class),
-            get(SaveJob::class),
-            get(SerializeJob::class),
-            get(NewJobStepsInterface::class),
-            get(DispatchJobInterface::class),
-            get(SendJobInterface::class),
-            get(UnsetTimeLimit::class),
-            get(DispatchError::class),
-            get(NewJobErrorsHandlersInterface::class),
+            DIGet(OriginalRecipeInterface::class),
+            DIGet(Ping::class),
+            DIGet(SetTimeLimit::class),
+            DIGet(GetProject::class),
+            DIGet(GetEnvironment::class),
+            DIGet(GetVariables::class),
+            DIGet(CreateNewJob::class),
+            DIGet(PrepareJob::class),
+            DIGet(SaveJob::class),
+            DIGet(SerializeJob::class),
+            DIGet(NewJobStepsInterface::class),
+            DIGet(DispatchJobInterface::class),
+            DIGet(SendJobInterface::class),
+            DIGet(UnsetTimeLimit::class),
+            DIGet(DispatchError::class),
+            DIGet(NewJobErrorsHandlersInterface::class),
         ),
 
-    AddHistoryInterface::class => get(AddHistory::class),
+    AddHistoryInterface::class => DIGet(AddHistory::class),
     AddHistory::class => create()
         ->constructor(
-            get(OriginalRecipeInterface::class),
-            get(Ping::class),
-            get(SetTimeLimit::class),
-            get(ReceiveHistory::class),
-            get(DeserializeHistory::class),
-            get(GetProject::class),
-            get(GetJob::class),
-            get(StepAddHistory::class),
-            get(SaveJob::class),
-            get(AddHistoryStepsInterface::class),
-            get(SendHistoryInterface::class),
-            get(UnsetTimeLimit::class),
-            get(DispatchError::class),
+            DIGet(OriginalRecipeInterface::class),
+            DIGet(Ping::class),
+            DIGet(SetTimeLimit::class),
+            DIGet(ReceiveHistory::class),
+            DIGet(DeserializeHistory::class),
+            DIGet(GetProject::class),
+            DIGet(GetJob::class),
+            DIGet(StepAddHistory::class),
+            DIGet(SaveJob::class),
+            DIGet(AddHistoryStepsInterface::class),
+            DIGet(SendHistoryInterface::class),
+            DIGet(UnsetTimeLimit::class),
+            DIGet(DispatchError::class),
         ),
 
-    RunJobInterface::class => get(RunJob::class),
+    RunJobInterface::class => DIGet(RunJob::class),
     RunJob::class => create()
         ->constructor(
-            get(OriginalRecipeInterface::class),
-            get(DHI::class),
-            get(Ping::class),
-            get(SetTimeLimit::class),
-            get(ReceiveJob::class),
-            get(DeserializeJob::class),
-            get(PrepareWorkspace::class),
-            get(ConfigureCloningAgent::class),
-            get(CloneRepository::class),
-            get(ConfigureConductor::class),
-            get(ReadDeploymentConfiguration::class),
-            get(CompileDeployment::class),
-            get(HookingDeployment::class),
-            get(ConfigureImagesBuilder::class),
-            get(BuildImages::class),
-            get(BuildVolumes::class),
-            get(ConfigureClusterClient::class),
-            get(Deploying::class),
-            get(Exposing::class),
-            get(RunJobStepsInterface::class),
-            get(DRI::class),
-            get(UnsetTimeLimit::class),
-            get(SendHistoryInterface::class),
+            DIGet(OriginalRecipeInterface::class),
+            DIGet(DHI::class),
+            DIGet(Ping::class),
+            DIGet(SetTimeLimit::class),
+            DIGet(ReceiveJob::class),
+            DIGet(DeserializeJob::class),
+            DIGet(PrepareWorkspace::class),
+            DIGet(ConfigureCloningAgent::class),
+            DIGet(CloneRepository::class),
+            DIGet(ConfigureConductor::class),
+            DIGet(ReadDeploymentConfiguration::class),
+            DIGet(CompileDeployment::class),
+            DIGet(HookingDeployment::class),
+            DIGet(ConfigureImagesBuilder::class),
+            DIGet(BuildImages::class),
+            DIGet(BuildVolumes::class),
+            DIGet(ConfigureClusterClient::class),
+            DIGet(Deploying::class),
+            DIGet(Exposing::class),
+            DIGet(RunJobStepsInterface::class),
+            DIGet(DRI::class),
+            DIGet(UnsetTimeLimit::class),
+            DIGet(SendHistoryInterface::class),
         ),
 
     RunJobInterface::class . ':proxy' => static function (ContainerInterface $container): RunJobInterface {
