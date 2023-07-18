@@ -125,7 +125,7 @@ return [
                 command: implode(
                     ' ',
                     [
-                        'virtualenv -p python3 venv && . venv/bin/activate && ',
+                        'virtualenv --copies -p python3 venv && . venv/bin/activate && ',
                         ...$command,
                     ],
                 ),
