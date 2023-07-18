@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.0.2] - 2023-07-17
+### Stable Release
+- Support Python Virtualenv
+
 ## [2.0.1] - 2023-07-14
 ### Stable Release
 - Support PHP-DI Compilation
