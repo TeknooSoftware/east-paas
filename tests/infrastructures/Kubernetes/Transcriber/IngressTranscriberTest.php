@@ -80,7 +80,8 @@ class IngressTranscriberTest extends TestCase
                             new IngressPath('/foo', 'sr2', 90)
                         ],
                         'cert',
-                        true
+                        true,
+                        ['annotations' => 'foo'],
                     ),
                     'default_namespace',
                     'a-prefix',
@@ -148,7 +149,8 @@ class IngressTranscriberTest extends TestCase
                             new IngressPath('/foo', 'sr2', 90)
                         ],
                         'cert',
-                        true
+                        true,
+                        ['annotations' => ['foo' => 'bar']],
                     ),
                     'default_namespace',
                     'a-prefix',

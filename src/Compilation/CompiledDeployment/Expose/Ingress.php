@@ -43,6 +43,7 @@ class Ingress implements ImmutableInterface
 
     /**
      * @param array<integer, IngressPath> $paths
+     * @param array<string, string|int|bool|array<string, string>> $meta
      */
     public function __construct(
         private readonly string $name,
@@ -53,6 +54,7 @@ class Ingress implements ImmutableInterface
         private readonly array $paths,
         private readonly ?string $tlsSecret,
         private readonly bool $httpsBackend,
+        private readonly array $meta = [],
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -98,5 +100,13 @@ class Ingress implements ImmutableInterface
     public function isHttpsBackend(): bool
     {
         return $this->httpsBackend;
+    }
+
+    /**
+     * @return array<string, string|int|bool|array<string, string>>
+     */
+    public function getMeta(): array
+    {
+        return $this->meta;
     }
 }

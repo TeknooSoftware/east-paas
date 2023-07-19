@@ -442,6 +442,12 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
             ],
             tlsSecret: 'demo-vault',
             httpsBackend: false,
+            meta: [
+                'letsencrypt' => '1',
+                'annotations' => [
+                    'foo2' => 'bar',
+                ],
+            ],
         )
     );
 

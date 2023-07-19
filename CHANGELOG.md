@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.0.3] - 2023-07-19
+### Stable Release
+- Add meta key to ingress to allow custom configuration, like letsencrypts
+
 ## [2.0.2] - 2023-07-17
 ### Stable Release
 - Support Python Virtualenv

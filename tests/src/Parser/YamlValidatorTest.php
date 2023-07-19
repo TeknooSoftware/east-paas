@@ -234,6 +234,8 @@ ingresses:
     service: #default service
       name: demo
       port: 8080
+    meta:
+      letsencrypt: true
     paths:
       - path: /php
         service:

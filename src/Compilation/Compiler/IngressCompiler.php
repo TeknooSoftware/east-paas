@@ -60,6 +60,7 @@ class IngressCompiler implements CompilerInterface, ExtenderInterface
     private const KEY_PATHS = 'paths';
     private const KEY_PATH = 'path';
     private const KEY_HTTPS_BACKEND = 'https-backend';
+    private const KEY_META = 'meta';
     private const KEY_EXTENDS = 'extends';
 
     /**
@@ -94,17 +95,23 @@ class IngressCompiler implements CompilerInterface, ExtenderInterface
                 $port = (int) $port;
             }
 
+            $meta = $config[self::KEY_META] ?? [];
+            if (!is_array($meta)) {
+                $meta = [$meta => true];
+            }
+
             $compiledDeployment->addIngress(
                 $name,
                 new Ingress(
-                    $name,
-                    $config[self::KEY_HOST],
-                    $config[self::KEY_SERVICE][self::KEY_PROVIDER] ?? null,
-                    $config[self::KEY_SERVICE][self::KEY_SERVICE_NAME] ?? null,
-                    $port,
-                    $paths,
-                    $config[self::KEY_TLS][self::KEY_SECRET] ?? null,
-                    !empty($config[self::KEY_HTTPS_BACKEND]),
+                    name: $name,
+                    host: $config[self::KEY_HOST],
+                    provider: $config[self::KEY_SERVICE][self::KEY_PROVIDER] ?? null,
+                    defaultServiceName: $config[self::KEY_SERVICE][self::KEY_SERVICE_NAME] ?? null,
+                    defaultServicePort: $port,
+                    paths: $paths,
+                    tlsSecret: $config[self::KEY_TLS][self::KEY_SECRET] ?? null,
+                    httpsBackend: !empty($config[self::KEY_HTTPS_BACKEND]),
+                    meta: $meta,
                 )
             );
         }

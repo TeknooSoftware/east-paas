@@ -356,6 +356,7 @@
       <xs:element name="tls" type="epv:ingress_tls" />
       <xs:element name="service" type="epv:ingress_service" minOccurs="0" />
       <xs:element name="paths" type="epv:ingress_paths" minOccurs="0" />
+      <xs:element name="meta" type="xs:anyType" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>

@@ -164,6 +164,10 @@ ingresses:
         host: demo-paas.teknoo.software
         tls:
             secret: "demo-vault" #Configure the orchestrator to fetch value from vault
+        meta:
+            letsencrypt: true
+            annotations:
+                foo2: bar
         paths:
             - path: /php
               service:

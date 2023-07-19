@@ -1955,6 +1955,7 @@ EOF;
                     "name": "{$prefix}demo"
                 },
                 "annotations": {
+                    "foo2": "bar",
                     "foo": "bar"
                 }
             },

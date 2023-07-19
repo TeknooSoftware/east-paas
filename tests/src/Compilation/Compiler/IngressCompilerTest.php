@@ -91,6 +91,7 @@ class IngressCompilerTest extends TestCase
                     'name' => 'php-react',
                     'port' => 80
                 ],
+                'meta' => 'foo',
                 'paths' => [
                     [
                         'path' => '/demo',

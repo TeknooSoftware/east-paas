@@ -34,6 +34,9 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingIn
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
+use function array_merge_recursive;
+use function is_array;
+
 /**
  * "Exposing transcriber" to translate CompiledDeployment's ingresses to Kubernetes Ingresses manifest.
  *
@@ -110,6 +113,14 @@ class IngressTranscriber implements ExposingInterface
             ];
         }
 
+        if (!empty($metaAnnotations = $ingress->getMeta()['annotations'] ?? [])) {
+            if (!is_array($metaAnnotations)) {
+                $metaAnnotations = [$metaAnnotations => true];
+            }
+
+            //Can not overload default annotations by default to avoid security issues)
+            $defaultIngressAnnotations = array_merge_recursive($metaAnnotations, $defaultIngressAnnotations);
+        }
 
         $specs = [
             'metadata' => [

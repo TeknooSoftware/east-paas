@@ -70,6 +70,7 @@ class YamlValidator
         'pods',
         'services',
         'ingresses',
+        'meta',
         'version',
         'namespace',
         'hierarchical-namespaces',

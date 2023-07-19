@@ -39,16 +39,17 @@ class IngressTest extends TestCase
     private function buildObject($internal = false): Ingress
     {
         return new Ingress(
-            'foo',
-            'bar.com',
-            'providerName',
-            'bar',
-            8080,
-            [
+            name: 'foo',
+            host: 'bar.com',
+            provider: 'providerName',
+            defaultServiceName: 'bar',
+            defaultServicePort: 8080,
+            paths: [
                 new IngressPath('/foo', 'bar', 80)
             ],
-            'fooSecret',
-            true
+            tlsSecret: 'fooSecret',
+            httpsBackend: true,
+            meta: ['foo' => 'bar'],
         );
     }
 
@@ -127,6 +128,14 @@ class IngressTest extends TestCase
                 'fooSecret',
                 false,
             ))->isHttpsBackend()
+        );
+    }
+
+    public function testGetMeta()
+    {
+        self::assertEquals(
+            ['foo' => 'bar'],
+            $this->buildObject()->getMeta()
         );
     }
 }
