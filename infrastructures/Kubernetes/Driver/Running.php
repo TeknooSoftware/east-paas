@@ -85,7 +85,9 @@ class Running implements StateInterface
                         || ($runDeployment && $transcriber instanceof DeploymentInterface)
                         || ($runExposing && $transcriber instanceof ExposingInterface)
                     ) {
-                        /** @var PromiseInterface<array<string, mixed>, mixed> $promise */
+                        /**
+                         * @var PromiseInterface<array<string, mixed>, mixed> $promise
+                         */
                         $transcriber->transcribe($compiledDeployment, $client, $promise);
                     }
                 }

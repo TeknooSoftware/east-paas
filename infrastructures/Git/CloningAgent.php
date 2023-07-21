@@ -153,7 +153,9 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
 
         $that = clone $this;
         $that->sourceRepository = $repository;
-        $that->sshIdentity = $identity;
+        if ($identity instanceof SshIdentity) {
+            $that->sshIdentity = $identity;
+        }
         $that->workspace = $workspace;
 
         $that->updateStates();
