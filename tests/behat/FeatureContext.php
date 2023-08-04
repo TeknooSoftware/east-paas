@@ -40,7 +40,7 @@ use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Kubernetes\RepositoryRegistry;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
-use PHPUnit\Framework\MockObject\Generator;
+use PHPUnit\Framework\MockObject\Generator\Generator;
 use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount as AnyInvokedCountMatcher;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
