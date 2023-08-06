@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.0.4] - 2023-08-06
+### Stable Release
+- Reorder options in Symfony Routes
+
 ## [2.0.3] - 2023-07-19
 ### Stable Release
 - Add meta key to ingress to allow custom configuration, like letsencrypts

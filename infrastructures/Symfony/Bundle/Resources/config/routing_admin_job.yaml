@@ -3,20 +3,20 @@ _teknoo_paas_admin_job_list:
     methods: ['GET']
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.list'
-        loader: '@Teknoo\East\Paas\Loader\JobLoader'
-        defaultOrderDirection: 'DESC'
         defaultOrderColumn: 'updatedAt'
-        itemsPerPage: 20
-        template: '@@TeknooEastPaas/AdminJob/list.html.twig'
+        defaultOrderDirection: 'DESC'
         errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        itemsPerPage: 20
+        loader: '@Teknoo\East\Paas\Loader\JobLoader'
+        template: '@@TeknooEastPaas/AdminJob/list.html.twig'
 
 _teknoo_paas_admin_job_delete:
     path: '/job/delete/{id}'
     methods:  ['GET']
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.delete'
-        nextRoute: 'admin_job_list'
-        loader: '@Teknoo\East\Paas\Loader\JobLoader'
         deleter: '@teknoo.east.paas.deleting.job'
-        route: '_teknoo_paas_admin_job_list'
         errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        loader: '@Teknoo\East\Paas\Loader\JobLoader'
+        nextRoute: 'admin_job_list'
+        route: '_teknoo_paas_admin_job_list'

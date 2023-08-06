@@ -3,46 +3,46 @@ _teknoo_paas_admin_project_list:
     methods:  ['GET']
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.list'
-        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         defaultOrderDirection: 'ASC'
-        itemsPerPage: 20
-        template: '@@TeknooEastPaas/AdminProject/list.html.twig'
         errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        itemsPerPage: 20
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        template: '@@TeknooEastPaas/AdminProject/list.html.twig'
 
 _teknoo_paas_admin_project_edit:
     path: '/project/edit/{id}'
     methods:  ['GET', 'POST', 'PUT']
     defaults:
         _controller: 'teknoo.east.paas.endpoint.admin.edit.project'
-        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
-        writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
-        formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
-        template: '@@TeknooEastPaas/AdminProject/edit.html.twig'
         errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
         formOptions: { }
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        template: '@@TeknooEastPaas/AdminProject/edit.html.twig'
+        writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
 
 _teknoo_paas_admin_project_new:
     path: '/project/new/{accountId}'
     methods:  ['GET', 'POST', 'PUT']
     defaults:
         _controller: 'teknoo.east.paas.endpoint.admin.new.project'
-        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
-        accountLoader: '@Teknoo\East\Paas\Loader\AccountLoader'
-        writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
-        objectClass: 'Teknoo\East\Paas\Object\Project'
-        formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
-        template: '@@TeknooEastPaas/AdminProject/new.html.twig'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
-        formOptions: { }
-        route: '_teknoo_paas_admin_project_edit'
         accountKey: 'constructorArguments'
+        accountLoader: '@Teknoo\East\Paas\Loader\AccountLoader'
+        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
+        formOptions: { }
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        objectClass: 'Teknoo\East\Paas\Object\Project'
+        route: '_teknoo_paas_admin_project_edit'
+        template: '@@TeknooEastPaas/AdminProject/new.html.twig'
+        writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
 
 _teknoo_paas_admin_project_delete:
     path: '/project/delete/{id}'
     methods:  ['GET']
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.delete'
-        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         deleter: '@teknoo.east.paas.deleting.project'
-        route: '_teknoo_paas_admin_project_list'
         errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
+        route: '_teknoo_paas_admin_project_list'
