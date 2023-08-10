@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.1.0] - 2023-08-10
+### Stable Release
+- Require East Foundation 7.3+.
+- Add normalizations groupes "api" to exclude all credentials, certificates and keys of jobs.
+
 ## [2.0.4] - 2023-08-06
 ### Stable Release
 - Reorder options in Symfony Routes

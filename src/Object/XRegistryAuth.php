@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Object;
 
 use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
@@ -51,6 +52,7 @@ class XRegistryAuth implements
 {
     use ObjectTrait;
     use ImmutableTrait;
+    use GroupsTrait;
 
     private string $username = '';
 
@@ -61,6 +63,19 @@ class XRegistryAuth implements
     private string $auth = '';
 
     private string $serverAddress = '';
+
+    /**
+     * @var array<string, string[]>
+     */
+    private static array $exportConfigurations = [
+        '@class' => ['all', 'api'],
+        'id' => ['all', 'api'],
+        'username' => ['all', 'api'],
+        'password' => ['all'],
+        'email' => ['all', 'api'],
+        'auth' => ['all'],
+        'server_address' => ['all', 'api'],
+    ];
 
     public function __construct(
         string $username = '',
@@ -120,7 +135,7 @@ class XRegistryAuth implements
 
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
     {
-        $normalizer->injectData([
+        $data = [
             '@class' => self::class,
             'id' => $this->getId(),
             'username' => $this->getUsername(),
@@ -128,7 +143,16 @@ class XRegistryAuth implements
             'email' => $this->getEmail(),
             'auth' => $this->getAuth(),
             'server_address' => $this->getServerAddress(),
-        ]);
+        ];
+
+        $this->setGroupsConfiguration(self::$exportConfigurations);
+
+        $normalizer->injectData(
+            $this->filterExport(
+                $data,
+                (array) ($context['groups'] ?? ['all']),
+            )
+        );
 
         return $this;
     }

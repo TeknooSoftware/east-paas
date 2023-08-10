@@ -1,5 +1,6 @@
 parameters:
     reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
             message: '#::cleanResult#'

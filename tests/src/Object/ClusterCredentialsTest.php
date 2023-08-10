@@ -150,4 +150,24 @@ class ClusterCredentialsTest extends TestCase
             )
         );
     }
+
+    public function testExportToMeApi()
+    {
+        $normalizer = $this->createMock(EastNormalizerInterface::class);
+        $normalizer->expects(self::once())
+            ->method('injectData')
+            ->with([
+                '@class' => ClusterCredentials::class,
+                'id' => '123',
+                'username' => 'barFoo2',
+            ]);
+
+        self::assertInstanceOf(
+            ClusterCredentials::class,
+            $this->buildObject()->setId('123')->exportToMeData(
+                $normalizer,
+                ['groups' => 'api']
+            )
+        );
+    }
 }

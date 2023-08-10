@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Object;
 
 use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
@@ -51,10 +52,21 @@ class SshIdentity implements
 {
     use ObjectTrait;
     use ImmutableTrait;
+    use GroupsTrait;
 
     private string $name = '';
 
     private string $privateKey = '';
+
+    /**
+     * @var array<string, string[]>
+     */
+    private static array $exportConfigurations = [
+        '@class' => ['all', 'api'],
+        'id' => ['all', 'api'],
+        'name' => ['all', 'api'],
+        'private_key' => ['all'],
+    ];
 
     public function __construct(
         string $name = '',
@@ -83,12 +95,21 @@ class SshIdentity implements
 
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
     {
-        $normalizer->injectData([
+        $data = [
             '@class' => self::class,
             'id' => $this->getId(),
             'name' => $this->getName(),
             'private_key' => $this->getPrivateKey(),
-        ]);
+        ];
+
+        $this->setGroupsConfiguration(self::$exportConfigurations);
+
+        $normalizer->injectData(
+            $this->filterExport(
+                $data,
+                (array) ($context['groups'] ?? ['all']),
+            )
+        );
 
         return $this;
     }

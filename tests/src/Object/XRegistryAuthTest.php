@@ -150,4 +150,26 @@ class XRegistryAuthTest extends TestCase
             )
         );
     }
+
+    public function testExportToMeApi()
+    {
+        $normalizer = $this->createMock(EastNormalizerInterface::class);
+        $normalizer->expects(self::once())
+            ->method('injectData')
+            ->with([
+                '@class' => XRegistryAuth::class,
+                'id' => '123',
+                'username' => 'fooName',
+                'email' => 'barFoo',
+                'server_address' => 'barFoo',
+            ]);
+
+        self::assertInstanceOf(
+            XRegistryAuth::class,
+            $this->buildObject()->setId('123')->exportToMeData(
+                $normalizer,
+                ['groups' => 'api']
+            )
+        );
+    }
 }

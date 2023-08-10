@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Object;
 
 use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
@@ -51,6 +52,7 @@ class ClusterCredentials implements
 {
     use ObjectTrait;
     use ImmutableTrait;
+    use GroupsTrait;
 
     private string $caCertificate = '';
 
@@ -63,6 +65,20 @@ class ClusterCredentials implements
     private string $username = '';
 
     private string $password = '';
+
+    /**
+     * @var array<string, string[]>
+     */
+    private static array $exportConfigurations = [
+        '@class' => ['all', 'api'],
+        'id' => ['all', 'api'],
+        'ca_certificate' => ['all'],
+        'client_certificate' => ['all'],
+        'client_key' => ['all'],
+        'token' => ['all'],
+        'username' => ['all', 'api'],
+        'password' => ['all'],
+    ];
 
     public function __construct(
         string $caCertificate = '',
@@ -124,7 +140,7 @@ class ClusterCredentials implements
 
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
     {
-        $normalizer->injectData([
+        $data = [
             '@class' => self::class,
             'id' => $this->getId(),
             'ca_certificate' => $this->getCaCertificate(),
@@ -133,7 +149,16 @@ class ClusterCredentials implements
             'token' => $this->getToken(),
             'username' => $this->getUsername(),
             'password' => $this->getPassword(),
-        ]);
+        ];
+
+        $this->setGroupsConfiguration(self::$exportConfigurations);
+
+        $normalizer->injectData(
+            $this->filterExport(
+                $data,
+                (array) ($context['groups'] ?? ['all']),
+            )
+        );
 
         return $this;
     }

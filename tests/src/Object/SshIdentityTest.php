@@ -106,4 +106,24 @@ class SshIdentityTest extends TestCase
             )
         );
     }
+
+    public function testExportToMeApi()
+    {
+        $normalizer = $this->createMock(EastNormalizerInterface::class);
+        $normalizer->expects(self::once())
+            ->method('injectData')
+            ->with([
+                '@class' => SshIdentity::class,
+                'id' => '123',
+                'name' => 'fooName',
+            ]);
+
+        self::assertInstanceOf(
+            SshIdentity::class,
+            $this->buildObject()->setId('123')->exportToMeData(
+                $normalizer,
+                ['groups' => 'api']
+            )
+        );
+    }
 }
