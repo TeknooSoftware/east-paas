@@ -15,9 +15,7 @@
         <embed-one field="identity" target-document="Teknoo\East\Paas\Object\ClusterCredentials" nullable="false" />
         <embed-one field="environment" target-document="Teknoo\East\Paas\Object\Environment" nullable="false"/>
         <reference-one field="project" target-document="Teknoo\East\Paas\Object\Project" mapped-by="clusters">
-            <cascade>
-                <all/>
-            </cascade>
+            <cascade />
         </reference-one>
     </document>
 </doctrine-mongo-mapping>

@@ -5,7 +5,7 @@ _teknoo_paas_admin_account_list:
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.list'
         defaultOrderDirection: 'ASC'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         itemsPerPage: 20
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         template: '@@TeknooEastPaas/AdminAccount/list.html.twig'
@@ -15,7 +15,7 @@ _teknoo_paas_admin_account_edit:
     methods:  ['GET', 'POST', 'PUT']
     defaults:
         _controller: 'teknoo.east.paas.endpoint.admin.edit.account'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
         formOptions:
             "doctrine_type": "%teknoo.east.common.form_type.doctrine.class%"
@@ -29,7 +29,7 @@ _teknoo_paas_admin_account_new:
     methods:  ['GET', 'POST', 'PUT']
     defaults:
         _controller: 'teknoo.east.paas.endpoint.admin.new.account'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
         formOptions: { "doctrine_type": "%teknoo.east.common.form_type.doctrine.class%"}
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
@@ -44,6 +44,6 @@ _teknoo_paas_admin_account_delete:
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.delete'
         deleter: '@teknoo.east.paas.deleting.account'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         route: '_teknoo_paas_admin_account_list'

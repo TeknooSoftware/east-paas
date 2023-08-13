@@ -4,7 +4,7 @@ _teknoo_paas_admin_project_list:
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.list'
         defaultOrderDirection: 'ASC'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         itemsPerPage: 20
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         template: '@@TeknooEastPaas/AdminProject/list.html.twig'
@@ -14,7 +14,7 @@ _teknoo_paas_admin_project_edit:
     methods:  ['GET', 'POST', 'PUT']
     defaults:
         _controller: 'teknoo.east.paas.endpoint.admin.edit.project'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
         formOptions: { }
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
@@ -28,7 +28,7 @@ _teknoo_paas_admin_project_new:
         _controller: 'teknoo.east.paas.endpoint.admin.new.project'
         accountKey: 'constructorArguments'
         accountLoader: '@Teknoo\East\Paas\Loader\AccountLoader'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
         formOptions: { }
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
@@ -43,6 +43,6 @@ _teknoo_paas_admin_project_delete:
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.delete'
         deleter: '@teknoo.east.paas.deleting.project'
-        errorTemplate: '@@TeknooEastPaas/Error/404.html.twig'
+        errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         route: '_teknoo_paas_admin_project_list'

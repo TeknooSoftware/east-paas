@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.1.1] - 2023-08-13
+### Stable Release
+- Fix wrong error template path in routes
+- ODM : Jobs use now DBRef of Cluster and not embedded cluster (to avoid bug with Doctrine ODM)
+- ODM : fix cascades operations of jobs
+
 ## [2.1.0] - 2023-08-10
 ### Stable Release
 - Require East Foundation 7.3+.
