@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Object;
 
 use DateTimeInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
@@ -70,6 +71,7 @@ class Job implements
 {
     use ObjectTrait;
     use ProxyTrait;
+    use GroupsTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
@@ -99,6 +101,24 @@ class Job implements
      * @var array<string, mixed>
      */
     private array $extra = [];
+
+    /**
+     * @var array<string, string[]>
+     */
+    private static array $exportConfigurations = [
+        '@class' => ['all', 'api', 'digest'],
+        'id' => ['all', 'api', 'digest'],
+        'project' => ['all', 'api', 'digest'],
+        'environment' => ['all', 'api', 'digest'],
+        'base_namespace' => ['all', 'api'],
+        'hierarchical_namespaces' => ['all', 'api'],
+        'prefix' => ['all', 'api'],
+        'source_repository' => ['all', 'api'],
+        'images_repository' => ['all', 'api'],
+        'clusters' => ['all', 'api'],
+        'history' => ['all', 'api'],
+        'extra' => ['all', 'api'],
+    ];
 
     public function __construct()
     {
@@ -252,7 +272,7 @@ class Job implements
 
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
     {
-        $normalizer->injectData([
+        $data = [
             '@class' => self::class,
             'id' => $this->getId(),
             'project' => $this->project,
@@ -265,7 +285,16 @@ class Job implements
             'clusters' => $this->clusters,
             'history' => $this->history,
             'extra' => $this->extra,
-        ]);
+        ];
+
+        $this->setGroupsConfiguration(self::$exportConfigurations);
+
+        $normalizer->injectData(
+            $this->filterExport(
+                $data,
+                (array) ($context['groups'] ?? ['all']),
+            )
+        );
 
         return $this;
     }

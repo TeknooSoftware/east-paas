@@ -5,6 +5,7 @@
 - Fix wrong error template path in routes
 - ODM : Jobs use now DBRef of Cluster and not embedded cluster (to avoid bug with Doctrine ODM)
 - ODM : fix cascades operations of jobs
+- Add digest group on job export
 
 ## [2.1.0] - 2023-08-10
 ### Stable Release

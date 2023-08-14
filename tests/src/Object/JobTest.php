@@ -493,6 +493,66 @@ class JobTest extends TestCase
         );
     }
 
+    public function testExportToMeApi()
+    {
+        $normalizer = $this->createMock(EastNormalizerInterface::class);
+        $normalizer->expects(self::once())
+            ->method('injectData')
+            ->with([
+                '@class' => Job::class,
+                'id' => '123',
+                'project' => null,
+                'environment' => null,
+                'source_repository' => null,
+                'images_repository' => null,
+                'clusters' => [],
+                'history' => null,
+                'base_namespace' => 'foo',
+                'prefix' => 'bar',
+                'hierarchical_namespaces' => false,
+                'extra' => ['foo' => 'bar', 'bar' => 'foo'],
+            ]);
+
+        self::assertInstanceOf(
+            Job::class,
+            $this->buildObject()->setId('123')
+                ->setBaseNamespace('foo')
+                ->setPrefix('bar')
+                ->setExtra(['foo' => 'bar'])
+                ->setExtra(['bar' => 'foo'])
+                ->exportToMeData(
+                $normalizer,
+                ['groups' => ['api']]
+            )
+        );
+    }
+
+    public function testExportToMeDigest()
+    {
+        $normalizer = $this->createMock(EastNormalizerInterface::class);
+        $normalizer->expects(self::once())
+            ->method('injectData')
+            ->with([
+                '@class' => Job::class,
+                'id' => '123',
+                'project' => null,
+                'environment' => null,
+            ]);
+
+        self::assertInstanceOf(
+            Job::class,
+            $this->buildObject()->setId('123')
+                ->setBaseNamespace('foo')
+                ->setPrefix('bar')
+                ->setExtra(['foo' => 'bar'])
+                ->setExtra(['bar' => 'foo'])
+                ->exportToMeData(
+                $normalizer,
+                ['groups' => ['digest']]
+            )
+        );
+    }
+
     public function testJobPendingIsRunnable()
     {
         $promise = $this->createMock(PromiseInterface::class);
