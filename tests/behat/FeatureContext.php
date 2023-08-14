@@ -188,6 +188,8 @@ class FeatureContext implements Context
 
     public array $additionalsParameters = [];
 
+    public ?string $jobJsonExported = null;
+
     /**
      * Initializes context.
      *
@@ -321,6 +323,7 @@ class FeatureContext implements Context
         $this->slowDb = false;
         $this->slowBuilder = false;
         $this->paasFile = null;
+        $this->jobJsonExported = null;
     }
 
     public function getRepository(string $className)
@@ -2055,6 +2058,34 @@ EOF;
         Assert::assertEquals(
             $excepted,
             stripslashes($json)
+        );
+    }
+
+    /**
+     * @When I export the job :jobId with :group data
+     */
+    public function iExportTheJobWithData(string $jobId, string $group)
+    {
+        $sr = $this->sfContainer->get('external_serializer');
+        $job = $this->repositories[Job::class]->findOneBy(['id' => $jobId]);
+        
+        $this->jobJsonExported = $sr->serialize($job, 'json', ['groups' => [$group]]);
+    }
+
+    /**
+     * @Then I must obtain a :described job
+     */
+    public function iMustObtainAJob($described)
+    {
+        Assert::assertEquals(
+            file_get_contents(
+                match ($described) {
+                    'full described' => __DIR__ . '/json/job_full.json',
+                    'desensitize described' => __DIR__ . '/json/job_desensitize.json',
+                    'digest described' => __DIR__ . '/json/job_digest.json',
+                },
+            ),
+            $this->jobJsonExported,
         );
     }
 }

@@ -1,0 +1,1 @@
+{"@class":"Teknoo\\East\\Paas\\Object\\Job","id":"jobid","project":{"@class":"Teknoo\\East\\Paas\\Object\\Project","id":"projectid","name":"fooBar Project"},"environment":{"@class":"Teknoo\\East\\Paas\\Object\\Environment","name":"prod"}}

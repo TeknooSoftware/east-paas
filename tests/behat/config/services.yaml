@@ -65,4 +65,8 @@ services:
     synthetic: true
     public: true
 
+  external_serializer:
+    alias: 'serializer'
+    public: true
+
   Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorageFactory: ~
