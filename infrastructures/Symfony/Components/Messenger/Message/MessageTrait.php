@@ -43,7 +43,8 @@ trait MessageTrait
         private readonly string $projectId,
         private readonly string $environment,
         private readonly string $jobId,
-        private readonly string $message
+        private readonly string $message,
+        private readonly ?string $encryption = null,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -66,6 +67,11 @@ trait MessageTrait
     public function getMessage(): string
     {
         return $this->message;
+    }
+
+    public function getEncryption(): ?string
+    {
+        return $this->encryption;
     }
 
     public function __toString()

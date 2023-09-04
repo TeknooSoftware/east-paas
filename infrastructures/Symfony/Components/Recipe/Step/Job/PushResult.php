@@ -97,16 +97,16 @@ class PushResult implements DispatchResultInterface
 
                         $this->bus->dispatch(
                             new Envelope(
-                                new JobDone(
-                                    $projectId,
-                                    $envName,
-                                    $jobId,
-                                    (string) json_encode($history, JSON_THROW_ON_ERROR)
+                                message: new JobDone(
+                                    projectId: $projectId,
+                                    environment: $envName,
+                                    jobId: $jobId,
+                                    message: (string) json_encode($history, JSON_THROW_ON_ERROR)
                                 ),
-                                [
+                                stamps: [
                                     new Parameter('projectId', $projectId),
                                     new Parameter('envName', $envName),
-                                    new Parameter('jobId', $jobId)
+                                    new Parameter('jobId', $jobId),
                                 ]
                             )
                         );

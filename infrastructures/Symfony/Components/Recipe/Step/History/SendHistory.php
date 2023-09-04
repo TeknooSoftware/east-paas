@@ -78,16 +78,16 @@ class SendHistory implements DispatchHistoryInterface
 
                 $this->bus->dispatch(
                     new Envelope(
-                        new HistorySent(
-                            $projectId,
-                            $envName,
-                            $jobId,
-                            (string) json_encode($history, JSON_THROW_ON_ERROR)
+                        message: new HistorySent(
+                            projectId: $projectId,
+                            environment: $envName,
+                            jobId: $jobId,
+                            message: (string) json_encode($history, JSON_THROW_ON_ERROR)
                         ),
-                        [
+                        stamps: [
                             new Parameter('projectId', $projectId),
                             new Parameter('envName', $envName),
-                            new Parameter('jobId', $jobId)
+                            new Parameter('jobId', $jobId),
                         ]
                     )
                 );

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
+use SensitiveParameter;
 use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
@@ -86,6 +87,7 @@ class ClusterCredentials implements
         string $clientKey = '',
         string $token = '',
         string $username = '',
+        #[SensitiveParameter]
         string $password = '',
     ) {
         $this->uniqueConstructorCheck();
