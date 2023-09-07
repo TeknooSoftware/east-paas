@@ -31,7 +31,9 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
-use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult;
+use Teknoo\East\Paas\Contracts\Message\MessageInterface as MessagePaaS;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\DispatchResult;
 use Teknoo\East\Common\Service\DatesService;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -43,9 +45,9 @@ use Teknoo\Tests\East\Paas\ErrorFactory;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\DispatchResult
  */
-class PushResultTest extends TestCase
+class DispatchResultTest extends TestCase
 {
     /**
      * @var DatesService
@@ -117,14 +119,15 @@ class PushResultTest extends TestCase
         return $this->generator;
     }
 
-    public function buildStep(): PushResult
+    public function buildStep(?EncryptionInterface $encryption = null): DispatchResult
     {
-        return new PushResult(
-            $this->getDateTimeServiceMock(),
-            $this->getMessageBusMock(),
-            $this->getNormalizer(),
-            new ErrorFactory(),
-            $this->getSerialGeneratorMock(),
+        return new DispatchResult(
+            dateTimeService: $this->getDateTimeServiceMock(),
+            bus: $this->getMessageBusMock(),
+            normalizer: $this->getNormalizer(),
+            errorFactory: new ErrorFactory(),
+            generator: $this->getSerialGeneratorMock(),
+            encryption: $encryption,
         );
     }
 
@@ -187,8 +190,75 @@ class PushResultTest extends TestCase
             ->willReturn(new Envelope(new \stdClass()));
 
         self::assertInstanceOf(
-            PushResult::class,
+            DispatchResult::class,
             ($this->buildStep())($manager, $client, $project, $env, 'babar', $result)
+        );
+    }
+
+    public function testInvokeWithEncryption()
+    {
+        $client = $this->createMock(EastClient::class);
+
+        $manager = $this->createMock(ManagerInterface::class);
+        $project = 'foo';
+        $env = 'bar';
+
+        $this->getDateTimeServiceMock()
+            ->expects(self::any())
+            ->method('passMeTheDate')
+            ->willReturnCallback(function (callable $callback) {
+                $callback(new \DateTime('2018-08-01'));
+
+                return $this->getDateTimeServiceMock();
+            });
+
+        $this->getNormalizer()
+            ->expects(self::once())
+            ->method('normalize')
+            ->with($result = ['foo' => 'bar'])
+            ->willReturnCallback(
+                function (
+                    $object,
+                    PromiseInterface $promise
+                ) use ($result) {
+                    $promise->success($result);
+
+                    return $this->getNormalizer();
+                }
+            );
+
+        $manager->expects(self::once())
+            ->method('updateWorkPlan')
+            ->willReturnCallback(function ($values) use ($manager) {
+               self::assertInstanceOf(History::class, $values[History::class]);
+               self::assertIsString($values['historySerialized']);
+
+               return $manager;
+            });
+
+        $this->getMessageBusMock()
+            ->expects(self::once())
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass()));
+
+
+        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption->expects(self::any())
+            ->method('encrypt')
+            ->willReturnCallback(
+                function (
+                    MessagePaaS $message,
+                    PromiseInterface $promise,
+                ) use ($encryption) {
+                    $promise->success($message);
+
+                    return $encryption;
+                }
+            );
+
+        self::assertInstanceOf(
+            DispatchResult::class,
+            ($this->buildStep($encryption))($manager, $client, $project, $env, 'babar', $result)
         );
     }
 
@@ -240,7 +310,7 @@ class PushResultTest extends TestCase
             ->willReturn(new Envelope(new \stdClass()));
 
         self::assertInstanceOf(
-            PushResult::class,
+            DispatchResult::class,
             ($this->buildStep())($manager, $client, $project, $env, 'babar', null, $error)
         );
     }
@@ -292,7 +362,7 @@ class PushResultTest extends TestCase
             ->willReturn(new Envelope(new \stdClass()));
 
         self::assertInstanceOf(
-            PushResult::class,
+            DispatchResult::class,
             ($this->buildStep())($manager, $client, $project, $env, 'babar')
         );
     }
@@ -356,7 +426,7 @@ class PushResultTest extends TestCase
             ->with(new \Exception('foo'));
 
         self::assertInstanceOf(
-            PushResult::class,
+            DispatchResult::class,
             ($this->buildStep())($manager, $client, $project, $env, 'babarz', $result)
         );
     }

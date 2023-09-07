@@ -30,8 +30,10 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
+use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 use Teknoo\East\Common\Service\DatesService;
@@ -53,7 +55,7 @@ use function json_encode;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class PushResult implements DispatchResultInterface
+class DispatchResult implements DispatchResultInterface
 {
     public function __construct(
         private readonly DatesService $dateTimeService,
@@ -62,7 +64,25 @@ class PushResult implements DispatchResultInterface
         private readonly ErrorFactoryInterface $errorFactory,
         private readonly SerialGenerator $generator,
         private readonly bool $preferRealDate = false,
+        private readonly ?EncryptionInterface $encryption = null,
     ) {
+    }
+
+    private function buildDispatching(
+        string $projectId,
+        string $envName,
+        string $jobId,
+    ): callable {
+        return fn (MessageInterface $message) => $this->bus->dispatch(
+            new Envelope(
+                message: $message,
+                stamps: [
+                    new Parameter('projectId', $projectId),
+                    new Parameter('envName', $envName),
+                    new Parameter('jobId', $jobId),
+                ]
+            )
+        );
     }
 
     /**
@@ -95,21 +115,33 @@ class PushResult implements DispatchResultInterface
                             'historySerialized' => json_encode($history, JSON_THROW_ON_ERROR),
                         ]);
 
-                        $this->bus->dispatch(
-                            new Envelope(
-                                message: new JobDone(
-                                    projectId: $projectId,
-                                    environment: $envName,
-                                    jobId: $jobId,
-                                    message: (string) json_encode($history, JSON_THROW_ON_ERROR)
-                                ),
-                                stamps: [
-                                    new Parameter('projectId', $projectId),
-                                    new Parameter('envName', $envName),
-                                    new Parameter('jobId', $jobId),
-                                ]
-                            )
+                        $dispatching = $this->buildDispatching(
+                            projectId: $projectId,
+                            envName: $envName,
+                            jobId: $jobId,
                         );
+
+                        $message = new JobDone(
+                            projectId: $projectId,
+                            environment: $envName,
+                            jobId: $jobId,
+                            message: (string) json_encode($history, JSON_THROW_ON_ERROR)
+                        );
+
+                        if (null === $this->encryption) {
+                            $dispatching($message);
+                        } else {
+                            /** @var Promise<MessageInterface, mixed, mixed> $promise */
+                            $promise = new Promise(
+                                onSuccess: $dispatching,
+                                onFail: fn (Throwable $error) => throw $error,
+                            );
+
+                            $this->encryption->encrypt(
+                                data: $message,
+                                promise: $promise,
+                            );
+                        }
                     }
                 );
 

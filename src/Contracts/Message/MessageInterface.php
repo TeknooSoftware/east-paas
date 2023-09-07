@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * East Paas.
  *
@@ -21,21 +23,24 @@
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-declare(strict_types=1);
+namespace Teknoo\East\Paas\Contracts\Message;
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
-
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
+use Stringable;
+use Teknoo\Immutable\ImmutableInterface;
 
 /**
- * Message object, for Symfony Messenger, about a new job to dispatch to a worker to be deployed.
+ * To define a message between servers, workers and agents
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class MessageJob implements MessageInterface
+interface MessageInterface extends Stringable, ImmutableInterface
 {
-    use MessageTrait;
+    public function getMessage(): string;
+
+    public function getEncryptionAlgorithm(): ?string;
+
+    public function cloneWith(string $message, ?string $encryptionAlgorithm): MessageInterface;
 }

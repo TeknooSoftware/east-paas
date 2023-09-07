@@ -57,6 +57,7 @@
         "league/flysystem": "^3.15.1",
         "php-http/discovery": "^1.19.1",
         "php-http/mock-client": "^1.6",
+        "phpseclib/phpseclib": "^3.0.21",
         "psr/http-client":"^1.0.2",
         "symfony/config": "^6.3",
         "symfony/console": "^6.3",
@@ -94,6 +95,7 @@
             "Teknoo\\East\\Paas\\Infrastructures\\Git\\": "infrastructures/Git/",
             "Teknoo\\East\\Paas\\Infrastructures\\Kubernetes\\": "infrastructures/Kubernetes/",
             "Teknoo\\East\\Paas\\Infrastructures\\Laminas\\": "infrastructures/Laminas/",
+            "Teknoo\\East\\Paas\\Infrastructures\\PhpSecLib\\": "infrastructures/PhpSecLib/",
             "Teknoo\\East\\Paas\\Infrastructures\\Symfony\\": "infrastructures/Symfony/Components/",
             "Teknoo\\East\\Paas\\Infrastructures\\EastPaasBundle\\": "infrastructures/Symfony/Bundle/"
         }
@@ -110,6 +112,7 @@
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Git\\": "tests/infrastructures/Git/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Kubernetes\\": "tests/infrastructures/Kubernetes/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Laminas\\": "tests/infrastructures/Laminas/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\PhpSecLib\\": "tests/infrastructures/PhpSecLib/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Symfony\\": "tests/infrastructures/Symfony/Components/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\EastPaasBundle\\": "tests/infrastructures/Symfony/Bundle/"
         }

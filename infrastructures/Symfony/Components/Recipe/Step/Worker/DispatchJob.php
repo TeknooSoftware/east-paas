@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
+use Teknoo\East\Paas\Contracts\Message\MessageInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Symfony\Component\Messenger\Envelope;
@@ -33,6 +35,8 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
+use Teknoo\Recipe\Promise\Promise;
+use Throwable;
 
 /**
  * Step able to dispatch a new created job, aka a job deployment, to a Symfony Messenger Bus, to be executed
@@ -47,26 +51,56 @@ class DispatchJob implements DispatchJobInterface
 {
     public function __construct(
         private readonly MessageBusInterface $bus,
+        private readonly ?EncryptionInterface $encryption = null,
     ) {
+    }
+
+    private function buildDispatching(
+        string $projectId,
+        string $envName,
+        string $jobId,
+    ): callable {
+        return fn (MessageInterface $message) => $this->bus->dispatch(
+            new Envelope(
+                message: $message,
+                stamps: [
+                    new Parameter('projectId', $projectId),
+                    new Parameter('envName', $envName),
+                    new Parameter('jobId', $jobId),
+                ]
+            )
+        );
     }
 
     public function __invoke(Project $project, Environment $environment, Job $job, string $jobSerialized): self
     {
-        $this->bus->dispatch(
-            new Envelope(
-                message: new MessageJob(
-                    projectId: $project->getId(),
-                    environment: (string) $environment,
-                    jobId: $job->getId(),
-                    message: $jobSerialized
-                ),
-                stamps: [
-                    new Parameter('projectId', $project->getId()),
-                    new Parameter('envName', (string) $environment),
-                    new Parameter('jobId', $job->getId()),
-                ]
-            )
+        $dispatching = $this->buildDispatching(
+            projectId: $project->getId(),
+            envName: (string) $environment,
+            jobId: $job->getId(),
         );
+
+        $message = new MessageJob(
+            projectId: $project->getId(),
+            environment: (string) $environment,
+            jobId: $job->getId(),
+            message: $jobSerialized
+        );
+
+        if (null === $this->encryption) {
+            $dispatching($message);
+        } else {
+            /** @var Promise<MessageInterface, mixed, mixed> $promise */
+            $promise = new Promise(
+                onSuccess: $dispatching,
+                onFail: fn (Throwable $error) => throw $error,
+            );
+
+            $this->encryption->encrypt(
+                data: $message,
+                promise: $promise,
+            );
+        }
 
         return $this;
     }

@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
-use Teknoo\Immutable\ImmutableInterface;
+use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 
 /**
  * Message object, for Symfony Messenger, about any job's final event to persist in the database
@@ -35,7 +35,7 @@ use Teknoo\Immutable\ImmutableInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class JobDone implements ImmutableInterface
+class JobDone implements MessageInterface
 {
     use MessageTrait;
 }

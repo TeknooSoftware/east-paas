@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * East Paas.
  *
@@ -21,21 +23,16 @@
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-declare(strict_types=1);
+namespace Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception;
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
-
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
+use RuntimeException;
 
 /**
- * Message object, for Symfony Messenger, about a new job to dispatch to a worker to be deployed.
- *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class MessageJob implements MessageInterface
+class WrongLibraryAPIException extends RuntimeException
 {
-    use MessageTrait;
 }
