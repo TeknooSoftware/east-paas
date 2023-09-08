@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.0-beta2] - 2023-09-08
+### Beta Release
+- Fix MessageInterface Segregation
+- Fix FeatureContext
+
 ## [2.2.0-beta1] - 2023-09-08
 ### Beta Release
 - Add encryption capacities in messages between servers and agents or workers
