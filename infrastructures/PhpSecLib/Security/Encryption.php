@@ -60,17 +60,18 @@ class Encryption implements EncryptionInterface
         callable $method,
         string $message,
         PrivateKey|PublicKey $key,
+        int $coef = 1,
     ): string {
         if (!method_exists($key, 'getLength')) {
             return $method($message);
         }
 
         $length = $key->getLength();
-        $bytesLength = ($length / (2 * 8)) - 2;
+        $bytesLength = $length / (8 * $coef) - (($coef - 1) * 2);
         $messageLength = strlen($message);
 
         $final = '';
-        for ($i = 0; $i < $messageLength ; $i += $bytesLength) {
+        for ($i = 0; $i < $messageLength; $i += $bytesLength) {
             $final .= $method(
                 substr(
                     string: $message,
@@ -98,6 +99,7 @@ class Encryption implements EncryptionInterface
                 method: $this->publicKey->encrypt(...),
                 message: $data->getMessage(),
                 key: $this->publicKey,
+                coef: 2,
             );
         } catch (Throwable $error) {
             $promise->fail($error);

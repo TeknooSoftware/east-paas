@@ -189,7 +189,6 @@ class EncryptionTest extends TestCase
 
     public function testDecrypt()
     {
-
         $privateKey = RSA::createKey(1024);
 
         $service = new Encryption(

@@ -62,11 +62,11 @@ return [
             $algo = Algorithm::from($algoValue);
 
             if (empty($_ENV[$privateKeyEnvKey]) || !\is_readable($_ENV[$privateKeyEnvKey])) {
-                throw new InvalidConfigurationException("The private key {$_ENV[$privateKeyEnvKey]} is not readable");
+                throw new InvalidConfigurationException("The private key defined for East PaaS is not readable");
             }
 
             if (empty($_ENV[$publicKeyEnvKey]) || !\is_readable($_ENV[$publicKeyEnvKey])) {
-                throw new InvalidConfigurationException("The public key {$_ENV[$publicKeyEnvKey]} is not readable");
+                throw new InvalidConfigurationException("The public key defined for East PaaS is not readable");
             }
 
             $privateKContent = (string) file_get_contents($_ENV[$privateKeyEnvKey]);
@@ -75,11 +75,11 @@ return [
             $privateKey = match ($algo) {
                 Algorithm::RSA => RSA::loadPrivateKey(
                     key: $privateKContent,
-                    password: $pkPassphrase,
+                    password: (string) $pkPassphrase,
                 ),
                 Algorithm::DSA => DSA::loadPrivateKey(
                     key: $privateKContent,
-                    password: $pkPassphrase,
+                    password: (string) $pkPassphrase,
                 )
             };
 
