@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.0-beta1] - 2023-09-08
+### Stable Release
+- Add encryption capacities in messages between servers and agents or workers
+- Add #[SensitiveParameter] to prevent leak.
+
 ## [2.1.1] - 2023-08-13
 ### Stable Release
 - Fix wrong error template path in routes
