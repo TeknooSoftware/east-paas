@@ -25,9 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Message;
 
-use Stringable;
-use Teknoo\Immutable\ImmutableInterface;
-
 /**
  * To define a message between servers, workers and agents
  *
@@ -36,7 +33,7 @@ use Teknoo\Immutable\ImmutableInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface MessageInterface extends Stringable, ImmutableInterface
+interface MessageInterface
 {
     public function getMessage(): string;
 
