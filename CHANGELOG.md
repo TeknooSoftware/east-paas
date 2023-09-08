@@ -1,7 +1,7 @@
 # Teknoo Software - PaaS - Change Log
 
 ## [2.2.0-beta1] - 2023-09-08
-### Stable Release
+### Beta Release
 - Add encryption capacities in messages between servers and agents or workers
 - Add #[SensitiveParameter] to prevent leak.
 
