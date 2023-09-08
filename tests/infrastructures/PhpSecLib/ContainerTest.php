@@ -39,6 +39,7 @@ use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\DIException;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\InvalidConfigurationException;
+use function file_put_contents;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -52,8 +53,8 @@ class ContainerTest extends TestCase
     protected function setUp(): void
     {
         $pk = RSA::createKey(1024);
-        \file_put_contents($this->privateKey, $pk->toString('PKCS8'));
-        \file_put_contents($this->publicKey, $pk->getPublicKey()->toString('PKCS8'));
+        file_put_contents($this->privateKey, $pk->toString('PKCS8'));
+        file_put_contents($this->publicKey, $pk->getPublicKey()->toString('PKCS8'));
     }
 
     /**

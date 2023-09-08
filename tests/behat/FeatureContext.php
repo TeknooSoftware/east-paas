@@ -32,8 +32,10 @@ use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\Persistence\ObjectManager;
+use phpseclib3\Crypt\RSA;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
+use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\Repository;
@@ -98,6 +100,7 @@ use function base64_encode;
 use function dirname;
 use function file_exists;
 use function file_get_contents;
+use function file_put_contents;
 use function json_decode;
 use function json_encode;
 use function random_int;
@@ -189,6 +192,9 @@ class FeatureContext implements Context
     public array $additionalsParameters = [];
 
     public ?string $jobJsonExported = null;
+
+    private string $privateKey = __DIR__ . '/../var/keys/private.pem';
+    private string $publicKey = __DIR__ . '/../var/keys/public.pem';
 
     /**
      * Initializes context.
@@ -481,6 +487,37 @@ class FeatureContext implements Context
 
         self::$useHnc = false;
         $this->additionalsParameters = [];
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY']);
+        }
+    }
+
+    /**
+     * @Given encryption capacities between servers and agents
+     */
+    public function encryptionCapacitiesBetweenServersAndAgents()
+    {
+        $pk = RSA::createKey(1024);
+
+        file_put_contents($this->privateKey, $pk->toString('PKCS8'));
+        file_put_contents($this->publicKey, $pk->getPublicKey()->toString('PKCS8'));
+
+        $_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'] = Algorithm::RSA->value;
+        $_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY'] = $this->privateKey;
+        $_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY'] = $this->publicKey;
     }
 
     /**

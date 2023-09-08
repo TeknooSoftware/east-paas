@@ -14,7 +14,7 @@ declare(strict_types=1);
  * to richard@teknoo.software so we can send you a copy immediately.
  *
  *
- * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
+ * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@$lengthdeloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  *
  * @link        http://teknoo.software/east/paas Project website
@@ -32,8 +32,11 @@ use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\UnsupportedAlgorithmException;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\WrongLibraryAPIException;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Throwable;
 
 use function method_exists;
+use function strlen;
+use function substr;
 
 /**
  * Service build on PhpSecLib able to encrypt and decrypt message between servers, agents and workers to keep secrets
@@ -53,6 +56,33 @@ class Encryption implements EncryptionInterface
     ) {
     }
 
+    private function processMessage(
+        callable $method,
+        string $message,
+        PrivateKey|PublicKey $key,
+    ): string {
+        if (!method_exists($key, 'getLength')) {
+            return $method($message);
+        }
+
+        $length = $key->getLength();
+        $bytesLength = ($length / (2 * 8)) - 2;
+        $messageLength = strlen($message);
+
+        $final = '';
+        for ($i = 0; $i < $messageLength ; $i += $bytesLength) {
+            $final .= $method(
+                substr(
+                    string: $message,
+                    offset: $i,
+                    length: $bytesLength
+                )
+            );
+        }
+
+        return $final;
+    }
+
     public function encrypt(MessageInterface $data, PromiseInterface $promise,): EncryptionInterface
     {
         if (!method_exists($this->publicKey, 'encrypt')) {
@@ -63,14 +93,22 @@ class Encryption implements EncryptionInterface
             return $this;
         }
 
-        $encryptedMessage = $this->publicKey->encrypt($data->getMessage());
+        try {
+            $encryptedMessage = $this->processMessage(
+                method: $this->publicKey->encrypt(...),
+                message: $data->getMessage(),
+                key: $this->publicKey,
+            );
+        } catch (Throwable $error) {
+            $promise->fail($error);
 
-        $promise->success(
-            $data->cloneWith(
-                message: $encryptedMessage,
-                encryptionAlgorithm: $this->alogirthm,
-            )
-        );
+            return $this;
+        }
+
+        $promise->success($data->cloneWith(
+            message: $encryptedMessage,
+            encryptionAlgorithm: $this->alogirthm,
+        ));
 
         return $this;
     }
@@ -95,7 +133,18 @@ class Encryption implements EncryptionInterface
             return $this;
         }
 
-        $decryptedMessage = $this->privateKey->decrypt($data->getMessage());
+
+        try {
+            $decryptedMessage = $this->processMessage(
+                method: $this->privateKey->decrypt(...),
+                message: $data->getMessage(),
+                key: $this->privateKey,
+            );
+        } catch (Throwable $error) {
+            $promise->fail($error);
+
+            return $this;
+        }
 
         $promise->success(
             $data->cloneWith(
