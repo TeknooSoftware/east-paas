@@ -330,6 +330,22 @@ class FeatureContext implements Context
         $this->slowBuilder = false;
         $this->paasFile = null;
         $this->jobJsonExported = null;
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY']);
+        }
     }
 
     public function getRepository(string $className)
@@ -487,22 +503,6 @@ class FeatureContext implements Context
 
         self::$useHnc = false;
         $this->additionalsParameters = [];
-
-        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
-            unset($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM']);
-        }
-
-        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY'])) {
-            unset($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY']);
-        }
-
-        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE'])) {
-            unset($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE']);
-        }
-
-        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY'])) {
-            unset($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY']);
-        }
     }
 
     /**
