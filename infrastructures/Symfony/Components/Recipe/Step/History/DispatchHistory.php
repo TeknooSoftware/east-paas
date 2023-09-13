@@ -28,12 +28,16 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History;
 use DateTimeInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Common\Service\DatesService;
+use Teknoo\Recipe\Promise\Promise;
+use Throwable;
 
 use function json_encode;
 
@@ -45,14 +49,32 @@ use function json_encode;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class SendHistory implements DispatchHistoryInterface
+class DispatchHistory implements DispatchHistoryInterface
 {
     public function __construct(
         private readonly DatesService $dateTimeService,
         private readonly MessageBusInterface $bus,
         private readonly SerialGenerator $generator,
         private readonly bool $preferRealDate = false,
+        private readonly ?EncryptionInterface $encryption = null,
     ) {
+    }
+
+    private function buildDispatching(
+        string $projectId,
+        string $envName,
+        string $jobId,
+    ): callable {
+        return fn (MessageInterface $message) => $this->bus->dispatch(
+            new Envelope(
+                message: $message,
+                stamps: [
+                    new Parameter('projectId', $projectId),
+                    new Parameter('envName', $envName),
+                    new Parameter('jobId', $jobId),
+                ]
+            )
+        );
     }
 
     /**
@@ -76,21 +98,33 @@ class SendHistory implements DispatchHistoryInterface
                     serialNumber: $this->generator->getNewSerialNumber(),
                 );
 
-                $this->bus->dispatch(
-                    new Envelope(
-                        new HistorySent(
-                            $projectId,
-                            $envName,
-                            $jobId,
-                            (string) json_encode($history, JSON_THROW_ON_ERROR)
-                        ),
-                        [
-                            new Parameter('projectId', $projectId),
-                            new Parameter('envName', $envName),
-                            new Parameter('jobId', $jobId)
-                        ]
-                    )
+                $dispatching = $this->buildDispatching(
+                    projectId: $projectId,
+                    envName: $envName,
+                    jobId: $jobId,
                 );
+
+                $message = new HistorySent(
+                    projectId: $projectId,
+                    environment: $envName,
+                    jobId: $jobId,
+                    message: (string) json_encode($history, JSON_THROW_ON_ERROR)
+                );
+
+                if (null === $this->encryption) {
+                    $dispatching($message);
+                } else {
+                    /** @var Promise<MessageInterface, mixed, mixed> $promise */
+                    $promise = new Promise(
+                        onSuccess: $dispatching,
+                        onFail: fn (Throwable $error) => throw $error,
+                    );
+
+                    $this->encryption->encrypt(
+                        data: $message,
+                        promise: $promise,
+                    );
+                }
             },
             $this->preferRealDate,
         );

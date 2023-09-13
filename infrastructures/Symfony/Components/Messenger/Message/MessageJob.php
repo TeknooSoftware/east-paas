@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
+use Stringable;
+use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\Immutable\ImmutableInterface;
 
 /**
@@ -35,7 +37,7 @@ use Teknoo\Immutable\ImmutableInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class MessageJob implements ImmutableInterface
+class MessageJob implements MessageInterface, Stringable, ImmutableInterface
 {
     use MessageTrait;
 }

@@ -35,7 +35,9 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory;
+use Teknoo\East\Paas\Contracts\Message\MessageInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\DispatchHistory;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Project;
@@ -46,9 +48,9 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory
+ * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\DispatchHistory
  */
-class SendHistoryTest extends TestCase
+class DispatchHistoryTest extends TestCase
 {
     /**
      * @var DatesService
@@ -104,12 +106,14 @@ class SendHistoryTest extends TestCase
     }
 
 
-    public function buildStep(): SendHistory
+    public function buildStep(?EncryptionInterface $encryption = null): DispatchHistory
     {
-        return new SendHistory(
-            $this->getDateTimeServiceMock(),
-            $this->getMessageBusMock(),
-            $this->getSerialGeneratorMock(),
+        return new DispatchHistory(
+            dateTimeService: $this->getDateTimeServiceMock(),
+            bus: $this->getMessageBusMock(),
+            generator: $this->getSerialGeneratorMock(),
+            preferRealDate: false,
+            encryption: $encryption,
         );
     }
 
@@ -121,10 +125,6 @@ class SendHistoryTest extends TestCase
 
     public function testInvoke()
     {
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
-        $job = $this->createMock(JobUnitInterface::class);
-
         $this->getDateTimeServiceMock()
             ->expects(self::any())
             ->method('passMeTheDate')
@@ -140,8 +140,44 @@ class SendHistoryTest extends TestCase
             ->willReturn(new Envelope(new \stdClass()));
 
         self::assertInstanceOf(
-            SendHistory::class,
+            DispatchHistory::class,
             ($this->buildStep())('foo', 'bar', 'babar', 'foo')
+        );
+    }
+
+    public function testInvokeWithEncryption()
+    {
+        $this->getDateTimeServiceMock()
+            ->expects(self::any())
+            ->method('passMeTheDate')
+            ->willReturnCallback(function (callable $callback) {
+                $callback(new \DateTime('2018-08-01'));
+
+                return $this->getDateTimeServiceMock();
+            });
+
+        $this->getMessageBusMock()
+            ->expects(self::once())
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption->expects(self::any())
+            ->method('encrypt')
+            ->willReturnCallback(
+                function (
+                    MessageInterface $message,
+                    PromiseInterface $promise,
+                ) use ($encryption) {
+                    $promise->success($message);
+
+                    return $encryption;
+                }
+            );
+
+        self::assertInstanceOf(
+            DispatchHistory::class,
+            ($this->buildStep($encryption))('foo', 'bar', 'babar', 'foo')
         );
     }
 }

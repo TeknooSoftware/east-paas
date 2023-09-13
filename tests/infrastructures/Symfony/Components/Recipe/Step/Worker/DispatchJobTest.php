@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
+use Teknoo\East\Paas\Contracts\Message\MessageInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob as JobMessage;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use PHPUnit\Framework\TestCase;
@@ -34,6 +36,7 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -59,9 +62,12 @@ class DispatchJobTest extends TestCase
         return $this->messageBusInterface;
     }
 
-    public function buildStep(): DispatchJob
+    public function buildStep(?EncryptionInterface $encryption = null): DispatchJob
     {
-        return new DispatchJob($this->getMessageBusInterfaceMock());
+        return new DispatchJob(
+            bus: $this->getMessageBusInterfaceMock(),
+            encryption: $encryption,
+        );
     }
 
     public function testInvoke()
@@ -88,6 +94,48 @@ class DispatchJobTest extends TestCase
         self::assertInstanceOf(
             DispatchJob::class,
             $this->buildStep()($project, $env, $job, $sJob)
+        );
+    }
+
+    public function testInvokeWithEncryption()
+    {
+        $project = $this->createMock(Project::class);
+        $project->expects(self::any())->method('getId')->willReturn('foo');
+        $job = $this->createMock(Job::class);
+        $job->expects(self::any())->method('getId')->willReturn('bar');
+        $env = new Environment('prod');
+
+        $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
+
+        $this->getMessageBusInterfaceMock()
+            ->expects(self::once())
+            ->method('dispatch')
+            ->with($envelope = new Envelope(
+                new JobMessage('foo', 'prod', 'bar', $sJob), [
+                new Parameter('projectId', 'foo'),
+                new Parameter('envName', 'prod'),
+                new Parameter('jobId', 'bar')
+            ]))
+            ->willReturn($envelope);
+
+
+        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption->expects(self::any())
+            ->method('encrypt')
+            ->willReturnCallback(
+                function (
+                    MessageInterface $message,
+                    PromiseInterface $promise,
+                ) use ($encryption) {
+                    $promise->success($message);
+
+                    return $encryption;
+                }
+            );
+
+        self::assertInstanceOf(
+            DispatchJob::class,
+            $this->buildStep($encryption)($project, $env, $job, $sJob)
         );
     }
 }

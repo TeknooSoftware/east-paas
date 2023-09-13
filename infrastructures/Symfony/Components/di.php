@@ -32,13 +32,14 @@ use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
-use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory;
-use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\DispatchHistory;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\DispatchResult;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer;
@@ -62,8 +63,14 @@ return [
         'Run job manually from json file, without PaaS server'
     ),
 
-    DisplayHistoryHandler::class => create(),
-    DisplayResultHandler::class => create(),
+    DisplayHistoryHandler::class => create()
+        ->constructor(
+            get(EncryptionInterface::class),
+        ),
+    DisplayResultHandler::class => create()
+        ->constructor(
+            get(EncryptionInterface::class),
+        ),
 
     RunJobCommand::class => create()
         ->constructor(
@@ -94,6 +101,6 @@ return [
     NormalizerInterface::class => get(Normalizer::class),
     SerializerInterface::class => get(Serializer::class),
 
-    DispatchResultInterface::class => get(PushResult::class),
-    DispatchHistoryInterface::class => get(SendHistory::class),
+    DispatchResultInterface::class => get(DispatchResult::class),
+    DispatchHistoryInterface::class => get(DispatchHistory::class),
 ];

@@ -26,8 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\HistorySentHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -45,6 +47,35 @@ class HistorySentHandlerTest extends TestCase
             (new HistorySentHandler(
                 'foo',
                 'bar',
+                null,
+                $this->getUriFactoryInterfaceMock(),
+                $this->getRequestFactoryInterfaceMock(),
+                $this->getStreamFactoryInterfaceMock(),
+                $this->getClientInterfaceMock()
+            )),
+            HistorySentHandler::class,
+            new HistorySent('foo', 'bar', 'foo', 'bar')
+        );
+    }
+
+    public function testInvokeWithEncryption()
+    {
+        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption->expects(self::any())
+            ->method('decrypt')
+            ->willReturnCallback(
+                function ($data, PromiseInterface $promise) use ($encryption) {
+                    $promise->success($data);
+
+                    return $encryption;
+                }
+            );
+
+        $this->doTest(
+            (new HistorySentHandler(
+                'foo',
+                'bar',
+                $encryption,
                 $this->getUriFactoryInterfaceMock(),
                 $this->getRequestFactoryInterfaceMock(),
                 $this->getStreamFactoryInterfaceMock(),

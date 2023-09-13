@@ -27,8 +27,10 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Comma
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -37,9 +39,9 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
  */
 class DisplayResultHandlerTest extends TestCase
 {
-    public function buildStep(): DisplayResultHandler
+    public function buildStep(?EncryptionInterface $encryption): DisplayResultHandler
     {
-        return new DisplayResultHandler();
+        return new DisplayResultHandler($encryption);
     }
 
     public function testInvoke()
@@ -51,7 +53,32 @@ class DisplayResultHandlerTest extends TestCase
 
         self::assertInstanceOf(
             DisplayResultHandler::class,
-                ($this->buildStep()->setOutput($output))($this->createMock(JobDone::class)
+                ($this->buildStep(null)->setOutput($output))($this->createMock(JobDone::class)
+            )
+        );
+    }
+
+    public function testInvokeWithEncryption()
+    {
+        $output = $this->createMock(OutputInterface::class);
+
+        $output->expects(self::once())
+            ->method('writeln');
+
+        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption->expects(self::any())
+            ->method('decrypt')
+            ->willReturnCallback(
+                function ($data, PromiseInterface $promise) use ($encryption) {
+                    $promise->success($data);
+
+                    return $encryption;
+                }
+            );
+
+        self::assertInstanceOf(
+            DisplayResultHandler::class,
+                ($this->buildStep($encryption)->setOutput($output))($this->createMock(JobDone::class)
             )
         );
     }
@@ -60,7 +87,7 @@ class DisplayResultHandlerTest extends TestCase
     {
         self::assertInstanceOf(
             DisplayResultHandler::class,
-            ($this->buildStep())($this->createMock(JobDone::class)
+            ($this->buildStep(null))($this->createMock(JobDone::class)
             )
         );
     }
