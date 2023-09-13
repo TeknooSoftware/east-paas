@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.0-beta3] - 2023-09-13
+### Beta Release
+- Complete test
+
 ## [2.2.0-beta2] - 2023-09-08
 ### Beta Release
 - Fix MessageInterface Segregation

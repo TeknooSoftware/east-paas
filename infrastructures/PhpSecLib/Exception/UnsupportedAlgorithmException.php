@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception;
 use InvalidArgumentException;
 
 /**
+ * Encryption algorithm defined in env var is not available
+ *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
