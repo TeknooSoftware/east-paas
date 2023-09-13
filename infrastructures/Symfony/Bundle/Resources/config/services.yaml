@@ -51,9 +51,13 @@ services:
 
     Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler'
+        arguments:
+            - '@?Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler'
+        arguments:
+            - '@?Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
 
     Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber:
         class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
