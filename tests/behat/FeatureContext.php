@@ -196,6 +196,8 @@ class FeatureContext implements Context
     private string $privateKey = __DIR__ . '/../var/keys/private.pem';
     private string $publicKey = __DIR__ . '/../var/keys/public.pem';
 
+    public static $messageByTypeIsEncrypted = [];
+
     /**
      * Initializes context.
      *
@@ -346,6 +348,8 @@ class FeatureContext implements Context
         if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY'])) {
             unset($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY']);
         }
+
+        self::$messageByTypeIsEncrypted = [];
     }
 
     public function getRepository(string $className)
@@ -521,6 +525,40 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Then all messages must be not encrypted
+     */
+    public function allMessagesMustBeNotEncrypted()
+    {
+        $this->checkMessagesAreEncryptedOrNot(false);
+    }
+
+    /**
+     * @Then all messages must be encrypted
+     */
+    public function allMessagesMustBeEncrypted()
+    {
+        $this->checkMessagesAreEncryptedOrNot(true);
+    }
+
+    private function checkMessagesAreEncryptedOrNot(bool $encryptionEnable)
+    {
+        $expectedStatus = 'decrypted';
+        if ($encryptionEnable) {
+            $expectedStatus = 'encrypted';
+        }
+
+        Assert::assertNotEmpty(self::$messageByTypeIsEncrypted);
+
+        foreach (self::$messageByTypeIsEncrypted as $class => $value) {
+            Assert::assertEquals(
+                $encryptionEnable,
+                $value,
+                "Messages of {$class} are not {$expectedStatus}",
+            );
+        }
+    }
+
+    /**
      * @Given A consumer Account :id
      */
     public function aConsumerAccount($id)
@@ -681,7 +719,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then I must obtain an HTTP answer with this status code equals to :code.
+     * @Then I must obtain an HTTP answer with this status code equals to :code
      */
     public function iMustObtainAnHttpAnswerWithThisStatusCodeEqualsTo($code)
     {
@@ -779,7 +817,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then with the job normalized in the body.
+     * @Then with the job normalized in the body
      */
     public function withTheJobNormalizedInTheBody()
     {
@@ -813,7 +851,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then with the job normalized with hnc in the body.
+     * @Then with the job normalized with hnc in the body
      */
     public function withTheJobNormalizedWithHncInTheBody()
     {
@@ -883,7 +921,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then with the history :message at date :date normalized in the body.
+     * @Then with the history :message at date :date normalized in the body
      */
     public function withTheHistoryAtDateNormalizedInTheBody($message, $date)
     {

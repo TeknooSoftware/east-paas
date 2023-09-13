@@ -26,8 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDoneHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
+use Teknoo\Recipe\Promise\Promise;
+use Throwable;
 
 /**
  * Message handler for Symfony Messenger to handle a JobDone and print it to the standard output, in a
@@ -42,6 +45,11 @@ class DisplayResultHandler implements JobDoneHandlerInterface
 {
     private ?OutputInterface $output = null;
 
+    public function __construct(
+        private ?EncryptionInterface $encryption,
+    ) {
+    }
+
     public function setOutput(?OutputInterface $output): self
     {
         $this->output = $output;
@@ -51,8 +59,27 @@ class DisplayResultHandler implements JobDoneHandlerInterface
 
     public function __invoke(JobDone $jobDone): JobDoneHandlerInterface
     {
-        if (null !== $this->output) {
-            $this->output->writeln($jobDone->getMessage());
+        if (null === $this->output) {
+            return $this;
+        }
+
+        $processMessage = function (JobDone $jobDone): void {
+            $this->output?->writeln($jobDone->getMessage());
+        };
+
+        if (null !== $this->encryption) {
+            /** @var Promise<JobDone, mixed, mixed> $promise */
+            $promise = new Promise(
+                onSuccess: $processMessage,
+                onFail: fn (Throwable $error) => throw $error,
+            );
+
+            $this->encryption->decrypt(
+                $jobDone,
+                $promise,
+            );
+        } else {
+            $processMessage($jobDone);
         }
 
         return $this;

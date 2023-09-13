@@ -30,8 +30,11 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDoneHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
+use Teknoo\Recipe\Promise\Promise;
+use Throwable;
 
 use function str_replace;
 
@@ -51,6 +54,7 @@ class JobDoneHandler implements JobDoneHandlerInterface
     public function __construct(
         private readonly string $urlPattern,
         private readonly string $method,
+        private ?EncryptionInterface $encryption,
         UriFactoryInterface $uriFactory,
         RequestFactoryInterface $requestFactory,
         StreamFactoryInterface $streamFactory,
@@ -64,18 +68,35 @@ class JobDoneHandler implements JobDoneHandlerInterface
 
     public function __invoke(JobDone $jobDone): JobDoneHandlerInterface
     {
-        $url = str_replace(
-            ['{projectId}','{envName}','{jobId}'],
-            [$jobDone->getProjectId(), $jobDone->getEnvironment(), $jobDone->getJobId()],
-            $this->urlPattern
-        );
+        $processMessage = function (JobDone $jobDone): void {
+            $url = str_replace(
+                ['{projectId}', '{envName}', '{jobId}'],
+                [$jobDone->getProjectId(), $jobDone->getEnvironment(), $jobDone->getJobId()],
+                $this->urlPattern
+            );
 
-        $this->sendRequest(
-            $this->method,
-            $url,
-            'application/json',
-            $jobDone->getMessage()
-        );
+            $this->sendRequest(
+                $this->method,
+                $url,
+                'application/json',
+                $jobDone->getMessage()
+            );
+        };
+
+        if (null !== $this->encryption) {
+            /** @var Promise<JobDone, mixed, mixed> $promise */
+            $promise = new Promise(
+                onSuccess: $processMessage,
+                onFail: fn (Throwable $error) => throw $error,
+            );
+
+            $this->encryption->decrypt(
+                $jobDone,
+                $promise,
+            );
+        } else {
+            $processMessage($jobDone);
+        }
 
         return $this;
     }

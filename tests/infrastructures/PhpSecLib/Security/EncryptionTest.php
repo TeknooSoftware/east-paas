@@ -29,6 +29,7 @@ use phpseclib3\Crypt\Common\PrivateKey;
 use phpseclib3\Crypt\Common\PublicKey;
 use phpseclib3\Crypt\RSA;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\UnsupportedAlgorithmException;
@@ -106,6 +107,96 @@ class EncryptionTest extends TestCase
             ->method('success')
             ->with($this->callback(fn ($message) => $message instanceof MessageInterface));
         $promise->expects(self::never())
+            ->method('fail');
+
+        self::assertInstanceOf(
+            EncryptionInterface::class,
+            $service->encrypt(
+                data: $message,
+                promise: $promise,
+            )
+        );
+    }
+
+    public function testEncryptWithoutLength()
+    {
+        $privateKey = RSA::createKey(1024);
+
+        $publicKey = new class implements PublicKey {
+            public function encrypt($plaintext): string {
+                return 'foo';
+            }
+            public function verify($message, $signature) {}
+            public function toString($type, array $options = []) {}
+            public function getFingerprint($algorithm) {}
+        };
+
+        $service = new Encryption(
+            privateKey: $privateKey,
+            publicKey: $publicKey,
+            alogirthm: 'rsa',
+        );
+
+        $message = $this->createMock(MessageInterface::class);
+        $message->expects(self::any())
+            ->method('getMessage')
+            ->willReturn('foo');
+        $message->expects(self::once())
+            ->method('cloneWith')
+            ->willReturnCallback(
+                function ($message, $algo) {
+                    self::assertEquals('rsa', $algo);
+
+                    return $this->createMock(MessageInterface::class);
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with($this->callback(fn ($message) => $message instanceof MessageInterface));
+        $promise->expects(self::never())
+            ->method('fail');
+
+        self::assertInstanceOf(
+            EncryptionInterface::class,
+            $service->encrypt(
+                data: $message,
+                promise: $promise,
+            )
+        );
+    }
+
+    public function testEncryptWithtError()
+    {
+        $privateKey = RSA::createKey(1024);
+
+        $publicKey = new class implements PublicKey {
+            public function encrypt($plaintext): string {
+                throw new RuntimeException('foo');
+            }
+            public function verify($message, $signature) {}
+            public function toString($type, array $options = []) {}
+            public function getFingerprint($algorithm) {}
+        };
+
+        $service = new Encryption(
+            privateKey: $privateKey,
+            publicKey: $publicKey,
+            alogirthm: 'rsa',
+        );
+
+        $message = $this->createMock(MessageInterface::class);
+        $message->expects(self::any())
+            ->method('getMessage')
+            ->willReturn('foo');
+        $message->expects(self::never())
+            ->method('cloneWith');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())
+            ->method('success');
+        $promise->expects(self::once())
             ->method('fail');
 
         self::assertInstanceOf(
@@ -219,6 +310,52 @@ class EncryptionTest extends TestCase
             ->method('success')
             ->with($this->callback(fn ($message) => $message instanceof MessageInterface));
         $promise->expects(self::never())
+            ->method('fail');
+
+        self::assertInstanceOf(
+            EncryptionInterface::class,
+            $service->decrypt(
+                data: $message,
+                promise: $promise,
+            )
+        );
+    }
+
+    public function testDecryptWithError()
+    {
+        $privateKey = RSA::createKey(1024);
+
+        $privateKey2 = new class implements PrivateKey {
+            public function decrypt($ciphertext): string {
+                throw new RuntimeException('foo');
+            }
+
+            public function sign($message) {}
+            public function getPublicKey() {}
+            public function toString($type, array $options = []) {}
+            public function withPassword($password = false) {}
+        };
+
+        $service = new Encryption(
+            privateKey: $privateKey2,
+            publicKey: $publicKey = $privateKey->getPublicKey(),
+            alogirthm: 'rsa',
+        );
+
+        $message = $this->createMock(MessageInterface::class);
+        $message->expects(self::any())
+            ->method('getMessage')
+            ->willReturn($publicKey->encrypt('foo'));
+        $message->expects(self::any())
+            ->method('getEncryptionAlgorithm')
+            ->willReturn('rsa');
+        $message->expects(self::never())
+            ->method('cloneWith');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())
+            ->method('success');
+        $promise->expects(self::once())
             ->method('fail');
 
         self::assertInstanceOf(

@@ -20,7 +20,7 @@ parameters:
 
   teknoo.east.paas.symfony.history.prefer-real-date: false
   teknoo.east.paas.symfony.prepare-job.prefer-real-date: false
-  teknoo.east.paas.worker.time_limit: 6
+  teknoo.east.paas.worker.time_limit: 10
 
 services:
   Doctrine\Persistence\ObjectRepository:

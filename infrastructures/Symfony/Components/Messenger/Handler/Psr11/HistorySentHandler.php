@@ -30,8 +30,11 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
+use Teknoo\Recipe\Promise\Promise;
+use Throwable;
 
 use function str_replace;
 
@@ -52,6 +55,7 @@ class HistorySentHandler implements HistorySentHandlerInterface
     public function __construct(
         private readonly string $urlPattern,
         private readonly string $method,
+        private ?EncryptionInterface $encryption,
         UriFactoryInterface $uriFactory,
         RequestFactoryInterface $requestFactory,
         StreamFactoryInterface $streamFactory,
@@ -65,18 +69,35 @@ class HistorySentHandler implements HistorySentHandlerInterface
 
     public function __invoke(HistorySent $historySent): HistorySentHandlerInterface
     {
-        $url = str_replace(
-            ['{projectId}','{envName}','{jobId}'],
-            [$historySent->getProjectId(), $historySent->getEnvironment(), $historySent->getJobId()],
-            $this->urlPattern
-        );
+        $processMessage = function (HistorySent $historySent): void {
+            $url = str_replace(
+                ['{projectId}', '{envName}', '{jobId}'],
+                [$historySent->getProjectId(), $historySent->getEnvironment(), $historySent->getJobId()],
+                $this->urlPattern
+            );
 
-        $this->sendRequest(
-            $this->method,
-            $url,
-            'application/json',
-            $historySent->getMessage()
-        );
+            $this->sendRequest(
+                $this->method,
+                $url,
+                'application/json',
+                $historySent->getMessage()
+            );
+        };
+
+        if (null !== $this->encryption) {
+            /** @var Promise<HistorySent, mixed, mixed> $promise */
+            $promise = new Promise(
+                onSuccess: $processMessage,
+                onFail: fn (Throwable $error) => throw $error,
+            );
+
+            $this->encryption->decrypt(
+                $historySent,
+                $promise,
+            );
+        } else {
+            $processMessage($historySent);
+        }
 
         return $this;
     }

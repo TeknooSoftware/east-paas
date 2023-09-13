@@ -31,8 +31,14 @@ use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\TransportInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 
+use Teknoo\Tests\East\Paas\Behat\FeatureContext;
+use function is_array;
+use function json_decode;
 use function str_replace;
 
 /**
@@ -85,6 +91,14 @@ class GuzzleTransport implements TransportInterface
     public function send(Envelope $envelope): Envelope
     {
         $message = $envelope->getMessage();
+
+        FeatureContext::$messageByTypeIsEncrypted[$message::class] = match ($message::class) {
+            MessageJob::class => !is_array(json_decode($message->getMessage(), associative: true)),
+            JobDone::class => !is_array(json_decode($message->getMessage(), associative: true)),
+            HistorySent::class => !is_array(json_decode($message->getMessage(), associative: true)),
+            default => false,
+        } || (FeatureContext::$messageByTypeIsEncrypted[$message::class] ?? false);
+
         $uri = $this->getUri($envelope);
 
         $promise = $this->guzzle->requestAsync($this->method, $uri, ['body' => (string) $message]);

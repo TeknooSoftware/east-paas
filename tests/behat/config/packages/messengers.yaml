@@ -1,9 +1,10 @@
 services:
-    Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\HistorySentHandler:
-        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\HistorySentHandler'
+    Teknoo\Tests\East\Paas\Behat\Handler\Psr11\HistorySentHandler:
+        class: 'Teknoo\Tests\East\Paas\Behat\Handler\Psr11\HistorySentHandler'
         arguments:
             - '%teknoo.east.paas.worker.add_history_pattern%'
             - 'PUT'
+            - '@Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
             - '@Psr\Http\Message\UriFactoryInterface'
             - '@Psr\Http\Message\RequestFactoryInterface'
             - '@Psr\Http\Message\StreamFactoryInterface'
@@ -12,11 +13,12 @@ services:
         tags:
             - 'messenger.message_handler'
 
-    Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\JobDoneHandler:
-        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\JobDoneHandler'
+    Teknoo\Tests\East\Paas\Behat\Handler\Psr11\JobDoneHandler:
+        class: 'Teknoo\Tests\East\Paas\Behat\Handler\Psr11\JobDoneHandler'
         arguments:
             - '%teknoo.east.paas.worker.add_history_pattern%'
             - 'PUT'
+            - '@Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
             - '@Psr\Http\Message\UriFactoryInterface'
             - '@Psr\Http\Message\RequestFactoryInterface'
             - '@Psr\Http\Message\StreamFactoryInterface'

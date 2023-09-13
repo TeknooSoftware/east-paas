@@ -26,8 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
+use Teknoo\Recipe\Promise\Promise;
+use Throwable;
 
 /**
  * Message handler for Symfony Messenger to handle a HistorySent and print it to the standard output, in a
@@ -42,6 +45,11 @@ class DisplayHistoryHandler implements HistorySentHandlerInterface
 {
     private ?OutputInterface $output = null;
 
+    public function __construct(
+        private ?EncryptionInterface $encryption,
+    ) {
+    }
+
     public function setOutput(?OutputInterface $output): self
     {
         $this->output = $output;
@@ -51,8 +59,27 @@ class DisplayHistoryHandler implements HistorySentHandlerInterface
 
     public function __invoke(HistorySent $historySent): HistorySentHandlerInterface
     {
-        if (null !== $this->output) {
-            $this->output->writeln($historySent->getMessage());
+        if (null === $this->output) {
+            return $this;
+        }
+
+        $processMessage = function (HistorySent $historySent): void {
+            $this->output?->writeln($historySent->getMessage());
+        };
+
+        if (null !== $this->encryption) {
+            /** @var Promise<HistorySent, mixed, mixed> $promise */
+            $promise = new Promise(
+                onSuccess: $processMessage,
+                onFail: fn (Throwable $error) => throw $error,
+            );
+
+            $this->encryption->decrypt(
+                $historySent,
+                $promise,
+            );
+        } else {
+            $processMessage($historySent);
         }
 
         return $this;

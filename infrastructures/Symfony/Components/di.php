@@ -32,6 +32,7 @@ use Teknoo\East\FoundationBundle\Command\Client;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
@@ -62,8 +63,14 @@ return [
         'Run job manually from json file, without PaaS server'
     ),
 
-    DisplayHistoryHandler::class => create(),
-    DisplayResultHandler::class => create(),
+    DisplayHistoryHandler::class => create()
+        ->constructor(
+            get(EncryptionInterface::class),
+        ),
+    DisplayResultHandler::class => create()
+        ->constructor(
+            get(EncryptionInterface::class),
+        ),
 
     RunJobCommand::class => create()
         ->constructor(
