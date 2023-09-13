@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
+use SensitiveParameter;
 use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
@@ -79,6 +80,7 @@ class XRegistryAuth implements
 
     public function __construct(
         string $username = '',
+        #[SensitiveParameter]
         string $password = '',
         string $email = '',
         string $auth = '',

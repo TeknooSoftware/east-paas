@@ -32,8 +32,10 @@ use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\Persistence\ObjectManager;
+use phpseclib3\Crypt\RSA;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
+use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\Repository;
@@ -98,6 +100,7 @@ use function base64_encode;
 use function dirname;
 use function file_exists;
 use function file_get_contents;
+use function file_put_contents;
 use function json_decode;
 use function json_encode;
 use function random_int;
@@ -189,6 +192,11 @@ class FeatureContext implements Context
     public array $additionalsParameters = [];
 
     public ?string $jobJsonExported = null;
+
+    private string $privateKey = __DIR__ . '/../var/keys/private.pem';
+    private string $publicKey = __DIR__ . '/../var/keys/public.pem';
+
+    public static $messageByTypeIsEncrypted = [];
 
     /**
      * Initializes context.
@@ -324,6 +332,24 @@ class FeatureContext implements Context
         $this->slowBuilder = false;
         $this->paasFile = null;
         $this->jobJsonExported = null;
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE']);
+        }
+
+        if (!empty($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY'])) {
+            unset($_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY']);
+        }
+
+        self::$messageByTypeIsEncrypted = [];
     }
 
     public function getRepository(string $className)
@@ -481,6 +507,55 @@ class FeatureContext implements Context
 
         self::$useHnc = false;
         $this->additionalsParameters = [];
+    }
+
+    /**
+     * @Given encryption capacities between servers and agents
+     */
+    public function encryptionCapacitiesBetweenServersAndAgents()
+    {
+        $pk = RSA::createKey(1024);
+
+        file_put_contents($this->privateKey, $pk->toString('PKCS8'));
+        file_put_contents($this->publicKey, $pk->getPublicKey()->toString('PKCS8'));
+
+        $_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'] = Algorithm::RSA->value;
+        $_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY'] = $this->privateKey;
+        $_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY'] = $this->publicKey;
+    }
+
+    /**
+     * @Then all messages must be not encrypted
+     */
+    public function allMessagesMustBeNotEncrypted()
+    {
+        $this->checkMessagesAreEncryptedOrNot(false);
+    }
+
+    /**
+     * @Then all messages must be encrypted
+     */
+    public function allMessagesMustBeEncrypted()
+    {
+        $this->checkMessagesAreEncryptedOrNot(true);
+    }
+
+    private function checkMessagesAreEncryptedOrNot(bool $encryptionEnable)
+    {
+        $expectedStatus = 'decrypted';
+        if ($encryptionEnable) {
+            $expectedStatus = 'encrypted';
+        }
+
+        Assert::assertNotEmpty(self::$messageByTypeIsEncrypted);
+
+        foreach (self::$messageByTypeIsEncrypted as $class => $value) {
+            Assert::assertEquals(
+                $encryptionEnable,
+                $value,
+                "Messages of {$class} are not {$expectedStatus}",
+            );
+        }
     }
 
     /**
@@ -644,7 +719,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then I must obtain an HTTP answer with this status code equals to :code.
+     * @Then I must obtain an HTTP answer with this status code equals to :code
      */
     public function iMustObtainAnHttpAnswerWithThisStatusCodeEqualsTo($code)
     {
@@ -742,7 +817,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then with the job normalized in the body.
+     * @Then with the job normalized in the body
      */
     public function withTheJobNormalizedInTheBody()
     {
@@ -776,7 +851,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then with the job normalized with hnc in the body.
+     * @Then with the job normalized with hnc in the body
      */
     public function withTheJobNormalizedWithHncInTheBody()
     {
@@ -846,7 +921,7 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then with the history :message at date :date normalized in the body.
+     * @Then with the history :message at date :date normalized in the body
      */
     public function withTheHistoryAtDateNormalizedInTheBody($message, $date)
     {

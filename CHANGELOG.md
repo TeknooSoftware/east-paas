@@ -1,5 +1,29 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.0] - 2023-09-13
+### Stable Release
+- Add encryption capacities in messages between servers and agents or workers
+  - Define env var `TEKNOO_PAAS_SECURITY_ALGORITHM` (with `rsa` ou `dsa`).
+  - Define env var `TEKNOO_PAAS_SECURITY_PRIVATE_KEY` to define the private key location in the filesystem (to decrypt).
+  - Define env var (optional) `TEKNOO_PAAS_SECURITY_PRIVATE_KEY_PASSPHRASE` about the passphrase to unlock the 
+    private key.
+  - Define env var `TEKNOO_PAAS_SECURITY_PUBLIC_KEY` to define the public key location in the filesystem (to encrypt).
+- Add #[SensitiveParameter] to prevent leak.
+
+## [2.2.0-beta3] - 2023-09-13
+### Beta Release
+- Complete test
+
+## [2.2.0-beta2] - 2023-09-08
+### Beta Release
+- Fix MessageInterface Segregation
+- Fix FeatureContext
+
+## [2.2.0-beta1] - 2023-09-08
+### Beta Release
+- Add encryption capacities in messages between servers and agents or workers
+- Add #[SensitiveParameter] to prevent leak.
+
 ## [2.1.1] - 2023-08-13
 ### Stable Release
 - Fix wrong error template path in routes

@@ -84,4 +84,71 @@ trait MessageTestTrait
             (string) $this->buildMessage()
         );
     }
+
+    public function testGetEncryptionAlgorithm()
+    {
+        self::assertNull(
+            $this->buildMessage()->getEncryptionAlgorithm()
+        );
+    }
+
+    public function testCloneWith()
+    {
+        $messageA = $this->buildMessage();
+        $messageB = $messageA->cloneWith('monde', 'anAlgo');
+
+        self::assertEquals(
+            $messageA::class,
+            $messageB::class,
+        );
+
+        self::assertEquals(
+            'foo',
+            $messageA->getProjectId()
+        );
+
+        self::assertEquals(
+            'foo',
+            $messageB->getProjectId()
+        );
+
+        self::assertEquals(
+            'bar',
+            $messageA->getEnvironment()
+        );
+
+        self::assertEquals(
+            'bar',
+            $messageB->getEnvironment()
+        );
+
+        self::assertEquals(
+            'hello',
+            $messageA->getJobId()
+        );
+
+        self::assertEquals(
+            'hello',
+            $messageB->getJobId()
+        );
+
+        self::assertEquals(
+            'world',
+            $messageA->getMessage()
+        );
+
+        self::assertEquals(
+            'monde',
+            $messageB->getMessage()
+        );
+
+        self::assertNull(
+            $messageA->getEncryptionAlgorithm()
+        );
+
+        self::assertEquals(
+            'anAlgo',
+            $messageB->getEncryptionAlgorithm()
+        );
+    }
 }

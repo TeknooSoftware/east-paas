@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * East Paas.
  *
@@ -21,23 +23,21 @@
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-declare(strict_types=1);
-
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
-
-use Stringable;
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
-use Teknoo\Immutable\ImmutableInterface;
+namespace Teknoo\East\Paas\Contracts\Message;
 
 /**
- * Message object, for Symfony Messenger, about any job's event to persist in the database
+ * To define a message between servers, workers and agents
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class HistorySent implements MessageInterface, Stringable, ImmutableInterface
+interface MessageInterface
 {
-    use MessageTrait;
+    public function getMessage(): string;
+
+    public function getEncryptionAlgorithm(): ?string;
+
+    public function cloneWith(string $message, ?string $encryptionAlgorithm): MessageInterface;
 }

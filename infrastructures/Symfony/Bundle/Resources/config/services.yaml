@@ -51,9 +51,13 @@ services:
 
     Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler'
+        arguments:
+            - '@?Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler'
+        arguments:
+            - '@?Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
 
     Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber:
         class: 'Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber'
@@ -75,18 +79,20 @@ services:
         public: true
         arguments:
             - '@messenger.default_bus'
+            - '@?Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
 
-    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory:
-        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\SendHistory'
+    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\DispatchHistory:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\DispatchHistory'
         public: true
         arguments:
             - '@Teknoo\East\Common\Service\DatesService'
             - '@messenger.default_bus'
             - '@Teknoo\East\Paas\Job\History\SerialGenerator'
             - '%teknoo.east.paas.symfony.history.prefer-real-date%'
+            - '@?Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
 
-    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult:
-        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\PushResult'
+    Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\DispatchResult:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\DispatchResult'
         public: true
         arguments:
             - '@Teknoo\East\Common\Service\DatesService'
@@ -95,6 +101,7 @@ services:
             - '@Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface'
             - '@Teknoo\East\Paas\Job\History\SerialGenerator'
             - '%teknoo.east.paas.symfony.history.prefer-real-date%'
+            - '@?Teknoo\East\Paas\Contracts\Security\EncryptionInterface'
 
     Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer'

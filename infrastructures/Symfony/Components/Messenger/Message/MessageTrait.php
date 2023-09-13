@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
+use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
@@ -43,7 +44,8 @@ trait MessageTrait
         private readonly string $projectId,
         private readonly string $environment,
         private readonly string $jobId,
-        private readonly string $message
+        private readonly string $message,
+        private readonly ?string $encryptionAlgorithm = null,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -66,6 +68,22 @@ trait MessageTrait
     public function getMessage(): string
     {
         return $this->message;
+    }
+
+    public function getEncryptionAlgorithm(): ?string
+    {
+        return $this->encryptionAlgorithm;
+    }
+
+    public function cloneWith(string $message, ?string $encryptionAlgorithm): MessageInterface
+    {
+        return new self(
+            projectId: $this->getProjectId(),
+            environment: $this->getEnvironment(),
+            jobId: $this->getJobId(),
+            message: $message,
+            encryptionAlgorithm: $encryptionAlgorithm,
+        );
     }
 
     public function __toString()

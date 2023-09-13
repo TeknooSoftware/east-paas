@@ -26,8 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\JobDoneHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -45,6 +47,35 @@ class JobDoneHandlerTest extends TestCase
             (new JobDoneHandler(
                 'foo',
                 'bar',
+                null,
+                $this->getUriFactoryInterfaceMock(),
+                $this->getRequestFactoryInterfaceMock(),
+                $this->getStreamFactoryInterfaceMock(),
+                $this->getClientInterfaceMock()
+            )),
+            JobDoneHandler::class,
+            new JobDone('foo', 'bar', 'foo', 'bar')
+        );
+    }
+
+    public function testInvokeWithEncryption()
+    {
+        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption->expects(self::any())
+            ->method('decrypt')
+            ->willReturnCallback(
+                function ($data, PromiseInterface $promise) use ($encryption) {
+                    $promise->success($data);
+
+                    return $encryption;
+                }
+            );
+
+        $this->doTest(
+            (new JobDoneHandler(
+                'foo',
+                'bar',
+                $encryption,
                 $this->getUriFactoryInterfaceMock(),
                 $this->getRequestFactoryInterfaceMock(),
                 $this->getStreamFactoryInterfaceMock(),

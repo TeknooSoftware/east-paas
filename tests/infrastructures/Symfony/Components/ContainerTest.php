@@ -38,6 +38,7 @@ use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
@@ -186,6 +187,7 @@ class ContainerTest extends TestCase
     public function testDisplayHistory()
     {
         $container = $this->buildContainer();
+        $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
 
         self::assertInstanceOf(
             DisplayHistoryHandler::class,
@@ -196,6 +198,7 @@ class ContainerTest extends TestCase
     public function testDisplayResult()
     {
         $container = $this->buildContainer();
+        $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
 
         self::assertInstanceOf(
             DisplayResultHandler::class,
@@ -212,6 +215,7 @@ class ContainerTest extends TestCase
         $container->set(DatesService::class, $this->createMock(DatesService::class));
         $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
         $container->set(RunJobInterface::class . ':proxy', $this->createMock(RunJobInterface::class));
+        $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
 
         self::assertInstanceOf(
             RunJobCommand::class,

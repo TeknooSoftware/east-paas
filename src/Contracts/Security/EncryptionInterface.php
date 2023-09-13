@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * East Paas.
  *
@@ -21,23 +23,35 @@
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-declare(strict_types=1);
+namespace Teknoo\East\Paas\Contracts\Security;
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
-
-use Stringable;
 use Teknoo\East\Paas\Contracts\Message\MessageInterface;
-use Teknoo\Immutable\ImmutableInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
- * Message object, for Symfony Messenger, about any job's event to persist in the database
+ * To define a service able to encrypt and decrypt message between servers, agents and workers to keep secrets
+ * credentials and all others confidential data.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class HistorySent implements MessageInterface, Stringable, ImmutableInterface
+interface EncryptionInterface
 {
-    use MessageTrait;
+    /**
+     * @param PromiseInterface<MessageInterface, mixed> $promise
+     */
+    public function encrypt(
+        MessageInterface $data,
+        PromiseInterface $promise,
+    ): EncryptionInterface;
+
+    /**
+     * @param PromiseInterface<MessageInterface, mixed> $promise
+     */
+    public function decrypt(
+        MessageInterface $data,
+        PromiseInterface $promise,
+    ): EncryptionInterface;
 }
