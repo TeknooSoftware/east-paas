@@ -127,6 +127,9 @@
         }
     },
     "config": {
+        "audit": {
+            "abandoned": "report"
+        },
         "allow-plugins": {
             "php-http/discovery": true
         }
