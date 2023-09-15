@@ -101,6 +101,7 @@ use function dirname;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
+use function is_readable;
 use function json_decode;
 use function json_encode;
 use function random_int;
@@ -514,10 +515,12 @@ class FeatureContext implements Context
      */
     public function encryptionCapacitiesBetweenServersAndAgents()
     {
-        $pk = RSA::createKey(1024);
+        if (!file_exists($this->privateKey) || !is_readable($this->privateKey)) {
+            $pk = RSA::createKey(1024);
 
-        file_put_contents($this->privateKey, $pk->toString('PKCS8'));
-        file_put_contents($this->publicKey, $pk->getPublicKey()->toString('PKCS8'));
+            file_put_contents($this->privateKey, $pk->toString('PKCS8'));
+            file_put_contents($this->publicKey, $pk->getPublicKey()->toString('PKCS8'));
+        }
 
         $_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'] = Algorithm::RSA->value;
         $_ENV['TEKNOO_PAAS_SECURITY_PRIVATE_KEY'] = $this->privateKey;

@@ -243,7 +243,7 @@ class EncryptionTest extends TestCase
         );
     }
 
-    public function testDecryptWithBadAlgo()
+    public function testDecryptWithMismatchAlgo()
     {
         $privateKey = RSA::createKey(1024);
         $publicKey = $this->createMock(PublicKey::class);
@@ -252,6 +252,76 @@ class EncryptionTest extends TestCase
             privateKey: $privateKey,
             publicKey: $publicKey,
             alogirthm: 'rsa',
+        );
+
+        $message = $this->createMock(MessageInterface::class);
+        $message->expects(self::any())
+            ->method('getMessage')
+            ->willReturn('foo');
+        $message->expects(self::any())
+            ->method('getEncryptionAlgorithm')
+            ->willReturn('foo');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())
+            ->method('success');
+        $promise->expects(self::once())
+            ->method('fail')
+            ->with($this->callback(fn ($error) => $error instanceof UnsupportedAlgorithmException));
+
+        self::assertInstanceOf(
+            EncryptionInterface::class,
+            $service->decrypt(
+                data: $message,
+                promise: $promise,
+            )
+        );
+    }
+
+    public function testDecryptWithNotEncryptedMessage()
+    {
+        $privateKey = RSA::createKey(1024);
+        $publicKey = $this->createMock(PublicKey::class);
+
+        $service = new Encryption(
+            privateKey: $privateKey,
+            publicKey: $publicKey,
+            alogirthm: 'rsa',
+        );
+
+        $message = $this->createMock(MessageInterface::class);
+        $message->expects(self::any())
+            ->method('getMessage')
+            ->willReturn('foo');
+        $message->expects(self::any())
+            ->method('getEncryptionAlgorithm')
+            ->willReturn(null);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::never())
+            ->method('success');
+        $promise->expects(self::once())
+            ->method('fail')
+            ->with($this->callback(fn ($error) => $error instanceof UnsupportedAlgorithmException));
+
+        self::assertInstanceOf(
+            EncryptionInterface::class,
+            $service->decrypt(
+                data: $message,
+                promise: $promise,
+            )
+        );
+    }
+
+    public function testDecryptWithNotSupportedEncrypted()
+    {
+        $privateKey = RSA::createKey(1024);
+        $publicKey = $this->createMock(PublicKey::class);
+
+        $service = new Encryption(
+            privateKey: $privateKey,
+            publicKey: $publicKey,
+            alogirthm: '',
         );
 
         $message = $this->createMock(MessageInterface::class);

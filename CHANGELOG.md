@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.1] - 2023-09-15
+### Stable Release
+- Complete errors descriptions during decryption message
+
 ## [2.2.0] - 2023-09-13
 ### Stable Release
 - Add encryptions capacities in messages between servers and agents or workers

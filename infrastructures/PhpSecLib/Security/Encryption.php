@@ -126,11 +126,15 @@ class Encryption implements EncryptionInterface
         }
 
         if ($this->alogirthm !== ($algo = $data->getEncryptionAlgorithm())) {
-            $promise->fail(
-                new UnsupportedAlgorithmException(
-                    message: "$algo is not supported by this current configuration of this encryption service"
-                )
-            );
+            if (empty($algo)) {
+                $message = "This agent requires encryption in message, but this message is not encrypted";
+            } elseif (empty($this->alogirthm)) {
+                $message = "This agent does not support encryption in message, but this message is encrypted";
+            } else {
+                $message = "$algo is not supported by this current configuration of this encryption service";
+            }
+
+            $promise->fail(new UnsupportedAlgorithmException(message: $message));
 
             return $this;
         }
