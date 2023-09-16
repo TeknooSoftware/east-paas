@@ -36,6 +36,7 @@ use Teknoo\East\Paas\Infrastructures\PhpSecLib\Security\Encryption;
 use Throwable;
 
 use function file_get_contents;
+use function is_readable;
 
 return [
     'teknoo.east.paas.seclib.algorithm.env_key' => 'TEKNOO_PAAS_SECURITY_ALGORITHM',
@@ -61,11 +62,11 @@ return [
             $pkPassphrase = $_ENV[$privateKeyPassphraaseEnvKey] ?? null;
             $algo = Algorithm::from($algoValue);
 
-            if (empty($_ENV[$privateKeyEnvKey]) || !\is_readable($_ENV[$privateKeyEnvKey])) {
+            if (empty($_ENV[$privateKeyEnvKey]) || !is_readable($_ENV[$privateKeyEnvKey])) {
                 throw new InvalidConfigurationException("The private key defined for East PaaS is not readable");
             }
 
-            if (empty($_ENV[$publicKeyEnvKey]) || !\is_readable($_ENV[$publicKeyEnvKey])) {
+            if (empty($_ENV[$publicKeyEnvKey]) || !is_readable($_ENV[$publicKeyEnvKey])) {
                 throw new InvalidConfigurationException("The public key defined for East PaaS is not readable");
             }
 

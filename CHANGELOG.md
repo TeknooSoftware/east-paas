@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.2] - 2023-09-16
+### Stable Release
+- QA
+
 ## [2.2.1] - 2023-09-15
 ### Stable Release
 - Complete errors descriptions during decryption message
