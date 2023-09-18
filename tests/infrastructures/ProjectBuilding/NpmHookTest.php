@@ -38,13 +38,16 @@ use Symfony\Component\Process\Process;
  */
 class NpmHookTest extends TestCase
 {
-    public function buildHook(bool $success = true, ?array $expectedArguments = null): NpmHook
-    {
+    public function buildHook(
+        bool $success = true,
+        ?array $expectedArguments = null,
+        string|array $bin = __DIR__ . '/../../../npm.phar',
+    ): NpmHook {
         return new NpmHook(
-            $bin = __DIR__ . '/../../../npm.phar',
+            $bin,
             function (array $args) use ($bin, $success, $expectedArguments) {
                 if (null !== $expectedArguments) {
-                    self::assertEquals([$bin, ...$expectedArguments], $args);
+                    self::assertEquals([...((array) $bin), ...$expectedArguments], $args);
                 }
 
                 $process = $this->createMock(Process::class);
@@ -245,6 +248,35 @@ class NpmHookTest extends TestCase
                         'install',
                         '--dry-run',
                         'foo',
+                    ]
+                )
+                ->setOptions(['action' => 'install', 'arguments' => ['dry-run', 'foo']], $promiseOpt)
+                ->run($promise)
+        );
+    }
+
+    public function testRunProcessSuccessWithArray()
+    {
+        $promiseOpt = $this->createMock(PromiseInterface::class);
+        $promiseOpt->expects(self::once())->method('success');
+        $promiseOpt->expects(self::never())->method('fail');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            NpmHook::class,
+            $this->buildHook(
+                    success: true,
+                    expectedArguments: [
+                            'install',
+                            '--dry-run',
+                            'foo',
+                    ],
+                    bin: [
+                        __DIR__ . '/../../../npm.phar',
+                        '--',
                     ]
                 )
                 ->setOptions(['action' => 'install', 'arguments' => ['dry-run', 'foo']], $promiseOpt)

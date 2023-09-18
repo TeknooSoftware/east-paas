@@ -32,6 +32,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Throwable;
 
+use function is_string;
 use function preg_match;
 use function reset;
 
@@ -47,6 +48,11 @@ use function reset;
 abstract class AbstractHook implements HookInterface
 {
     /**
+     * @var string[]
+     */
+    private readonly array $binary;
+
+    /**
      * @var callable
      */
     private $factory;
@@ -60,10 +66,18 @@ abstract class AbstractHook implements HookInterface
      */
     private array $options = [];
 
+    /**
+     * @param string|string[] $binary
+     */
     public function __construct(
-        private readonly string $binary,
+        string|array $binary,
         callable $factory,
     ) {
+        if (is_string($binary)) {
+            $binary = [$binary];
+        }
+
+        $this->binary = $binary;
         $this->factory = $factory;
     }
 
@@ -154,7 +168,7 @@ abstract class AbstractHook implements HookInterface
 
     public function run(PromiseInterface $promise): HookInterface
     {
-        $command = ($this->factory)([$this->binary, ...$this->options], $this->path . $this->localPath);
+        $command = ($this->factory)([...$this->binary, ...$this->options], $this->path . $this->localPath);
         if (!$command instanceof Process) {
             $promise->fail(new RuntimeException('Bad process manager'));
 

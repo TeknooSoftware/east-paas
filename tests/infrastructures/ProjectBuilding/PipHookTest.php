@@ -38,13 +38,16 @@ use Symfony\Component\Process\Process;
  */
 class PipHookTest extends TestCase
 {
-    public function buildHook(bool $success = true, ?array $expectedArguments = null): PipHook
-    {
+    public function buildHook(
+        bool $success = true,
+        ?array $expectedArguments = null,
+        string|array $bin = __DIR__ . '/../../../pip.phar',
+    ): PipHook {
         return new PipHook(
-            $bin = __DIR__ . '/../../../pip.phar',
+            $bin,
             function (array $args) use ($bin, $success, $expectedArguments) {
                 if (null !== $expectedArguments) {
-                    self::assertEquals([$bin, ...$expectedArguments], $args);
+                    self::assertEquals([...((array) $bin), ...$expectedArguments], $args);
                 }
 
                 $process = $this->createMock(Process::class);
@@ -234,6 +237,36 @@ class PipHookTest extends TestCase
                         '--force-reinstall',
                         '-r',
                         'myfile.txt',
+                    ]
+                )
+                ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
+                ->run($promise)
+        );
+    }
+
+    public function testRunProcessSuccessWithArray()
+    {
+        $promiseOpt = $this->createMock(PromiseInterface::class);
+        $promiseOpt->expects(self::once())->method('success');
+        $promiseOpt->expects(self::never())->method('fail');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            PipHook::class,
+            $this->buildHook(
+                    success: true,
+                    expectedArguments: [
+                        'install',
+                        '--force-reinstall',
+                        '-r',
+                        'myfile.txt',
+                    ],
+                    bin: [
+                        __DIR__ . '/../../../pip.phar',
+                        '--',
                     ]
                 )
                 ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
