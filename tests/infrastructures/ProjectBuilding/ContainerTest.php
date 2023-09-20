@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\ProjectBuilding;
 
+use ArrayObject;
 use DI\Container;
 use DI\ContainerBuilder;
 use Symfony\Component\Process\Process;
@@ -64,10 +65,32 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testComposerHook()
+    public function testComposerHookWithString()
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.composer.path', '/foo/composer.phar');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $container->get(ComposerHook::class)
+        );
+    }
+
+    public function testComposerHookWithArray()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.composer.path', ['/foo/composer.phar']);
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $container->get(ComposerHook::class)
+        );
+    }
+
+    public function testComposerHookWithArrayObjectt()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.composer.path', new ArrayObject(['/foo/composer.phar']));
 
         self::assertInstanceOf(
             ComposerHook::class,
@@ -137,6 +160,28 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testPipHookWithArray()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.pip.path', ['/foo/pip']);
+
+        self::assertInstanceOf(
+            PipHook::class,
+            $container->get(PipHook::class)
+        );
+    }
+
+    public function testPipHookWithArrayObject()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.pip.path', new ArrayObject(['/foo/pip']));
+
+        self::assertInstanceOf(
+            PipHook::class,
+            $container->get(PipHook::class)
+        );
+    }
+
     public function testPipHookWithTimeout()
     {
         $container = $this->buildContainer();
@@ -191,6 +236,28 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testNpmHookWithArray()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.npm.path', ['/foo/npm']);
+
+        self::assertInstanceOf(
+            NpmHook::class,
+            $container->get(NpmHook::class)
+        );
+    }
+
+    public function testNpmHookWithArrayObject()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.npm.path', new ArrayObject(['/foo/npm']));
+
+        self::assertInstanceOf(
+            NpmHook::class,
+            $container->get(NpmHook::class)
+        );
+    }
+
     public function testNpmHookWithTimeout()
     {
         $container = $this->buildContainer();
@@ -238,6 +305,28 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.make.path', '/foo/make');
+
+        self::assertInstanceOf(
+            MakeHook::class,
+            $container->get(MakeHook::class)
+        );
+    }
+
+    public function testMakeHookWithArray()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.make.path', ['/foo/make']);
+
+        self::assertInstanceOf(
+            MakeHook::class,
+            $container->get(MakeHook::class)
+        );
+    }
+
+    public function testMakeHookWithArrayObject()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.make.path', new ArrayObject(['/foo/make']));
 
         self::assertInstanceOf(
             MakeHook::class,

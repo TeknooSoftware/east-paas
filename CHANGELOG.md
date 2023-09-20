@@ -1,5 +1,14 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.4] - 2023-09-20
+### Stable Release
+- Following hooks configurations entries accept now array, ArrayObject instance and string:
+  - `teknoo.east.paas.composer.path`
+  - `teknoo.east.paas.make.path`
+  - `teknoo.east.paas.npm.path`
+  - `teknoo.east.paas.pip.timeout`
+  - `teknoo.east.paas.pip.path`
+
 ## [2.2.3] - 2023-09-16
 ### Stable Release
 - Following hooks configurations entries accept also array of string instead of string:

@@ -25,14 +25,28 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding;
 
+use ArrayObject;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\RuntimeException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 
 use function implode;
+use function is_string;
 use function trigger_error;
 
 use const E_USER_DEPRECATED;
+
+$getArray = static function (string|array|ArrayObject $value): array {
+    if ($value instanceof ArrayObject) {
+        return $value->getArrayCopy();
+    }
+
+    if (is_string($value)) {
+        return [$value];
+    }
+
+    return $value;
+};
 
 return [
     ComposerHook::class . ':factory' => static function (ContainerInterface $container): callable {
@@ -52,7 +66,7 @@ return [
         };
     },
 
-    ComposerHook::class => static function (ContainerInterface $container): ComposerHook {
+    ComposerHook::class => static function (ContainerInterface $container) use ($getArray): ComposerHook {
         if ($container->has('teknoo.east.paas.composer.path')) {
             $binaryPath = $container->get('teknoo.east.paas.composer.path');
         } elseif ($container->has('teknoo.east.paas.composer.phar.path')) {
@@ -66,7 +80,7 @@ return [
         }
 
         return new ComposerHook(
-            $binaryPath,
+            $getArray($binaryPath),
             $container->get(ComposerHook::class . ':factory'),
         );
     },
@@ -88,9 +102,9 @@ return [
         };
     },
 
-    MakeHook::class => static function (ContainerInterface $container): MakeHook {
+    MakeHook::class => static function (ContainerInterface $container) use ($getArray): MakeHook {
         return new MakeHook(
-            $container->get('teknoo.east.paas.make.path'),
+            $getArray($container->get('teknoo.east.paas.make.path')),
             $container->get(MakeHook::class . ':factory'),
         );
     },
@@ -112,9 +126,9 @@ return [
         };
     },
 
-    NpmHook::class => static function (ContainerInterface $container): NpmHook {
+    NpmHook::class => static function (ContainerInterface $container) use ($getArray): NpmHook {
         return new NpmHook(
-            $container->get('teknoo.east.paas.npm.path'),
+            $getArray($container->get('teknoo.east.paas.npm.path')),
             $container->get(NpmHook::class . ':factory'),
         );
     },
@@ -145,9 +159,9 @@ return [
         };
     },
 
-    PipHook::class => static function (ContainerInterface $container): PipHook {
+    PipHook::class => static function (ContainerInterface $container) use ($getArray): PipHook {
         return new PipHook(
-            $container->get('teknoo.east.paas.pip.path'),
+            $getArray($container->get('teknoo.east.paas.pip.path')),
             $container->get(PipHook::class . ':factory'),
         );
     },
