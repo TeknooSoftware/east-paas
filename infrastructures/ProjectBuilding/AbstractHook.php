@@ -35,6 +35,7 @@ use Throwable;
 use function is_string;
 use function preg_match;
 use function reset;
+use function str_replace;
 
 /**
  * Abstract class to wrap dependency manager or other compilation tools, like make, into your
@@ -168,7 +169,13 @@ abstract class AbstractHook implements HookInterface
 
     public function run(PromiseInterface $promise): HookInterface
     {
-        $command = ($this->factory)([...$this->binary, ...$this->options], $this->path . $this->localPath);
+        $binary = str_replace(
+            search: '${PWD}',
+            replace: (string) $this->path,
+            subject: $this->binary,
+        );
+
+        $command = ($this->factory)([...$binary, ...$this->options], $this->path . $this->localPath);
         if (!$command instanceof Process) {
             $promise->fail(new RuntimeException('Bad process manager'));
 

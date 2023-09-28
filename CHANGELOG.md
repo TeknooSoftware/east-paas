@@ -1,5 +1,17 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.5] - 2023-09-20
+### Stable Release
+- For theses Following hooks path, the environment variable `${PWD}` can be used.
+  - `teknoo.east.paas.composer.path`
+  - `teknoo.east.paas.make.path`
+  - `teknoo.east.paas.npm.path`
+  - `teknoo.east.paas.pip.timeout`
+  - `teknoo.east.paas.pip.path`
+  Warning : To keep actual behavior (command as array of arguments), the "variable" `${PWD}` will be
+  directly replaced before passed to Symfony Process by the hook class. The substitution is 
+  not performed by the shell.
+
 ## [2.2.4] - 2023-09-20
 ### Stable Release
 - Following hooks configurations entries accept now array, ArrayObject instance and string:

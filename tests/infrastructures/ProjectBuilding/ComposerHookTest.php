@@ -29,6 +29,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\ComposerHook;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
+use function str_replace;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -47,6 +48,7 @@ class ComposerHookTest extends TestCase
             $bin,
             function (array $args) use ($bin, $success, $expectedArguments) {
                 if (null !== $expectedArguments) {
+                    $bin = str_replace('${PWD}', '/foo', $bin);
                     self::assertEquals([...((array) $bin), ...$expectedArguments], $args);
                 }
 
@@ -254,6 +256,33 @@ class ComposerHookTest extends TestCase
         self::assertInstanceOf(
             ComposerHook::class,
             $this->buildHook(
+                success: true,
+                expectedArguments: [
+                    'install',
+                    '--prefer-install',
+                ],
+                bin: [
+                    __DIR__ . '/../../../composer.phar',
+                    '--',
+                ]
+            )->setOptions(['action' => 'install', 'arguments' => ['prefer-install']], $promiseOpt)
+                ->run($promise)
+        );
+    }
+
+    public function testRunProcessSuccessWithPWD()
+    {
+        $promiseOpt = $this->createMock(PromiseInterface::class);
+        $promiseOpt->expects(self::once())->method('success');
+        $promiseOpt->expects(self::never())->method('fail');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ComposerHook::class,
+            $this->buildHook(
                     success: true,
                     expectedArguments: [
                             'install',
@@ -262,8 +291,10 @@ class ComposerHookTest extends TestCase
                     bin: [
                         __DIR__ . '/../../../composer.phar',
                         '--',
+                        '${PWD}',
                     ]
                 )->setOptions(['action' => 'install', 'arguments' => ['prefer-install']], $promiseOpt)
+                ->setPath('/foo')
                 ->run($promise)
         );
     }

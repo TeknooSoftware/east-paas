@@ -30,35 +30,34 @@ use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\RuntimeException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 
-use function function_exists;
 use function implode;
 use function is_string;
 use function trigger_error;
 
 use const E_USER_DEPRECATED;
 
-if (!function_exists(__NAMESPACE__ . '\getArrayFromValue')) {
-    /**
-     * @param string|array<int, string>|ArrayObject<int, string> $value
-     * @return string[]
-     */
-// phpcs:disable
-    function getArrayFromValue(string|array|ArrayObject $value): array
-    {
-        if ($value instanceof ArrayObject) {
-            return $value->getArrayCopy();
-        }
-
-        if (is_string($value)) {
-            return [$value];
-        }
-
-        return $value;
-    }
-// phpcs:enable
-}
-
 return [
+    'teknoo.east.paas.project_building.get_array_from_value' => static function (): callable {
+        return new class {
+            /**
+             * @param string|array<int, string>|ArrayObject<int, string> $value
+             * @return string[]
+             */
+            public function __invoke(string|array|ArrayObject $value): array
+            {
+                if ($value instanceof ArrayObject) {
+                    return $value->getArrayCopy();
+                }
+
+                if (is_string($value)) {
+                    return [$value];
+                }
+
+                return $value;
+            }
+        };
+    },
+
     ComposerHook::class . ':factory' => static function (ContainerInterface $container): callable {
         return function (array $command, string $cwd) use ($container): Process {
             $process = new Process($command, $cwd);
@@ -89,8 +88,9 @@ return [
             throw new RuntimeException("'teknoo.east.paas.composer.phar.path' is missed in DI parameter");
         }
 
+        $getArrayFromValue = $container->get('teknoo.east.paas.project_building.get_array_from_value');
         return new ComposerHook(
-            getArrayFromValue($binaryPath),
+            $getArrayFromValue($binaryPath),
             $container->get(ComposerHook::class . ':factory'),
         );
     },
@@ -113,8 +113,9 @@ return [
     },
 
     MakeHook::class => static function (ContainerInterface $container): MakeHook {
+        $getArrayFromValue = $container->get('teknoo.east.paas.project_building.get_array_from_value');
         return new MakeHook(
-            getArrayFromValue($container->get('teknoo.east.paas.make.path')),
+            $getArrayFromValue($container->get('teknoo.east.paas.make.path')),
             $container->get(MakeHook::class . ':factory'),
         );
     },
@@ -137,8 +138,9 @@ return [
     },
 
     NpmHook::class => static function (ContainerInterface $container): NpmHook {
+        $getArrayFromValue = $container->get('teknoo.east.paas.project_building.get_array_from_value');
         return new NpmHook(
-            getArrayFromValue($container->get('teknoo.east.paas.npm.path')),
+            $getArrayFromValue($container->get('teknoo.east.paas.npm.path')),
             $container->get(NpmHook::class . ':factory'),
         );
     },
@@ -170,8 +172,9 @@ return [
     },
 
     PipHook::class => static function (ContainerInterface $container): PipHook {
+        $getArrayFromValue = $container->get('teknoo.east.paas.project_building.get_array_from_value');
         return new PipHook(
-            getArrayFromValue($container->get('teknoo.east.paas.pip.path')),
+            $getArrayFromValue($container->get('teknoo.east.paas.pip.path')),
             $container->get(PipHook::class . ':factory'),
         );
     },

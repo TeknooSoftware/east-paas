@@ -29,6 +29,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\NpmHook;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
+use function str_replace;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -47,6 +48,7 @@ class NpmHookTest extends TestCase
             $bin,
             function (array $args) use ($bin, $success, $expectedArguments) {
                 if (null !== $expectedArguments) {
+                    $bin = str_replace('${PWD}', '/foo', $bin);
                     self::assertEquals([...((array) $bin), ...$expectedArguments], $args);
                 }
 
@@ -280,6 +282,37 @@ class NpmHookTest extends TestCase
                     ]
                 )
                 ->setOptions(['action' => 'install', 'arguments' => ['dry-run', 'foo']], $promiseOpt)
+                ->run($promise)
+        );
+    }
+
+    public function testRunProcessSuccessWithPWD()
+    {
+        $promiseOpt = $this->createMock(PromiseInterface::class);
+        $promiseOpt->expects(self::once())->method('success');
+        $promiseOpt->expects(self::never())->method('fail');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            NpmHook::class,
+            $this->buildHook(
+                    success: true,
+                    expectedArguments: [
+                            'install',
+                            '--dry-run',
+                            'foo',
+                    ],
+                    bin: [
+                        __DIR__ . '/../../../npm.phar',
+                        '--',
+                        '${PWD}',
+                    ]
+                )
+                ->setOptions(['action' => 'install', 'arguments' => ['dry-run', 'foo']], $promiseOpt)
+                ->setPath('/foo')
                 ->run($promise)
         );
     }

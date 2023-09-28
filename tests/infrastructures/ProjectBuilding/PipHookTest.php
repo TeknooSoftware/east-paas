@@ -29,6 +29,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\PipHook;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
+use function str_replace;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -47,6 +48,7 @@ class PipHookTest extends TestCase
             $bin,
             function (array $args) use ($bin, $success, $expectedArguments) {
                 if (null !== $expectedArguments) {
+                    $bin = str_replace('${PWD}', '/foo', $bin);
                     self::assertEquals([...((array) $bin), ...$expectedArguments], $args);
                 }
 
@@ -270,6 +272,38 @@ class PipHookTest extends TestCase
                     ]
                 )
                 ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
+                ->run($promise)
+        );
+    }
+
+    public function testRunProcessSuccessWithPWD()
+    {
+        $promiseOpt = $this->createMock(PromiseInterface::class);
+        $promiseOpt->expects(self::once())->method('success');
+        $promiseOpt->expects(self::never())->method('fail');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('success');
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            PipHook::class,
+            $this->buildHook(
+                    success: true,
+                    expectedArguments: [
+                        'install',
+                        '--force-reinstall',
+                        '-r',
+                        'myfile.txt',
+                    ],
+                    bin: [
+                        __DIR__ . '/../../../pip.phar',
+                        '--',
+                        '${PWD}',
+                    ]
+                )
+                ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
+                ->setPath('/foo')
                 ->run($promise)
         );
     }
