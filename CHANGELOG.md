@@ -1,8 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.7] - 2023-10-01
+### Stable Release
+- Remove virtualenv management in Pip Hook. It must be directly managed by the bin or script passed as pip path.
+
 ## [2.2.6] - 2023-10-01
 ### Stable Release
-- Fix wrong path replaced for `${PWD}` in hooks.   
+- Fix wrong path replaced for `${PWD}` in hooks.
 
 ## [2.2.5] - 2023-09-28
 ### Stable Release

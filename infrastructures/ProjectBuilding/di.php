@@ -147,16 +147,7 @@ return [
 
     PipHook::class . ':factory' => static function (ContainerInterface $container): callable {
         return function (array $command, string $cwd) use ($container): Process {
-            $process = Process::fromShellCommandline(
-                command: implode(
-                    ' ',
-                    [
-                        'virtualenv --copies --clear -p python3 venv && . venv/bin/activate && ',
-                        ...$command,
-                    ],
-                ),
-                cwd: $cwd,
-            );
+            $process = new Process($command, $cwd);
 
             $timeout = 0.0;
             if ($container->has('teknoo.east.paas.pip.timeout')) {
