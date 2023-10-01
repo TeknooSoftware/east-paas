@@ -1,6 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
-## [2.2.5] - 2023-09-20
+## [2.2.6] - 2023-10-01
+### Stable Release
+- Fix wrong path replaced for `${PWD}` in hooks.   
+
+## [2.2.5] - 2023-09-28
 ### Stable Release
 - For theses Following hooks path, the environment variable `${PWD}` can be used.
   - `teknoo.east.paas.composer.path`

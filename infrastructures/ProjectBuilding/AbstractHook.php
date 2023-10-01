@@ -169,13 +169,15 @@ abstract class AbstractHook implements HookInterface
 
     public function run(PromiseInterface $promise): HookInterface
     {
+        $path = $this->path . $this->localPath;
+
         $binary = str_replace(
             search: '${PWD}',
-            replace: (string) $this->path,
+            replace: $path,
             subject: $this->binary,
         );
 
-        $command = ($this->factory)([...$binary, ...$this->options], $this->path . $this->localPath);
+        $command = ($this->factory)([...$binary, ...$this->options], $path);
         if (!$command instanceof Process) {
             $promise->fail(new RuntimeException('Bad process manager'));
 
