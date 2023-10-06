@@ -33,6 +33,7 @@ use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\Persistence\ObjectManager;
 use phpseclib3\Crypt\RSA;
+use PHPUnit\Framework\MockObject\Generator\Generator;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
@@ -42,7 +43,6 @@ use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Kubernetes\RepositoryRegistry;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
-use PHPUnit\Framework\MockObject\Generator\Generator;
 use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount as AnyInvokedCountMatcher;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -1321,8 +1321,9 @@ class FeatureContext implements Context
     public function anOciBuilder()
     {
         $generator = new Generator();
-        $mock = $generator->getMock(
+        $mock = $generator->testDouble(
             type: Process::class,
+            mockObject: true,
             callOriginalConstructor: false,
             callOriginalClone: false,
             callOriginalMethods: false,
@@ -1370,15 +1371,17 @@ class FeatureContext implements Context
     public function aKubernetesClient()
     {
         $generator = new Generator();
-        $mock = $generator->getMock(
+        $mock = $generator->testDouble(
             type: Client::class,
+            mockObject: true,
             callOriginalConstructor: false,
             callOriginalClone: false,
             callOriginalMethods: false,
         );
 
-        $repoMock = $generator->getMock(
+        $repoMock = $generator->testDouble(
             type: Repository::class,
+            mockObject: true,
             callOriginalConstructor: false,
             callOriginalClone: false,
             callOriginalMethods: false,

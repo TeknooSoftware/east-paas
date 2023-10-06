@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.8] - 2023-10-06
+### Stable Release
+- Fix issues with `PHPUnit 10.4+`
+
 ## [2.2.7] - 2023-10-01
 ### Stable Release
 - Remove virtualenv management in Pip Hook. It must be directly managed by the bin or script passed as pip path.
