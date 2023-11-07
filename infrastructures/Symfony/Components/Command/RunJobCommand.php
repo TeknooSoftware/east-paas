@@ -75,7 +75,11 @@ class RunJobCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument(self::FILE_ARGUMENT_NAME, InputArgument::REQUIRED, 'Filename');
+        $this->addArgument(
+            name: self::FILE_ARGUMENT_NAME,
+            mode: InputArgument::REQUIRED,
+            description: 'PaaS Yaml file to deploy'
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
