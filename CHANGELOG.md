@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.2.9] - 2023-11-09
+### Stable Release
+- Use lasts Teknoo libraries to fix some bugs
+
 ## [2.2.8] - 2023-10-06
 ### Stable Release
 - Fix issues with `PHPUnit 10.4+`
