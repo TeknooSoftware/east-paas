@@ -32,7 +32,7 @@
         "ext-json": "*",
         "ext-libxml": "*",
         "php-di/php-di": "^7.0.5",
-        "psr/http-client": "^1.0.3",
+        "psr/http-client": "^1.0.2",
         "teknoo/immutable": "^3.0.16",
         "teknoo/states": "^6.1.2",
         "teknoo/recipe": "^4.5.1",
