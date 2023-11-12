@@ -120,6 +120,31 @@ return [
         );
     },
 
+    SfConsoleHook::class . ':factory' => static function (ContainerInterface $container): callable {
+        return function (array $command, string $cwd) use ($container): Process {
+            $process = new Process($command, $cwd);
+
+            $timeout = 0.0;
+            if ($container->has('teknoo.east.paas.symfony_console.timeout')) {
+                $timeout = (float) $container->get('teknoo.east.paas.symfony_console.timeout');
+            }
+
+            $process->setTimeout(
+                $timeout,
+            );
+
+            return $process;
+        };
+    },
+
+    SfConsoleHook::class => static function (ContainerInterface $container): SfConsoleHook {
+        $getArrayFromValue = $container->get('teknoo.east.paas.project_building.get_array_from_value');
+        return new SfConsoleHook(
+            $getArrayFromValue($container->get('teknoo.east.paas.symfony_console.path')),
+            $container->get(SfConsoleHook::class . ':factory'),
+        );
+    },
+
     NpmHook::class . ':factory' => static function (ContainerInterface $container): callable {
         return function (array $command, string $cwd) use ($container): Process {
             $process = new Process($command, $cwd);

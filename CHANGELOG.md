@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.3.0-beta1] - 2023-11-12
+### Stable Release
+- Add hook about Symfony Console to run some command in a Symfony project.
+  - DI parameters are :
+    - to custom bin path : `teknoo.east.paas.symfony_console.path` 
+    - to custom timeout :  `teknoo.east.paas.symfony_console.timeout`
+
 ## [2.2.9] - 2023-11-09
 ### Stable Release
 - Use lasts Teknoo libraries to fix some bugs

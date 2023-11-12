@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\RuntimeException;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\MakeHook;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\NpmHook;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\PipHook;
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\SfConsoleHook;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -369,6 +370,82 @@ class ContainerTest extends TestCase
 
         self::assertIsCallable(
             $factory = $container->get(MakeHook::class . ':factory')
+        );
+
+        self::assertInstanceOf(
+            Process::class,
+            $factory(['foo'], '/tmp'),
+        );
+    }
+
+    public function testSfConsoleHook()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.symfony_console.path', '/foo/sfConsole');
+
+        self::assertInstanceOf(
+            SfConsoleHook::class,
+            $container->get(SfConsoleHook::class)
+        );
+    }
+
+    public function testSfConsoleHookWithArray()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.symfony_console.path', ['/foo/sfConsole']);
+
+        self::assertInstanceOf(
+            SfConsoleHook::class,
+            $container->get(SfConsoleHook::class)
+        );
+    }
+
+    public function testSfConsoleHookWithArrayObject()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.symfony_console.path', new ArrayObject(['/foo/sfConsole']));
+
+        self::assertInstanceOf(
+            SfConsoleHook::class,
+            $container->get(SfConsoleHook::class)
+        );
+    }
+
+    public function testSfConsoleHookWithTimeout()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.symfony_console.path', '/foo/sfConsole');
+        $container->set('teknoo.east.paas.symfony_console.timeout', 240);
+
+        self::assertInstanceOf(
+            SfConsoleHook::class,
+            $container->get(SfConsoleHook::class)
+        );
+    }
+
+    public function testSfConsoleHookFactory()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.symfony_console.path', '/foo/sfConsole');
+
+        self::assertIsCallable(
+            $factory= $container->get(SfConsoleHook::class . ':factory')
+        );
+
+        self::assertInstanceOf(
+            Process::class,
+            $factory(['foo'], '/tmp'),
+        );
+    }
+
+    public function testSfConsoleHookFactoryWithTimeout()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.symfony_console.path', '/foo/sfConsole');
+        $container->set('teknoo.east.paas.symfony_console.timeout', 240);
+
+        self::assertIsCallable(
+            $factory = $container->get(SfConsoleHook::class . ':factory')
         );
 
         self::assertInstanceOf(

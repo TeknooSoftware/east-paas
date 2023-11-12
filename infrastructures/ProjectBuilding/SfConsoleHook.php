@@ -31,14 +31,14 @@ use function preg_match;
 use function reset;
 
 /**
- * Hook to perform some operations with make tools
+ * Hook to perform some operations with the symfony console tools
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class MakeHook extends AbstractHook
+class SfConsoleHook extends AbstractHook
 {
     /**
      * @param array{action?: string|null, arguments?: iterable<string>} $options
