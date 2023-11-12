@@ -35,6 +35,7 @@ use Throwable;
 use function is_string;
 use function preg_match;
 use function reset;
+use function rtrim;
 use function str_replace;
 
 /**
@@ -169,7 +170,7 @@ abstract class AbstractHook implements HookInterface
 
     public function run(PromiseInterface $promise): HookInterface
     {
-        $path = $this->path . $this->localPath;
+        $path = rtrim($this->path . $this->localPath, '/') . '/';
 
         $binary = str_replace(
             search: '${PWD}',
