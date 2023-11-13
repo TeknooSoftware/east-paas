@@ -48,7 +48,7 @@ class ComposerHookTest extends TestCase
             $bin,
             function (array $args) use ($bin, $success, $expectedArguments) {
                 if (null !== $expectedArguments) {
-                    $bin = str_replace('${PWD}', '/foo/', $bin);
+                    $bin = str_replace('${PWD}', '/foo', $bin);
                     self::assertEquals([...((array) $bin), ...$expectedArguments], $args);
                 }
 

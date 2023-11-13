@@ -33,10 +33,12 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Throwable;
 
 use function is_string;
+use function ltrim;
 use function preg_match;
 use function reset;
 use function rtrim;
 use function str_replace;
+use function trim;
 
 /**
  * Abstract class to wrap dependency manager or other compilation tools, like make, into your
@@ -85,7 +87,7 @@ abstract class AbstractHook implements HookInterface
 
     public function setPath(string $path): HookInterface
     {
-        $this->path = $path;
+        $this->path = rtrim($path, '/');
 
         return $this;
     }
@@ -99,7 +101,7 @@ abstract class AbstractHook implements HookInterface
             $this->options = $this->validateOptions($options);
 
             if (!empty($options['path'])) {
-                $this->localPath = $options['path'];
+                $this->localPath = '/' . trim($options['path'], '/');
             }
         } catch (Throwable $error) {
             $promise->fail($error);
@@ -161,7 +163,7 @@ abstract class AbstractHook implements HookInterface
                     $final[] = '--' . $arg;
                 }
             } else {
-                    $final[] = $arg;
+                $final[] = $arg;
             }
         }
 
@@ -170,7 +172,7 @@ abstract class AbstractHook implements HookInterface
 
     public function run(PromiseInterface $promise): HookInterface
     {
-        $path = rtrim($this->path . $this->localPath, '/') . '/';
+        $path = $this->path . $this->localPath;
 
         $binary = str_replace(
             search: '${PWD}',
