@@ -9,6 +9,7 @@ _teknoo_paas_admin_job_list:
         itemsPerPage: 20
         loader: '@Teknoo\East\Paas\Loader\JobLoader'
         template: '@@TeknooEastPaas/AdminJob/list.html.twig'
+        cleanHtml: "%teknoo.east.paas.admin.rendering.clean_html%"
 
 _teknoo_paas_admin_job_delete:
     path: '/job/delete/{id}'

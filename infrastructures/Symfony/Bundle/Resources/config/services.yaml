@@ -4,6 +4,9 @@ parameters:
     teknoo.east.paas.symfony.history.prefer-real-date: true
     teknoo.east.paas.job_unit.use_hierarchical_namespaces: false
 
+    teknoo.east.paas.admin.rendering.clean_html: true
+    teknoo.east.paas.rendering.clean_html: true
+
 services:
     teknoo.east.paas.symfony.property_accessor:
         class: 'Symfony\Component\PropertyAccess\PropertyAccessor'

@@ -9,6 +9,7 @@ _teknoo_paas_admin_account_list:
         itemsPerPage: 20
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         template: '@@TeknooEastPaas/AdminAccount/list.html.twig'
+        cleanHtml: "%teknoo.east.paas.admin.rendering.clean_html%"
 
 _teknoo_paas_admin_account_edit:
     path: '/account/edit/{id}'
@@ -23,6 +24,7 @@ _teknoo_paas_admin_account_edit:
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         template: '@@TeknooEastPaas/AdminAccount/edit.html.twig'
         writer: '@Teknoo\East\Paas\Writer\AccountWriter'
+        cleanHtml: "%teknoo.east.paas.admin.rendering.clean_html%"
 
 _teknoo_paas_admin_account_new:
     path: '/account/new'
@@ -37,6 +39,7 @@ _teknoo_paas_admin_account_new:
         route: '_teknoo_paas_admin_account_edit'
         template: '@@TeknooEastPaas/AdminAccount/new.html.twig'
         writer: '@Teknoo\East\Paas\Writer\AccountWriter'
+        cleanHtml: "%teknoo.east.paas.admin.rendering.clean_html%"
 
 _teknoo_paas_admin_account_delete:
     path: '/account/delete/{id}'

@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.0] - 2023-11-12
+### Stable Release
+- Update to East Common 2.5
+  - Add `teknoo.east.paas.rendering.clean_html` and `teknoo.east.paas.admin.rendering.clean_html`
+
 ## [2.3.0] - 2023-11-12
 ### Stable Release
 - Add hook about Symfony Console to run some command in a Symfony project.

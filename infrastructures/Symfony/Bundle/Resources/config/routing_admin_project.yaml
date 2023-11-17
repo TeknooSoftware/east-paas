@@ -8,6 +8,7 @@ _teknoo_paas_admin_project_list:
         itemsPerPage: 20
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         template: '@@TeknooEastPaas/AdminProject/list.html.twig'
+        cleanHtml: "%teknoo.east.paas.admin.rendering.clean_html%"
 
 _teknoo_paas_admin_project_edit:
     path: '/project/edit/{id}'
@@ -20,6 +21,7 @@ _teknoo_paas_admin_project_edit:
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         template: '@@TeknooEastPaas/AdminProject/edit.html.twig'
         writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
+        cleanHtml: "%teknoo.east.paas.admin.rendering.clean_html%"
 
 _teknoo_paas_admin_project_new:
     path: '/project/new/{accountId}'
@@ -36,6 +38,7 @@ _teknoo_paas_admin_project_new:
         route: '_teknoo_paas_admin_project_edit'
         template: '@@TeknooEastPaas/AdminProject/new.html.twig'
         writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
+        cleanHtml: "%teknoo.east.paas.admin.rendering.clean_html%"
 
 _teknoo_paas_admin_project_delete:
     path: '/project/delete/{id}'
