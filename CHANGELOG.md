@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.1] - 2023-11-24
+### Stable Release
+- Support of Doctrine ODM 2.6.1+
+
 ## [2.4.0] - 2023-11-12
 ### Stable Release
 - Update to East Common 2.5

@@ -6,10 +6,16 @@
                                             http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
 
     <document name="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project" collection="projects">
-        <reference-one field="account" target-document="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account" inversed-by="projects" nullable="false">
+        <reference-one field="account"
+                       target-document="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account"
+                       inversed-by="projects"
+                       nullable="false">
             <cascade />
         </reference-one>
-        <reference-many field="jobs" target-document="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job" inversed-by="project">
+        <reference-many field="jobs"
+                        target-document="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job"
+                        inversed-by="project"
+                        store-empty-array="true">
             <cascade>
                 <remove />
             </cascade>

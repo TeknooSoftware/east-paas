@@ -16,10 +16,15 @@
         <embed-one field="environment" target-document="Teknoo\East\Paas\Object\Environment" nullable="false"/>
         <embed-one field="sourceRepository" target-document="Teknoo\East\Paas\Object\GitRepository" nullable="false"/>
         <embed-one field="imagesRegistry" target-document="Teknoo\East\Paas\Object\ImageRegistry" nullable="false"/>
-        <reference-many field="clusters" target-document="Teknoo\East\Paas\Object\Cluster" nullable="false">
+        <reference-many field="clusters"
+                        target-document="Teknoo\East\Paas\Object\Cluster"
+                        nullable="false"
+                        store-empty-array="true">
             <cascade />
         </reference-many>
-        <reference-one field="project" target-document="Teknoo\East\Paas\Object\Project" inversed-by="jobs">
+        <reference-one field="project"
+                       target-document="Teknoo\East\Paas\Object\Project"
+                       inversed-by="jobs">
             <cascade />
         </reference-one>
     </document>
