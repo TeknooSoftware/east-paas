@@ -71,6 +71,7 @@ class YamlValidator
         'services',
         'ingresses',
         'meta',
+        'aliases',
         'version',
         'namespace',
         'hierarchical-namespaces',

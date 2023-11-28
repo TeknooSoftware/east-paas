@@ -92,6 +92,9 @@ class IngressCompilerTest extends TestCase
                     'port' => 80
                 ],
                 'meta' => 'foo',
+                'aliases' => [
+                    'alias.foo.com',
+                ],
                 'paths' => [
                     [
                         'path' => '/demo',

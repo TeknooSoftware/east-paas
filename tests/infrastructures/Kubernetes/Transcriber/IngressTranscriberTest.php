@@ -82,6 +82,7 @@ class IngressTranscriberTest extends TestCase
                         'cert',
                         true,
                         ['annotations' => 'foo'],
+                        ['alias.foo.com']
                     ),
                     'default_namespace',
                     'a-prefix',

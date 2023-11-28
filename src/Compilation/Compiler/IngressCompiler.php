@@ -35,6 +35,8 @@ use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
+use function array_unique;
+use function array_values;
 use function is_string;
 
 /**
@@ -61,6 +63,7 @@ class IngressCompiler implements CompilerInterface, ExtenderInterface
     private const KEY_PATH = 'path';
     private const KEY_HTTPS_BACKEND = 'https-backend';
     private const KEY_META = 'meta';
+    private const KEY_ALIASES = 'aliases';
     private const KEY_EXTENDS = 'extends';
 
     /**
@@ -112,6 +115,7 @@ class IngressCompiler implements CompilerInterface, ExtenderInterface
                     tlsSecret: $config[self::KEY_TLS][self::KEY_SECRET] ?? null,
                     httpsBackend: !empty($config[self::KEY_HTTPS_BACKEND]),
                     meta: $meta,
+                    aliases: array_values(array_unique($config[self::KEY_ALIASES] ?? [])),
                 )
             );
         }

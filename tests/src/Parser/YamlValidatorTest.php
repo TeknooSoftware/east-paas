@@ -236,6 +236,9 @@ ingresses:
       port: 8080
     meta:
       letsencrypt: true
+    aliases:
+      - alias1.foo.com
+      - alias2.foo.com
     paths:
       - path: /php
         service:

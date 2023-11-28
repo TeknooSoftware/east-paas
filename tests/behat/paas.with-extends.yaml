@@ -168,6 +168,11 @@ ingresses:
             letsencrypt: true
             annotations:
                 foo2: bar
+        aliases:
+            - demo-paas.teknoo.software
+            - alias1.demo-paas.teknoo.software
+            - alias1.demo-paas.teknoo.software
+            - alias2.demo-paas.teknoo.software
         paths:
             - path: /php
               service:

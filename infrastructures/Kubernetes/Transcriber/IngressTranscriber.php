@@ -34,6 +34,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingIn
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
+use function array_keys;
 use function array_merge_recursive;
 use function is_array;
 
@@ -76,42 +77,46 @@ class IngressTranscriber implements ExposingInterface
         array $defaultIngressAnnotations,
         callable $prefixer,
     ): array {
-        $rule = [
-            'host' => $ingress->getHost(),
-            'http' => [
-                'paths' => [],
-            ],
-        ];
-
-        if (!empty($ingress->getDefaultServiceName())) {
-            $rule['http']['paths'][] = [
-                'path' => '/',
-                'pathType' => 'Prefix',
-                'backend' => [
-                    'service' => [
-                        'name' => $prefixer($ingress->getDefaultServiceName()),
-                        'port' => [
-                            'number' => $ingress->getDefaultServicePort(),
-                        ],
-                    ],
-                ]
+        $ruleGenerator = function (string $host) use ($prefixer, $ingress): array {
+            $rule = [
+                'host' => $host,
+                'http' => [
+                    'paths' => [],
+                ],
             ];
-        }
 
-        foreach ($ingress->getPaths() as $path) {
-            $rule['http']['paths'][] = [
-                'path' => $path->getPath(),
-                'pathType' => 'Prefix',
-                'backend' => [
-                    'service' => [
-                        'name' => $prefixer($path->getServiceName()),
-                        'port' => [
-                            'number' => $path->getServicePort(),
+            if (!empty($ingress->getDefaultServiceName())) {
+                $rule['http']['paths'][] = [
+                    'path' => '/',
+                    'pathType' => 'Prefix',
+                    'backend' => [
+                        'service' => [
+                            'name' => $prefixer($ingress->getDefaultServiceName()),
+                            'port' => [
+                                'number' => $ingress->getDefaultServicePort(),
+                            ],
                         ],
-                    ],
-                ]
-            ];
-        }
+                    ]
+                ];
+            }
+
+            foreach ($ingress->getPaths() as $path) {
+                $rule['http']['paths'][] = [
+                    'path' => $path->getPath(),
+                    'pathType' => 'Prefix',
+                    'backend' => [
+                        'service' => [
+                            'name' => $prefixer($path->getServiceName()),
+                            'port' => [
+                                'number' => $path->getServicePort(),
+                            ],
+                        ],
+                    ]
+                ];
+            }
+
+            return $rule;
+        };
 
         if (!empty($metaAnnotations = $ingress->getMeta()['annotations'] ?? [])) {
             if (!is_array($metaAnnotations)) {
@@ -120,6 +125,21 @@ class IngressTranscriber implements ExposingInterface
 
             //Can not overload default annotations by default to avoid security issues)
             $defaultIngressAnnotations = array_merge_recursive($metaAnnotations, $defaultIngressAnnotations);
+        }
+
+        $hosts = [
+            $ingress->getHost() => true,
+        ];
+
+        $rules = [
+            $ruleGenerator($ingress->getHost()),
+        ];
+
+        foreach ($ingress->getAliases() as $alias) {
+            if (!isset($hosts[$alias])) {
+                $rules[] = $ruleGenerator($alias);
+                $hosts[$alias] = true;
+            }
         }
 
         $specs = [
@@ -132,7 +152,7 @@ class IngressTranscriber implements ExposingInterface
                 'annotations' => $defaultIngressAnnotations,
             ],
             'spec' => [
-                'rules' => [$rule],
+                'rules' => $rules,
             ],
         ];
 
@@ -156,7 +176,7 @@ class IngressTranscriber implements ExposingInterface
 
         if (!empty($ingress->getTlsSecret())) {
             $specs['spec']['tls'][] = [
-                'hosts' => [$ingress->getHost()],
+                'hosts' => array_keys($hosts),
                 'secretName' => $prefixer($ingress->getTlsSecret() . self::SECRET_SUFFIX),
             ];
         }

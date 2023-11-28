@@ -50,6 +50,10 @@ class IngressTest extends TestCase
             tlsSecret: 'fooSecret',
             httpsBackend: true,
             meta: ['foo' => 'bar'],
+            aliases: [
+                'www.bar.com',
+                'www2.bar.com',
+            ]
         );
     }
 
@@ -136,6 +140,17 @@ class IngressTest extends TestCase
         self::assertEquals(
             ['foo' => 'bar'],
             $this->buildObject()->getMeta()
+        );
+    }
+
+    public function testGetAliases()
+    {
+        self::assertEquals(
+            [
+                'www.bar.com',
+                'www2.bar.com',
+            ],
+            $this->buildObject()->getAliases()
         );
     }
 }

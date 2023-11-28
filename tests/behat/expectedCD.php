@@ -448,6 +448,11 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                     'foo2' => 'bar',
                 ],
             ],
+            aliases: [
+                'demo-paas.teknoo.software',
+                'alias1.demo-paas.teknoo.software',
+                'alias2.demo-paas.teknoo.software',
+            ],
         )
     );
 

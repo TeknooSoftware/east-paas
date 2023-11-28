@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.2] - 2023-11-29
+### Stable Release
+- Support hosts aliases on ingress
+
 ## [2.4.1] - 2023-11-24
 ### Stable Release
 - Support of Doctrine ODM 2.6.1+

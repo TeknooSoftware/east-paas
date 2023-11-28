@@ -2075,12 +2075,76 @@ EOF;
                                 }
                             ]
                         }
+                    },
+                    {
+                        "host": "alias1.demo-paas.teknoo.software",
+                        "http": {
+                            "paths": [
+                                {
+                                    "path": "/",
+                                    "pathType": "Prefix",
+                                    "backend": {
+                                        "service": {
+                                            "name": "{$prefix}demo",
+                                            "port": {
+                                                "number": 8080
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "path": "/php",
+                                    "pathType": "Prefix",
+                                    "backend": {
+                                        "service": {
+                                            "name": "{$prefix}php-service",
+                                            "port": {
+                                                "number": 9876
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "host": "alias2.demo-paas.teknoo.software",
+                        "http": {
+                            "paths": [
+                                {
+                                    "path": "/",
+                                    "pathType": "Prefix",
+                                    "backend": {
+                                        "service": {
+                                            "name": "{$prefix}demo",
+                                            "port": {
+                                                "number": 8080
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "path": "/php",
+                                    "pathType": "Prefix",
+                                    "backend": {
+                                        "service": {
+                                            "name": "{$prefix}php-service",
+                                            "port": {
+                                                "number": 9876
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 ],
                 "tls": [
                     {
                         "hosts": [
-                            "demo-paas.teknoo.software"
+                            "demo-paas.teknoo.software",
+                            "alias1.demo-paas.teknoo.software",
+                            "alias2.demo-paas.teknoo.software"
                         ],
                         "secretName": "{$prefix}demo-vault-secret"
                     }

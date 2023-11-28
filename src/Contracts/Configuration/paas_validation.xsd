@@ -352,6 +352,7 @@
     <xs:all>
       <xs:element name="extends" type="xs:string" minOccurs="0" />
       <xs:element name="host" type="xs:string" />
+      <xs:element name="aliases" type="epv:rows_list_string" minOccurs="0" />
       <xs:element name="https-backend" type="xs:boolean" minOccurs="0" />
       <xs:element name="tls" type="epv:ingress_tls" />
       <xs:element name="service" type="epv:ingress_service" minOccurs="0" />
