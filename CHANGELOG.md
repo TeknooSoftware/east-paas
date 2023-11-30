@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.3] - 2023-11-30
+### Stable Release
+- Update dev lib requirements
+- Support Symfony 6.4+ (7+ comming soon)
+
 ## [2.4.2] - 2023-11-29
 ### Stable Release
 - Support hosts aliases on ingress

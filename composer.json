@@ -33,17 +33,17 @@
         "ext-libxml": "*",
         "php-di/php-di": "^7.0.6",
         "psr/http-client": "^1.0.2",
-        "teknoo/immutable": "^3.0.16",
-        "teknoo/states": "^6.1.4",
-        "teknoo/recipe": "^4.5.1",
-        "teknoo/east-foundation": "^7.3.3",
-        "teknoo/east-common": "^2.5.1"
+        "teknoo/immutable": "^3.0.17",
+        "teknoo/states": "^6.1.5",
+        "teknoo/recipe": "^4.5.2",
+        "teknoo/east-foundation": "^7.3.4",
+        "teknoo/east-common": "^2.6.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
         "phpunit/phpunit": "^10.4.2",
         "squizlabs/php_codesniffer": "^3.7.2",
-        "phpstan/phpstan": "^1.10.43",
+        "phpstan/phpstan": "^1.10.46",
         "symfony/property-access": "^6.3.2",
         "icanhazstring/composer-unused": "^0.8.10",
         "nikic/php-parser": "^4.17.1",
@@ -57,7 +57,7 @@
         "league/flysystem": "^3.21",
         "php-http/discovery": "^1.19.1",
         "php-http/mock-client": "^1.6",
-        "phpseclib/phpseclib": "^3.0.33",
+        "phpseclib/phpseclib": "^3.0.34",
         "psr/http-client":"^1.0.2",
         "symfony/config": "^6.3",
         "symfony/console": "^6.3",
@@ -72,7 +72,7 @@
         "symfony/options-resolver": "^6.3",
         "symfony/process": "^6.3",
         "symfony/property-info": "^6.3",
-        "symfony/psr-http-message-bridge": "^2.1",
+        "symfony/psr-http-message-bridge": "^2.3.1",
         "symfony/routing": "^6.3",
         "symfony/security-bundle": "^6.3",
         "symfony/security-core": "^6.3",
@@ -82,8 +82,8 @@
         "symfony/validator": "^6.3",
         "symfony/var-exporter": "^6.3",
         "symfony/yaml": "^6.3",
-        "teknoo/bridge-phpdi-symfony": "^6.0.1",
-        "teknoo/kubernetes-client": "^1.4.3"
+        "teknoo/bridge-phpdi-symfony": "^6.0.3",
+        "teknoo/kubernetes-client": "^1.4.4"
     },
     "autoload": {
         "psr-4": {
