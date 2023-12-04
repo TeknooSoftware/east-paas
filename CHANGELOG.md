@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.5] - 2023-12-04
+### Stable Release
+- Support Symfony 7+
+
 ## [2.4.4] - 2023-12-01
 ### Stable Release
 - Update dev lib requirements
