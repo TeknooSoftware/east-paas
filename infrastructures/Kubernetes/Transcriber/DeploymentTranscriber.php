@@ -46,7 +46,6 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Transcribe
 use Throwable;
 
 use function array_map;
-use function sleep;
 use function substr;
 
 /**
