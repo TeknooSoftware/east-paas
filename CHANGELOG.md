@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.6] - 2024-01-16
+### Stable Release
+- Support Doctrine Mongo ODM Bundle 5+
+
 ## [2.4.5] - 2023-12-04
 ### Stable Release
 - Support Symfony 7+
