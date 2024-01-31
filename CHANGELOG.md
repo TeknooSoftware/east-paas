@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.7] - 2024-01-31
+### Stable Release
+- Require East Common 2.7
+- Require East Foundation 7.5.1
+- Common `DatesService` is deprecated, use Foundation's `DatesService` instead
+
 ## [2.4.6] - 2024-01-16
 ### Stable Release
 - Support Doctrine Mongo ODM Bundle 5+

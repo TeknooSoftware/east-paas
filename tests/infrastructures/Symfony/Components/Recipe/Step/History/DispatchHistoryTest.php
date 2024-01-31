@@ -26,23 +26,13 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\History;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UriFactoryInterface;
-use Psr\Http\Message\UriInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Teknoo\East\Foundation\Time\DatesService;
 use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\DispatchHistory;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
-use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Common\Service\DatesService;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
