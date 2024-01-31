@@ -88,7 +88,7 @@ services:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\DispatchHistory'
         public: true
         arguments:
-            - '@Teknoo\East\Common\Service\DatesService'
+            - '@Teknoo\East\Foundation\Time\DatesService'
             - '@messenger.default_bus'
             - '@Teknoo\East\Paas\Job\History\SerialGenerator'
             - '%teknoo.east.paas.symfony.history.prefer-real-date%'
@@ -98,7 +98,7 @@ services:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job\DispatchResult'
         public: true
         arguments:
-            - '@Teknoo\East\Common\Service\DatesService'
+            - '@Teknoo\East\Foundation\Time\DatesService'
             - '@messenger.default_bus'
             - '@Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface'
             - '@Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface'
