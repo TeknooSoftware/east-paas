@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Cookbook;
 
+use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
@@ -40,6 +41,7 @@ use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
+use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
@@ -79,6 +81,8 @@ class AddHistory implements AddHistoryInterface
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
+        $recipe = $recipe->require(new Ingredient(MessageInterface::class));
+
         $recipe = $recipe->cook($this->stepPing, Ping::class, [], 5);
         $recipe = $recipe->cook($this->stepSetTimeLimit, SetTimeLimit::class, [], 6);
         $recipe = $recipe->cook($this->stepReceiveHistory, ReceiveHistory::class, [], 10);
@@ -87,11 +91,11 @@ class AddHistory implements AddHistoryInterface
         $recipe = $recipe->cook($this->stepGetJob, GetJob::class, [], 40);
         $recipe = $recipe->cook($this->stepAddHistory, StepAddHistory::class, [], 50);
         $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
-        $recipe = $recipe->cook($this->stepUnsetTimeLimit, UnsetTimeLimit::class, [], 70);
 
         $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
 
         $recipe = $recipe->cook($this->stepSendHistoryInterface, SendHistoryInterface::class, [], 80);
+        $recipe = $recipe->cook($this->stepUnsetTimeLimit, UnsetTimeLimit::class, [], 90);
 
         $recipe = $recipe->onError(new Bowl($this->stepUnsetTimeLimit, []));
         return $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));

@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Writer\JobWriter;
@@ -48,12 +49,12 @@ class SaveJob
     ) {
     }
 
-    public function __invoke(Job $job, ChefInterface $chef, ClientInterface $client): self
+    public function __invoke(Job $job, ManagerInterface $manager, ClientInterface $client): self
     {
         /** @var Promise<Job, mixed, mixed> $savedPromise */
         $savedPromise = new Promise(
             null,
-            static fn (Throwable $error): ChefInterface => $chef->error(
+            static fn (Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     message: 'teknoo.east.paas.job.save_error',
                     code: 500,

@@ -69,9 +69,9 @@ class ConfigureClusterClient
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.cluster.configuration_error',
                     500,
-                    $error
-                )
-            )
+                    $error,
+                ),
+            ),
         );
 
         $job->configureCluster($this->clientsDirectory, $promise);

@@ -65,20 +65,20 @@ class DeserializeJob
                 static function (JobUnitInterface $jobUnit) use ($manager): void {
                     $manager->updateWorkPlan([JobUnitInterface::class => $jobUnit]);
                     $jobUnit->runWithExtra(
-                        static fn($extra): ChefInterface => $manager->updateWorkPlan(['extra' => $extra])
+                        static fn($extra): ChefInterface => $manager->updateWorkPlan(['extra' => $extra]),
                     );
                 },
                 static fn(Throwable $error): ChefInterface => $manager->error(
                     new RuntimeException(
                         'teknoo.east.paas.error.recipe.job.mal_formed',
                         400,
-                        $error
-                    )
-                )
+                        $error,
+                    ),
+                ),
             ),
             [
-                'variables' => $this->variables
-            ]
+                'variables' => $this->variables,
+            ],
         );
 
         return $this;

@@ -25,12 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\History;
 
-use Laminas\Diactoros\Stream;
 use Laminas\Diactoros\StreamFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
-use Teknoo\Recipe\ChefInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -49,11 +48,11 @@ class ReceiveHistoryTest extends TestCase
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(ChefInterface::class)
+            $this->createMock(ManagerInterface::class)
         );
     }
 
-    public function testInvokeBadChef()
+    public function testInvokeBadManager()
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
@@ -65,20 +64,20 @@ class ReceiveHistoryTest extends TestCase
     public function testInvoke()
     {
         $message = $this->createMock(MessageInterface::class);
-        $chef = $this->createMock(ChefInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
 
         $message->expects(self::once())
             ->method('getBody')
             ->willReturn((new StreamFactory())->createStream('foo'));
 
-        $chef->expects(self::once())
+        $manager->expects(self::once())
             ->method('updateWorkPlan')
             ->with(['serializedHistory' => 'foo'])
             ->willReturnSelf();
 
         self::assertInstanceOf(
             ReceiveHistory::class,
-            ($this->buildStep())($message, $chef)
+            ($this->buildStep())($message, $manager)
         );
     }
 }

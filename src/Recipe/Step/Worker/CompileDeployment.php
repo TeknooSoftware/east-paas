@@ -63,9 +63,9 @@ class CompileDeployment
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.configuration.compilation_error',
                     500,
-                    $error
-                )
-            )
+                    $error,
+                ),
+            ),
         );
 
         $conductor->compileDeployment(

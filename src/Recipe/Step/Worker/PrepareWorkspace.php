@@ -49,6 +49,7 @@ class PrepareWorkspace
         $workspace = $this->workspace->setJob($job);
 
         $manager->updateWorkPlan([JobWorkspaceInterface::class => $workspace]);
+
         return $this;
     }
 }

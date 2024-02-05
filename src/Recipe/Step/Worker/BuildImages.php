@@ -71,16 +71,18 @@ class BuildImages
                     $envName,
                     $jobUnit->getId(),
                     self::class . ':Result',
-                    ['build_output' => $buildSuccess]
+                    [
+                        'build_output' => $buildSuccess,
+                    ],
                 );
             },
             static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.images.building_error',
                     500,
-                    $error
-                )
-            )
+                    $error,
+                ),
+            ),
         );
 
         $workspace->runInRepositoryPath(
@@ -94,7 +96,7 @@ class BuildImages
                 $builder->buildImages(
                     $compiledDeployment,
                     $root,
-                    $promise
+                    $promise,
                 );
             }
         );

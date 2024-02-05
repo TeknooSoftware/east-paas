@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Object\Job;
-use Teknoo\Recipe\ChefInterface;
 
 /**
  * Step to create a new empty Job Instance
@@ -38,9 +38,9 @@ use Teknoo\Recipe\ChefInterface;
  */
 class CreateNewJob
 {
-    public function __invoke(ChefInterface $chef): self
+    public function __invoke(ManagerInterface $manager): self
     {
-        $chef->updateWorkPlan(['job' => new Job()]);
+        $manager->updateWorkPlan(['job' => new Job()]);
 
         return $this;
     }

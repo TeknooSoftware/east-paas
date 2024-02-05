@@ -67,15 +67,15 @@ class ConfigureCloningAgent
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.agent.configuration_error',
                     500,
-                    $error
-                )
-            )
+                    $error,
+                ),
+            ),
         );
 
         $job->configureCloningAgent(
             $this->agent,
             $workspace,
-            $promise
+            $promise,
         );
 
         return $this;

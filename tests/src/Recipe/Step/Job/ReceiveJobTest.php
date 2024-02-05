@@ -28,8 +28,8 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 use Laminas\Diactoros\StreamFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
-use Teknoo\Recipe\ChefInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -48,11 +48,11 @@ class ReceiveJobTest extends TestCase
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(ChefInterface::class)
+            $this->createMock(ManagerInterface::class)
         );
     }
 
-    public function testInvokeBadChef()
+    public function testInvokeBadManager()
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
@@ -64,20 +64,20 @@ class ReceiveJobTest extends TestCase
     public function testInvoke()
     {
         $message = $this->createMock(MessageInterface::class);
-        $chef = $this->createMock(ChefInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
 
         $message->expects(self::once())
             ->method('getBody')
             ->willReturn((new StreamFactory())->createStream('foo'));
 
-        $chef->expects(self::once())
+        $manager->expects(self::once())
             ->method('updateWorkPlan')
             ->with(['serializedJob' => 'foo'])
             ->willReturnSelf();
 
         self::assertInstanceOf(
             ReceiveJob::class,
-            ($this->buildStep())($message, $chef)
+            ($this->buildStep())($message, $manager)
         );
     }
 }

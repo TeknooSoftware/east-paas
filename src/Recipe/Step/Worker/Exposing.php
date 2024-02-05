@@ -72,16 +72,16 @@ class Exposing
                     $envName,
                     $jobUnit->getId(),
                     self::class . ':Result',
-                    $result
+                    $result,
                 );
             },
             static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.cluster.exposing_error',
                     500,
-                    $error
-                )
-            )
+                    $error,
+                ),
+            ),
         );
 
         /** @var DriverInterface $client */

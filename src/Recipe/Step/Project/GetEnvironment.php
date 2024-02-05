@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Project;
 
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Object\Environment;
-use Teknoo\Recipe\ChefInterface;
 
 /**
  * To create a new environment instance from the ingredient `envName`.
@@ -38,9 +38,9 @@ use Teknoo\Recipe\ChefInterface;
  */
 class GetEnvironment
 {
-    public function __invoke(string $envName, ChefInterface $chef): self
+    public function __invoke(string $envName, ManagerInterface $manager): self
     {
-        $chef->updateWorkPlan([Environment::class => new Environment($envName)]);
+        $manager->updateWorkPlan([Environment::class => new Environment($envName)]);
 
         return $this;
     }

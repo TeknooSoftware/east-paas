@@ -51,7 +51,7 @@ class GetVariables
     public function __invoke(
         ManagerInterface $manager,
         MessageInterface $message,
-        ClientInterface $client
+        ClientInterface $client,
     ): self {
         $contentType = $message->getHeader('Content-Type');
         if ($this->jsonContentType !== current($contentType)) {

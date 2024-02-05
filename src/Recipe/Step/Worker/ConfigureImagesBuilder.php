@@ -64,9 +64,9 @@ class ConfigureImagesBuilder
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.images.configuration_error',
                     500,
-                    $error
-                )
-            )
+                    $error,
+                ),
+            ),
         );
 
         $jobUnit->configureImageBuilder($this->builder, $promise);

@@ -38,6 +38,7 @@ use Teknoo\Recipe\RecipeInterface;
 
 /**
  * Abstract cookbook to implement HTTP Endpoint
+ * Used directly in the DI to create `EditAccountEndPointInterface` and `EditProjectEndPointInterface`
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -65,17 +66,17 @@ abstract class AbstractEditObjectEndPoint extends EditObjectEndPoint
         array $loadObjectWiths = [],
     ) {
         parent::__construct(
-            $recipe,
-            $loadObject,
-            $formHandling,
-            $formProcessing,
-            null,
-            $saveObject,
-            $renderForm,
-            $renderError,
-            $objectAccessControl,
-            $defaultErrorTemplate,
-            $loadObjectWiths,
+            recipe: $recipe,
+            loadObject: $loadObject,
+            formHandling: $formHandling,
+            formProcessing: $formProcessing,
+            slugPreparation: null,
+            saveObject: $saveObject,
+            renderForm: $renderForm,
+            renderError: $renderError,
+            objectAccessControl: $objectAccessControl,
+            defaultErrorTemplate: $defaultErrorTemplate,
+            loadObjectWiths: $loadObjectWiths,
         );
 
         $this->additionalSteps = $additionalSteps;

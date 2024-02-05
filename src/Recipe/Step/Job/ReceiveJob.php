@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use Psr\Http\Message\MessageInterface;
-use Teknoo\Recipe\ChefInterface;
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 
 /**
  * Step to inject as a string variable called `serializedJob` with the body of the message.
@@ -38,9 +38,9 @@ use Teknoo\Recipe\ChefInterface;
  */
 class ReceiveJob
 {
-    public function __invoke(MessageInterface $message, ChefInterface $chef): self
+    public function __invoke(MessageInterface $message, ManagerInterface $manager): self
     {
-        $chef->updateWorkPlan(['serializedJob' => (string) $message->getBody()]);
+        $manager->updateWorkPlan(['serializedJob' => (string) $message->getBody()]);
 
         return $this;
     }

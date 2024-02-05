@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Project;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
-use Teknoo\Recipe\ChefInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -44,16 +44,16 @@ class GetEnvironmentTest extends TestCase
 
     public function testInvoke()
     {
-        $chef = $this->createMock(ChefInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
 
         $envName = 'dev';
-        $chef->expects(self::once())
+        $manager->expects(self::once())
             ->method('updateWorkPlan')
             ->with([Environment::class => new Environment($envName)]);
 
         self::assertInstanceOf(
             GetEnvironment::class,
-            $this->buildStep()($envName, $chef)
+            $this->buildStep()($envName, $manager)
         );
     }
 }

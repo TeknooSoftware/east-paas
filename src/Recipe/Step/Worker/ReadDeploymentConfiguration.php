@@ -70,7 +70,7 @@ class ReadDeploymentConfiguration
                         $message,
                         $code,
                         $error,
-                    )
+                    ),
                 );
             },
         );

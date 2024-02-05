@@ -53,6 +53,7 @@ class ConfigureConductor
         ManagerInterface $manager
     ): self {
         $conductor = $this->conductor->configure($job, $workspace);
+
         $manager->updateWorkPlan([ConductorInterface::class => $conductor]);
 
         return $this;

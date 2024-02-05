@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Step\Job\CreateNewJob;
-use Teknoo\Recipe\ChefInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -44,15 +44,15 @@ class CreateNewJobTest extends TestCase
 
     public function testInvoke()
     {
-        $chef = $this->createMock(ChefInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
 
-        $chef->expects(self::once())
+        $manager->expects(self::once())
             ->method('updateWorkPlan')
             ->with(['job' => new Job()]);
 
         self::assertInstanceOf(
             CreateNewJob::class,
-            $this->buildStep()($chef)
+            $this->buildStep()($manager)
         );
     }
 }

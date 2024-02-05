@@ -27,10 +27,10 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
+use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
 use Teknoo\East\Paas\Writer\JobWriter;
-use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
@@ -64,7 +64,7 @@ class SaveJobTest extends TestCase
 
     public function testInvoke()
     {
-        $chef = $this->createMock(ChefInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(ClientInterface::class);
         $job = $this->createMock(Job::class);
 
@@ -81,18 +81,18 @@ class SaveJobTest extends TestCase
         $client->expects(self::never())
             ->method('errorInRequest');
 
-        $chef->expects(self::never())
+        $manager->expects(self::never())
             ->method('finish');
 
         self::assertInstanceOf(
             SaveJob::class,
-            $this->buildStep()($job, $chef, $client)
+            $this->buildStep()($job, $manager, $client)
         );
     }
 
     public function testInvokeFailureOnProjectLoading()
     {
-        $chef = $this->createMock(ChefInterface::class);
+        $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(ClientInterface::class);
         $job = $this->createMock(Job::class);
 
@@ -108,12 +108,12 @@ class SaveJobTest extends TestCase
                 return $this->getjobWriterMock();
             });
 
-        $chef->expects(self::once())
+        $manager->expects(self::once())
             ->method('error');
 
         self::assertInstanceOf(
             SaveJob::class,
-            $this->buildStep()($job, $chef, $client)
+            $this->buildStep()($job, $manager, $client)
         );
     }
 }

@@ -1,5 +1,14 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.8] - 2024-02-04
+### Stable Release
+- Require `Recipe` 4.6+
+- Require `East Foundatin` 7.5.2+ 
+- `AddHistory`, `RunJob` cookbooks require a `MessageInterface` ingredient
+- `NewJob` cookbook require `projectId` and `envName` ingredient
+- Replace `Recipe's ChefInterface` reference to `East Foundation's ManagerInterface`
+- Add documentation about cookbooks and East PaaS architecture.
+
 ## [2.4.7] - 2024-01-31
 ### Stable Release
 - Require East Common 2.7

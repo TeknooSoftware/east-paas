@@ -42,6 +42,7 @@ use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
 use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
+use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
@@ -86,6 +87,9 @@ class NewJob implements NewJobInterface
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
     {
+        $recipe = $recipe->require(new Ingredient('string', 'projectId'));
+        $recipe = $recipe->require(new Ingredient('string', 'envName'));
+
         $recipe = $recipe->cook($this->stepPing, Ping::class, [], 5);
         $recipe = $recipe->cook($this->stepSetTimeLimit, SetTimeLimit::class, [], 6);
         $recipe = $recipe->cook($this->stepGetProject, GetProject::class, [], 10);
