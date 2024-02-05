@@ -33,7 +33,7 @@ use Traversable;
 
 /**
  * Immutable and iterable collections of cluster's drivers (adapter to use to connect to a cluster,
- * like Kubernetes or Docker Swarm)
+ * like Kubernetes or Docker Swarm), to use for a project
  *
  * @implements IteratorAggregate<DriverInterface>
  *

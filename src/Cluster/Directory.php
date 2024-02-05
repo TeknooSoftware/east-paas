@@ -31,8 +31,8 @@ use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Object\Cluster;
 
 /**
- * Cluster's drivers directory able to find and configure a Cluster instance with a driver corresponding with the type
- * required.
+ * Cluster's drivers directory, configured in the DI, available in PaaS, able to find and configure a Cluster instance
+ * with a driver corresponding with the type required.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
