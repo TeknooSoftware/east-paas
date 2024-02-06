@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.4.9] - 2024-02-06
+### Stable Release
+- Fix compliance issue with `ClassFinderDenormlizer` and Symfony 7
+
 ## [2.4.8] - 2024-02-06
 ### Stable Release
 - Require `Recipe` 4.6+
