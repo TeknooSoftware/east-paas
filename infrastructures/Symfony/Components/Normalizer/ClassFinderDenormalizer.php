@@ -45,11 +45,9 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
 {
     private ?DenormalizerInterface $denormalizer = null;
 
-    public function setDenormalizer(DenormalizerInterface $denormalizer): self
+    public function setDenormalizer(DenormalizerInterface $denormalizer): void
     {
         $this->denormalizer = $denormalizer;
-
-        return $this;
     }
 
     /**
