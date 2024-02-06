@@ -1,6 +1,6 @@
 # Teknoo Software - PaaS - Change Log
 
-## [2.4.8] - 2024-02-04
+## [2.4.8] - 2024-02-06
 ### Stable Release
 - Require `Recipe` 4.6+
 - Require `East Foundatin` 7.5.2+ 

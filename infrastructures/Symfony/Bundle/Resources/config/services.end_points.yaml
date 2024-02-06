@@ -7,6 +7,7 @@ parameters:
     teknoo.east.paas.symfony.end_point.new_job.bowl.class: 'Teknoo\Recipe\Bowl\FiberRecipeBowl'
     teknoo.east.paas.symfony.end_point.job_add_history.bowl.class: 'Teknoo\Recipe\Bowl\FiberRecipeBowl'
     teknoo.east.paas.symfony.end_point.job_run.bowl.class: 'Teknoo\Recipe\Bowl\FiberRecipeBowl'
+
 services:
     ### new_job
     teknoo.east.paas.symfony.end_point.new_job.bowl:

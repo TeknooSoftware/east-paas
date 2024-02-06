@@ -52,9 +52,9 @@ class TeknooEastPaasExtension extends Extension
         $this->processConfiguration($configuration, $configs);
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('services.yaml');
-        $loader->load('end_points.yaml');
-        $loader->load('admin.yaml');
+        $loader->load('services.components.yaml');
+        $loader->load('services.end_points.yaml');
+        $loader->load('services.admin.yaml');
 
         return $this;
     }
