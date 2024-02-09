@@ -58,7 +58,6 @@
         "php-http/discovery": "^1.19.2",
         "php-http/mock-client": "^1.6",
         "phpseclib/phpseclib": "^3.0.35",
-        "psr/http-client":"^1.0.3",
         "symfony/config": "^6.3||^7",
         "symfony/console": "^6.3||^7",
         "symfony/dependency-injection": "^6.3||^7",
