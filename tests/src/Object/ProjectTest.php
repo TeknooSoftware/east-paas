@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\Account;
@@ -45,6 +46,7 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
  * @covers \Teknoo\East\Paas\Object\Project
  * @covers \Teknoo\East\Paas\Object\Project\Draft
  * @covers \Teknoo\East\Paas\Object\Project\Executable
+ * @covers \Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait
  */
 class ProjectTest extends TestCase
 {
@@ -520,21 +522,6 @@ class ProjectTest extends TestCase
             ->configure($this->createMock(Job::class), new \stdClass(), $this->createMock(Environment::class));
     }
 
-    public function testExportToMeDataBadNormalizer()
-    {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->exportToMeData(new \stdClass(), []);
-    }
-
-    public function testExportToMeDataBadContext()
-    {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->exportToMeData(
-            $this->createMock(EastNormalizerInterface::class),
-            new \stdClass()
-        );
-    }
-
     public function testListMeYourEnvironments()
     {
         self::assertInstanceOf(
@@ -561,6 +548,21 @@ class ProjectTest extends TestCase
         );
     }
 
+    public function testExportToMeDataBadNormalizer()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->exportToMeData(new \stdClass(), []);
+    }
+
+    public function testExportToMeDataBadContext()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->exportToMeData(
+            $this->createMock(EastNormalizerInterface::class),
+            new \stdClass()
+        );
+    }
+
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
@@ -578,6 +580,17 @@ class ProjectTest extends TestCase
                 $normalizer,
                 ['foo' => 'bar']
             )
+        );
+    }
+
+    public function testSetExportConfiguration()
+    {
+        Project::setExportConfiguration($conf = ['name' => ['all']]);
+        $rc = new ReflectionClass(Project::class);
+
+        self::assertEquals(
+            $conf,
+            $rc->getStaticPropertyValue('exportConfigurations'),
         );
     }
 }

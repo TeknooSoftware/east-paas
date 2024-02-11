@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Object;
 use DateTimeInterface;
 use Stringable;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
@@ -38,6 +39,7 @@ use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Exception\MissingAccountException;
 use Teknoo\East\Paas\Object\Project\Draft;
 use Teknoo\East\Paas\Object\Project\Executable;
+use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\Assertion\Callback;
@@ -69,6 +71,8 @@ class Project implements
 {
     use ObjectTrait;
     use ProxyTrait;
+    use GroupsTrait;
+    use ExportConfigurationsTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
@@ -90,6 +94,20 @@ class Project implements
      * @var array<int, Job>|iterable<Job>
      */
     protected iterable $jobs = [];
+
+    /**
+     * @var array<string, string[]>
+     */
+    private static array $exportConfigurations = [
+        '@class' => ['all', 'api', 'digest', 'crud'],
+        'id' => ['all', 'api', 'digest', 'crud'],
+        'account' => ['crud'],
+        'name' => ['all', 'api', 'digest', 'crud'],
+        'prefix' => ['crud'],
+        'sourceRepository' => ['crud'],
+        'imagesRegistry' => ['crud'],
+        'clusters' => ['crud'],
+    ];
 
     public function __construct(
         protected ?Account $account = null,
@@ -264,11 +282,26 @@ class Project implements
 
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
     {
-        $normalizer->injectData([
+        $data = [
             '@class' => self::class,
+            'account' => $this->getAccount(),
             'id' => $this->getId(),
             'name' => $this->getName(),
-        ]);
+            'prefix' => $this->getPrefix(),
+            'sourceRepository' => fn () => $this->getSourceRepository(),
+            'imagesRegistry' => fn () => $this->getImagesRegistry(),
+            'clusters' => fn () => $this->getClusters(),
+        ];
+
+        $this->setGroupsConfiguration(self::$exportConfigurations);
+
+        $normalizer->injectData(
+            $this->filterExport(
+                data: $data,
+                groups: (array) ($context['groups'] ?? ['all']),
+                lazyData: true,
+            )
+        );
 
         return $this;
     }

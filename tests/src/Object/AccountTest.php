@@ -26,7 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Symfony\Component\Form\FormInterface;
+use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Contracts\Object\Account\AccountAwareInterface;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Environment;
@@ -42,6 +44,7 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
  * @covers \Teknoo\East\Paas\Object\Account
  * @covers \Teknoo\East\Paas\Object\Account\Active
  * @covers \Teknoo\East\Paas\Object\Account\Inactive
+ * @covers \Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait
  */
 class AccountTest extends TestCase
 {
@@ -528,6 +531,52 @@ class AccountTest extends TestCase
                         }
                     }
                 )
+        );
+    }
+
+    public function testExportToMeDataBadNormalizer()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->exportToMeData(new \stdClass(), []);
+    }
+
+    public function testExportToMeDataBadContext()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->exportToMeData(
+            $this->createMock(EastNormalizerInterface::class),
+            new \stdClass()
+        );
+    }
+
+    public function testExportToMe()
+    {
+        $normalizer = $this->createMock(EastNormalizerInterface::class);
+        $normalizer->expects(self::once())
+            ->method('injectData')
+            ->with([
+                '@class' => Account::class,
+                'id' => '123',
+                'name' => 'fooName',
+            ]);
+
+        self::assertInstanceOf(
+            Account::class,
+            $this->buildObject()->setId('123')->setName('fooName')->exportToMeData(
+                $normalizer,
+                ['foo' => 'bar']
+            )
+        );
+    }
+
+    public function testSetExportConfiguration()
+    {
+        Account::setExportConfiguration($conf = ['name' => ['all']]);
+        $rc = new ReflectionClass(Account::class);
+
+        self::assertEquals(
+            $conf,
+            $rc->getStaticPropertyValue('exportConfigurations'),
         );
     }
 }

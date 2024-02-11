@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\Environment;
@@ -48,6 +49,7 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
  * @covers \Teknoo\East\Paas\Object\Job\Pending
  * @covers \Teknoo\East\Paas\Object\Job\Terminated
  * @covers \Teknoo\East\Paas\Object\Job\Validating
+ * @covers \Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait
  */
 class JobTest extends TestCase
 {
@@ -647,5 +649,16 @@ class JobTest extends TestCase
 
         self::assertInstanceOf(Job::class, $object->validate($date));
         self::assertInstanceOf(Job::class, $object->isRunnable($promise));
+    }
+
+    public function testSetExportConfiguration()
+    {
+        Job::setExportConfiguration($conf = ['name' => ['all']]);
+        $rc = new ReflectionClass(Job::class);
+
+        self::assertEquals(
+            $conf,
+            $rc->getStaticPropertyValue('exportConfigurations'),
+        );
     }
 }

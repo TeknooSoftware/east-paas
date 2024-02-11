@@ -40,6 +40,7 @@ use Teknoo\East\Paas\Object\Job\Terminated;
 use Teknoo\East\Paas\Object\Job\Validating;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Callback;
 use Teknoo\States\Automated\Assertion\Property;
@@ -72,6 +73,7 @@ class Job implements
     use ObjectTrait;
     use ProxyTrait;
     use GroupsTrait;
+    use ExportConfigurationsTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
@@ -275,7 +277,7 @@ class Job implements
         $data = [
             '@class' => self::class,
             'id' => $this->getId(),
-            'project' => $this->project,
+            'project' => $this->getProject(),
             'base_namespace' => $this->baseNamespace,
             'prefix' => $this->prefix,
             'hierarchical_namespaces' => $this->hierarchicalNamespaces,

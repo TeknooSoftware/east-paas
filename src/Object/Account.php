@@ -32,9 +32,13 @@ use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Contracts\Object\VisitableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Object\User as BaseUser;
+use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
+use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Contracts\Object\Account\AccountAwareInterface;
 use Teknoo\East\Paas\Object\Account\Active;
 use Teknoo\East\Paas\Object\Account\Inactive;
+use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\Assertion\Property\IsEmpty;
@@ -57,10 +61,13 @@ class Account implements
     AutomatedInterface,
     DeletableInterface,
     VisitableInterface,
+    NormalizableInterface,
     Stringable
 {
     use ObjectTrait;
     use ProxyTrait;
+    use GroupsTrait;
+    use ExportConfigurationsTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
@@ -82,6 +89,19 @@ class Account implements
      * @var BaseUser[]
      */
     protected ?iterable $users = [];
+
+    /**
+     * @var array<string, string[]>
+     */
+    private static array $exportConfigurations = [
+        '@class' => ['all', 'digest', 'crud'],
+        'id' => ['all', 'digest', 'crud'],
+        'name' => ['all', 'digest', 'crud'],
+        'namespace' => ['crud'],
+        'prefixNamespace' => ['crud'],
+        'useHierarchicalNamespaces' => ['crud'],
+        'users' => ['crud'],
+    ];
 
     public function __construct()
     {
@@ -247,6 +267,31 @@ class Account implements
             $this->namespace,
             $this->prefixNamespace,
             $this->useHierarchicalNamespaces,
+        );
+
+        return $this;
+    }
+
+    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
+    {
+        $data = [
+            '@class' => self::class,
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'namespace' => $this->getNamespace(),
+            'prefixNamespace' => $this->getPrefixNamespace(),
+            'useHierarchicalNamespaces' => $this->isUseHierarchicalNamespaces(),
+            'users' => fn () => $this->getUsers(),
+        ];
+
+        $this->setGroupsConfiguration(self::$exportConfigurations);
+
+        $normalizer->injectData(
+            $this->filterExport(
+                data: $data,
+                groups: (array) ($context['groups'] ?? ['all']),
+                lazyData: true,
+            )
         );
 
         return $this;

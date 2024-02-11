@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.5.0] - 2024-02-11
+### Stable Release
+- Add normalisation feature to project and account to allow manage them through an API
+- Add a static method `setExportConfiguration` to `Account`, `ClusterCredentials`, `Job`, `Project`, `SshIdentity` and
+  `XRegistryAuth` to change at runtime groupe's normalisation
+
 ## [2.4.9] - 2024-02-06
 ### Stable Release
 - Fix compliance issue with `ClassFinderDenormlizer` and Symfony 7

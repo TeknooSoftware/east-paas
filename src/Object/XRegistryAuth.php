@@ -34,6 +34,7 @@ use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
+use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
@@ -54,6 +55,7 @@ class XRegistryAuth implements
     use ObjectTrait;
     use ImmutableTrait;
     use GroupsTrait;
+    use ExportConfigurationsTrait;
 
     private string $username = '';
 
