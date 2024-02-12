@@ -64,10 +64,10 @@ class SshIdentity implements
      * @var array<string, string[]>
      */
     private static array $exportConfigurations = [
-        '@class' => ['all', 'api'],
-        'id' => ['all', 'api'],
-        'name' => ['all', 'api'],
-        'private_key' => ['all'],
+        '@class' => ['default', 'api', 'crud'],
+        'id' => ['default', 'api', 'crud'],
+        'name' => ['default', 'api', 'crud'],
+        'private_key' => ['default', 'crud'],
     ];
 
     public function __construct(
@@ -109,7 +109,7 @@ class SshIdentity implements
         $normalizer->injectData(
             $this->filterExport(
                 $data,
-                (array) ($context['groups'] ?? ['all']),
+                (array) ($context['groups'] ?? ['default']),
             )
         );
 

@@ -108,18 +108,18 @@ class Job implements
      * @var array<string, string[]>
      */
     private static array $exportConfigurations = [
-        '@class' => ['all', 'api', 'digest'],
-        'id' => ['all', 'api', 'digest'],
-        'project' => ['all', 'api', 'digest'],
-        'environment' => ['all', 'api', 'digest'],
-        'base_namespace' => ['all', 'api'],
-        'hierarchical_namespaces' => ['all', 'api'],
-        'prefix' => ['all', 'api'],
-        'source_repository' => ['all', 'api'],
-        'images_repository' => ['all', 'api'],
-        'clusters' => ['all', 'api'],
-        'history' => ['all', 'api'],
-        'extra' => ['all', 'api'],
+        '@class' => ['default', 'api', 'digest'],
+        'id' => ['default', 'api', 'digest'],
+        'project' => ['default', 'api', 'digest'],
+        'environment' => ['default', 'api', 'digest'],
+        'base_namespace' => ['default', 'api'],
+        'hierarchical_namespaces' => ['default', 'api'],
+        'prefix' => ['default', 'api'],
+        'source_repository' => ['default', 'api'],
+        'images_repository' => ['default', 'api'],
+        'clusters' => ['default', 'api'],
+        'history' => ['default', 'api'],
+        'extra' => ['default', 'api'],
     ];
 
     public function __construct()
@@ -294,7 +294,7 @@ class Job implements
         $normalizer->injectData(
             $this->filterExport(
                 $data,
-                (array) ($context['groups'] ?? ['all']),
+                (array) ($context['groups'] ?? ['default']),
             )
         );
 

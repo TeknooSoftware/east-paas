@@ -585,7 +585,7 @@ class ProjectTest extends TestCase
 
     public function testSetExportConfiguration()
     {
-        Project::setExportConfiguration($conf = ['name' => ['all']]);
+        Project::setExportConfiguration($conf = ['name' => ['default']]);
         $rc = new ReflectionClass(Project::class);
 
         self::assertEquals(

@@ -94,13 +94,13 @@ class Account implements
      * @var array<string, string[]>
      */
     private static array $exportConfigurations = [
-        '@class' => ['all', 'digest', 'crud'],
-        'id' => ['all', 'digest', 'crud'],
-        'name' => ['all', 'digest', 'crud'],
-        'namespace' => ['crud'],
-        'prefixNamespace' => ['crud'],
-        'useHierarchicalNamespaces' => ['crud'],
-        'users' => ['crud'],
+        '@class' => ['default', 'api', 'digest', 'crud'],
+        'id' => ['default', 'api', 'digest', 'crud'],
+        'name' => ['default', 'api', 'digest', 'crud'],
+        'namespace' => ['default', 'admin'],
+        'prefixNamespace' => ['admin'],
+        'useHierarchicalNamespaces' => ['admin'],
+        'users' => ['admin'],
     ];
 
     public function __construct()
@@ -289,7 +289,7 @@ class Account implements
         $normalizer->injectData(
             $this->filterExport(
                 data: $data,
-                groups: (array) ($context['groups'] ?? ['all']),
+                groups: (array) ($context['groups'] ?? ['default']),
                 lazyData: true,
             )
         );

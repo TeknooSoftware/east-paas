@@ -71,13 +71,13 @@ class XRegistryAuth implements
      * @var array<string, string[]>
      */
     private static array $exportConfigurations = [
-        '@class' => ['all', 'api'],
-        'id' => ['all', 'api'],
-        'username' => ['all', 'api'],
-        'password' => ['all'],
-        'email' => ['all', 'api'],
-        'auth' => ['all'],
-        'server_address' => ['all', 'api'],
+        '@class' => ['default', 'api', 'crud'],
+        'id' => ['default', 'api', 'crud'],
+        'username' => ['default', 'api', 'crud'],
+        'password' => ['default', 'crud'],
+        'email' => ['default', 'api', 'crud'],
+        'auth' => ['default', 'crud'],
+        'server_address' => ['default', 'api', 'crud'],
     ];
 
     public function __construct(
@@ -154,7 +154,7 @@ class XRegistryAuth implements
         $normalizer->injectData(
             $this->filterExport(
                 $data,
-                (array) ($context['groups'] ?? ['all']),
+                (array) ($context['groups'] ?? ['default']),
             )
         );
 

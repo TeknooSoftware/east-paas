@@ -99,10 +99,10 @@ class Project implements
      * @var array<string, string[]>
      */
     private static array $exportConfigurations = [
-        '@class' => ['all', 'api', 'digest', 'crud'],
-        'id' => ['all', 'api', 'digest', 'crud'],
+        '@class' => ['default', 'api', 'digest', 'crud'],
+        'id' => ['default', 'api', 'digest', 'crud'],
         'account' => ['crud'],
-        'name' => ['all', 'api', 'digest', 'crud'],
+        'name' => ['default', 'api', 'digest', 'crud'],
         'prefix' => ['crud'],
         'sourceRepository' => ['crud'],
         'imagesRegistry' => ['crud'],
@@ -298,7 +298,7 @@ class Project implements
         $normalizer->injectData(
             $this->filterExport(
                 data: $data,
-                groups: (array) ($context['groups'] ?? ['all']),
+                groups: (array) ($context['groups'] ?? ['default']),
                 lazyData: true,
             )
         );

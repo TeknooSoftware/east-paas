@@ -73,14 +73,14 @@ class ClusterCredentials implements
      * @var array<string, string[]>
      */
     private static array $exportConfigurations = [
-        '@class' => ['all', 'api'],
-        'id' => ['all', 'api'],
-        'ca_certificate' => ['all'],
-        'client_certificate' => ['all'],
-        'client_key' => ['all'],
-        'token' => ['all'],
-        'username' => ['all', 'api'],
-        'password' => ['all'],
+        '@class' => ['default', 'api', 'crud'],
+        'id' => ['default', 'api', 'crud'],
+        'ca_certificate' => ['default', 'crud'],
+        'client_certificate' => ['default', 'crud'],
+        'client_key' => ['default', 'crud'],
+        'token' => ['default', 'crud'],
+        'username' => ['default', 'api', 'crud'],
+        'password' => ['default', 'crud'],
     ];
 
     public function __construct(
@@ -160,7 +160,7 @@ class ClusterCredentials implements
         $normalizer->injectData(
             $this->filterExport(
                 $data,
-                (array) ($context['groups'] ?? ['all']),
+                (array) ($context['groups'] ?? ['default']),
             )
         );
 

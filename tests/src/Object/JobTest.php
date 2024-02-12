@@ -653,7 +653,7 @@ class JobTest extends TestCase
 
     public function testSetExportConfiguration()
     {
-        Job::setExportConfiguration($conf = ['name' => ['all']]);
+        Job::setExportConfiguration($conf = ['name' => ['default']]);
         $rc = new ReflectionClass(Job::class);
 
         self::assertEquals(

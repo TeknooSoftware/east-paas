@@ -558,6 +558,7 @@ class AccountTest extends TestCase
                 '@class' => Account::class,
                 'id' => '123',
                 'name' => 'fooName',
+                'namespace' => null,
             ]);
 
         self::assertInstanceOf(
@@ -571,7 +572,7 @@ class AccountTest extends TestCase
 
     public function testSetExportConfiguration()
     {
-        Account::setExportConfiguration($conf = ['name' => ['all']]);
+        Account::setExportConfiguration($conf = ['name' => ['default']]);
         $rc = new ReflectionClass(Account::class);
 
         self::assertEquals(

@@ -17,7 +17,7 @@ Feature: Export a job
     And a cluster "kubernetes" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I export the job "jobid" with "all" data
+    When I export the job "jobid" with "default" data
     Then I must obtain a "full described" job
 
   Scenario: Return a desensitized JSON export job
