@@ -51,7 +51,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
@@ -72,7 +72,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be encrypted
 
@@ -93,7 +93,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
@@ -154,7 +154,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
@@ -175,7 +175,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
@@ -196,7 +196,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
@@ -218,7 +218,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
@@ -239,7 +239,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
@@ -261,6 +261,6 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted

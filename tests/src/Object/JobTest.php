@@ -210,7 +210,58 @@ class JobTest extends TestCase
         );
 
         self::assertEquals(
-            new History(new History(null, 'foo', new \DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), 'foo2', new \DateTimeImmutable('2018-05-01')),
+            new History(
+                new History(
+                    null,
+                    'foo',
+                    new \DateTimeImmutable('2018-05-01'),
+                    false,
+                    ['bar' => 'foo']
+                ),
+                'foo2',
+                new \DateTimeImmutable('2018-05-01')
+            ),
+            $rP->getValue($object)
+        );
+    }
+
+    public function testAddFromHistoryWithFinal()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->addFromHistory(
+                new History(null, 'foo', new \DateTimeImmutable('2018-05-01'), true, ['bar' => 'foo'])
+            )
+        );
+
+        $rP = new \ReflectionProperty($object, 'history');
+        $rP->setAccessible(true);
+        self::assertEquals(
+            new History(null, 'foo', new \DateTimeImmutable('2018-05-01'), true, ['bar' => 'foo']),
+            $rP->getValue($object)
+        );
+
+        self::assertInstanceOf(
+            $object::class,
+            $object->addFromHistory(
+                new History(null, 'foo2', new \DateTimeImmutable('2018-05-01'))
+            )
+        );
+
+        self::assertEquals(
+            new History(
+                new History(
+                    null,
+                    'foo2',
+                    new \DateTimeImmutable('2018-05-01'),
+                    false
+                ),
+                'foo',
+                new \DateTimeImmutable('2018-05-01'),
+                true,
+                ['bar' => 'foo'],
+            ),
             $rP->getValue($object)
         );
     }

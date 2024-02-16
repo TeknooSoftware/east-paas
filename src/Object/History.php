@@ -141,23 +141,34 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
 
     public function clone(?History $newHistory): History
     {
-        $history = clone $this;
-        $history->date = clone $history->date;
+        $currentHistory = clone $this;
+        $currentHistory->date = clone $currentHistory->date;
 
         if (null === $newHistory) {
-            return $history;
+            return $currentHistory;
         }
 
         if (
-            true === $history->isFinal
-            || $newHistory->date <= $this->date
-            || $newHistory->serialNumber > $this->serialNumber
+            true === $currentHistory->isFinal //The current is Final,
+            || (
+                false === $newHistory->isFinal
+                && (
+                    $newHistory->date <= $currentHistory->date //The current's is more recent
+                    || (
+                        $newHistory->date == $currentHistory->date
+                        && $newHistory->serialNumber < $currentHistory->serialNumber
+                    ) //The current's serial is higher
+                )
+            )
         ) {
-            $history->previous = $newHistory->clone($history->previous);
+            $currentHistory->previous = $newHistory->clone($currentHistory->previous);
 
-            return $history;
+            return $currentHistory;
         }
 
-        return $newHistory->clone($this);
+        $newHistory = $newHistory->clone(null);
+        $newHistory->previous = $currentHistory->clone($newHistory->previous);
+
+        return $newHistory;
     }
 }

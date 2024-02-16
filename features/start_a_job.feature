@@ -51,7 +51,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be not encrypted
 
   Scenario: Return a valid JSON answer when the job exists and paas file is valid with encrypted message
@@ -71,7 +71,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be encrypted
 
   Scenario: Return a valid JSON answer when the job exists and paas file with extends is valid
@@ -91,7 +91,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be not encrypted
 
   Scenario: Return a valid JSON answer when the job exists from a project with prefix and paas file is valid
@@ -110,7 +110,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be not encrypted
 
   Scenario: Return a valid JSON answer when the job exists from a project with prefix and paas file with extends is valid
@@ -130,7 +130,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be not encrypted
 
   Scenario: Return an error 500 when the job takes too long
@@ -191,7 +191,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be not encrypted
 
   Scenario: Return a valid JSON answer when the job exists with hierarchical namespace and paas file with extends is valid
@@ -212,7 +212,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be not encrypted
 
   Scenario: Return a valid JSON answer when the job exists with hierarchical namespace and prefix and paas file is valid
@@ -232,7 +232,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be not encrypted
 
   Scenario: Return a valid JSON answer when the job exists with hierarchical namespace and prefix and paas file with extends is valid
@@ -253,4 +253,4 @@ Feature: Start a job, by running a new deployment on a worker
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" in the body
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body

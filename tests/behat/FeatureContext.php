@@ -224,9 +224,10 @@ class FeatureContext implements Context
         $this->sfContainer->set(ObjectManager::class, $this->buildObjectManager());
         $this->sfContainer->get(DatesService::class)
             ->setCurrentDate(new DateTime('2018-10-01 02:03:04', new \DateTimeZone('UTC')));
+        $counter = 0;
         $this->sfContainer
             ->get(SerialGenerator::class)
-            ->setGenerator(fn() => 0);
+            ->setGenerator(function () use (&$counter) { return ++$counter;});
     }
 
     private function initiateSymfonyKernel()
@@ -947,8 +948,9 @@ class FeatureContext implements Context
 
     /**
      * @Then with the final history at date :date in the body
+     * @Then with the final history at date :date and with the serial at :serial in the body
      */
-    public function withTheFinalHistoryInTheBody($date)
+    public function withTheFinalHistoryInTheBody(string $date, int $serial = 1)
     {
         $history = [
             'message' => DispatchResultInterface::class,
@@ -959,7 +961,7 @@ class FeatureContext implements Context
                 'result' => [],
             ],
             'previous' => null,
-            'serial_number' => 0,
+            'serial_number' => $serial,
         ];
 
         $content = json_decode($this->response->getContent(), true);

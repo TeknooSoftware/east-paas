@@ -250,19 +250,21 @@ class HistoryTest extends TestCase
             previous: null,
             message: 'bar',
             date: new \DateTime('2019-10-25'),
-            serialNumber: 1,
+            serialNumber: 4,
         );
+
         $history = new History(
             previous: null,
             message: 'foo',
             date: new \DateTime('2018-11-25'),
             serialNumber: 3,
         );
+
         $expected = new History(
             previous: $history,
             message: 'bar',
             date: new \DateTime('2019-10-25'),
-            serialNumber: 1,
+            serialNumber: 4,
         );
 
         $cloned = $history->clone($recent);
@@ -284,20 +286,19 @@ class HistoryTest extends TestCase
             previous: null,
             message: 'foo1',
             date: new \DateTime('2020-11-25'),
-            serialNumber: 5,
+            serialNumber: 1,
         );
         $history2 = new History(
             previous: $history1,
             message: 'foo2',
             date: new \DateTime('2020-11-25'),
-            serialNumber: 4,
+            serialNumber: 2,
         );
         $history3 = new History(
             previous: $history2,
             message: 'foo3',
             date: new \DateTime('2020-11-25'),
-            serialNumber: 1,
-
+            serialNumber: 5,
         );
 
         $expected = new History(
@@ -307,11 +308,11 @@ class HistoryTest extends TestCase
                         previous:null,
                         message: 'foo1',
                         date: new \DateTime('2020-11-25'),
-                        serialNumber: 5,
+                        serialNumber: 1,
                     ),
                     message: 'foo2',
                     date: new \DateTime('2020-11-25'),
-                    serialNumber: 4,
+                    serialNumber: 2,
                 ),
                 message: 'bar',
                 date: new \DateTime('2020-11-25'),
@@ -319,7 +320,7 @@ class HistoryTest extends TestCase
             ),
             message: 'foo3',
             date: new \DateTime('2020-11-25'),
-            serialNumber: 1,
+            serialNumber: 5,
         );
 
         $cloned = $history3->clone($newHistory);
@@ -333,18 +334,17 @@ class HistoryTest extends TestCase
 
     public function testCloneWithNewHistoryToInsert2WithCounter()
     {
-
         $newHistory = new History(
             previous:null,
             message: 'bar',
             date: new \DateTime('2018-10-25'),
-            serialNumber: 3,
+            serialNumber: 0,
         );
         $history1 = new History(
             previous:null,
             message: 'foo1',
             date: new \DateTime('2017-11-25'),
-            serialNumber: 5,
+            serialNumber: 1,
         );
         $history2 = new History(
             previous:$history1,
@@ -356,7 +356,7 @@ class HistoryTest extends TestCase
             previous:$history2,
             message: 'foo3',
             date: new \DateTime('2020-11-25'),
-            serialNumber: 1,
+            serialNumber: 5,
         );
         $history4 = new History(
             previous:$history3,
@@ -368,7 +368,7 @@ class HistoryTest extends TestCase
             previous:$history4,
             message: 'foo5',
             date: new \DateTime('2021-11-25'),
-            serialNumber: 1,
+            serialNumber: 5,
         );
 
         $expected = new History(
@@ -380,11 +380,11 @@ class HistoryTest extends TestCase
                                 previous: null,
                                 message: 'foo1',
                                 date: new \DateTime('2017-11-25'),
-                                serialNumber: 5,
+                                serialNumber: 1,
                             ),
                             message: 'bar',
                             date: new \DateTime('2018-10-25'),
-                            serialNumber: 3,
+                            serialNumber: 0,
                         ),
                         message: 'foo2',
                         date: new \DateTime('2019-11-25'),
@@ -392,7 +392,7 @@ class HistoryTest extends TestCase
                     ),
                     message: 'foo3',
                     date: new \DateTime('2020-11-25'),
-                    serialNumber: 1,
+                    serialNumber: 5,
                 ),
                 message: 'foo4',
                 date: new \DateTime('2021-11-25'),
@@ -400,7 +400,7 @@ class HistoryTest extends TestCase
             ),
             message: 'foo5',
             date: new \DateTime('2021-11-25'),
-            serialNumber: 1,
+            serialNumber: 5,
         );
 
         $cloned = $history5->clone($newHistory);

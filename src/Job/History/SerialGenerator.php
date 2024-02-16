@@ -52,7 +52,7 @@ class SerialGenerator
         $this->lastSerialNumber = $firstSerialNumber;
 
         if (!is_callable($generator)) {
-            $generator = fn ($number) => ++$number;
+            $generator = fn ($number) => $number + 1;
         }
 
         $this->generator = $generator;
