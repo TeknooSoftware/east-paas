@@ -51,6 +51,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscribe
  * @author      Richard Déloge <richard@teknoo.software>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\PodsTranscriberTrait
  */
 class DeploymentTranscriberTest extends TestCase
 {

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.5.1] - 2024-02-16
+### Stable Release
+- Factorize pods' transcribers
+
 ## [2.5.0] - 2024-02-11
 ### Stable Release
 - Add normalisation feature to project and account to allow manage them through an API

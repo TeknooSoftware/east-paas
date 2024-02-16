@@ -53,6 +53,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscri
  * @author      Richard Déloge <richard@teknoo.software>
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
+ * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\PodsTranscriberTrait
  */
 class StatefulSetsTranscriberTest extends TestCase
 {

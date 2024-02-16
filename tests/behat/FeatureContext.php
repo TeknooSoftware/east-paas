@@ -2226,7 +2226,7 @@ EOF;
             file_get_contents(
                 match ($described) {
                     'full described' => __DIR__ . '/json/job_full.json',
-                    'desensitize described' => __DIR__ . '/json/job_desensitize.json',
+                    'desensitized described' => __DIR__ . '/json/job_desensitized.json',
                     'digest described' => __DIR__ . '/json/job_digest.json',
                 },
             ),

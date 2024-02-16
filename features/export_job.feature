@@ -36,7 +36,7 @@ Feature: Export a job
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I export the job "jobid" with "api" data
-    Then I must obtain a "desensitize described" job
+    Then I must obtain a "desensitized described" job
 
   Scenario: Return a digest JSON export job
     Given I have a configured platform
