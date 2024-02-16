@@ -141,7 +141,7 @@ class RunJob implements RunJobInterface
         $recipe = $recipe->cook(
             $notification,
             PrepareWorkspace::class,
-            $notificationMapping,
+            $notificationMapping + ['historyExtra' => 'extra'],
             RunJobInterface::STEP_PREPARE_WORKSPACE,
         );
         $recipe = $recipe->cook(

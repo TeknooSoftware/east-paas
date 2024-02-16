@@ -131,16 +131,16 @@ class DispatchHistory implements DispatchHistoryInterface
     }
 
     /**
-     * @param array<string, mixed> $extra
+     * @param array<string, mixed> $historyExtra
      */
     public function __invoke(
         string $projectId,
         string $envName,
         string $jobId,
         string $step,
-        array $extra = []
+        array $historyExtra = []
     ): DispatchHistoryInterface {
-        $this->sendStep($projectId, $envName, $jobId, $step, $extra);
+        $this->sendStep($projectId, $envName, $jobId, $step, $historyExtra);
 
         return $this;
     }

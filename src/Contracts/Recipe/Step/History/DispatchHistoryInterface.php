@@ -36,13 +36,13 @@ namespace Teknoo\East\Paas\Contracts\Recipe\Step\History;
 interface DispatchHistoryInterface
 {
     /**
-     * @param array<string, mixed> $extra
+     * @param array<string, mixed> $historyExtra
      */
     public function __invoke(
         string $projectId,
         string $envName,
         string $jobId,
         string $step,
-        array $extra = []
+        array $historyExtra = []
     ): DispatchHistoryInterface;
 }

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.5.3] - 2024-02-16
+### Stable Release
+- Limit verbose about `extra` in history 
+
 ## [2.5.2] - 2024-02-16
 ### Stable Release
 - Fix issue in Job's History sorting : Final must be at the top of the history chain. 
