@@ -25,8 +25,16 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 
+use ArrayIterator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormConfigInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\ResolvedFormTypeInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType;
 use Teknoo\East\Paas\Object\Environment;
@@ -60,6 +68,7 @@ class ClusterTypeTest extends TestCase
             'address' => 'fooBar',
             'identity' => new SshIdentity(),
             'environment' => new Environment('foo'),
+            'locked' => false,
         ];
     }
 
@@ -70,6 +79,228 @@ class ClusterTypeTest extends TestCase
             $this->buildForm()->configureOptions(
                 $this->createMock(OptionsResolver::class)
             )
+        );
+    }
+
+    public function testBuildFormSubmittedWithLocked()
+    {
+        $builder = $this->createMock(FormBuilderInterface::class);
+
+        $object = $this->getObject();
+        $object->setLocked(true);
+
+        $builder->expects(self::any())
+            ->method('setDataMapper')
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
+                $children = [];
+                foreach ($this->getFormArray() as $name=>$value) {
+                    $mock = $this->createMock(FormInterface::class);
+                    $mock->expects(self::never())->method('getData');
+                    $children[$name] = $mock;
+                }
+
+                $forms = new ArrayIterator($children);
+                $dataMapper->mapFormsToData($forms, $object);
+
+                return $builder;
+            });
+
+        self::assertInstanceOf(
+            AbstractType::class,
+            $this->buildForm()->buildForm($builder, $this->getOptions())
+        );
+    }
+
+    public function testBuildFormSubmittedWithUnLockedAndNotAllowedToLock()
+    {
+        $builder = $this->createMock(FormBuilderInterface::class);
+
+        $object = $this->getObject();
+        $object->setLocked(false);
+
+        $builder->expects(self::any())
+            ->method('setDataMapper')
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
+                $children = [];
+                foreach ($this->getFormArray() as $name=>$value) {
+                    $mock = $this->createMock(FormInterface::class);
+                    if ('locked' !== $name) {
+                        $mock->expects(self::once())->method('getData')->willReturn($value);
+                    } else {
+                        $mock->expects(self::never())->method('getData');
+                    }
+                    $children[$name] = $mock;
+                }
+
+                $forms = new ArrayIterator($children);
+                $dataMapper->mapFormsToData($forms, $object);
+
+                return $builder;
+            });
+
+        self::assertInstanceOf(
+            AbstractType::class,
+            $this->buildForm()->buildForm($builder, $this->getOptions())
+        );
+    }
+
+    public function testBuildFormSubmittedWithUnLockedAndAllowedToLock()
+    {
+        $builder = $this->createMock(FormBuilderInterface::class);
+
+        $object = $this->getObject();
+        $object->setLocked(false);
+
+        $builder->expects(self::any())
+            ->method('setDataMapper')
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
+                $children = [];
+                foreach ($this->getFormArray() as $name=>$value) {
+                    $mock = $this->createMock(FormInterface::class);
+                    $mock->expects(self::once())->method('getData')->willReturn($value);
+                    $children[$name] = $mock;
+                }
+
+                $forms = new ArrayIterator($children);
+                $dataMapper->mapFormsToData($forms, $object);
+
+                return $builder;
+            });
+
+        self::assertInstanceOf(
+            AbstractType::class,
+            $this->buildForm()->buildForm($builder, [
+                'allowEditingOfLocked' => true,
+            ])
+        );
+    }
+
+    public function testSetAsReadOnlyForLockedWithoutAllowing()
+    {
+        $builder = $this->createMock(FormBuilderInterface::class);
+
+        $builder->expects(self::any())
+            ->method('addEventListener')
+            ->willReturnCallback(function ($name, $callable) use ($builder) {
+                $config = $this->createMock(FormConfigInterface::class);
+                $config->expects(self::any())
+                    ->method('getType')
+                    ->willReturn(
+                        $this->createMock(ResolvedFormTypeInterface::class)
+                    );
+
+                $form = $this->createMock(Form::class);
+                $form->expects(self::any())
+                    ->method('getConfig')
+                    ->willReturn($config);
+
+                $form->expects(self::once())
+                    ->method('add');
+
+                $form->expects(self::any())
+                    ->method('getIterator')
+                    ->willReturn(new \ArrayIterator([$form]));
+
+                $object = $this->getObject();
+                $object->setLocked(true);
+                $event = new FormEvent($form, $object);
+
+                $callable($event);
+
+                return $builder;
+            });
+
+        self::assertInstanceOf(
+            AbstractType::class,
+            $this->buildForm()->buildForm($builder, [
+                'allowEditingOfLocked' => false,
+            ])
+        );
+    }
+
+    public function testNoSetAsReadOnlyForLockedWithAllowing()
+    {
+        $builder = $this->createMock(FormBuilderInterface::class);
+
+        $builder->expects(self::any())
+            ->method('addEventListener')
+            ->willReturnCallback(function ($name, $callable) use ($builder) {
+                $config = $this->createMock(FormConfigInterface::class);
+                $config->expects(self::any())
+                    ->method('getType')
+                    ->willReturn(
+                        $this->createMock(ResolvedFormTypeInterface::class)
+                    );
+
+                $form = $this->createMock(Form::class);
+                $form->expects(self::any())
+                    ->method('getConfig')
+                    ->willReturn($config);
+
+                $form->expects(self::never())
+                    ->method('add');
+
+                $form->expects(self::any())
+                    ->method('getIterator')
+                    ->willReturn(new \ArrayIterator([$form]));
+
+                $object = $this->getObject();
+                $object->setLocked(true);
+                $event = new FormEvent($form, $object);
+
+                $callable($event);
+
+                return $builder;
+            });
+
+        self::assertInstanceOf(
+            AbstractType::class,
+            $this->buildForm()->buildForm($builder, [
+                'allowEditingOfLocked' => true,
+            ])
+        );
+    }
+
+    public function testNoSetAsReadOnlyForUnlockedWithAllowing()
+    {
+        $builder = $this->createMock(FormBuilderInterface::class);
+
+        $builder->expects(self::any())
+            ->method('addEventListener')
+            ->willReturnCallback(function ($name, $callable) use ($builder) {
+                $config = $this->createMock(FormConfigInterface::class);
+                $config->expects(self::any())
+                    ->method('getType')
+                    ->willReturn(
+                        $this->createMock(ResolvedFormTypeInterface::class)
+                    );
+
+                $form = $this->createMock(Form::class);
+                $form->expects(self::any())
+                    ->method('getConfig')
+                    ->willReturn($config);
+
+                $form->expects(self::never())
+                    ->method('add');
+
+                $form->expects(self::any())
+                    ->method('getIterator')
+                    ->willReturn(new \ArrayIterator([$form]));
+
+                $object = $this->getObject();
+                $object->setLocked(false);
+                $event = new FormEvent($form, $object);
+
+                $callable($event);
+
+                return $builder;
+            });
+
+        self::assertInstanceOf(
+            AbstractType::class,
+            $this->buildForm()->buildForm($builder, [
+                'allowEditingOfLocked' => false,
+            ])
         );
     }
 }

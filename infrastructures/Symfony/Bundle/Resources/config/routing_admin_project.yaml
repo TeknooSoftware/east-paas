@@ -17,7 +17,8 @@ _teknoo_paas_admin_project_edit:
         _controller: 'teknoo.east.paas.endpoint.admin.edit.project'
         errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
-        formOptions: { }
+        formOptions:
+            allowEditingOfLocked: true
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         template: '@@TeknooEastPaas/AdminProject/edit.html.twig'
         writer: '@Teknoo\East\Paas\Writer\ProjectWriter'
@@ -32,7 +33,8 @@ _teknoo_paas_admin_project_new:
         accountLoader: '@Teknoo\East\Paas\Loader\AccountLoader'
         errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         formClass: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
-        formOptions: { }
+        formOptions:
+            allowEditingOfLocked: true
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'
         objectClass: 'Teknoo\East\Paas\Object\Project'
         route: '_teknoo_paas_admin_project_edit'

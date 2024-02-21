@@ -33,7 +33,8 @@ _teknoo_paas_admin_account_new:
         _controller: 'teknoo.east.paas.endpoint.admin.new.account'
         errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         formClass: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
-        formOptions: { "doctrine_type": "%teknoo.east.common.form_type.doctrine.class%"}
+        formOptions:
+            "doctrine_type": "%teknoo.east.common.form_type.doctrine.class%"
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'
         objectClass: 'Teknoo\East\Paas\Object\Account'
         route: '_teknoo_paas_admin_account_edit'

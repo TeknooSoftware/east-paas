@@ -1,5 +1,17 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.6.0] - 2024-02-21
+### Stable Release
+- `ClusterCredentialsType` does not show `password` and `token`. And add a non mapped `clear` field to force empty field
+  (else the empty value is ignored to avoid to lost data).
+- `SshIdentityType` does not show `privateKey`. And add a non mapped `clear` field to force empty field
+  (else the empty value is ignored to avoid to lost data).
+- `XRegistryAuthType` does not show `password`. And add a non mapped `clear` field to force empty field
+  (else the empty value is ignored to avoid to lost data).
+- Add `locked` status to cluster to forbid cluster's update when the form's option `allowEditingOfLocked` is not set to
+  true. For admin's forms, the attribute is at true.
+  - This new attribute has no impact to deployment, only for CRUD operations
+
 ## [2.5.3] - 2024-02-16
 ### Stable Release
 - Limit verbose about `extra` in history 

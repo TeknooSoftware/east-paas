@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -57,40 +58,65 @@ class XRegistryAuthType extends AbstractType
         $builder->add('username', TextType::class, ['required' => false]);
         $builder->add('password', TextType::class, ['required' => false]);
         $builder->add('auth', TextType::class, ['required' => false]);
+        $builder->add(
+            'clear',
+            CheckboxType::class,
+            [
+                'required' => false,
+                'mapped' => false,
+                'false_values' => [
+                    null,
+                    0,
+                    false,
+                    '',
+                ],
+            ],
+        );
 
-        $builder->setDataMapper(new class implements DataMapperInterface {
-            /**
-             * @param Traversable<string, FormInterface<XRegistryAuth>> $forms
-             * @param ?XRegistryAuth $data
-             */
-            public function mapDataToForms($data, $forms): void
-            {
-                if (!$data instanceof XRegistryAuth) {
-                    return;
+        $builder->setDataMapper(
+            new class implements DataMapperInterface {
+                private string $currentPassword = '';
+
+                /**
+                 * @param Traversable<string, FormInterface<XRegistryAuth>> $forms
+                 * @param ?XRegistryAuth $data
+                 */
+                public function mapDataToForms($data, $forms): void
+                {
+                    if (!$data instanceof XRegistryAuth) {
+                        return;
+                    }
+
+                    $forms = iterator_to_array($forms);
+                    $forms['username']->setData($data->getUsername());
+                    $this->currentPassword = $data->getPassword();
+                    $forms['auth']->setData($data->getAuth());
                 }
 
-                $forms = iterator_to_array($forms);
-                $forms['username']->setData($data->getUsername());
-                $forms['password']->setData($data->getPassword());
-                $forms['auth']->setData($data->getAuth());
-            }
+                /**
+                 * @param Traversable<string, FormInterface<XRegistryAuth>> $forms
+                 * @param ?XRegistryAuth $data
+                 */
+                public function mapFormsToData($forms, &$data): void
+                {
+                    $forms = iterator_to_array($forms);
+                    $toClear = !empty($forms['clear']->getData());
 
-            /**
-             * @param Traversable<string, FormInterface<XRegistryAuth>> $forms
-             * @param ?XRegistryAuth $data
-             */
-            public function mapFormsToData($forms, &$data): void
-            {
-                $forms = iterator_to_array($forms);
-                $data = new XRegistryAuth(
-                    username: (string) $forms['username']->getData(),
-                    password: (string) $forms['password']->getData(),
-                    email: '',
-                    auth: (string) $forms['auth']->getData(),
-                    serverAddress: ''
-                );
+                    $password = (string) $forms['password']->getData();
+                    if (!$toClear && empty($password)) {
+                        $password = $this->currentPassword;
+                    }
+
+                    $data = new XRegistryAuth(
+                        username: (string) $forms['username']->getData(),
+                        password: $password,
+                        email: '',
+                        auth: (string) $forms['auth']->getData(),
+                        serverAddress: ''
+                    );
+                }
             }
-        });
+        );
 
         return $this;
     }

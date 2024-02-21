@@ -23,5 +23,6 @@
                        mapped-by="clusters">
             <cascade />
         </reference-one>
+        <field field-name="locked" name="locked" type="bool" nullable="false"/>
     </document>
 </doctrine-mongo-mapping>

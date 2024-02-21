@@ -27,9 +27,12 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -38,6 +41,7 @@ use Teknoo\East\Paas\Object\Cluster;
 use Traversable;
 
 use function array_map;
+use function is_array;
 use function iterator_to_array;
 
 /**
@@ -62,6 +66,8 @@ class ClusterType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): self
     {
+        $allowEditingOfLocked = $options['allowEditingOfLocked'] ?? false;
+
         parent::buildForm($builder, $options);
 
         $builder->add('name', TextType::class, ['required' => true]);
@@ -79,8 +85,59 @@ class ClusterType extends AbstractType
         );
         $builder->add('environment', EnvironmentType::class, ['required' => true]);
         $builder->add('identity', ClusterCredentialsType::class, ['required' => true]);
+        $builder->add(
+            'locked',
+            CheckboxType::class,
+            [
+                'required' => false,
+                'false_values' => [
+                    null,
+                    0,
+                    false,
+                    '',
+                ],
+            ],
+        );
 
-        $builder->setDataMapper(new class implements DataMapperInterface {
+        $builder->addEventListener(
+            FormEvents::POST_SET_DATA,
+            static function (FormEvent $formEvent) use ($allowEditingOfLocked): void {
+                $form = $formEvent->getForm();
+                $data = $formEvent->getData();
+
+                if (
+                    $allowEditingOfLocked
+                    || !$data instanceof Cluster
+                    || !$data->isLocked()
+                ) {
+                    return;
+                }
+
+                foreach ($form as $children) {
+                    /** @var FormInterface $children */
+                    $config = $children->getConfig();
+                    $options = $config->getOptions();
+                    if (!isset($options['attr']) || is_array($options['attr'])) {
+                        $options['attr']['readonly'] = true;
+                    }
+
+                    $typeClass = ($config->getType()->getInnerType())::class;
+
+                    $form->add(
+                        child: $children->getName(),
+                        type: $typeClass,
+                        options: $options
+                    );
+                }
+            }
+        );
+
+        $builder->setDataMapper(new class ($allowEditingOfLocked) implements DataMapperInterface {
+            public function __construct(
+                private bool $allowEditingOfLocked,
+            ) {
+            }
+
             /**
              * @param Traversable<string, FormInterface> $forms
              * @param ?Cluster $data
@@ -95,6 +152,7 @@ class ClusterType extends AbstractType
                     static fn(FormInterface $form): callable => $form->setData(...),
                     iterator_to_array($forms)
                 );
+
                 $data->visit($visitors);
             }
 
@@ -109,11 +167,18 @@ class ClusterType extends AbstractType
                 }
 
                 $forms = iterator_to_array($forms);
-                $data->setName($forms['name']->getData());
-                $data->setType($forms['type']->getData());
-                $data->setAddress($forms['address']->getData());
-                $data->setEnvironment($forms['environment']->getData());
-                $data->setIdentity($forms['identity']->getData());
+
+                if ($this->allowEditingOfLocked || !$data->isLocked()) {
+                    $data->setName($forms['name']->getData());
+                    $data->setType($forms['type']->getData());
+                    $data->setAddress($forms['address']->getData());
+                    $data->setEnvironment($forms['environment']->getData());
+                    $data->setIdentity($forms['identity']->getData());
+
+                    if ($this->allowEditingOfLocked) {
+                        $data->setLocked(!empty($forms['locked']->getData()));
+                    }
+                }
             }
         });
 
@@ -126,6 +191,7 @@ class ClusterType extends AbstractType
 
         $resolver->setDefaults([
             'data_class' => Cluster::class,
+            'allowEditingOfLocked' => false,
         ]);
 
         return $this;

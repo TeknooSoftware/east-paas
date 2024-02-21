@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -57,36 +58,62 @@ class SshIdentityType extends AbstractType
 
         $builder->add('name', TextType::class, ['required' => false, 'label' => 'Identity name']);
         $builder->add('privateKey', TextareaType::class, ['required' => false]);
+        $builder->add(
+            'clear',
+            CheckboxType::class,
+            [
+                'required' => false,
+                'mapped' => false,
+                'false_values' => [
+                    null,
+                    0,
+                    false,
+                    '',
+                ],
+            ],
+        );
 
-        $builder->setDataMapper(new class implements DataMapperInterface {
-            /**
-             * @param Traversable<string, FormInterface<SshIdentity>> $forms
-             * @param ?SshIdentity $data
-             */
-            public function mapDataToForms($data, $forms): void
-            {
-                if (!$data instanceof SshIdentity) {
-                    return;
+        $builder->setDataMapper(
+            new class implements DataMapperInterface {
+                private string $currentPrivateKey = '';
+
+                /**
+                 * @param Traversable<string, FormInterface<SshIdentity>> $forms
+                 * @param ?SshIdentity $data
+                 */
+                public function mapDataToForms($data, $forms): void
+                {
+                    if (!$data instanceof SshIdentity) {
+                        return;
+                    }
+
+                    $forms = iterator_to_array($forms);
+                    $forms['name']->setData($data->getName());
+                    $this->currentPrivateKey = $data->getPrivateKey();
                 }
 
-                $forms = iterator_to_array($forms);
-                $forms['name']->setData($data->getName());
-                $forms['privateKey']->setData($data->getPrivateKey());
-            }
+                /**
+                 * @param Traversable<string, FormInterface<SshIdentity>> $forms
+                 * @param ?SshIdentity $data
+                 */
+                public function mapFormsToData($forms, &$data): void
+                {
+                    $forms = iterator_to_array($forms);
+                    $toClear = !empty($forms['clear']->getData());
 
-            /**
-             * @param Traversable<string, FormInterface<SshIdentity>> $forms
-             * @param ?SshIdentity $data
-             */
-            public function mapFormsToData($forms, &$data): void
-            {
-                $forms = iterator_to_array($forms);
-                $data = new SshIdentity(
-                    (string) $forms['name']->getData(),
-                    (string) $forms['privateKey']->getData()
-                );
+                    $pkey = (string) $forms['privateKey']->getData();
+                    if (!$toClear && empty($pkey)) {
+                        $pkey = $this->currentPrivateKey;
+                    }
+
+
+                    $data = new SshIdentity(
+                        (string) $forms['name']->getData(),
+                        $pkey,
+                    );
+                }
             }
-        });
+        );
 
         return $this;
     }

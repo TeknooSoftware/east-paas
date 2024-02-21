@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -61,44 +62,76 @@ class ClusterCredentialsType extends AbstractType
         $builder->add('token', TextareaType::class, ['required' => false]);
         $builder->add('username', TextType::class, ['required' => false]);
         $builder->add('password', TextType::class, ['required' => false]);
+        $builder->add(
+            'clear',
+            CheckboxType::class,
+            [
+                'required' => false,
+                'mapped' => false,
+                'false_values' => [
+                    null,
+                    0,
+                    false,
+                    '',
+                ],
+            ],
+        );
 
-        $builder->setDataMapper(new class implements DataMapperInterface {
-            /**
-             * @param Traversable<string, FormInterface<ClusterCredentials>> $forms
-             * @param ?ClusterCredentials $data
-             */
-            public function mapDataToForms($data, $forms): void
-            {
-                if (!$data instanceof ClusterCredentials) {
-                    return;
+        $builder->setDataMapper(
+            new class implements DataMapperInterface {
+                private string $currentToken = '';
+
+                private string $currentPassword = '';
+
+                /**
+                 * @param Traversable<string, FormInterface<ClusterCredentials>> $forms
+                 * @param ?ClusterCredentials $data
+                 */
+                public function mapDataToForms($data, $forms): void
+                {
+                    if (!$data instanceof ClusterCredentials) {
+                        return;
+                    }
+
+                    $forms = iterator_to_array($forms);
+                    $forms['caCertificate']->setData($data->getCaCertificate());
+                    $forms['clientCertificate']->setData($data->getClientCertificate());
+                    $forms['clientKey']->setData($data->getClientKey());
+                    $this->currentToken = $data->getToken();
+                    $forms['username']->setData($data->getUsername());
+                    $this->currentPassword = $data->getPassword();
                 }
 
-                $forms = iterator_to_array($forms);
-                $forms['caCertificate']->setData($data->getCaCertificate());
-                $forms['clientCertificate']->setData($data->getClientCertificate());
-                $forms['clientKey']->setData($data->getClientKey());
-                $forms['token']->setData($data->getToken());
-                $forms['username']->setData($data->getUsername());
-                $forms['password']->setData($data->getPassword());
-            }
+                /**
+                 * @param Traversable<string, FormInterface<ClusterCredentials>> $forms
+                 * @param ?ClusterCredentials $data
+                 */
+                public function mapFormsToData($forms, &$data): void
+                {
+                    $forms = iterator_to_array($forms);
+                    $toClear = !empty($forms['clear']->getData());
 
-            /**
-             * @param Traversable<string, FormInterface<ClusterCredentials>> $forms
-             * @param ?ClusterCredentials $data
-             */
-            public function mapFormsToData($forms, &$data): void
-            {
-                $forms = iterator_to_array($forms);
-                $data = new ClusterCredentials(
-                    caCertificate: (string) $forms['caCertificate']->getData(),
-                    clientCertificate: (string) $forms['clientCertificate']->getData(),
-                    clientKey: (string) $forms['clientKey']->getData(),
-                    token: (string) $forms['token']->getData(),
-                    username: (string) $forms['username']->getData(),
-                    password: (string) $forms['password']->getData()
-                );
+                    $token = (string) $forms['token']->getData();
+                    if (!$toClear && empty($token)) {
+                        $token = $this->currentToken;
+                    }
+
+                    $password = (string) $forms['password']->getData();
+                    if (!$toClear && empty($password)) {
+                        $password = $this->currentPassword;
+                    }
+
+                    $data = new ClusterCredentials(
+                        caCertificate: (string) $forms['caCertificate']->getData(),
+                        clientCertificate: (string) $forms['clientCertificate']->getData(),
+                        clientKey: (string) $forms['clientKey']->getData(),
+                        token: $token,
+                        username: (string) $forms['username']->getData(),
+                        password: $password,
+                    );
+                }
             }
-        });
+        );
 
         return $this;
     }

@@ -277,6 +277,47 @@ class ClusterTest extends TestCase
         );
     }
 
+    public function testIsLocked()
+    {
+        $argument = true;
+        $object = $this->generateObjectPopulated(['locked' => $argument]);
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with($argument);
+
+        self::assertInstanceOf(
+            Cluster::class,
+            $object->visit(['locked' => $form->setData(...)]),
+        );
+
+        self::assertTrue(
+            $object->isLocked(),
+        );
+    }
+
+    public function testSetLocked()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->setLocked(true)
+        );
+
+        $argument = true;
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with($argument);
+
+        self::assertInstanceOf(
+            Cluster::class,
+            $object->visit(['locked' => $form->setData(...)])
+        );
+    }
+
     public function testSetIdentityExceptionOnBadArgument()
     {
         $this->expectException(\Throwable::class);
@@ -311,6 +352,7 @@ class ClusterTest extends TestCase
                 'address' => 'fooAddress',
                 'identity' => ($identity = $this->createMock(IdentityInterface::class)),
                 'environment' => ($environment = $this->createMock(Environment::class)),
+                'locked' => true,
             ]);
 
         self::assertInstanceOf(
@@ -321,6 +363,7 @@ class ClusterTest extends TestCase
                 ->setAddress('fooAddress')
                 ->setIdentity($identity)
                 ->setEnvironment($environment)
+                ->setLocked(true)
                 ->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']

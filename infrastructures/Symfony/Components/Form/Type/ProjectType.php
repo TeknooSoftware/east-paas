@@ -61,6 +61,7 @@ class ProjectType extends AbstractType
         $builder->add('sourceRepository', GitRepositoryType::class, ['required' => true]);
         $builder->add('imagesRegistry', ImageRegistryType::class, ['required' => true]);
 
+        $allowEditingOfLocked = $options['allowEditingOfLocked'] ?? false;
         $builder->add(
             'clusters',
             CollectionType::class,
@@ -69,6 +70,12 @@ class ProjectType extends AbstractType
                 'allow_add' => true,
                 'allow_delete' => true,
                 'prototype' => true,
+                'entry_options' => [
+                    'allowEditingOfLocked' => $allowEditingOfLocked,
+                ],
+                'prototype_options' => [
+                    'allowEditingOfLocked' => $allowEditingOfLocked,
+                ],
             ]
         );
 
@@ -118,6 +125,7 @@ class ProjectType extends AbstractType
 
         $resolver->setDefaults([
             'data_class' => Project::class,
+            'allowEditingOfLocked' => false,
         ]);
 
         return $this;

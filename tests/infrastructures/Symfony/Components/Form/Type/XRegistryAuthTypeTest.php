@@ -25,11 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 
+use ArrayIterator;
+use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\XRegistryAuthType;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Teknoo\East\Paas\Object\SshIdentity;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 
 /**
@@ -56,9 +59,8 @@ class XRegistryAuthTypeTest extends TestCase
         return [
             'username' => 'fooBar',
             'password' => 'barFoo',
-            'email' => 'bar',
             'auth' => 'barFoo',
-            'serverAddress' => 'bar',
+            'clear' => false,
         ];
     }
 
@@ -69,6 +71,50 @@ class XRegistryAuthTypeTest extends TestCase
             $this->buildForm()->configureOptions(
                 $this->createMock(OptionsResolver::class)
             )
+        );
+    }
+
+    public function testDataMapperWithSecureData()
+    {
+        $builder = $this->createMock(FormBuilderInterface::class);
+
+        $object = new XRegistryAuth(
+            username: 'fooBar',
+            password: 'barFoo',
+            email: '',
+            auth: 'barFoo',
+            serverAddress: '',
+        );
+
+        $builder->expects(self::any())
+            ->method('setDataMapper')
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
+                $children = [];
+                $formArray = $this->getFormArray();
+                $formArray['password'] = '';
+                $formArray['clear'] = false;
+                foreach ($formArray as $name=>$value) {
+                    $mock = $this->createMock(FormInterface::class);
+                    $mock->expects(self::once())->method('getData')->willReturn($value);
+                    $children[$name] = $mock;
+                }
+
+                $forms = new ArrayIterator($children);
+                $dataMapper->mapDataToForms($object, $forms);
+                $object2 = '';
+                $dataMapper->mapFormsToData($forms, $object2);
+
+                self::assertEquals(
+                    $object,
+                    $object2,
+                );
+
+                return $builder;
+            });
+
+        self::assertInstanceOf(
+            AbstractType::class,
+            $this->buildForm()->buildForm($builder, [])
         );
     }
 }

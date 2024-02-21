@@ -68,6 +68,11 @@ class Cluster implements
 
     private ?Environment $environment = null;
 
+    /**
+     * To not allow editing of the cluster
+     */
+    private bool $locked = false;
+
     public function setProject(Project $project): Cluster
     {
         $this->project = $project;
@@ -138,6 +143,18 @@ class Cluster implements
         return $this;
     }
 
+    public function isLocked(): ?bool
+    {
+        return $this->locked;
+    }
+
+    public function setLocked(bool $toLock): Cluster
+    {
+        $this->locked = $toLock;
+
+        return $this;
+    }
+
     public function visit($visitors): VisitableInterface
     {
         if (isset($visitors['name'])) {
@@ -158,6 +175,10 @@ class Cluster implements
 
         if (isset($visitors['environment'])) {
             $visitors['environment']($this->getEnvironment());
+        }
+
+        if (isset($visitors['locked'])) {
+            $visitors['locked']($this->isLocked());
         }
 
         return $this;
@@ -200,6 +221,7 @@ class Cluster implements
             'address' => $this->getAddress(),
             'identity' => $this->getIdentity(),
             'environment' => $this->getEnvironment(),
+            'locked' => $this->isLocked(),
         ]);
 
         return $this;

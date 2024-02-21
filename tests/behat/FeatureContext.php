@@ -805,6 +805,7 @@ class FeatureContext implements Context
                         '@class' => Environment::class,
                         'name' => $this->envName,
                     ],
+                    'locked' => false,
                 ],
             ],
             'history' => [
