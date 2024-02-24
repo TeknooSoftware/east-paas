@@ -37,7 +37,7 @@ return [
             'path' => '/library/php-run/7.4/',
         ],
     ],
-    'teknoo.east.paas.default_storage_provider' => 'nfs',
+    'teknoo.east.paas.default_storage_provider' => 'default',
     'teknoo.east.paas.kubernetes.ingress.default_annotations' => [
         'foo' => 'bar',
     ],

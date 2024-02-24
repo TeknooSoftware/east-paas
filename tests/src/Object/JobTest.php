@@ -530,6 +530,7 @@ class JobTest extends TestCase
                 'prefix' => 'bar',
                 'hierarchical_namespaces' => false,
                 'extra' => ['foo' => 'bar', 'bar' => 'foo'],
+                'defaults' => ['hello' => 'world'],
             ]);
 
         self::assertInstanceOf(
@@ -539,6 +540,7 @@ class JobTest extends TestCase
                 ->setPrefix('bar')
                 ->setExtra(['foo' => 'bar'])
                 ->setExtra(['bar' => 'foo'])
+                ->setDefaults(['hello' => 'world'])
                 ->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']
@@ -564,6 +566,7 @@ class JobTest extends TestCase
                 'prefix' => 'bar',
                 'hierarchical_namespaces' => false,
                 'extra' => ['foo' => 'bar', 'bar' => 'foo'],
+                'defaults' => ['hello' => 'world'],
             ]);
 
         self::assertInstanceOf(
@@ -573,6 +576,7 @@ class JobTest extends TestCase
                 ->setPrefix('bar')
                 ->setExtra(['foo' => 'bar'])
                 ->setExtra(['bar' => 'foo'])
+                ->setDefaults(['hello' => 'world'])
                 ->exportToMeData(
                 $normalizer,
                 ['groups' => ['api']]

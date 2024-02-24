@@ -1,5 +1,18 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.7.0] - 2024-02-24
+### Stable Release
+- Add serializable `defaults` into `Job` and `JobUnit` to allow define defaults values :
+  - `storage-provider`
+  - `storage-size`
+  - `oci-registry-config-name`
+  without use extra.
+  - `oci-registry-config-name` can be also populate from `XRegistryAuth.auth` value.
+- Add original tag to `EmbeddedVolumeImage`.
+  - Image created with embedded volume will not include an random part in the name to limit disk usagge
+  - The environment name is added to the tag.
+- Add the default variable `JOB_ENV_TAG` in Job to be used in your paas.yaml file.
+
 ## [2.6.0] - 2024-02-21
 ### Stable Release
 - `ClusterCredentialsType` does not show `password` and `token`. And add a non mapped `clear` field to force empty field

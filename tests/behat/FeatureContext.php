@@ -715,6 +715,7 @@ class FeatureContext implements Context
                 extra: [
                     'foo' => 'bar',
                 ],
+                defaults: ['storage-provider' => 'nfs'],
             )
         );
 
@@ -746,7 +747,8 @@ class FeatureContext implements Context
         array $variables = [],
         bool $hnc = false,
         string $jobId = '',
-        array $extra = []
+        array $extra = [],
+        array $defaults = []
     ): array {
         return [
             '@class' => OriJob::class,
@@ -817,6 +819,7 @@ class FeatureContext implements Context
                 'serial_number' => 0,
             ],
             'extra' => $extra,
+            'defaults' => $defaults,
             'variables' => $variables,
         ];
     }
@@ -900,6 +903,7 @@ class FeatureContext implements Context
             ->setClusters([$this->cluster])
             ->setEnvironment($this->environment)
             ->setExtra(['foo' => 'bar'])
+            ->setDefaults(['storage-provider' => 'nfs'])
             ->useHierarchicalNamespaces($hnc)
             ->addToHistory('teknoo.east.paas.jobs.configured', new DateTime($this->jobDate));
 
@@ -1698,7 +1702,7 @@ EOF;
                         "containers": [
                             {
                                 "name": "nginx",
-                                "image": "https://foo.bar/nginx-jobid:alpine",
+                                "image": "https://foo.bar/nginx:alpine-prod",
                                 "imagePullPolicy": "Always",
                                 "ports": [
                                     {
@@ -1741,7 +1745,7 @@ EOF;
                             },
                             {
                                 "name": "blackfire",
-                                "image": "blackfire/blackfire:2",
+                                "image": "blackfire/blackfire:2-prod",
                                 "imagePullPolicy": "Always",
                                 "ports": [
                                     {
@@ -1816,7 +1820,7 @@ EOF;
                         "containers": [
                             {
                                 "name": "php-run",
-                                "image": "https://foo.bar/php-run-jobid:7.4",
+                                "image": "https://foo.bar/php-run:7.4-prod",
                                 "imagePullPolicy": "Always",
                                 "ports": [
                                     {

@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Behat;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
-use function Symfony\Component\Translation\t;
+
 
 return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledDeployment {
     $cd = new CompiledDeployment(
@@ -105,16 +105,17 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
             name: 'foo',
             path: '/foo/images/foo',
             library: false,
-            tag: 'latest',
+            tag: 'prod',
             variables: [],
         )
     );
 
     $cd->addBuildable(
         new CompiledDeployment\Image\EmbeddedVolumeImage(
-            name: 'php-run-jobid',
-            tag: '7.4',
+            name: 'php-run',
+            tag: '7.4-prod',
             originalName: 'registry.teknoo.software/php-run',
+            originalTag: '7.4',
             volumes: [
                 'app' => new CompiledDeployment\Volume\Volume(
                     name: 'app',
@@ -139,9 +140,10 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
 
     $cd->addBuildable(
         new CompiledDeployment\Image\EmbeddedVolumeImage(
-            name: 'nginx-jobid',
-            tag: 'alpine',
+            name: 'nginx',
+            tag: 'alpine-prod',
             originalName: 'registry.hub.docker.com/library/nginx',
+            originalTag: 'alpine',
             volumes: [
                 'www' => new CompiledDeployment\Volume\Volume(
                     name: 'www',
@@ -225,8 +227,8 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
             containers: [
                 new CompiledDeployment\Container(
                     name: 'php-run',
-                    image: 'php-run-jobid',
-                    version: '7.4',
+                    image: 'php-run',
+                    version: '7.4-prod',
                     listen: [
                         8080,
                     ],
@@ -339,8 +341,8 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
             containers: [
                 new CompiledDeployment\Container(
                     name: 'nginx',
-                    image: 'nginx-jobid',
-                    version: 'alpine',
+                    image: 'nginx',
+                    version: 'alpine-prod',
                     listen: [
                         8080,
                         8181,
@@ -383,7 +385,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                 new CompiledDeployment\Container(
                     name: 'blackfire',
                     image: 'blackfire/blackfire',
-                    version: '2',
+                    version: '2-prod',
                     listen: [
                         8307,
                     ],

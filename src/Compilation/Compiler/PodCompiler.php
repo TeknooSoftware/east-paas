@@ -53,6 +53,7 @@ use function array_map;
 use function array_pop;
 use function explode;
 use function is_string;
+use function trim;
 
 /**
  * Compilation module able to convert `pods` sections in paas.yaml file as Pod instance.
@@ -294,20 +295,22 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         array &$embeddedVolumes,
         string $image,
         string $version,
+        string $originalVersion,
         CompiledDeploymentInterface $compiledDeployment,
         JobUnitInterface $job
     ): string {
         $originalImage = $image;
 
-        $image = $originalImage . '-' . $job->getShortId();
+        $image = $originalImage;
         $parts = explode('/', $image);
         $image = array_pop($parts);
 
         $embeddedImage = new EmbeddedVolumeImage(
-            $image,
-            $version,
-            $originalImage,
-            $embeddedVolumes
+            name: $image,
+            tag: $version,
+            originalName: $originalImage,
+            originalTag: $originalVersion,
+            volumes: $embeddedVolumes
         );
 
         $compiledDeployment->addBuildable($embeddedImage);
@@ -385,16 +388,23 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                 );
 
                 $image = $config[self::KEY_IMAGE];
-                $version = (string)($config[self::KEY_VERSION] ?? self::VALUE_LATEST);
+                $version = (string) ($config[self::KEY_VERSION] ?? '');
+                $buildedVersion = trim(
+                    str_replace(self::VALUE_LATEST, '', $version) . '-' . $job->getEnvironmentTag(),
+                    '-',
+                );
 
                 if (!empty($embeddedVolumes)) {
                     $image = $this->processEmbeddedVolumes(
-                        $embeddedVolumes,
-                        $image,
-                        $version,
-                        $compiledDeployment,
-                        $job
+                        embeddedVolumes: $embeddedVolumes,
+                        image: $image,
+                        version: $buildedVersion,
+                        originalVersion: $version,
+                        compiledDeployment: $compiledDeployment,
+                        job: $job
                     );
+
+                    $version = $buildedVersion;
                 }
 
                 $variables = $this->processVariables($config[self::KEY_VARIABLES] ?? []);

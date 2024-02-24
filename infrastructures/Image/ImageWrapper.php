@@ -158,11 +158,11 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                 }
 
                 $script = $this->generateShellScript(
-                    $newImage->getVariables(),
-                    $newImage->getPath(),
-                    $newImage->getUrl() . ':' . $newImage->getTag(),
-                    $newImage->getName() . $this->hash($newImage->getName()),
-                    $template
+                    variables: $newImage->getVariables(),
+                    path: $newImage->getPath(),
+                    imageName: $newImage->getUrl() . ':' . $newImage->getTag(),
+                    imageShortName: $newImage->getName() . $this->hash($newImage->getName()),
+                    template: $template,
                 );
 
                 $path = $newImage->getPath();
@@ -205,7 +205,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                     }
 
                     $variables['PAAS_DOCKERFILE_CONTENT'] = $this->generateDockerFile(
-                        fromImage: $newImage->getOriginalName() . ':' . $newImage->getTag(),
+                        fromImage: $newImage->getOriginalName() . ':' . $newImage->getOriginalTag(),
                         paths: $paths,
                         writables: $writables,
                     );

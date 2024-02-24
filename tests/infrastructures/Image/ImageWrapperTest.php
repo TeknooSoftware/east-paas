@@ -266,7 +266,7 @@ class ImageWrapperTest extends TestCase
                     new PersistentVolume('v!', '/bar', 'pv'),
                     new Volume('v!', ['/bar'], '/volume', '/mount', ['/var*'], true),
                 ];
-                $image2 = new EmbeddedVolumeImage('bar1', 'bar', 'bar', $volumes);
+                $image2 = new EmbeddedVolumeImage('bar1', 'bar', 'bar', 'ori-bar', $volumes);
 
                 $callback($image1);
                 $callback($image2);

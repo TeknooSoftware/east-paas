@@ -46,6 +46,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
+use function array_merge;
 use function implode;
 use function is_array;
 use function preg_replace;
@@ -71,6 +72,7 @@ class JobUnit implements JobUnitInterface
      * @param Cluster[] $clusters
      * @param array<string, string> $variables
      * @param array<string, mixed> $extra
+     * @param array<string, mixed> $defaults
      */
     public function __construct(
         private readonly string $id,
@@ -84,6 +86,7 @@ class JobUnit implements JobUnitInterface
         private readonly array $variables,
         private readonly History $history,
         private readonly array $extra = [],
+        private readonly array $defaults = [],
         private readonly bool $hierarchicalNamespaces = false,
     ) {
     }
@@ -101,6 +104,11 @@ class JobUnit implements JobUnitInterface
         }
 
         return substr(string: $id, offset: 0, length: 4) . '-' . substr(string: $id, offset: -4);
+    }
+
+    public function getEnvironmentTag(): string
+    {
+        return strtolower(trim((string) preg_replace('#[^A-Za-z0-9-]+#', '-', (string) $this->environment)));
     }
 
     public function configureCloningAgent(
@@ -215,6 +223,11 @@ class JobUnit implements JobUnitInterface
      */
     private function updateDefaults(array &$values): void
     {
+        $values['defaults'] = array_merge(
+            $this->defaults,
+            $values['defaults'] ?? [],
+        );
+
         if (
             !isset($values['defaults']['oci-registry-config-name'])
             && (($identity = $this->imagesRegistry->getIdentity()) instanceof IdentityWithConfigNameInterface)
@@ -232,17 +245,20 @@ class JobUnit implements JobUnitInterface
     {
         $pattern = '#((?:\$|R)\{[A-Za-z]\w*\})#iS';
 
-        $updateClosure = function (&$values, callable $recursive) use ($pattern): void {
+        $prefix = $this->prefix;
+        if (!empty($prefix)) {
+            $prefix .= '-';
+        }
+
+        $variables = $this->variables;
+        $variables['JOB_ENV_TAG'] = $this->getEnvironmentTag();
+
+        $updateClosure = static function (&$values, callable $recursive) use (&$prefix, &$pattern, &$variables): void {
             foreach ($values as &$value) {
                 if (is_array($value)) {
                     $recursive($value, $recursive);
 
                     continue;
-                }
-
-                $prefix = $this->prefix;
-                if (!empty($prefix)) {
-                    $prefix .= '-';
                 }
 
                 $value = preg_replace_callback(
@@ -251,7 +267,8 @@ class JobUnit implements JobUnitInterface
                     function (
                         array $matches,
                     ) use (
-                        $prefix,
+                        &$prefix,
+                        &$variables,
                     ): string {
                         $type = $matches[1][0];
                         $key = substr($matches[1], 2, -1);
@@ -260,11 +277,11 @@ class JobUnit implements JobUnitInterface
                             return $prefix . $key;
                         }
 
-                        if (!isset($this->variables[$key])) {
+                        if (!isset($variables[$key])) {
                             throw new DomainException("$key is not available into variables pass to job");
                         }
 
-                        return $this->variables[$key];
+                        return $variables[$key];
                     },
                     (string) $value
                 );

@@ -117,24 +117,26 @@ class JobUnitTest extends TestCase
         ImageRegistryInterface $imageRegistry = null,
         string $id = 'test',
         string $prefix = 'bar',
+        array $defaults = [],
     ) {
-        return (new JobUnit(
-            $id,
-            ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
-            new Environment('foo'),
-            $namespace,
-            $prefix,
-            $this->getSourceRepositoryMock(),
-            $imageRegistry ?? $this->getImagesRegistryMock(),
-            [$this->getClusterMock()],
-            [
+        return new JobUnit(
+            id: $id,
+            projectResume: ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
+            environment: new Environment('foo'),
+            baseNamespace: $namespace,
+            prefix: $prefix,
+            sourceRepository: $this->getSourceRepositoryMock(),
+            imagesRegistry: $imageRegistry ?? $this->getImagesRegistryMock(),
+            clusters: [$this->getClusterMock()],
+            variables: [
                 'foo' => 'bar',
                 'bar' => 'FOO',
             ],
-            new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),
-            $extra,
-            $hierarchicalNS,
-        ));
+            history: new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),
+            extra: $extra,
+            defaults: $defaults,
+            hierarchicalNamespaces: $hierarchicalNS,
+        );
     }
 
     public function testGetShortId()
@@ -365,7 +367,7 @@ class JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsNotDefined()
+    public function testUpdateVariablesInWithDefaultsOciNotDefined()
     {
         $ori = [
             'foo' => 'foo',
@@ -421,7 +423,7 @@ class JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsAlreadyDefined()
+    public function testUpdateVariablesInWithDefaultsOciAlreadyDefined()
     {
         $ori = [
             'foo' => 'foo',
@@ -478,7 +480,7 @@ class JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsEmpty()
+    public function testUpdateVariablesInWithDefaultsOciConfigNameEmpty()
     {
         $ori = [
             'foo' => 'foo',
@@ -517,6 +519,177 @@ class JobUnitTest extends TestCase
                                     'prefix' => 'bar',
                                     'hierarchical-namespaces' => false,
                                 ],
+                                'defaults' => [],
+                            ],
+                            $result
+                        );
+                    },
+                    function (\Throwable  $error): never {
+                        throw $error;
+                    }
+                )
+            )
+        );
+    }
+
+    public function testUpdateVariablesInWithDefaultsNotDefined()
+    {
+        $ori = [
+            'foo' => 'foo',
+            'bar' => [
+                '${foo}',
+                '${foo} text ${bar}',
+            ],
+            'test-prefix' => 'R{value}/bar',
+            '${foo}' => 'text'
+        ];
+
+        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity->expects(self::any())
+            ->method('getConfigName')
+            ->willReturn('fooName');
+
+        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+
+        self::assertInstanceOf(
+            JobUnit::class,
+            $this->buildObject(
+                defaults: ['foo' => 'bar'],
+                imageRegistry: $imageRegistry,
+                prefix: ''
+            )->updateVariablesIn(
+                $ori,
+                new Promise(
+                    function (array $result) {
+                        self::assertEquals(
+                            [
+                                'foo' => 'foo',
+                                'bar' => [
+                                    'bar',
+                                    'bar text FOO',
+                                ],
+                                'test-prefix' => 'value/bar',
+                                '${foo}' => 'text',
+                                'paas' => [
+                                    'namespace' => 'foo',
+                                    'prefix' => '',
+                                    'hierarchical-namespaces' => false,
+                                ],
+                                'defaults' => [
+                                    'foo' => 'bar',
+                                    'oci-registry-config-name' => 'fooName',
+                                ],
+                            ],
+                            $result
+                        );
+                    },
+                    function (\Throwable  $error): never {
+                        throw $error;
+                    }
+                )
+            )
+        );
+    }
+
+    public function testUpdateVariablesInWithDefaultsAlreadyDefinedInJob()
+    {
+        $ori = [
+            'foo' => 'foo',
+            'bar' => [
+                '${foo}',
+                '${foo} text ${bar}',
+            ],
+            '${foo}' => 'text',
+        ];
+
+        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity->expects(self::any())
+            ->method('getConfigName')
+            ->willReturn('fooName');
+
+        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+
+        self::assertInstanceOf(
+            JobUnit::class,
+            $this->buildObject(
+                defaults: ['oci-registry-config-name' => 'barName'],
+                imageRegistry: $imageRegistry
+            )->updateVariablesIn(
+                $ori,
+                new Promise(
+                    function (array $result) {
+                        self::assertEquals(
+                            [
+                                'foo' => 'foo',
+                                'bar' => [
+                                    'bar',
+                                    'bar text FOO',
+                                ],
+                                '${foo}' => 'text',
+                                'paas' => [
+                                    'namespace' => 'foo',
+                                    'prefix' => 'bar',
+                                    'hierarchical-namespaces' => false,
+                                ],
+                                'defaults' => [
+                                    'oci-registry-config-name' => 'barName',
+                                ],
+                            ],
+                            $result
+                        );
+                    },
+                    function (\Throwable  $error): never {
+                        throw $error;
+                    }
+                )
+            )
+        );
+    }
+
+    public function testUpdateVariablesInWithDefaultsConfigNameEmpty()
+    {
+        $ori = [
+            'foo' => 'foo',
+            'bar' => [
+                '${foo}',
+                '${foo} text ${bar}',
+            ],
+            '${foo}' => 'text',
+        ];
+
+        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity->expects(self::any())
+            ->method('getConfigName')
+            ->willReturn('');
+
+        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+
+        self::assertInstanceOf(
+            JobUnit::class,
+            $this->buildObject(defaults: ['foo' => 'bar'], imageRegistry: $imageRegistry)->updateVariablesIn(
+                $ori,
+                new Promise(
+                    function (array $result) {
+                        self::assertEquals(
+                            [
+                                'foo' => 'foo',
+                                'bar' => [
+                                    'bar',
+                                    'bar text FOO',
+                                ],
+                                '${foo}' => 'text',
+                                'paas' => [
+                                    'namespace' => 'foo',
+                                    'prefix' => 'bar',
+                                    'hierarchical-namespaces' => false,
+                                ],
+                                'defaults' => ['foo' => 'bar'],
                             ],
                             $result
                         );
@@ -558,7 +731,8 @@ class JobUnitTest extends TestCase
                                     'namespace' => 'foo',
                                     'prefix' => 'bar',
                                     'hierarchical-namespaces' => false,
-                                ]
+                                ],
+                                'defaults' => [],
                             ],
                             $result
                         );
@@ -602,7 +776,8 @@ class JobUnitTest extends TestCase
                                     'namespace' => 'foo',
                                     'prefix' => 'a-prefix',
                                     'hierarchical-namespaces' => false,
-                                ]
+                                ],
+                                'defaults' => [],
                             ],
                             $result
                         );
@@ -644,7 +819,8 @@ class JobUnitTest extends TestCase
                                     'namespace' => 'foo-hllobar',
                                     'prefix' => 'bar',
                                     'hierarchical-namespaces' => true,
-                                ]
+                                ],
+                                'defaults' => [],
                             ],
                             $result
                         );
@@ -686,7 +862,8 @@ class JobUnitTest extends TestCase
                                     'namespace' => 'hllobar',
                                     'prefix' => 'bar',
                                     'hierarchical-namespaces' => false,
-                                ]
+                                ],
+                                'defaults' => [],
                             ],
                             $result
                         );
@@ -715,7 +892,8 @@ class JobUnitTest extends TestCase
                                     'namespace' => 'hllobar',
                                     'prefix' => 'bar',
                                     'hierarchical-namespaces' => false,
-                                ]
+                                ],
+                                'defaults' => [],
                             ],
                             $result
                         );

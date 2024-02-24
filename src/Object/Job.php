@@ -105,6 +105,11 @@ class Job implements
     private array $extra = [];
 
     /**
+     * @var array<string, mixed>
+     */
+    private array $defaults = [];
+
+    /**
      * @var array<string, string[]>
      */
     private static array $exportConfigurations = [
@@ -120,6 +125,7 @@ class Job implements
         'clusters' => ['default', 'api'],
         'history' => ['default', 'api'],
         'extra' => ['default', 'api'],
+        'defaults' => ['default', 'api'],
     ];
 
     public function __construct()
@@ -287,6 +293,7 @@ class Job implements
             'clusters' => $this->clusters,
             'history' => $this->history,
             'extra' => $this->extra,
+            'defaults' => $this->defaults,
         ];
 
         $this->setGroupsConfiguration(self::$exportConfigurations);
@@ -349,6 +356,16 @@ class Job implements
     public function setExtra(array $extra): Job
     {
         $this->extra += $extra;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $defaults
+     */
+    public function setDefaults(array $defaults): Job
+    {
+        $this->defaults += $defaults;
 
         return $this;
     }

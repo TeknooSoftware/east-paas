@@ -55,6 +55,7 @@ class EmbeddedVolumeImage implements ImmutableInterface, BuildableInterface
         private readonly string $name,
         private readonly string $tag,
         private readonly string $originalName,
+        private readonly string $originalTag,
         private readonly array $volumes
     ) {
         $this->uniqueConstructorCheck();
@@ -73,6 +74,11 @@ class EmbeddedVolumeImage implements ImmutableInterface, BuildableInterface
     public function getOriginalName(): string
     {
         return $this->originalName;
+    }
+
+    public function getOriginalTag(): string
+    {
+        return $this->originalTag;
     }
 
     public function withRegistry(string $registry): self

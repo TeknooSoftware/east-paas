@@ -34,6 +34,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use function array_pop;
 use function explode;
 use function is_array;
+use function str_replace;
+use function trim;
 
 /**
  * Compilation module able to convert `images` sections in paas.yaml file as Image instance. An Image can inherits from
@@ -93,7 +95,8 @@ class ImageCompiler implements CompilerInterface
         foreach ($imagesConfigs as $name => &$config) {
             $buildName = $config[self::KEY_BUILD_NAME] ?? $name;
             $isLibrary = isset($this->imagesLibrary[$name]);
-            $tag = (string) ($config[self::KEY_TAG] ?? self::VALUE_TAG_LATEST);
+            $tag = (string) ($config[self::KEY_TAG] ?? '');
+            $tag = trim(str_replace(self::VALUE_TAG_LATEST, '', $tag) . '-' . $job->getEnvironmentTag(), '-');
             $variables = ($config[self::KEY_VARIABLES] ?? []);
 
             $addImage = static function ($path) use (
@@ -107,11 +110,11 @@ class ImageCompiler implements CompilerInterface
                 $imageName = array_pop($parts);
 
                 $image = new Image(
-                    $imageName,
-                    $path,
-                    $isLibrary,
-                    $tag,
-                    $variables
+                    name: $imageName,
+                    path: $path,
+                    library: $isLibrary,
+                    tag: $tag,
+                    variables: $variables
                 );
 
                 $compiledDeployment->addBuildable($image);

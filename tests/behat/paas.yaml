@@ -171,7 +171,7 @@ pods:
                             port: 8181
             blackfire:
                 image: 'blackfire/blackfire'
-                version: '2'
+                version: '2-${JOB_ENV_TAG}'
                 listen:
                     - 8307
                 variables:

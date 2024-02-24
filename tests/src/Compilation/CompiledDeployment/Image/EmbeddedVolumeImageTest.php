@@ -41,7 +41,8 @@ class EmbeddedVolumeImageTest extends TestCase
         return new EmbeddedVolumeImage(
             'foo',
             '1.2',
-            'orignal',
+            'original',
+            'originalTag',
             [
                 new Volume('foo', ['foo', 'bar'], 'bar', '/mount')
             ]
@@ -86,8 +87,16 @@ class EmbeddedVolumeImageTest extends TestCase
     public function testGetOriginalName()
     {
         self::assertEquals(
-            'orignal',
+            'original',
             $this->buildObject()->getOriginalName()
+        );
+    }
+
+    public function testGetOriginalTag()
+    {
+        self::assertEquals(
+            'originalTag',
+            $this->buildObject()->getOriginalTag()
         );
     }
 
