@@ -582,6 +582,31 @@ class ProjectTest extends TestCase
         );
     }
 
+    public function testExportToMeCrud()
+    {
+        $normalizer = $this->createMock(EastNormalizerInterface::class);
+        $normalizer->expects(self::once())
+            ->method('injectData')
+            ->with([
+                '@class' => Project::class,
+                'id' => '123',
+                'name' => 'fooName',
+                'account' => $this->createMock(Account::class),
+                'prefix' => '',
+                'sourceRepository' => null,
+                'imagesRegistry' => null,
+                'clusters' => [],
+            ]);
+
+        self::assertInstanceOf(
+            Project::class,
+            $this->buildObject()->setId('123')->setName('fooName')->exportToMeData(
+                $normalizer,
+                ['groups' => 'crud']
+            )
+        );
+    }
+
     public function testSetExportConfiguration()
     {
         Project::setExportConfiguration($conf = ['name' => ['default']]);

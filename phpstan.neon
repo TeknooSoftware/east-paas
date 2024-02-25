@@ -1,5 +1,4 @@
 parameters:
-    reportUnmatchedIgnoredErrors: false
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
@@ -72,6 +71,9 @@ parameters:
             message: '#version is never read, only written#'
             path:  src/Compilation/CompiledDeployment.php
         -
+            message: '#is unused#'
+            path:  src/Object/Account.php
+        -
             message: '#project is never read, only written#'
             path:  src/Object/Cluster.php
         -
@@ -92,9 +94,6 @@ parameters:
         -
             message: '#prepareJob\(\) invoked with 3 parameters, 2 required#'
             path:  src/Recipe/Step/Job/PrepareJob.php
-        -
-            message: '#is never read, only written#'
-            path:  src/Writer/JobWriter.php
         -
             message: '#mixed#'
             path:  */di.php

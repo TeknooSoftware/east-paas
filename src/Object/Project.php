@@ -226,6 +226,14 @@ class Project implements
         return $this;
     }
 
+    /**
+     * @return iterable<Cluster>
+     */
+    private function getClusters()
+    {
+        return $this->clusters;
+    }
+
     public function updateClusters(): Project
     {
         if (!empty($this->clusters)) {
