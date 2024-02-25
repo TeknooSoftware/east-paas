@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Object;
 
 use Stringable;
+use Teknoo\East\Common\Object\VisitableTrait;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\Recipe\Promise\Promise;
@@ -55,6 +56,7 @@ class Cluster implements
     Stringable
 {
     use ObjectTrait;
+    use VisitableTrait;
 
     private ?Project $project = null;
 
@@ -151,35 +153,6 @@ class Cluster implements
     public function setLocked(bool $toLock): Cluster
     {
         $this->locked = $toLock;
-
-        return $this;
-    }
-
-    public function visit($visitors): VisitableInterface
-    {
-        if (isset($visitors['name'])) {
-            $visitors['name']($this->getName());
-        }
-
-        if (isset($visitors['type'])) {
-            $visitors['type']($this->getType());
-        }
-
-        if (isset($visitors['address'])) {
-            $visitors['address']($this->getAddress());
-        }
-
-        if (isset($visitors['identity'])) {
-            $visitors['identity']($this->getIdentity());
-        }
-
-        if (isset($visitors['environment'])) {
-            $visitors['environment']($this->getEnvironment());
-        }
-
-        if (isset($visitors['locked'])) {
-            $visitors['locked']($this->isLocked());
-        }
 
         return $this;
     }

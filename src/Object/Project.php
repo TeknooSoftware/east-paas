@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Object;
 
 use DateTimeInterface;
 use Stringable;
+use Teknoo\East\Common\Object\VisitableTrait;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
@@ -73,6 +74,7 @@ class Project implements
     use ProxyTrait;
     use GroupsTrait;
     use ExportConfigurationsTrait;
+    use VisitableTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
@@ -211,14 +213,6 @@ class Project implements
     }
 
     /**
-     * @return iterable<Cluster>
-     */
-    private function getClusters()
-    {
-        return $this->clusters;
-    }
-
-    /**
      * @param Cluster[] $clusters
      */
     public function setClusters(iterable $clusters): Project
@@ -238,31 +232,6 @@ class Project implements
             foreach ($this->clusters as $cluster) {
                 $cluster->setProject($this);
             }
-        }
-
-        return $this;
-    }
-
-    public function visit($visitors): VisitableInterface
-    {
-        if (isset($visitors['name'])) {
-            $visitors['name']($this->getName());
-        }
-
-        if (isset($visitors['prefix'])) {
-            $visitors['prefix']($this->getPrefix());
-        }
-
-        if (isset($visitors['sourceRepository'])) {
-            $visitors['sourceRepository']($this->getSourceRepository());
-        }
-
-        if (isset($visitors['imagesRegistry'])) {
-            $visitors['imagesRegistry']($this->getImagesRegistry());
-        }
-
-        if (isset($visitors['clusters'])) {
-            $visitors['clusters']($this->getClusters());
         }
 
         return $this;

@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Symfony\Component\Form\FormInterface;

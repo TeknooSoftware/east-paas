@@ -32,6 +32,7 @@ use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Contracts\Object\VisitableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Object\User as BaseUser;
+use Teknoo\East\Common\Object\VisitableTrait;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
@@ -68,6 +69,9 @@ class Account implements
     use ProxyTrait;
     use GroupsTrait;
     use ExportConfigurationsTrait;
+    use VisitableTrait {
+        VisitableTrait::runVisit as realRunVisit;
+    }
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
@@ -234,29 +238,24 @@ class Account implements
         return $this;
     }
 
-    public function visit($visitors): VisitableInterface
+    /**
+     * @param array<string, callable> $visitors
+     */
+    private function runVisit(array &$visitors): void
     {
-        if (isset($visitors['name'])) {
-            $visitors['name']($this->getName());
+        $aliases = [
+            'prefix_namespace' => 'prefixNamespace',
+            'use_hierarchical_namespaces' => 'useHierarchicalNamespaces',
+        ];
+
+        foreach ($aliases as $from => $to) {
+            if (isset($visitors[$from])) {
+                $visitors[$to] = $visitors[$from];
+                unset($visitors[$from]);
+            }
         }
 
-        if (isset($visitors['namespace'])) {
-            $visitors['namespace']($this->getNamespace());
-        }
-
-        if (isset($visitors['prefix_namespace'])) {
-            $visitors['prefix_namespace']($this->getPrefixNamespace());
-        }
-
-        if (isset($visitors['use_hierarchical_namespaces'])) {
-            $visitors['use_hierarchical_namespaces']($this->isUseHierarchicalNamespaces());
-        }
-
-        if (isset($visitors['users'])) {
-            $visitors['users']($this->getUsers());
-        }
-
-        return $this;
+        $this->realRunVisit($visitors);
     }
 
     public function requireAccountNamespace(AccountAwareInterface $accountAware): Account

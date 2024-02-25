@@ -26,8 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Loader;
 
 use PHPUnit\Framework\TestCase;
-use Doctrine\Persistence\ObjectRepository;
-use Doctrine\ODM\MongoDB\DocumentRepository;
 use Teknoo\East\Common\Contracts\DBSource\RepositoryInterface;
 use Teknoo\East\Common\Contracts\Loader\LoaderInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;

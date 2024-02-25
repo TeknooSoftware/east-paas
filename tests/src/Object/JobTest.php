@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use ArrayObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
@@ -40,6 +40,7 @@ use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\Proxy\Exception\MethodNotImplemented;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
+use function iterator_to_array;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -459,14 +460,37 @@ class JobTest extends TestCase
         $object = $this->buildObject();
         self::assertInstanceOf(
             $object::class,
-            $object->setClusters(new ArrayCollection([$argument]))
+            $object->setClusters(new ArrayObject([$argument]))
         );
 
         $rP = new \ReflectionProperty($object, 'clusters');
         $rP->setAccessible(true);
         self::assertEquals(
-            new ArrayCollection([$argument]),
+            new ArrayObject([$argument]),
             $rP->getValue($object)
+        );
+    }
+
+    public function testGetCluster()
+    {
+        $argument = $this->createMock(Cluster::class);
+
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->setClusters(new ArrayObject([$argument]))
+        );
+
+        self::assertInstanceOf(
+            Job::class,
+            $object->visit(
+                [
+                    'clusters' => fn ($clusters) => self::assertInstanceOf(
+                        Cluster::class,
+                        iterator_to_array($clusters)[0],
+                    ),
+                ],
+            ),
         );
     }
 

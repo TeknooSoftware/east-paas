@@ -12,6 +12,7 @@
   - Image created with embedded volume will not include an random part in the name to limit disk usagge
   - The environment name is added to the tag.
 - Add the default variable `JOB_ENV_TAG` in Job to be used in your paas.yaml file.
+- Use East Common 2.9
 
 ## [2.6.0] - 2024-02-21
 ### Stable Release

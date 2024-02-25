@@ -26,6 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Object;
 
 use DateTimeInterface;
+use Teknoo\East\Common\Contracts\Object\VisitableInterface;
+use Teknoo\East\Common\Object\VisitableTrait;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
@@ -68,12 +70,14 @@ class Job implements
     IdentifiedObjectInterface,
     AutomatedInterface,
     TimestampableInterface,
+    VisitableInterface,
     NormalizableInterface
 {
     use ObjectTrait;
     use ProxyTrait;
     use GroupsTrait;
     use ExportConfigurationsTrait;
+    use VisitableTrait;
     use AutomatedTrait {
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }

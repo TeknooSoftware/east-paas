@@ -37,7 +37,7 @@
         "teknoo/states": "^6.1.6",
         "teknoo/recipe": "^4.6.1",
         "teknoo/east-foundation": "^7.6.1",
-        "teknoo/east-common": "^2.8"
+        "teknoo/east-common": "^2.9"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
