@@ -533,7 +533,7 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testPrepareJobNotPrefereRealDate()
+    public function testPrepareJobNotpreferRealDate()
     {
         $container = $this->buildContainer();
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));

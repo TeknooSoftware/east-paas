@@ -372,15 +372,15 @@ return [
             DIGet(JobLoader::class),
         ),
     PrepareJob::class => static function (ContainerInterface $container): PrepareJob {
-        $prefereRealDate = true;
+        $preferRealDate = true;
         if (true === $container->has('teknoo.east.paas.symfony.prepare-job.prefer-real-date')) {
-            $prefereRealDate = (bool) $container->get('teknoo.east.paas.symfony.prepare-job.prefer-real-date');
+            $preferRealDate = (bool) $container->get('teknoo.east.paas.symfony.prepare-job.prefer-real-date');
         }
 
         return new PrepareJob(
             dateTimeService: $container->get(DatesService::class),
             errorFactory: $container->get(ErrorFactoryInterface::class),
-            preferRealDate: $prefereRealDate,
+            preferRealDate: $preferRealDate,
         );
     },
 

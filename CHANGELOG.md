@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.7.1] - 2024-02-26
+### Stable Release
+- Fix typo `preferRealDate` instead of `prefereRealDate`
+
 ## [2.7.0] - 2024-02-24
 ### Stable Release
 - Add serializable `defaults` into `Job` and `JobUnit` to allow define defaults values :
@@ -553,7 +557,7 @@
 ## [0.0.98] - 2022-08-14
 ### Dev Release
 - Support last version of `Teknoo East Common`
-- Update writers to support `prefereRealDateOnUpdate` behavior
+- Update writers to support `preferRealDateOnUpdate` behavior
 
 ## [0.0.97] - 2022-08-06
 ### Dev Release

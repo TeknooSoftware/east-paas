@@ -40,9 +40,9 @@ class ClusterWriterTest extends TestCase
 {
     use PersistTestTrait;
 
-    public function buildWriter(bool $prefereRealDateOnUpdate = false,): WriterInterface
+    public function buildWriter(bool $preferRealDateOnUpdate = false,): WriterInterface
     {
-        return new ClusterWriter(manager: $this->getObjectManager(), prefereRealDateOnUpdate: $prefereRealDateOnUpdate);
+        return new ClusterWriter(manager: $this->getObjectManager(), preferRealDateOnUpdate: $preferRealDateOnUpdate);
     }
 
     public function getObject()
