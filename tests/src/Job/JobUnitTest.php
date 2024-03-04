@@ -28,6 +28,8 @@ namespace Teknoo\Tests\East\Paas\Job;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
+use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -118,6 +120,7 @@ class JobUnitTest extends TestCase
         string $id = 'test',
         string $prefix = 'bar',
         array $defaults = [],
+        array $quotas = [],
     ) {
         return new JobUnit(
             id: $id,
@@ -136,6 +139,7 @@ class JobUnitTest extends TestCase
             extra: $extra,
             defaults: $defaults,
             hierarchicalNamespaces: $hierarchicalNS,
+            quotas: $quotas,
         );
     }
 
@@ -951,6 +955,56 @@ class JobUnitTest extends TestCase
         self::assertEquals(
             ['foo' => 'bar'],
             $extra
+        );
+    }
+
+    public function testPrepareQuotasWithoutQuotas()
+    {
+        $factory = $this->createMock(QuotaFactory::class);
+        $factory->expects(self::never())
+            ->method('create');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with([]);
+
+        self::assertInstanceOf(
+            JobUnitInterface::class,
+            $this->buildObject()->prepareQuotas($factory, $promise)
+        );
+    }
+
+    public function testPrepareQuotasWithQuotas()
+    {
+
+        $factory = $this->createMock(QuotaFactory::class);
+        $factory->expects(self::exactly(2))
+            ->method('create')
+            ->willReturn($availabilitty = $this->createMock(AvailabilityInterface::class));
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with(
+                [
+                    'cpu' => $availabilitty,
+                    'memory' => $availabilitty,
+                ]
+            );
+
+        self::assertInstanceOf(
+            JobUnitInterface::class,
+            $this->buildObject(
+                quotas: [
+                    'compute' => [
+                        'cpu' => 4,
+                    ],
+                    'memory' => [
+                        'memory' => 4,
+                    ],
+                ]
+            )->prepareQuotas($factory, $promise)
         );
     }
 }

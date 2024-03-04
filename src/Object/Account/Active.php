@@ -61,7 +61,8 @@ class Active implements StateInterface
                 $date,
                 $environment,
                 $this->getFullNamespace(),
-                $this->isUseHierarchicalNamespaces()
+                $this->isUseHierarchicalNamespaces(),
+                $this->getQuotas(),
             );
 
             return $this;

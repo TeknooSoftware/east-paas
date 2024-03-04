@@ -114,6 +114,11 @@ class Job implements
     private array $defaults = [];
 
     /**
+     * @var array<string, array<string, string>>
+     */
+    private array $quotas = [];
+
+    /**
      * @var array<string, string[]>
      */
     private static array $exportConfigurations = [
@@ -130,6 +135,7 @@ class Job implements
         'history' => ['default', 'api'],
         'extra' => ['default', 'api'],
         'defaults' => ['default', 'api'],
+        'quotas' => ['default', 'api'],
     ];
 
     public function __construct()
@@ -282,36 +288,6 @@ class Job implements
         return $this->history;
     }
 
-    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
-    {
-        $data = [
-            '@class' => self::class,
-            'id' => $this->getId(),
-            'project' => $this->getProject(),
-            'base_namespace' => $this->baseNamespace,
-            'prefix' => $this->prefix,
-            'hierarchical_namespaces' => $this->hierarchicalNamespaces,
-            'environment' => $this->environment,
-            'source_repository' => $this->sourceRepository,
-            'images_repository' => $this->imagesRegistry,
-            'clusters' => $this->clusters,
-            'history' => $this->history,
-            'extra' => $this->extra,
-            'defaults' => $this->defaults,
-        ];
-
-        $this->setGroupsConfiguration(self::$exportConfigurations);
-
-        $normalizer->injectData(
-            $this->filterExport(
-                $data,
-                (array) ($context['groups'] ?? ['default']),
-            )
-        );
-
-        return $this;
-    }
-
     public function setProject(Project $project): Job
     {
         return $this->settingProject($project);
@@ -370,6 +346,47 @@ class Job implements
     public function setDefaults(array $defaults): Job
     {
         $this->defaults += $defaults;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, array<string, string>> $quotas
+     */
+    public function setQuotas(array $quotas): self
+    {
+        $this->quotas = $quotas;
+
+        return $this;
+    }
+
+    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
+    {
+        $data = [
+            '@class' => self::class,
+            'id' => $this->getId(),
+            'project' => $this->getProject(),
+            'base_namespace' => $this->baseNamespace,
+            'prefix' => $this->prefix,
+            'hierarchical_namespaces' => $this->hierarchicalNamespaces,
+            'environment' => $this->environment,
+            'source_repository' => $this->sourceRepository,
+            'images_repository' => $this->imagesRegistry,
+            'clusters' => $this->clusters,
+            'history' => $this->history,
+            'extra' => $this->extra,
+            'defaults' => $this->defaults,
+            'quotas' => $this->quotas,
+        ];
+
+        $this->setGroupsConfiguration(self::$exportConfigurations);
+
+        $normalizer->injectData(
+            $this->filterExport(
+                $data,
+                (array) ($context['groups'] ?? ['default']),
+            )
+        );
 
         return $this;
     }

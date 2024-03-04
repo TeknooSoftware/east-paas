@@ -27,8 +27,7 @@ namespace Teknoo\Tests\East\Paas\Behat;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 
-
-return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledDeployment {
+return static function (bool $hnc, string $hncSuffix, string $prefix, string $withQuota): CompiledDeployment {
     $cd = new CompiledDeployment(
         version: 1,
         namespace: 'behat-test' . $hncSuffix,
@@ -212,18 +211,73 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
         hook: new HookMock(['foo bar']),
     );
 
+    $automaticResources = [
+        (new CompiledDeployment\AutomaticResource('cpu'))->setLimit('200m', '1.600'),
+        (new CompiledDeployment\AutomaticResource('memory'))->setLimit('20.480Mi', '163.840Mi'),
+    ];
+
+    $phpRunResources = match ($withQuota) {
+        'automatic' => $automaticResources,
+        'partial' => [
+            (new CompiledDeployment\AutomaticResource('cpu'))->setLimit('68m', '561m'),
+            (new CompiledDeployment\AutomaticResource('memory'))->setLimit('9.600Mi', '80Mi'),
+        ],
+        'full' => [
+            new CompiledDeployment\Resource('cpu', '200m', '500m'),
+            new CompiledDeployment\Resource('memory', '64Mi', '96Mi'),
+        ],
+        default => []
+    };
+
+    $shellResources = match ($withQuota) {
+        'automatic' => $automaticResources,
+        'partial' => [
+            new CompiledDeployment\Resource('cpu', '100m', '100m'),
+            (new CompiledDeployment\AutomaticResource('memory'))->setLimit('9.600Mi', '80Mi'),
+        ],
+        'full' => [
+            new CompiledDeployment\Resource('cpu', '100m', '100m'),
+            new CompiledDeployment\Resource('memory', '32Mi', '32Mi'),
+        ],
+        default => []
+    };
+
+    $nginxResources = match ($withQuota) {
+        'automatic' => $automaticResources,
+        'partial' => [
+            (new CompiledDeployment\AutomaticResource('cpu'))->setLimit('68m', '561m'),
+            (new CompiledDeployment\AutomaticResource('memory'))->setLimit('9.600Mi', '80Mi'),
+        ],
+        'full' => [
+            new CompiledDeployment\Resource('cpu', '81m', '81m'),
+            new CompiledDeployment\Resource('memory', '64Mi', '64Mi'),
+        ],
+        default => []
+    };
+
+    $wafResources = match ($withQuota) {
+        'automatic' => $automaticResources,
+        'partial', 'full' => [
+            new CompiledDeployment\Resource('cpu', '100m', '100m'),
+            new CompiledDeployment\Resource('memory', '64Mi', '64Mi'),
+        ],
+        default => []
+    };
+
+    $blackfireResources = match ($withQuota) {
+        'automatic' => $automaticResources,
+        'partial', 'full' => [
+            new CompiledDeployment\Resource('cpu', '100m', '100m'),
+            new CompiledDeployment\Resource('memory', '128Mi', '128Mi'),
+        ],
+        default => []
+    };
+
     $cd->addPod(
         name: 'php-pods',
         pod: new CompiledDeployment\Pod(
             name: 'php-pods',
             replicas: 2,
-            maxUpgradingPods: 2,
-            maxUnavailablePods: 1,
-            fsGroup: null,
-            requires: [
-                'x86_64',
-                'avx',
-            ],
             containers: [
                 new CompiledDeployment\Container(
                     name: 'php-run',
@@ -300,13 +354,21 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                         period: 30,
                         type: CompiledDeployment\HealthCheckType::Command,
                         command: ['ps', 'aux', 'php'],
-                        path: null,
                         port: null,
+                        path: null,
                         isSecure: false,
                         successThreshold: 1,
                         failureThreshold: 1,
                     ),
+                    resources: new CompiledDeployment\ResourceSet($phpRunResources),
                 ),
+            ],
+            maxUpgradingPods: 2,
+            maxUnavailablePods: 1,
+            fsGroup: null,
+            requires: [
+                'x86_64',
+                'avx',
             ],
             isStateless: false,
         ),
@@ -326,6 +388,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                     volumes: [],
                     variables: [],
                     healthCheck: null,
+                    resources: new CompiledDeployment\ResourceSet($shellResources),
                 ),
             ],
         ),
@@ -336,8 +399,6 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
         pod: new CompiledDeployment\Pod(
             name: 'demo',
             replicas: 1,
-            fsGroup: 1000,
-            upgradeStrategy: CompiledDeployment\UpgradeStrategy::Recreate,
             containers: [
                 new CompiledDeployment\Container(
                     name: 'nginx',
@@ -354,12 +415,13 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                         period: 30,
                         type: CompiledDeployment\HealthCheckType::Http,
                         command: null,
-                        path: '/status',
                         port: 8080,
+                        path: '/status',
                         isSecure: true,
                         successThreshold: 3,
                         failureThreshold: 2,
                     ),
+                    resources: new CompiledDeployment\ResourceSet($nginxResources),
                 ),
                 new CompiledDeployment\Container(
                     name: 'waf',
@@ -375,12 +437,13 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                         period: 30,
                         type: CompiledDeployment\HealthCheckType::Tcp,
                         command: null,
-                        path: null,
                         port: 8181,
+                        path: null,
                         isSecure: false,
                         successThreshold: 1,
                         failureThreshold: 1,
                     ),
+                    resources: new CompiledDeployment\ResourceSet($wafResources),
                 ),
                 new CompiledDeployment\Container(
                     name: 'blackfire',
@@ -395,8 +458,11 @@ return static function (bool $hnc, string $hncSuffix, string $prefix): CompiledD
                         'BLACKFIRE_SERVER_TOKEN' => 'bar',
                     ],
                     healthCheck: null,
+                    resources: new CompiledDeployment\ResourceSet($blackfireResources),
                 ),
             ],
+            upgradeStrategy: CompiledDeployment\UpgradeStrategy::Recreate,
+            fsGroup: 1000,
         ),
     );
 

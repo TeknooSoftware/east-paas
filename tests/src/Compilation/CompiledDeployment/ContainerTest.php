@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -46,6 +47,7 @@ class ContainerTest extends TestCase
             volumes: ['foo', 'bar'],
             variables: ['bar' => 'foo'],
             healthCheck: $this->createMock(HealthCheck::class),
+            resources: new ResourceSet(),
         );
     }
 
@@ -102,6 +104,14 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             HealthCheck::class,
             $this->buildObject()->getHealthCheck(),
+        );
+    }
+
+    public function testGetResources()
+    {
+        self::assertInstanceOf(
+            ResourceSet::class,
+            $this->buildObject()->getResources(),
         );
     }
 }

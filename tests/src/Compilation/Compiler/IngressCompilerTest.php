@@ -30,6 +30,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -121,7 +122,8 @@ class IngressCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -136,7 +138,7 @@ class IngressCompilerTest extends TestCase
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         self::assertInstanceOf(
             IngressCompiler::class,
@@ -144,7 +146,8 @@ class IngressCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $workspace,
-                $jobUnit
+                $jobUnit,
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -161,7 +164,7 @@ class IngressCompilerTest extends TestCase
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         self::assertInstanceOf(
             IngressCompiler::class,
@@ -169,7 +172,8 @@ class IngressCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $workspace,
-                $jobUnit
+                $jobUnit,
+                $this->createMock(ResourceManager::class),
             )
         );
     }

@@ -26,10 +26,13 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\Conductor;
 
 use Closure;
+use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\Conductor;
+use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\Recipe\Promise\Promise;
 use Teknoo\States\State\StateInterface;
 use Teknoo\States\State\StateTrait;
 
@@ -70,6 +73,19 @@ class Running implements StateInterface
             $workspace = $this->getWorkspace();
             $job = $this->getJob();
 
+            $resourceManager = new ResourceManager();
+            $job->prepareQuotas(
+                $this->quotaFactory,
+                new Promise(
+                    onSuccess: function (array $capacities) use ($resourceManager): void {
+                        foreach ($capacities as $name => $capacity) {
+                            $resourceManager->updateQuotaAvailability($name, $capacity);
+                        }
+                    }
+                )
+            );
+
+            /** @var CompilerInterface $compiler */
             foreach ($this->compilers as $pattern => $compiler) {
                 $this->extract(
                     $this->configuration,
@@ -82,18 +98,20 @@ class Running implements StateInterface
                         $compiler,
                         $workspace,
                         $job,
+                        $resourceManager,
                         $storageIdentifier,
                         $storageSize,
                         $ociRegistryConfig,
                     ): void {
                         $compiler->compile(
-                            $configuration,
-                            $compiledDeployment,
-                            $workspace,
-                            $job,
-                            $storageIdentifier,
-                            $storageSize,
-                            $ociRegistryConfig,
+                            definitions: $configuration,
+                            compiledDeployment: $compiledDeployment,
+                            workspace: $workspace,
+                            job: $job,
+                            resourceManager: $resourceManager,
+                            storageIdentifier: $storageIdentifier,
+                            defaultStorageSize: $storageSize,
+                            ociRegistryConfig: $ociRegistryConfig,
                         );
                     }
                 );

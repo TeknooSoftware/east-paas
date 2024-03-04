@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation;
 
 use RuntimeException;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
 use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Compilation\Conductor\Generator;
@@ -96,6 +97,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
         PropertyAccessorInterface $propertyAccessor,
         YamlParserInterface $parser,
         private readonly YamlValidator $validator,
+        private readonly QuotaFactory $quotaFactory,
         private readonly iterable $compilers,
         private readonly ?string $storageIdentifier,
         private readonly ?string $storageSize,
@@ -239,7 +241,6 @@ class Conductor implements ConductorInterface, AutomatedInterface
         ?string $storageSize = null,
         ?string $ociRegistryConfig = null,
     ): ConductorInterface {
-
         $this->extract(
             $this->configuration,
             self::CONFIG_DEFAULTS,

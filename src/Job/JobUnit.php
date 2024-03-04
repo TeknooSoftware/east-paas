@@ -28,6 +28,8 @@ namespace Teknoo\East\Paas\Job;
 use DomainException;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
+use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -73,6 +75,7 @@ class JobUnit implements JobUnitInterface
      * @param array<string, string> $variables
      * @param array<string, mixed> $extra
      * @param array<string, mixed> $defaults
+     * @param array<string, array<string, string>> $quotas
      */
     public function __construct(
         private readonly string $id,
@@ -88,6 +91,7 @@ class JobUnit implements JobUnitInterface
         private readonly array $extra = [],
         private readonly array $defaults = [],
         private readonly bool $hierarchicalNamespaces = false,
+        private readonly array $quotas = []
     ) {
     }
 
@@ -313,6 +317,28 @@ class JobUnit implements JobUnitInterface
         if (!empty($this->extra)) {
             $callback($this->extra);
         }
+
+        return $this;
+    }
+
+    /**
+     * @param PromiseInterface<array<string, AvailabilityInterface>, mixed> $promise
+     */
+    public function prepareQuotas(QuotaFactory $factory, PromiseInterface $promise): JobUnitInterface
+    {
+        $final = [];
+        foreach ($this->quotas as $category => $quotasAvailabilities) {
+            foreach ($quotasAvailabilities as $type => $capacity) {
+                $final[$type] = $factory->create(
+                    category: (string) $category,
+                    type: (string) $type,
+                    capacity: (string) $capacity,
+                    isSoft: false
+                );
+            }
+        }
+
+        $promise->success($final);
 
         return $this;
     }

@@ -114,7 +114,7 @@ class AccountTest extends TestCase
     public function testSetNameExceptionOnBadArgument()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->setNamespace(new \stdClass());
+        $this->buildObject()->setName(new \stdClass());
     }
 
     /**
@@ -145,9 +145,6 @@ class AccountTest extends TestCase
         $this->buildObject()->setUseHierarchicalNamespaces(new \stdClass());
     }
 
-    /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
-     */
     public function testSetNamespace()
     {
         $object = $this->buildObject();
@@ -171,6 +168,30 @@ class AccountTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->setNamespace(new \stdClass());
+    }
+    public function testSetQuotas()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->setQuotas($a = ['compute' => ['cpu' => 5]])
+        );
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with($a);
+
+        self::assertInstanceOf(
+            Account::class,
+            $object->visit(['quotas' => $form->setData(...)])
+        );
+    }
+
+    public function testSetQuotasExceptionOnBadArgument()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->setQuotas(new \stdClass());
     }
 
     /**
@@ -369,7 +390,17 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, 'foobar', false]);
+        $project->expects(self::once())->method('__call')->with(
+            'configure',
+            [
+                $job,
+                $date = new \DateTime('2018-05-01'),
+                $env,
+                'foobar',
+                false,
+                null,
+            ]
+        );
         $project->expects(self::never())->method('refuseExecution');
 
         self::assertInstanceOf(
@@ -388,7 +419,17 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, null, false]);
+        $project->expects(self::once())->method('__call')->with(
+            'configure',
+            [
+                $job,
+                $date = new \DateTime('2018-05-01'),
+                $env,
+                null,
+                false,
+                null,
+            ]
+        );
         $project->expects(self::never())->method('refuseExecution');
 
         self::assertInstanceOf(
@@ -405,7 +446,18 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')->with('configure', [$job, $date = new \DateTime('2018-05-01'), $env, 'bar', true]);
+        $project->expects(self::once())->method('__call')
+            ->with(
+                'configure',
+                [
+                    $job,
+                    $date = new \DateTime('2018-05-01'),
+                    $env,
+                    'bar',
+                    true,
+                    null,
+                ]
+            );
         $project->expects(self::never())->method('refuseExecution');
 
         self::assertInstanceOf(
@@ -414,6 +466,36 @@ class AccountTest extends TestCase
                 ->setName('foo')
                 ->setNamespace('bar')
                 ->setUseHierarchicalNamespaces(true)
+                ->canIPrepareNewJob($project, $job, $date, $env)
+        );
+    }
+
+    public function testCanIPrepareNewJobActiveWithQuota()
+    {
+        $job = $this->createMock(Job::class);
+        $env = $this->createMock(Environment::class);
+
+        $project = $this->createMock(Project::class);
+        $project->expects(self::once())->method('__call')
+            ->with(
+                'configure',
+                [
+                    $job,
+                    $date = new \DateTime('2018-05-01'),
+                    $env,
+                    'bar',
+                    false,
+                    ['compute' => ['cpu' => 5]],
+                ]
+            );
+        $project->expects(self::never())->method('refuseExecution');
+
+        self::assertInstanceOf(
+            Account::class,
+            $this->buildObject()
+                ->setName('foo')
+                ->setNamespace('bar')
+                ->setQuotas(['compute' => ['cpu' => 5]])
                 ->canIPrepareNewJob($project, $job, $date, $env)
         );
     }

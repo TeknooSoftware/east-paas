@@ -57,6 +57,7 @@ class Container implements ImmutableInterface
         private readonly array $volumes,
         private readonly array $variables,
         private readonly ?HealthCheck $healthCheck,
+        private readonly ResourceSet $resources,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -103,5 +104,10 @@ class Container implements ImmutableInterface
     public function getHealthCheck(): ?HealthCheck
     {
         return $this->healthCheck;
+    }
+
+    public function getResources(): ResourceSet
+    {
+        return $this->resources;
     }
 }

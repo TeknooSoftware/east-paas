@@ -28,7 +28,11 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as ResourceFactory;
+use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
+use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentFactoryInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -59,6 +63,8 @@ class ConductorTest extends TestCase
     private ?YamlParserInterface $parser = null;
 
     private ?YamlValidator $validator = null;
+
+    private ?ResourceFactory $resourceFactory = null;
 
     /**
      * @return MockObject|CompiledDeploymentFactoryInterface
@@ -116,6 +122,18 @@ class ConductorTest extends TestCase
         return $this->validator;
     }
 
+    /**
+     * @return MockObject|ResourceFactory
+     */
+    public function getResourceFactory(): ResourceFactory
+    {
+        if (!$this->resourceFactory instanceof YamlValidator) {
+            $this->resourceFactory = $this->createMock(ResourceFactory::class);
+        }
+
+        return $this->resourceFactory;
+    }
+
     public function buildConductor(
         ?string $storageProvider = null,
         ?string $storageSize = null,
@@ -131,6 +149,7 @@ class ConductorTest extends TestCase
                         CompiledDeploymentInterface $compiledDeployment,
                         JobWorkspaceInterface $workspace,
                         JobUnitInterface $job,
+                        ResourceManager $resourceManager,
                         ?string $storageIdentifier = null,
                         ?string $defaultStorageSize = null,
                         ?string $ociRegistryConfig = null,
@@ -154,6 +173,7 @@ class ConductorTest extends TestCase
             $this->getPropertyAccessorMock(),
             $this->getYamlParser(),
             $this->getYamlValidator(),
+            $this->getResourceFactory(),
             $compilers,
             $storageProvider,
             $storageSize,
@@ -727,8 +747,12 @@ EOF;
         );
     }
 
-    private function prepareTestForCompile(array $result, ?Conductor $conductor = null, $storage = null): Conductor
-    {
+    private function prepareTestForCompile(
+        array $result,
+        ?Conductor $conductor = null,
+        ?string $storage = null,
+        array $quotas = [],
+    ): Conductor {
         $yaml = <<<'EOF'
 paas:
   version: v1
@@ -740,6 +764,21 @@ EOF;
         $promise->expects(self::never())->method('fail');
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
+        if (!empty($quotas)) {
+            $jobUnit->expects(self::once())
+                ->method('prepareQuotas')
+                ->willReturnCallback(
+                    function (QuotaFactory $factory, PromiseInterface $promise) use ($jobUnit) {
+                        $promise->success([
+                            'cpu' => $this->createMock(AvailabilityInterface::class),
+                            'memory' => $this->createMock(AvailabilityInterface::class),
+                        ]);
+
+                        return $jobUnit;
+                    }
+                );
+        }
+
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
         $conductor = ($conductor ?? $this->buildConductor($storage))->configure($jobUnit, $workspace);
@@ -823,6 +862,27 @@ EOF;
         );
     }
 
+    public function testCompileDeploymentWithQuotasInJobs()
+    {
+        $result = $this->getResultArray();
+
+        $conductor = $this->prepareTestForCompile(
+            result: $result,
+            quotas: ['compute' => ['cpu' => 5]]
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->compileDeployment($promise)
+        );
+    }
+
     public function testCompileDeploymentWithDefaults()
     {
         $result = $this->getResultArray();
@@ -842,6 +902,7 @@ EOF;
                     CompiledDeploymentInterface $compiledDeployment,
                     JobWorkspaceInterface $workspace,
                     JobUnitInterface $job,
+                    ResourceManager $resourceManager,
                     ?string $storageIdentifier = null,
                     ?string $defaultStorageSize = null,
                     ?string $ociRegistryConfig = null,
@@ -921,6 +982,7 @@ EOF;
             $this->getPropertyAccessorMock(),
             $this->getYamlParser(),
             $this->getYamlValidator(),
+            $this->getResourceFactory(),
             [
                 '[secrets]' => $compiler,
                 '[volumes]' => $compiler,

@@ -68,6 +68,9 @@ parameters:
             message: '#array<string>, array given#' #array validated by validation schema
             path:  src/Compilation/
         -
+            message: '#always true#' #false positive
+            path:  src/Compilation/Compiler/Quota/MemoryAvailability.php
+        -
             message: '#version is never read, only written#'
             path:  src/Compilation/CompiledDeployment.php
         -

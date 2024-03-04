@@ -1,5 +1,20 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.8.0] - 2024-03-04
+### Stable Release
+- Add support of quotas into an Account
+- Quota are defined for each account, quotas are categorized
+  - `compute`, like `cpu` or `gpu`
+  - `memory`, like `memory`, `storage`, `huge-page`
+- Add `quotas` section under `paas` section in the deployment file (`.paas.yaml`)
+- Add `resource` section for each container, with `require` and `limit`
+  - `require`: minimum fraction of resources types required to be started
+  - `limit`: maximum fraction of resources types for the container. (For a container, not a replicas)
+  - If containers have no resources defined (or not fully defined), East PaaS, thanks to its `ResourceManager` will
+    share remaining resources to containers.
+  - requirements and limits can be relative (a % of the quota)
+- If the sum of requirements exceed the quota, the deployment compilation will be failed and will never be executed.
+
 ## [2.7.1] - 2024-02-26
 ### Stable Release
 - Fix typo `preferRealDate` instead of `prefereRealDate`
@@ -528,7 +543,7 @@
   * `.defaults.oci-registry-config-name`
   To allow developer to define defaults values when they are not defined into pods or volumes.
 - Add `IdentityWithConfigNameInterface` to create identity object with a config name to reference it into anothers
-  ressources, like for oci registries.
+  resources, like for oci registries.
 
 ## [0.0.101] - 2022-08-20
 ### Dev Release

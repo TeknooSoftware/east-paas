@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 use DomainException;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -263,7 +264,7 @@ class CompiledDeploymentTest extends TestCase
             )
         );
     }
-    
+
     public function testAddSecretWrongSecret()
     {
         $this->expectException(\TypeError::class);
@@ -286,7 +287,7 @@ class CompiledDeploymentTest extends TestCase
             )
         );
     }
-    
+
     public function testAddMapWrongMap()
     {
         $this->expectException(\TypeError::class);
@@ -336,7 +337,7 @@ class CompiledDeploymentTest extends TestCase
     public function testAddPodWrongContainer()
     {
         $this->expectException(\TypeError::class);
-        $this->buildObject()->addPod('foo',  new \stdClass());
+        $this->buildObject()->addPod('foo', new \stdClass());
     }
 
     public function testAddPodWrongContainerName()
@@ -355,11 +356,19 @@ class CompiledDeploymentTest extends TestCase
                 )
                 ->addPod(
                     'bar',
-                    new Pod('bar', 1, [new Container('bar', 'foo', '1.2', [80], [], [], $this->createMock(CompiledDeployment\HealthCheck::class),)])
+                    new Pod('bar', 1, [
+                        new Container('bar', 'foo', '1.2', [80], [], [],
+                            $this->createMock(CompiledDeployment\HealthCheck::class),
+                            $this->createMock(CompiledDeployment\ResourceSet::class))
+                    ])
                 )
                 ->addPod(
                     'bar',
-                    new Pod('bar', 1, [new Container('bar', 'registry/foo', '1.2', [80], [], [], $this->createMock(CompiledDeployment\HealthCheck::class),)])
+                    new Pod('bar', 1, [
+                        new Container('bar', 'registry/foo', '1.2', [80], [], [],
+                            $this->createMock(CompiledDeployment\HealthCheck::class),
+                            $this->createMock(CompiledDeployment\ResourceSet::class))
+                    ])
                 )
         );
     }
@@ -464,6 +473,7 @@ class CompiledDeploymentTest extends TestCase
                         ],
                         [],
                         $this->createMock(CompiledDeployment\HealthCheck::class),
+                        $this->createMock(CompiledDeployment\ResourceSet::class),
                     )
                 ]
             )
@@ -508,12 +518,20 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->addPod(
             'foo1',
-            new Pod('foo1', 1, [new Container('foo1', 'foo', '1.2', [80], [], [], $this->createMock(CompiledDeployment\HealthCheck::class),)])
+            new Pod('foo1', 1, [
+                new Container('foo1', 'foo', '1.2', [80], [], [],
+                    $this->createMock(CompiledDeployment\HealthCheck::class),
+                    $this->createMock(CompiledDeployment\ResourceSet::class),)
+            ])
         );
 
         $cd->addPod(
             'foo2',
-            new Pod('foo2', 1, [new Container('foo2', 'foo', '1.2', [80], [], [], $this->createMock(CompiledDeployment\HealthCheck::class),)])
+            new Pod('foo2', 1, [
+                new Container('foo2', 'foo', '1.2', [80], [], [],
+                    $this->createMock(CompiledDeployment\HealthCheck::class),
+                    $this->createMock(CompiledDeployment\ResourceSet::class),)
+            ])
         );
 
         $cd->addPod(
@@ -530,6 +548,7 @@ class CompiledDeploymentTest extends TestCase
                         [],
                         [],
                         $this->createMock(HealthCheck::class),
+                        $this->createMock(ResourceSet::class),
                     )
                 ]
             )
@@ -600,6 +619,7 @@ class CompiledDeploymentTest extends TestCase
                         ],
                         [],
                         $this->createMock(HealthCheck::class),
+                        $this->createMock(ResourceSet::class),
                     ),
                     new Container(
                         'foo2',
@@ -613,6 +633,7 @@ class CompiledDeploymentTest extends TestCase
                         ],
                         [],
                         $this->createMock(HealthCheck::class),
+                        $this->createMock(ResourceSet::class),
                     )
                 ]
             )
@@ -639,6 +660,7 @@ class CompiledDeploymentTest extends TestCase
                         ],
                         [],
                         $this->createMock(HealthCheck::class),
+                        $this->createMock(ResourceSet::class),
                     )
                 ]
             )
@@ -660,6 +682,7 @@ class CompiledDeploymentTest extends TestCase
                         [],
                         [],
                         $this->createMock(HealthCheck::class),
+                        $this->createMock(ResourceSet::class),
                     )
                 ]
             )

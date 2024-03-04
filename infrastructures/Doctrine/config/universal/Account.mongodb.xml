@@ -11,6 +11,7 @@
         <field field-name="namespace" type="string" nullable="true"/>
         <field field-name="prefixNamespace" name="prefix_namespace" type="string" nullable="true"/>
         <field field-name="useHierarchicalNamespaces" name="use_hierarchical_namespaces" type="bool" nullable="false"/>
+        <field field-name="quotas" type="hash" nullable="true"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
         <field field-name="updatedAt" name="updated_at" type="date" />
         <field field-name="deletedAt" name="deleted_at" type="date" nullable="true" index="true" />

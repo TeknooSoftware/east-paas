@@ -152,6 +152,10 @@ class FeatureContext implements Context
 
     private ?Job $job = null;
 
+    private array $quotasAllowed;
+
+    private static string $quotasDefined = '';
+
     private ?string $calledUrl = null;
 
     private ?string $clusterName = null;
@@ -334,6 +338,8 @@ class FeatureContext implements Context
         $this->slowBuilder = false;
         $this->paasFile = null;
         $this->jobJsonExported = null;
+        $this->quotasAllowed = [];
+        self::$quotasDefined = '';
 
         if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
             unset($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM']);
@@ -578,6 +584,23 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given quotas defined for this account
+     */
+    public function quotasDefinedForThisAccount()
+    {
+        $this->account?->setQuotas(
+            $this->quotasAllowed = [
+                'compute' => [
+                    'cpu' => 10,
+                ],
+                'memory' => [
+                    'memory' => '1 Gi',
+                ]
+            ]
+        );
+    }
+
+    /**
      * @Given a project on this account :name with the id :id
      * @Given a project on this account :name with the id :id and a prefix :prefix
      */
@@ -716,6 +739,7 @@ class FeatureContext implements Context
                     'foo' => 'bar',
                 ],
                 defaults: ['storage-provider' => 'nfs'],
+                quotas: $this->quotasAllowed,
             )
         );
 
@@ -748,7 +772,8 @@ class FeatureContext implements Context
         bool $hnc = false,
         string $jobId = '',
         array $extra = [],
-        array $defaults = []
+        array $defaults = [],
+        array $quotas = [],
     ): array {
         return [
             '@class' => OriJob::class,
@@ -820,6 +845,7 @@ class FeatureContext implements Context
             ],
             'extra' => $extra,
             'defaults' => $defaults,
+            'quotas' => $quotas,
             'variables' => $variables,
         ];
     }
@@ -844,10 +870,17 @@ class FeatureContext implements Context
 
     /**
      * @Then with the job normalized in the body with variables :variables
+     * @Then with the job normalized in the body with variables :variables and quotas :quota
      */
-    public function withTheJobNormalizedInTheBodyWithVariables($variables)
+    public function withTheJobNormalizedInTheBodyWithVariables($variables, string $quota = '')
     {
-        $job = $this->getNormalizedJob(json_decode($variables, true));
+        $job = $this->getNormalizedJob(
+            variables: json_decode($variables, true),
+            quotas: match ($quota) {
+                'defined' => $this->quotasAllowed,
+                default => [],
+            },
+        );
 
         $content = json_decode($this->response->getContent(), true);
 
@@ -877,11 +910,15 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then with the job normalized with hnc in the body with variables :variables
+     * @Then with the job normalized with hnc in the body with variables :variables and quotas defined
      */
     public function withTheJobNormalizedWithHncInTheBodyWithVariables($variables)
     {
-        $job = $this->getNormalizedJob(json_decode($variables, true), true);
+        $job = $this->getNormalizedJob(
+            variables: json_decode($variables, true),
+            hnc: true,
+            quotas: $this->quotasAllowed
+        );
 
         $content = json_decode($this->response->getContent(), true);
 
@@ -892,8 +929,13 @@ class FeatureContext implements Context
         }
     }
 
-    private function setAJobWithTheIdAtDate(mixed $id, string $date, bool $hnc)
-    {
+    private function setAJobWithTheIdAtDate(
+        mixed $id,
+        string $date,
+        bool $hnc,
+        ?int $countVCore = null,
+        ?string $countMemory = null
+    ) {
         $this->jobId = $id;
         $this->jobDate = $date;
 
@@ -907,6 +949,19 @@ class FeatureContext implements Context
             ->useHierarchicalNamespaces($hnc)
             ->addToHistory('teknoo.east.paas.jobs.configured', new DateTime($this->jobDate));
 
+        $quotas = $this->quotasAllowed;
+        if ($countVCore) {
+            $quotas['compute']['cpu'] = $countVCore;
+        }
+
+        if ($countMemory) {
+            $quotas['memory']['memory'] = $countMemory;
+        }
+
+        if (!empty($quotas)) {
+            $this->job->setQuotas($this->quotasAllowed = $quotas);
+        }
+
         $this->repositories[Job::class]->register(
             $id,
             $this->job
@@ -915,16 +970,17 @@ class FeatureContext implements Context
 
     /**
      * @Given a job with the id :id at date :date
+     * @Given a job with the id :id at date :date and with :countVCore vcore and :countMemory memory quotas
      */
-    public function aJobWithTheIdAtDate($id, $date)
+    public function aJobWithTheIdAtDate(mixed $id, string $date, ?int $countVCore = null, ?string $countMemory = null)
     {
-        $this->setAJobWithTheIdAtDate($id, $date, false);
+        $this->setAJobWithTheIdAtDate($id, $date, false, $countVCore, $countMemory);
     }
 
     /**
      * @Given a job with the id :id at date :date and HNC
      */
-    public function aJobWithTheIdAtDateAndHnc($id, $date)
+    public function aJobWithTheIdAtDateAndHnc(mixed $id, string $date)
     {
         $this->setAJobWithTheIdAtDate($id, $date, true);
     }
@@ -988,6 +1044,16 @@ class FeatureContext implements Context
     public function aProjectWithACompletePaasFile()
     {
         $this->paasFile = __DIR__ . '/paas.yaml';
+        self::$quotasDefined = '';
+    }
+
+    /**
+     * @Given a project with a complete paas file without quota
+     */
+    public function aProjectWithACompletePaasFileWithoutData()
+    {
+        $this->paasFile = __DIR__ . '/paas.yaml';
+        self::$quotasDefined = 'automatic';
     }
 
     /**
@@ -996,6 +1062,34 @@ class FeatureContext implements Context
     public function aProjectWithAPaasFileUsingExtends()
     {
         $this->paasFile = __DIR__ . '/paas.with-extends.yaml';
+        self::$quotasDefined = '';
+    }
+
+    /**
+     * @Given a project with a complete paas file with partial quota
+     */
+    public function aProjectWithAPaasFileWithPartialQuota()
+    {
+        $this->paasFile = __DIR__ . '/paas.with-partial-quotas.yaml';
+        self::$quotasDefined = 'partial';
+    }
+
+    /**
+     * @Given a project with a complete paas file with quota
+     */
+    public function aProjectWithAPaasFileWithQuota()
+    {
+        $this->paasFile = __DIR__ . '/paas.with-quotas.yaml';
+        self::$quotasDefined = 'full';
+    }
+
+    /**
+     * @Given a project with a complete paas file with limited quota
+     */
+    public function aProjectWithAPaasFileWithLimitedQuota()
+    {
+        $this->paasFile = __DIR__ . '/paas.with-quotas-exceeded.yaml';
+        self::$quotasDefined = 'limited';
     }
 
     /**
@@ -1445,7 +1539,8 @@ class FeatureContext implements Context
                 var_export($ecd = (include('expectedCD.php'))(
                     self::$useHnc,
                     self::$hncSuffix,
-                    self::$projectPrefix
+                    self::$projectPrefix,
+                    self::$quotasDefined,
                 ), true),
                 var_export($cd, true)
             );
@@ -1486,6 +1581,150 @@ EOF;
         }
 
         $secret = base64_encode($prefix . 'world');
+
+        $prefixResource = ', "resources": ';
+        $automaticResources = $prefixResource . json_encode(
+            [
+                'requests' => [
+                    'cpu' => '200m',
+                    'memory' => '20.480Mi',
+                ],
+                'limits' => [
+                    'cpu' => '1.600',
+                    'memory' => '163.840Mi',
+                ],
+            ],
+            JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+        );
+
+        $phpRunResources = match (self::$quotasDefined) {
+            'automatic' => $automaticResources,
+            'partial' => $prefixResource . json_encode(
+                [
+                    'requests' => [
+                        'cpu' => '68m',
+                        'memory' => '9.600Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '561m',
+                        'memory' => '80Mi',
+                    ],
+                ],
+                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            ),
+            'full' => $prefixResource . json_encode(
+                [
+                    'requests' => [
+                        'cpu' => '200m',
+                        'memory' => '64Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '500m',
+                        'memory' => '96Mi',
+                    ],
+                ],
+                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            ),
+            default => ''
+        };
+
+        $shellResources = match (self::$quotasDefined) {
+            'automatic' => $automaticResources,
+            'partial' => $prefixResource . json_encode(
+                [
+                    'requests' => [
+                        'cpu' => '100m',
+                        'memory' => '9.600Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '100m',
+                        'memory' => '80Mi',
+                    ],
+                ],
+                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            ),
+            'full' => $prefixResource . json_encode(
+                [
+                    'requests' => [
+                        'cpu' => '100m',
+                        'memory' => '32Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '100m',
+                        'memory' => '32Mi',
+                    ],
+                ],
+                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            ),
+            default => ''
+        };
+
+        $nginxResources = match (self::$quotasDefined) {
+            'automatic' => $automaticResources,
+            'partial' => $prefixResource . json_encode(
+                [
+                    'requests' => [
+                        'cpu' => '68m',
+                        'memory' => '9.600Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '561m',
+                        'memory' => '80Mi',
+                    ],
+                ],
+                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            ),
+            'full' => $prefixResource . json_encode(
+                [
+                    'requests' => [
+                        'cpu' => '81m',
+                        'memory' => '64Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '81m',
+                        'memory' => '64Mi',
+                    ],
+                ],
+                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            ),
+            default => ''
+        };
+
+        $wafResources = match (self::$quotasDefined) {
+            'automatic' => $automaticResources,
+            'partial', 'full' => $prefixResource . json_encode(
+                [
+                    'requests' => [
+                        'cpu' => '100m',
+                        'memory' => '64Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '100m',
+                        'memory' => '64Mi',
+                    ],
+                ],
+                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            ),
+            default => ''
+        };
+
+        $blackfireResources = match (self::$quotasDefined) {
+            'automatic' => $automaticResources,
+            'partial', 'full' => $prefixResource . json_encode(
+                [
+                    'requests' => [
+                        'cpu' => '100m',
+                        'memory' => '128Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '100m',
+                        'memory' => '128Mi',
+                    ],
+                ],
+                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            ),
+            default => ''
+        };
 
         $excepted = <<<"EOF"
 {
@@ -1651,7 +1890,7 @@ EOF;
                                 "name": "sleep",
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always",
-                                "ports": []
+                                "ports": []$shellResources
                             }
                         ]
                     }
@@ -1722,7 +1961,7 @@ EOF;
                                     },
                                     "successThreshold": 3,
                                     "failureThreshold": 2
-                                }
+                                }$nginxResources
                             },
                             {
                                 "name": "waf",
@@ -1741,7 +1980,7 @@ EOF;
                                     },
                                     "successThreshold": 1,
                                     "failureThreshold": 1
-                                }
+                                }$wafResources
                             },
                             {
                                 "name": "blackfire",
@@ -1761,7 +2000,7 @@ EOF;
                                         "name": "BLACKFIRE_SERVER_TOKEN",
                                         "value": "bar"
                                     }
-                                ]
+                                ]$blackfireResources
                             }
                         ],
                         "securityContext": {
@@ -1911,7 +2150,7 @@ EOF;
                                     },
                                     "successThreshold": 1,
                                     "failureThreshold": 1
-                                }
+                                }$phpRunResources
                             }
                         ],
                         "affinity": {
@@ -2206,10 +2445,14 @@ EOF;
 }
 EOF;
 
+        $expectedArray = json_decode(str_replace('\\', '\\\\', $excepted), true);
+        $expectedPretty = json_encode($expectedArray, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
+
         $json = json_encode($this->manifests, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
+
         Assert::assertEquals(
-            $excepted,
-            stripslashes($json)
+            $expectedPretty,
+            $json,
         );
     }
 
@@ -2233,6 +2476,7 @@ EOF;
             file_get_contents(
                 match ($described) {
                     'full described' => __DIR__ . '/json/job_full.json',
+                    'full described with quotas' => __DIR__ . '/json/job_full_quota.json',
                     'desensitized described' => __DIR__ . '/json/job_desensitized.json',
                     'digest described' => __DIR__ . '/json/job_digest.json',
                 },

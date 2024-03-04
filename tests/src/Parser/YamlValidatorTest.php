@@ -49,6 +49,13 @@ class YamlValidatorTest extends TestCase
         $conf = <<<'EOF'
 paas: #Dedicated to compiler
   version: v1
+  quotas:
+    - category: compute
+      type: cpu
+      limit: 2
+    - category: memory
+      type: memory
+      limit: 512Mi
 
 #Config
 maps:
@@ -160,6 +167,13 @@ pods:
           period-seconds: 35
           probe:
             command: ['ps', 'aux', 'php']
+        resources:
+            - type: cpu
+              require: 0.2
+              limit: 0.5
+            - type: memory
+              require: 64Mi
+              limit: 125Mi
   demo:
     replicas: 1
     containers:
@@ -189,6 +203,13 @@ pods:
           threshold:
             success: 3
             failure: 2
+        resources:
+            - type: cpu
+              require: 0.2
+              limit: 0.5
+            - type: memory
+              require: 64Mi
+              limit: 125Mi
       waf:
         image: registry.hub.docker.com/library/waf
         version: alpine
