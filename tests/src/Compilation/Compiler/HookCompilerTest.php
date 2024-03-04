@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -72,7 +73,8 @@ class HookCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -107,7 +109,8 @@ class HookCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -136,7 +139,8 @@ class HookCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -159,7 +163,8 @@ class HookCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -188,7 +193,8 @@ class HookCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }

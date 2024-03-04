@@ -141,6 +141,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
             extra: $data['extra'] ?? [],
             defaults: $data['defaults'] ?? [],
             hierarchicalNamespaces: $hierarchicalNamespaces,
+            quotas: $data['quotas'] ?? [],
         );
     }
 

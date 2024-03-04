@@ -28,8 +28,10 @@ namespace Teknoo\East\Paas\Contracts\Job;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Cluster\Collection as ClusterCollection;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -86,4 +88,9 @@ interface JobUnitInterface extends NormalizableInterface
     ): JobUnitInterface;
 
     public function runWithExtra(callable $callback): JobUnitInterface;
+
+    /**
+     * @param PromiseInterface<array<string, AvailabilityInterface>, mixed> $promise
+     */
+    public function prepareQuotas(QuotaFactory $factory, PromiseInterface $promise): JobUnitInterface;
 }

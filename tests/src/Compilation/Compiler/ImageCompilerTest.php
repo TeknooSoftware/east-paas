@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -86,7 +87,8 @@ class ImageCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -117,7 +119,7 @@ class ImageCompilerTest extends TestCase
             }
         );
 
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         self::assertInstanceOf(
             ImageCompiler::class,
@@ -125,7 +127,8 @@ class ImageCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $workspace,
-                $jobUnit
+                $jobUnit,
+                $this->createMock(ResourceManager::class),
             )
         );
     }

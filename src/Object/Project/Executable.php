@@ -64,6 +64,7 @@ class Executable implements StateInterface
             Environment $environment,
             ?string $namespace,
             bool $hierarchicalNamespaces,
+            ?array $quotas = [],
         ): Project {
             $job->setProject($this);
             $job->setEnvironment($environment);
@@ -72,6 +73,9 @@ class Executable implements StateInterface
             $job->setBaseNamespace($namespace);
             $job->setPrefix($this->getPrefix());
             $job->useHierarchicalNamespaces($hierarchicalNamespaces);
+            if (!empty($quotas)) {
+                $job->setQuotas($quotas);
+            }
 
             foreach ($this->clusters as $cluster) {
                 $cluster->prepareJobForEnvironment($job, $environment);

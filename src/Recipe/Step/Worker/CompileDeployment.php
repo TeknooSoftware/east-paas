@@ -62,7 +62,7 @@ class CompileDeployment
             static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.configuration.compilation_error',
-                    500,
+                    $error->getCode() > 0 ? $error->getCode() : 500,
                     $error,
                 ),
             ),

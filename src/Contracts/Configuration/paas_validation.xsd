@@ -28,11 +28,46 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="resource_value">
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:pattern value="[0-9][\.0-9]*(pc|m|K|M|G|T|P|E|Ki|Mi|Gi|Ti|Pi|Ei)?"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="resource_type">
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:pattern value="(compute|memory)"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="paas">
     <xs:all>
       <xs:element name="version" type="xs:string" minOccurs="0" />
       <xs:element name="namespace" type="xs:string" minOccurs="0" />
       <xs:element name="hierarchical-namespaces" type="xs:boolean" minOccurs="0" />
+      <xs:element name="quotas" minOccurs="0">
+        <xs:complexType>
+          <xs:choice>
+            <xs:element name="row" type="epv:resource_capacity" maxOccurs="unbounded" />
+          </xs:choice>
+        </xs:complexType>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="resource_capacity">
+    <xs:all>
+      <xs:element name="category" type="epv:resource_type" minOccurs="1"/>
+      <xs:element name="type" type="epv:paas_token" minOccurs="1"/>
+      <xs:element name="limit" type="epv:resource_value" minOccurs="1"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="resource_request">
+    <xs:all>
+      <xs:element name="type" type="epv:paas_token" minOccurs="1"/>
+      <xs:element name="require" type="epv:resource_value" minOccurs="1"/>
+      <xs:element name="limit" type="epv:resource_value" minOccurs="0"/>
     </xs:all>
   </xs:complexType>
 
@@ -241,6 +276,13 @@
       <xs:element name="volumes" type="epv:container_volumes_list" minOccurs="0" />
       <xs:element name="variables" type="epv:variables" minOccurs="0" />
       <xs:element name="healthcheck" type="epv:health_check" minOccurs="0" />
+      <xs:element name="resources" minOccurs="0">
+        <xs:complexType>
+          <xs:choice>
+            <xs:element name="row" type="epv:resource_request" maxOccurs="unbounded" />
+          </xs:choice>
+        </xs:complexType>
+      </xs:element>
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>

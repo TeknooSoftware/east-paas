@@ -25,10 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
@@ -126,6 +128,7 @@ trait PodsTranscriberTrait
      */
     private static function convertToContainer(array &$specs, Pod $pod, array $images, callable $prefixer): void
     {
+        /** @var Container $container */
         foreach ($pod as $container) {
             if (isset($images[$container->getImage()][$container->getVersion()])) {
                 $image = $images[$container->getImage()][$container->getVersion()];
@@ -191,6 +194,17 @@ trait PodsTranscriberTrait
                         'failureThreshold' => $hc->getFailureThreshold(),
                     ],
                 };
+            }
+
+            $resourcesReqs = [];
+            /** @var Resource $resource */
+            foreach ($container->getResources() as $resource) {
+                $resourcesReqs['requests'][$resource->getType()] = $resource->getRequire();
+                $resourcesReqs['limits'][$resource->getType()] = $resource->getLimit();
+            }
+
+            if (!empty($resourcesReqs)) {
+                $spec['resources'] = $resourcesReqs;
             }
 
             $specs['spec']['template']['spec']['containers'][] = $spec;

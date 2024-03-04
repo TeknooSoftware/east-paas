@@ -79,6 +79,7 @@ class IngressCompiler implements CompilerInterface, ExtenderInterface
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
         JobUnitInterface $job,
+        ResourceManager $resourceManager,
         ?string $storageIdentifier = null,
         ?string $defaultStorageSize = null,
         ?string $ociRegistryConfig = null,

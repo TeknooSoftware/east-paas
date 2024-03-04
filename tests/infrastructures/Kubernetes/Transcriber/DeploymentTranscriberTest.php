@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Model\Deployment;
@@ -94,6 +96,7 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 4,
                         failureThreshold: 7,
                     ),
+                    new ResourceSet(),
                 );
                 $c2 = new Container(
                     'c2',
@@ -124,6 +127,10 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 3,
                         failureThreshold: 6,
                     ),
+                    new ResourceSet([
+                        new Resource('cpu', '100m', '200m'),
+                        new Resource('cpu', '100m', '200m'),
+                    ]),
                 );
                 $c3 = new Container(
                     'c3',
@@ -133,6 +140,7 @@ class DeploymentTranscriberTest extends TestCase
                     [],
                     ['foo' => 'bar', 'bar' => 'foo'],
                     null,
+                    new ResourceSet(),
                 );
                 $c4 = new Container(
                     'c4',
@@ -152,6 +160,7 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 1,
                         failureThreshold: 2,
                     ),
+                    new ResourceSet(),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
@@ -283,6 +292,10 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 2,
                         failureThreshold: 5,
                     ),
+                    new ResourceSet([
+                        new Resource('cpu', '100m', '200m'),
+                        new Resource('cpu', '100m', '200m'),
+                    ]),
                 );
                 $c2 = new Container(
                     'c2',
@@ -313,6 +326,7 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 5,
                         failureThreshold: 3,
                     ),
+                    new ResourceSet(),
                 );
                 $c3 = new Container(
                     'c4',
@@ -332,6 +346,10 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 4,
                         failureThreshold: 1,
                     ),
+                    new ResourceSet([
+                        new Resource('cpu', '100m', '200m'),
+                        new Resource('cpu', '100m', '200m'),
+                    ]),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1], 'foo');
@@ -425,6 +443,7 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 12,
                         failureThreshold: 23,
                     ),
+                    new ResourceSet(),
                 );
                 $c2 = new Container(
                     'c2',
@@ -444,6 +463,7 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 1,
                         failureThreshold: 2,
                     ),
+                    new ResourceSet(),
                 );
                 $c3 = new Container(
                     'c4',
@@ -463,6 +483,7 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 1,
                         failureThreshold: 2,
                     ),
+                    new ResourceSet(),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
@@ -544,6 +565,7 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 1,
                         failureThreshold: 2,
                     ),
+                    new ResourceSet(),
                 );
                 $c2 = new Container(
                     'c2',
@@ -563,6 +585,7 @@ class DeploymentTranscriberTest extends TestCase
                         successThreshold: 1,
                         failureThreshold: 2,
                     ),
+                    new ResourceSet(),
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);

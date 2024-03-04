@@ -36,6 +36,10 @@ use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\ComputeAvailability;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\MemoryAvailability;
+use Teknoo\East\Paas\Compilation\Compiler\QuotaCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\SecretCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\VolumeCompiler;
@@ -220,6 +224,13 @@ return [
     YamlValidator::class => create(YamlValidator::class)
         ->constructor('root'),
 
+    //Availability Resources Factory
+    QuotaFactory::class => create(QuotaFactory::class)
+        ->constructor([
+            'compute' => ComputeAvailability::class,
+            'memory' => MemoryAvailability::class,
+        ]),
+
     //Compiler
     HookCompiler::class => create()
         ->constructor(DIGet(HooksCollectionInterface::class)),
@@ -241,7 +252,6 @@ return [
 
         return new ImageCompiler($imagesLibrary);
     },
-    MapCompiler::class => create(),
     IngressCompiler::class => static function (ContainerInterface $container): IngressCompiler {
         return new IngressCompiler(
             ($container->get('teknoo.east.paas.di.get_array.values'))(
@@ -251,6 +261,7 @@ return [
             )
         );
     },
+    MapCompiler::class => create(),
     PodCompiler::class => static function (ContainerInterface $container): PodCompiler {
         $podslibrary = ($container->get('teknoo.east.paas.di.get_array.values'))(
             $container,
@@ -265,6 +276,9 @@ return [
 
         return new PodCompiler($podslibrary, $containerslibrary);
     },
+    QuotaCompiler::class => create()
+        ->constructor(DIGet(QuotaFactory::class)),
+
     SecretCompiler::class => create(),
     ServiceCompiler::class => static function (ContainerInterface $container): ServiceCompiler {
         return new ServiceCompiler(
@@ -295,6 +309,7 @@ return [
             }
         };
 
+        $collection->add('[paas][quotas]', $container->get(QuotaCompiler::class));
         $collection->add('[maps]', $container->get(MapCompiler::class));
         $collection->add('[secrets]', $container->get(SecretCompiler::class));
         $collection->add('[volumes]', $container->get(VolumeCompiler::class));
@@ -337,10 +352,11 @@ return [
             $container->get(PropertyAccessorInterface::class),
             $container->get(YamlParserInterface::class),
             $container->get(YamlValidator::class),
+            $container->get(QuotaFactory::class),
             $container->get(CompilerCollectionInterface::class),
             $storageProvider,
             $storageSize,
-            $defaultOciRegistryConfig
+            $defaultOciRegistryConfig,
         );
     },
 

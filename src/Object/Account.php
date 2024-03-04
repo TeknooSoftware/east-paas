@@ -82,6 +82,11 @@ class Account implements
 
     protected ?string $prefixNamespace = null;
 
+    /**
+     * @var array<string, array<string, string|int>>|null
+     */
+    protected ?array $quotas = null;
+
     protected bool $useHierarchicalNamespaces = false;
 
     /**
@@ -103,6 +108,7 @@ class Account implements
         'name' => ['default', 'api', 'digest', 'crud'],
         'namespace' => ['default', 'admin'],
         'prefixNamespace' => ['admin'],
+        'quota' => ['default', 'admin'],
         'useHierarchicalNamespaces' => ['admin'],
         'users' => ['admin'],
     ];
@@ -185,6 +191,24 @@ class Account implements
     public function setPrefixNamespace(?string $prefixNamespace): Account
     {
         $this->prefixNamespace = $prefixNamespace;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, array<string, string|int>>|null
+     */
+    private function getQuotas(): ?array
+    {
+        return $this->quotas;
+    }
+
+    /**
+     * @param array<string, array<string, string|int>>|null $quotas
+     */
+    public function setQuotas(?array $quotas): Account
+    {
+        $this->quotas = $quotas;
 
         return $this;
     }
@@ -279,6 +303,7 @@ class Account implements
             'name' => $this->getName(),
             'namespace' => $this->getNamespace(),
             'prefixNamespace' => $this->getPrefixNamespace(),
+            'quotas' => $this->getQuotas(),
             'useHierarchicalNamespaces' => $this->isUseHierarchicalNamespaces(),
             'users' => fn () => $this->getUsers(),
         ];

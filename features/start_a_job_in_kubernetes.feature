@@ -55,6 +55,89 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
+  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid without quota defined
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file without quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with partial quota defined
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with partial quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with quota defined
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with quota exceeded
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with limited quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "400"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Error, available capacity for `memory` is `6Mi` (soft defined limit), but require `32Mi`"]}'
+    And all messages must be not encrypted
+
   Scenario: Return a valid JSON answer when the job exists and paas file is valid with encrypted message
     Given I have a configured platform
     And encryption capacities between servers and agents

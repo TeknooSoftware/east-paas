@@ -28,11 +28,14 @@ namespace Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Common\Object\User;
+use Teknoo\East\Paas\Infrastructures\Symfony\Form\DTO\AccountQuota;
+use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountQuotaType;
 use Teknoo\East\Paas\Object\Account;
 use Traversable;
 
@@ -94,6 +97,18 @@ class AccountType extends AbstractType
         );
 
         $builder->add(
+            'quotas',
+            CollectionType::class,
+            [
+                'entry_type' => AccountQuotaType::class,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'required' => false,
+                'prototype' => true,
+            ]
+        );
+
+        $builder->add(
             'users',
             (string) $options['doctrine_type'],
             [
@@ -115,9 +130,29 @@ class AccountType extends AbstractType
                 }
 
                 $visitors = array_map(
-                    static fn(FormInterface $form): callable => $form->setData(...),
+                    static function (FormInterface $form): callable {
+                        if ('quotas' !== $form->getName()) {
+                            return $form->setData(...);
+                        }
+
+                        return function (array $quotas) use ($form): void {
+                            $collection = [];
+                            foreach ($quotas as $category => $types) {
+                                foreach ($types as $type => $capacity) {
+                                    $collection[] = new AccountQuota(
+                                        category: $category,
+                                        type: $type,
+                                        capacity: $capacity,
+                                    );
+                                }
+                            }
+
+                            $form->setData($collection);
+                        };
+                    },
                     iterator_to_array($forms)
                 );
+
                 $data->visit($visitors);
             }
 
@@ -137,6 +172,20 @@ class AccountType extends AbstractType
                 $data->setPrefixNamespace($forms['prefix_namespace']->getData());
                 $data->setUseHierarchicalNamespaces($forms['use_hierarchical_namespaces']->getData());
                 $data->setUsers($forms['users']->getData());
+
+                if (isset($forms['quotas'])) {
+                    /** @var AccountQuota[] $collection */
+                    $collection = $forms['quotas']->getData() ?? [];
+                    $quotas = [];
+                    foreach ($collection as $quota) {
+                        if (empty($quota->category)) {
+                            continue;
+                        }
+
+                        $quotas[$quota->category][$quota->type] = $quota->category;
+                    }
+                    $data->setQuotas($quotas);
+                }
             }
         });
 

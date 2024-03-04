@@ -491,6 +491,57 @@ class ProjectTest extends TestCase
         );
     }
 
+    public function testConfigureProjectIsExecutableWithQuota()
+    {
+        $job = $this->createMock(Job::class);
+        $env = $this->createMock(Environment::class);
+        $sourceRepository = $this->createMock(SourceRepositoryInterface::class);
+        $imagesRegistry = $this->createMock(ImageRegistryInterface::class);
+        $cluster1 = $this->createMock(Cluster::class);
+        $cluster2 = $this->createMock(Cluster::class);
+        $quotas = ['compute' => ['cpu' => 5]];
+
+        $cluster1->expects(self::once())->method('prepareJobForEnvironment')
+            ->with($job, $env);
+        $cluster2->expects(self::once())->method('prepareJobForEnvironment')
+            ->with($job, $env);
+
+        $project = $this->buildObject();
+        $job->expects(self::atLeastOnce())
+            ->method('setProject')
+            ->with($project)
+            ->willReturnSelf();
+
+        $job->expects(self::atLeastOnce())
+            ->method('setEnvironment')
+            ->with($env)
+            ->willReturnSelf();
+
+        $job->expects(self::atLeastOnce())
+            ->method('setSourceRepository')
+            ->with($sourceRepository)
+            ->willReturnSelf();
+
+        $job->expects(self::atLeastOnce())
+            ->method('setImagesRegistry')
+            ->with($imagesRegistry)
+            ->willReturnSelf();
+
+        $job->expects(self::once())
+            ->method('setQuotas')
+            ->with($quotas)
+            ->willReturnSelf();
+
+        self::assertInstanceOf(
+            Project::class,
+            $project
+                ->setSourceRepository($sourceRepository)
+                ->setImagesRegistry($imagesRegistry)
+                ->setClusters([$cluster1, $cluster2])
+                ->configure($job, new \DateTime('2018-05-01'), $env, 'default', false, $quotas)
+        );
+    }
+
     public function testConfigureProjectIsExecutableBadJob()
     {
         $this->expectException(\TypeError::class);

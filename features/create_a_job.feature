@@ -74,7 +74,22 @@ Feature: Create a job, aka a new deployment
     And with the job normalized in the body with variables '{"foo": "bar", "bar": "foo"}'
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the PaaS could create a job with env vars and send it to worker with encrypted message
+  Scenario: Return a valid JSON answer when the PaaS could create a job with env vars and quota and send it to worker.
+    Given I have a configured platform
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a oci repository
+    And a repository on the url "https://github.com/foo/bar"
+    And the platform is booted
+    When I call the PaaS with this PUT request "/project/projectid/environment/prod/job/create" with body '{"foo": "bar", "bar": "foo"}' and content type defined to "application/json"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the job normalized in the body with variables '{"foo": "bar", "bar": "foo"}' and quotas defined
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the PaaS could create a job with env vars and send it to worker
+    with encrypted message
     Given I have a configured platform
     And encryption capacities between servers and agents
     And A consumer Account "fooBar"
@@ -102,10 +117,12 @@ Feature: Create a job, aka a new deployment
     And with the job normalized with hnc in the body
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the PaaS could create a job with env vars and send it to worker with hierarchical namespace.
+  Scenario: Return a valid JSON answer when the PaaS could create a job with env vars, quota and send it to
+    worker with hierarchical namespace.
     Given I have a configured platform
     And a cluster supporting hierarchical namespace
     And A consumer Account "fooBar"
+    And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
     And a cluster "kubernetes" dedicated to the environment "prod"
     And a oci repository
@@ -113,5 +130,5 @@ Feature: Create a job, aka a new deployment
     And the platform is booted
     When I call the PaaS with this PUT request "/project/projectid/environment/prod/job/create" with body '{"foo": "bar", "bar": "foo"}' and content type defined to "application/json"
     Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the job normalized with hnc in the body with variables '{"foo": "bar", "bar": "foo"}'
+    And with the job normalized with hnc in the body with variables '{"foo": "bar", "bar": "foo"}' and quotas defined
     And all messages must be not encrypted

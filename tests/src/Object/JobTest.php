@@ -555,6 +555,11 @@ class JobTest extends TestCase
                 'hierarchical_namespaces' => false,
                 'extra' => ['foo' => 'bar', 'bar' => 'foo'],
                 'defaults' => ['hello' => 'world'],
+                'quotas' => [
+                    'compute' => [
+                        'cpu' => 4,
+                    ],
+                ]
             ]);
 
         self::assertInstanceOf(
@@ -565,6 +570,11 @@ class JobTest extends TestCase
                 ->setExtra(['foo' => 'bar'])
                 ->setExtra(['bar' => 'foo'])
                 ->setDefaults(['hello' => 'world'])
+                ->setQuotas([
+                    'compute' => [
+                        'cpu' => 4,
+                    ],
+                ])
                 ->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']
@@ -591,6 +601,11 @@ class JobTest extends TestCase
                 'hierarchical_namespaces' => false,
                 'extra' => ['foo' => 'bar', 'bar' => 'foo'],
                 'defaults' => ['hello' => 'world'],
+                'quotas' => [
+                    'compute' => [
+                        'cpu' => 4,
+                    ],
+                ]
             ]);
 
         self::assertInstanceOf(
@@ -601,6 +616,11 @@ class JobTest extends TestCase
                 ->setExtra(['foo' => 'bar'])
                 ->setExtra(['bar' => 'foo'])
                 ->setDefaults(['hello' => 'world'])
+                ->setQuotas([
+                    'compute' => [
+                        'cpu' => 4,
+                    ],
+                ])
                 ->exportToMeData(
                 $normalizer,
                 ['groups' => ['api']]

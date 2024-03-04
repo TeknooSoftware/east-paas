@@ -29,6 +29,7 @@ use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
@@ -93,6 +94,18 @@ class PodCompilerTest extends TestCase
                                 'failure' => 45,
                             ],
                         ],
+                        'resources' => [
+                            [
+                                'type' => 'cpu',
+                                'require' => '200m',
+                                'limit' => '400m',
+                            ],
+                            [
+                                'type' => 'memory',
+                                'require' => '128Mi',
+                                'limit' => '512Mi',
+                            ]
+                        ]
                     ],
                     'waf' => [
                         'image' => 'nginx-waf',
@@ -221,7 +234,8 @@ class PodCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -248,7 +262,7 @@ class PodCompilerTest extends TestCase
             );
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -257,6 +271,7 @@ class PodCompilerTest extends TestCase
                 $compiledDeployment,
                 $workspace,
                 $jobUnit,
+                $this->createMock(ResourceManager::class),
                 'fooBar',
                 'fooBar',
             )
@@ -283,7 +298,7 @@ class PodCompilerTest extends TestCase
             );
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         $this->expectException(DomainException::class);
 
@@ -294,6 +309,7 @@ class PodCompilerTest extends TestCase
                 $compiledDeployment,
                 $workspace,
                 $jobUnit,
+                $this->createMock(ResourceManager::class),
                 'fooBar',
                 'fooBar',
             )
@@ -320,7 +336,7 @@ class PodCompilerTest extends TestCase
             );
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         $this->expectException(\RuntimeException::class);
 
@@ -331,6 +347,7 @@ class PodCompilerTest extends TestCase
                 $compiledDeployment,
                 $workspace,
                 $jobUnit,
+                $this->createMock(ResourceManager::class),
                 null,
                 'fooBar',
             )
@@ -357,7 +374,7 @@ class PodCompilerTest extends TestCase
             );
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         $this->expectException(\RuntimeException::class);
 
@@ -368,6 +385,7 @@ class PodCompilerTest extends TestCase
                 $compiledDeployment,
                 $workspace,
                 $jobUnit,
+                $this->createMock(ResourceManager::class),
                 'fooBar',
             )
         );
@@ -387,7 +405,7 @@ class PodCompilerTest extends TestCase
         $compiledDeployment->expects(self::any())->method('addPod');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -396,6 +414,7 @@ class PodCompilerTest extends TestCase
                 $compiledDeployment,
                 $workspace,
                 $jobUnit,
+                $this->createMock(ResourceManager::class),
                 'fooBar',
                 'fooBar',
             )

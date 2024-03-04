@@ -77,6 +77,8 @@ trait FormTestTrait
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
                     $mock->expects(self::any())->method('getData')->willReturn($value);
+                    $mock->expects(self::any())->method('getName')->willReturn($name);
+
                     $children[$name] = $mock;
                 }
                 $form = new \ArrayIterator($children);
@@ -153,6 +155,7 @@ trait FormTestTrait
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
                     $mock->expects(self::any())->method('getData')->willReturn($value);
+                    $mock->expects(self::any())->method('getName')->willReturn($name);
                     $children[$name] = $mock;
                 }
                 $form = new \ArrayIterator($children);
@@ -225,6 +228,7 @@ trait FormTestTrait
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
                     $mock->expects(self::any())->method('getData')->willReturn($value);
+                    $mock->expects(self::any())->method('getName')->willReturn($name);
                     $children[$name] = $mock;
                 }
                 $form = new \ArrayIterator($children);

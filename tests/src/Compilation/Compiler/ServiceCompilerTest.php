@@ -31,6 +31,7 @@ use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
+use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -108,7 +109,8 @@ class ServiceCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class )
+                $this->createMock(JobUnitInterface::class),
+                $this->createMock(ResourceManager::class),
             )
         );
     }
@@ -167,7 +169,7 @@ class ServiceCompilerTest extends TestCase
             );
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class );
+        $jobUnit = $this->createMock(JobUnitInterface::class);
 
         self::assertInstanceOf(
             ServiceCompiler::class,
@@ -175,7 +177,8 @@ class ServiceCompilerTest extends TestCase
                 $definitions,
                 $compiledDeployment,
                 $workspace,
-                $jobUnit
+                $jobUnit,
+                $this->createMock(ResourceManager::class),
             )
         );
     }

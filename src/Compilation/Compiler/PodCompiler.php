@@ -30,6 +30,7 @@ use InvalidArgumentException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\Compiler\Exception\MissingAttributeException;
@@ -52,6 +53,7 @@ use Throwable;
 use function array_map;
 use function array_pop;
 use function explode;
+use function intval;
 use function is_string;
 use function trim;
 
@@ -61,6 +63,7 @@ use function trim;
  * If the pod define also some secrets, embedded volumes or persistent volumes, SecretVolume, EmbeddedVolume and
  * PersistentVolume will be also created and added to the CompiledDeploymentInterface instance and referenced
  * with the Pod instance.
+ * This compiler manage also requirements resources for containers
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -71,51 +74,55 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 {
     use MergeTrait;
 
+    private const KEY_ADD = 'add';
+    private const KEY_COMMAND = 'command';
     private const KEY_CONTAINERS = 'containers';
-    private const KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
-    private const KEY_UPGRADE = 'upgrade';
-    private const KEY_SECURITY = 'security';
-    private const KEY_MAX_UPGRADING_PODS = 'max-upgrading-pods';
-    private const KEY_FS_GROUP = 'fs-group';
-    private const KEY_REQUIRES = 'requires';
-    private const KEY_MAX_UNAVAILABLE_PODS = 'max-unavailable-pods';
-    private const KEY_STRATEGY = 'strategy';
-    private const KEY_VOLUMES = 'volumes';
-    private const KEY_MOUNT_PATH = 'mount-path';
+    private const KEY_EXTENDS = 'extends';
+    private const KEY_FAILURE = 'failure';
     private const KEY_FROM = 'from';
-    private const KEY_PERSISTENT = 'persistent';
-    private const KEY_RESET_ON_DEPLOYMENT = 'reset-on-deployment';
-    private const KEY_FROM_SECRET = 'from-secret';
-    private const KEY_IMPORT_SECRETS = 'import-secrets';
-    private const KEY_FROM_SECRETS = 'from-secrets';
     private const KEY_FROM_MAP = 'from-map';
-    private const KEY_IMPORT_MAPS = 'import-maps';
     private const KEY_FROM_MAPS = 'from-maps';
+    private const KEY_FROM_SECRET = 'from-secret';
+    private const KEY_FROM_SECRETS = 'from-secrets';
+    private const KEY_FS_GROUP = 'fs-group';
+    private const KEY_HEALTHCHECK = 'healthcheck';
+    private const KEY_HTTP = 'http';
+    private const KEY_IMAGE = 'image';
+    private const KEY_IMPORT_MAPS = 'import-maps';
+    private const KEY_IMPORT_SECRETS = 'import-secrets';
+    private const KEY_INITIAL_DELAY_SCDS = 'initial-delay-seconds';
+    private const KEY_IS_SECURE = 'is-secure';
+    private const KEY_LIMIT = 'limit';
+    private const KEY_LISTEN = 'listen';
+    private const KEY_MAX_UNAVAILABLE_PODS = 'max-unavailable-pods';
+    private const KEY_MAX_UPGRADING_PODS = 'max-upgrading-pods';
+    private const KEY_MOUNT_PATH = 'mount-path';
+    private const KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
+    private const KEY_PATH = 'path';
+    private const KEY_PERIOD_SCDS = 'period-seconds';
+    private const KEY_PERSISTENT = 'persistent';
+    private const KEY_PORT = 'port';
+    private const KEY_PROBE = 'probe';
+    private const KEY_REPLICAS = 'replicas';
+    private const KEY_REQUIRE = 'require';
+    private const KEY_REQUIRES = 'requires';
+    private const KEY_RESET_ON_DEPLOYMENT = 'reset-on-deployment';
+    private const KEY_RESOURCES = 'resources';
+    private const KEY_SECURITY = 'security';
     private const KEY_STORAGE_IDENTIFIER = 'storage-provider';
     private const KEY_STORAGE_SIZE = 'storage-size';
-    private const KEY_ADD = 'add';
-    private const KEY_WRITABLES = 'writables';
-    private const KEY_IMAGE = 'image';
-    private const KEY_VERSION = 'version';
-    private const KEY_LISTEN = 'listen';
-    private const KEY_VARIABLES = 'variables';
-    private const KEY_REPLICAS = 'replicas';
-    private const KEY_HEALTHCHECK = 'healthcheck';
-    private const KEY_INITIAL_DELAY_SCDS = 'initial-delay-seconds';
-    private const KEY_PERIOD_SCDS = 'period-seconds';
-    private const KEY_PROBE = 'probe';
-    private const KEY_COMMAND = 'command';
-    private const KEY_TCP = 'tcp';
-    private const KEY_HTTP = 'http';
-    private const KEY_PORT = 'port';
-    private const KEY_PATH = 'path';
-    private const KEY_IS_SECURE = 'is-secure';
-    private const KEY_THRESHOLD = 'threshold';
-    private const KEY_FAILURE = 'failure';
+    private const KEY_STRATEGY = 'strategy';
     private const KEY_SUCCESS = 'success';
-    private const VALUE_LATEST = 'latest';
+    private const KEY_TCP = 'tcp';
+    private const KEY_THRESHOLD = 'threshold';
+    private const KEY_TYPE = 'type';
+    private const KEY_UPGRADE = 'upgrade';
+    private const KEY_VARIABLES = 'variables';
+    private const KEY_VERSION = 'version';
+    private const KEY_VOLUMES = 'volumes';
+    private const KEY_WRITABLES = 'writables';
     private const VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
-    private const KEY_EXTENDS = 'extends';
+    private const VALUE_LATEST = 'latest';
 
     /**
      * @param array<string, array<string, mixed>> $podsLibrary
@@ -366,6 +373,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         CompiledDeploymentInterface $compiledDeployment,
         JobWorkspaceInterface $workspace,
         JobUnitInterface $job,
+        ResourceManager $resourceManager,
         ?string $storageIdentifier = null,
         ?string $defaultStorageSize = null,
         ?string $ociRegistryConfig = null,
@@ -373,6 +381,8 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         foreach ($definitions as $nameSet => &$podsList) {
             $containers = [];
             $isStateless = true;
+            $numberOfReplicas = (int) ($podsList[self::KEY_REPLICAS] ?? 1);
+
             foreach ($podsList[self::KEY_CONTAINERS] as $name => &$config) {
                 $containerVolumes = [];
                 $embeddedVolumes = [];
@@ -442,14 +452,36 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                     );
                 }
 
+                $resourceSet = new ResourceSet();
+                $resourcesRequired = [];
+                if (!empty($config[self::KEY_RESOURCES])) {
+                    foreach ($config[self::KEY_RESOURCES] as $resource) {
+                        $resourcesRequired[(string) $resource[self::KEY_TYPE]] = true;
+                        $resourceManager->reserve(
+                            resourceType: $resource[self::KEY_TYPE],
+                            require: $resource[self::KEY_REQUIRE],
+                            limit: $resource[self::KEY_LIMIT] ?? $resource[self::KEY_REQUIRE],
+                            numberOfReplicas: $numberOfReplicas,
+                            resourceSet: $resourceSet,
+                        );
+                    }
+                }
+
+                $resourceManager->prepareAutomaticsReservations(
+                    resourceSet: $resourceSet,
+                    numberOfReplicas: $numberOfReplicas,
+                    resourceTypeToExclude: array_keys($resourcesRequired),
+                );
+
                 $containers[] = new Container(
-                    $name,
-                    $image,
-                    $version,
-                    (array) array_map('intval', (array) ($config[self::KEY_LISTEN] ?? [])),
-                    $containerVolumes,
-                    $variables,
-                    $healthCheck,
+                    name: $name,
+                    image: $image,
+                    version: $version,
+                    listen: (array) array_map(intval(...), (array) ($config[self::KEY_LISTEN] ?? [])),
+                    volumes: $containerVolumes,
+                    variables: $variables,
+                    healthCheck: $healthCheck,
+                    resources: $resourceSet,
                 );
             }
 
@@ -467,7 +499,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                 $nameSet,
                 new Pod(
                     name: $nameSet,
-                    replicas: (int) ($podsList[self::KEY_REPLICAS] ?? 1),
+                    replicas: $numberOfReplicas,
                     containers: $containers,
                     ociRegistryConfigName: $podsList[self::KEY_OCI_REGISTRY_CONFIG_NAME] ?? $ociRegistryConfig,
                     maxUpgradingPods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UPGRADING_PODS] ?? 1),
@@ -479,6 +511,8 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                 )
             );
         }
+
+        $resourceManager->computeAutomaticReservations();
 
         return $this;
     }
