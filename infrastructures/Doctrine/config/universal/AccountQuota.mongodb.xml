@@ -9,6 +9,6 @@
         <field field-name="category" type="string" nullable="false"/>
         <field field-name="type" type="string" nullable="false"/>
         <field field-name="capacity" type="string" nullable="false"/>
-        <field field-name="require" type="string" nullable="true"/>
+        <field field-name="requires" type="string" nullable="true"/>
     </embedded-document>
 </doctrine-mongo-mapping>
