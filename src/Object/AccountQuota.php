@@ -65,7 +65,7 @@ class AccountQuota implements JsonSerializable
     }
 
     /**
-     * @param array{category: string, type: string, capacity: string, require: string} $values
+     * @param array{category: string, type: string, capacity: string, requires: string} $values
      */
     public static function create(array $values): self
     {
