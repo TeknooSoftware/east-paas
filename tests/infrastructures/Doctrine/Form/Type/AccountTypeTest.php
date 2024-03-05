@@ -36,10 +36,10 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
-use Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType;
-use Teknoo\East\Paas\Infrastructures\Symfony\Form\DTO\AccountQuota;
-use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Common\Object\User as BaseUser;
+use Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType;
+use Teknoo\East\Paas\Object\Account;
+use Teknoo\East\Paas\Object\AccountQuota;
 use Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type\FormTestTrait;
 
 /**

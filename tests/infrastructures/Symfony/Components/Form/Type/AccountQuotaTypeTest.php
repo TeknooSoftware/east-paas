@@ -28,8 +28,8 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Teknoo\East\Paas\Infrastructures\Symfony\Form\DTO\AccountQuota;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountQuotaType;
+use Teknoo\East\Paas\Object\AccountQuota;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License

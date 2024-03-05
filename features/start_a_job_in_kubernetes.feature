@@ -135,7 +135,7 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "400"
-    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Error, available capacity for `memory` is `6Mi` (soft defined limit), but require `32Mi`"]}'
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Error, available capacity for `memory` is `6Mi` (soft defined limit), but limited `32Mi`"]}'
     And all messages must be not encrypted
 
   Scenario: Return a valid JSON answer when the job exists and paas file is valid with encrypted message

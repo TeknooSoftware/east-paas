@@ -13,6 +13,11 @@
         <field field-name="hierarchicalNamespaces" name="hierarchical_namespaces" type="bool" nullable="false"/>
         <field field-name="extra" type="raw" />
         <field field-name="defaults" type="raw" />
+        <embed-many field="quotas"
+                    field-name="quotas"
+                    target-document="Teknoo\East\Paas\Object\AccountQuota"
+                    store-empty-array="true">
+        </embed-many>
         <embed-one field="history" target-document="Teknoo\East\Paas\Object\History" nullable="true" />
         <embed-one field="environment" target-document="Teknoo\East\Paas\Object\Environment" nullable="false"/>
         <embed-one field="sourceRepository" target-document="Teknoo\East\Paas\Object\GitRepository" nullable="false"/>

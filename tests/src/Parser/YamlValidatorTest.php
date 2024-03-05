@@ -52,10 +52,11 @@ paas: #Dedicated to compiler
   quotas:
     - category: compute
       type: cpu
-      limit: 2
+      capacity: 2
+      require: 1
     - category: memory
       type: memory
-      limit: 512Mi
+      capacity: 512Mi
 
 #Config
 maps:

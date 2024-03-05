@@ -26,32 +26,31 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Object;
 
 use DateTimeInterface;
+use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
+use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Contracts\Object\VisitableInterface;
+use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Object\VisitableTrait;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
-use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
-use Teknoo\East\Common\Object\ObjectTrait;
-use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
+use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
+use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Object\Job\Executing;
 use Teknoo\East\Paas\Object\Job\Pending;
 use Teknoo\East\Paas\Object\Job\Terminated;
 use Teknoo\East\Paas\Object\Job\Validating;
-use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
-use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Callback;
 use Teknoo\States\Automated\Assertion\Property;
-use Teknoo\States\Automated\Assertion\Property\IsInstanceOf;
 use Teknoo\States\Automated\Assertion\Property\CountsMore;
 use Teknoo\States\Automated\Assertion\Property\IsEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsInstanceOf;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
-use Teknoo\States\Proxy\ProxyInterface;
 use Teknoo\States\Proxy\ProxyTrait;
 
 use function is_callable;
@@ -114,9 +113,9 @@ class Job implements
     private array $defaults = [];
 
     /**
-     * @var array<string, array<string, string>>
+     * @var AccountQuota[]
      */
-    private array $quotas = [];
+    private iterable $quotas = [];
 
     /**
      * @var array<string, string[]>
@@ -351,9 +350,9 @@ class Job implements
     }
 
     /**
-     * @param array<string, array<string, string>> $quotas
+     * @param AccountQuota[] $quotas
      */
-    public function setQuotas(array $quotas): self
+    public function setQuotas(iterable $quotas): self
     {
         $this->quotas = $quotas;
 

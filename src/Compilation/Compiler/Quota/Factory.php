@@ -50,8 +50,13 @@ class Factory
     ) {
     }
 
-    public function create(string $category, string $type, string $capacity, bool $isSoft): AvailabilityInterface
-    {
+    public function create(
+        string $category,
+        string $type,
+        string $capacity,
+        string $require,
+        bool $isSoft,
+    ): AvailabilityInterface {
         if (!isset($this->configuration[$category])) {
             throw new QuotaWrongConfigurationException(
                 message: "The resource availability category `{$category}` does not exist",
@@ -74,6 +79,7 @@ class Factory
         return new $class(
             type: $type,
             capacity: $capacity,
+            require: $require,
             isSoft: $isSoft,
         );
     }

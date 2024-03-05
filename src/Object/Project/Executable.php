@@ -64,7 +64,7 @@ class Executable implements StateInterface
             Environment $environment,
             ?string $namespace,
             bool $hierarchicalNamespaces,
-            ?array $quotas = [],
+            ?iterable $quotas = [],
         ): Project {
             $job->setProject($this);
             $job->setEnvironment($environment);

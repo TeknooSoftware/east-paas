@@ -36,9 +36,9 @@ use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
  */
 class ComputeAvailabilityTest extends AbstractTestAvailability
 {
-    protected function createAvailability(string $capacity, bool $isSoft): AvailabilityInterface
+    protected function createAvailability(string $capacity, string $require, bool $isSoft): AvailabilityInterface
     {
-        return new ComputeAvailability('test', $capacity, $isSoft);
+        return new ComputeAvailability('test', $capacity, $require, $isSoft);
     }
 
     protected function getDefaultCapacity(): string

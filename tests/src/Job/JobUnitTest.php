@@ -28,25 +28,26 @@ namespace Teknoo\Tests\East\Paas\Job;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
-use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
-use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
-use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Job\JobUnit;
-use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
-use Teknoo\East\Paas\Object\Job;
-use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
-use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Job\JobUnit;
+use Teknoo\East\Paas\Object\AccountQuota;
+use Teknoo\East\Paas\Object\Cluster;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\History;
+use Teknoo\East\Paas\Object\Job;
+use Teknoo\East\Paas\Object\Project;
+use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
@@ -997,12 +998,8 @@ class JobUnitTest extends TestCase
             JobUnitInterface::class,
             $this->buildObject(
                 quotas: [
-                    'compute' => [
-                        'cpu' => 4,
-                    ],
-                    'memory' => [
-                        'memory' => 4,
-                    ],
+                    new AccountQuota('compute', 'cpu', '4'),
+                    new AccountQuota('memory', 'memory', '4'),
                 ]
             )->prepareQuotas($factory, $promise)
         );

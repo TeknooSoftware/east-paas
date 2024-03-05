@@ -26,14 +26,15 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\Exception\NotSupportedException;
 use Teknoo\East\Paas\Job\JobUnit;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Object\AccountQuota;
+use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Paas\Object\Cluster;
 
 use function is_array;
 
@@ -127,6 +128,11 @@ class JobUnitDenormalizer implements DenormalizerInterface
 
         $variables = ($data['variables'] ?? []) + ($context['variables'] ?? []);
 
+        $quotas = [];
+        foreach ($data['quotas'] ?? [] as $quota) {
+            $quotas[] = AccountQuota::create($quota);
+        }
+
         return new JobUnit(
             id: $jobId,
             projectResume: $projectResume,
@@ -141,7 +147,7 @@ class JobUnitDenormalizer implements DenormalizerInterface
             extra: $data['extra'] ?? [],
             defaults: $data['defaults'] ?? [],
             hierarchicalNamespaces: $hierarchicalNamespaces,
-            quotas: $data['quotas'] ?? [],
+            quotas: $quotas,
         );
     }
 

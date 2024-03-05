@@ -46,7 +46,9 @@ class QuotaCompiler implements CompilerInterface
 
     private const KEY_TYPE = 'type';
 
-    private const KEY_LIMIT = 'limit';
+    private const KEY_CAPACITY = 'capacity';
+
+    private const KEY_REQUIRE = 'require';
 
     public function __construct(
         private QuotaFactory $factory,
@@ -64,12 +66,18 @@ class QuotaCompiler implements CompilerInterface
         ?string $ociRegistryConfig = null,
     ): CompilerInterface {
         foreach ($definitions as $availability) {
+            $require = $availability[self::KEY_CAPACITY];
+            if (!empty($availability[self::KEY_REQUIRE])) {
+                $require = $availability[self::KEY_REQUIRE];
+            }
+
             $resourceManager->updateQuotaAvailability(
                 $availability[self::KEY_TYPE],
                 $this->factory->create(
                     category: $availability[self::KEY_CATEGORY],
                     type: $availability[self::KEY_TYPE],
-                    capacity: (string) $availability[self::KEY_LIMIT],
+                    capacity: (string) $availability[self::KEY_CAPACITY],
+                    require: (string) $require,
                     isSoft: true,
                 )
             );

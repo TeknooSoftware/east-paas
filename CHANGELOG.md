@@ -12,7 +12,7 @@
   - `limit`: maximum fraction of resources types for the container. (For a container, not a replicas)
   - If containers have no resources defined (or not fully defined), East PaaS, thanks to its `ResourceManager` will
     share remaining resources to containers.
-  - requirements and limits can be relative (a % of the quota)
+  - requirements and limits can be relative (a % of the quota's capacity)
 - If the sum of requirements exceed the quota, the deployment compilation will be failed and will never be executed.
 
 ## [2.7.1] - 2024-02-26

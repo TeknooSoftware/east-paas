@@ -3,10 +3,11 @@ paas: #Dedicated to compiler
     quotas:
         - category: compute
           type: cpu
-          limit: 1.5
+          capacity: 1.5
+          require: 1
         - category: memory
           type: memory
-          limit: '256Mi'
+          capacity: '256Mi'
 
 #Config
 maps:

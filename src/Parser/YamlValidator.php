@@ -65,6 +65,7 @@ class YamlValidator
         'aliases',
         'build-name',
         'builds',
+        'capacity',
         'category',
         'command',
         'containers',

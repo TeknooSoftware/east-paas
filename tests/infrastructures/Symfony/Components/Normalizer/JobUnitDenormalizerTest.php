@@ -28,17 +28,18 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Normalizer;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
+use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
+use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer;
 use Teknoo\East\Paas\Job\JobUnit;
-use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Object\ImageRegistry;
+use Teknoo\East\Paas\Object\AccountQuota;
+use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Object\History;
-use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
+use Teknoo\East\Paas\Object\ImageRegistry;
 use Teknoo\East\Paas\Object\Job;
-use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
-use Teknoo\East\Paas\Object\Cluster;
 use function func_get_args;
 use function in_array;
 
@@ -160,6 +161,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $this->buildNormalizer()->setDenormalizer($denormalizer)
@@ -197,6 +205,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $this->buildNormalizer()->setDenormalizer($denormalizer)
@@ -234,6 +249,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $this->buildNormalizer()->setDenormalizer($denormalizer)
@@ -271,6 +293,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $this->buildNormalizer()->setDenormalizer($denormalizer)
@@ -308,6 +337,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $this->buildNormalizer()->setDenormalizer($denormalizer)
@@ -345,6 +381,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $this->buildNormalizer()->setDenormalizer($denormalizer)
@@ -384,6 +427,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $jobUnit = new JobUnit(
@@ -396,7 +446,10 @@ class JobUnitDenormalizerTest extends TestCase
             imagesRegistry: $iregistry,
             clusters: $clusters,
             variables: ['foo' => 'bar'],
-            history: $history
+            history: $history,
+            quotas: [
+                new AccountQuota('compute', 'cpu', '5'),
+            ]
         );
         self::assertEquals(
             $jobUnit,
@@ -439,6 +492,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $jobUnit = new JobUnit(
@@ -453,6 +513,9 @@ class JobUnitDenormalizerTest extends TestCase
             clusters: $clusters,
             variables: ['foo' => 'bar'],
             history: $history,
+            quotas: [
+                new AccountQuota('compute', 'cpu', '5'),
+            ]
         );
         self::assertEquals(
             $jobUnit,
@@ -495,6 +558,13 @@ class JobUnitDenormalizerTest extends TestCase
             "clusters" => [['cluster' => 'bar']],
             "variables" => ['foo' => 'bar'],
             "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
         ];
 
         $jobUnit = new JobUnit(
@@ -509,6 +579,9 @@ class JobUnitDenormalizerTest extends TestCase
             clusters: $clusters,
             variables: ['foo' => 'bar'],
             history: $history,
+            quotas: [
+                new AccountQuota('compute', 'cpu', '5'),
+            ]
         );
         self::assertEquals(
             $jobUnit,

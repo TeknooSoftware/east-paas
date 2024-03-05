@@ -48,18 +48,19 @@
       <xs:element name="quotas" minOccurs="0">
         <xs:complexType>
           <xs:choice>
-            <xs:element name="row" type="epv:resource_capacity" maxOccurs="unbounded" />
+            <xs:element name="row" type="epv:resource_quota" maxOccurs="unbounded" />
           </xs:choice>
         </xs:complexType>
       </xs:element>
     </xs:all>
   </xs:complexType>
 
-  <xs:complexType name="resource_capacity">
+  <xs:complexType name="resource_quota">
     <xs:all>
       <xs:element name="category" type="epv:resource_type" minOccurs="1"/>
       <xs:element name="type" type="epv:paas_token" minOccurs="1"/>
-      <xs:element name="limit" type="epv:resource_value" minOccurs="1"/>
+      <xs:element name="capacity" type="epv:resource_value" minOccurs="1"/>
+      <xs:element name="require" type="epv:resource_value" minOccurs="0"/>
     </xs:all>
   </xs:complexType>
 

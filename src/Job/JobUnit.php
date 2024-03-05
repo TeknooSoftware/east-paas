@@ -28,23 +28,24 @@ namespace Teknoo\East\Paas\Job;
 use DomainException;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
-use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
-use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
-use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
-use Teknoo\Recipe\Promise\Promise;
-use Teknoo\East\Paas\Cluster\Directory;
-use Teknoo\East\Paas\Contracts\Cluster\DriverInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Cluster\Collection as ClusterCollection;
+use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
-use Teknoo\East\Paas\Object\Environment;
-use Teknoo\East\Paas\Object\History;
+use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
-use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
-use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Object\AccountQuota;
+use Teknoo\East\Paas\Object\Cluster;
+use Teknoo\East\Paas\Object\Environment;
+use Teknoo\East\Paas\Object\History;
+use Teknoo\East\Paas\Object\Job;
+use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
@@ -54,8 +55,8 @@ use function is_array;
 use function preg_replace;
 use function preg_replace_callback;
 use function strlen;
-use function substr;
 use function strtolower;
+use function substr;
 use function trim;
 
 /**
@@ -75,7 +76,7 @@ class JobUnit implements JobUnitInterface
      * @param array<string, string> $variables
      * @param array<string, mixed> $extra
      * @param array<string, mixed> $defaults
-     * @param array<string, array<string, string>> $quotas
+     * @param AccountQuota[] $quotas
      */
     public function __construct(
         private readonly string $id,
@@ -91,7 +92,7 @@ class JobUnit implements JobUnitInterface
         private readonly array $extra = [],
         private readonly array $defaults = [],
         private readonly bool $hierarchicalNamespaces = false,
-        private readonly array $quotas = []
+        private readonly iterable $quotas = []
     ) {
     }
 
@@ -327,15 +328,14 @@ class JobUnit implements JobUnitInterface
     public function prepareQuotas(QuotaFactory $factory, PromiseInterface $promise): JobUnitInterface
     {
         $final = [];
-        foreach ($this->quotas as $category => $quotasAvailabilities) {
-            foreach ($quotasAvailabilities as $type => $capacity) {
-                $final[$type] = $factory->create(
-                    category: (string) $category,
-                    type: (string) $type,
-                    capacity: (string) $capacity,
-                    isSoft: false
-                );
-            }
+        foreach ($this->quotas as $quota) {
+            $final[$quota->type] = $factory->create(
+                category: $quota->category,
+                type: $quota->type,
+                capacity: $quota->capacity,
+                require: $quota->getRequire(),
+                isSoft: false,
+            );
         }
 
         $promise->success($final);

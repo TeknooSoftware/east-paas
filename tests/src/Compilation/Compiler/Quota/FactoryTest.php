@@ -52,7 +52,7 @@ class FactoryTest extends TestCase
     {
         self::assertInstanceOf(
             ComputeAvailability::class,
-            $availability = $this->createObject()->create('compute', 'cpu', '5', false),
+            $availability = $this->createObject()->create('compute', 'cpu', '5', '3', false),
         );
 
         self::assertEquals(
@@ -64,12 +64,12 @@ class FactoryTest extends TestCase
     public function testCreateExceptionCategoryNotDefined()
     {
         $this->expectException(QuotaWrongConfigurationException::class);
-        $this->createObject()->create('foo', 'cpu', '5', false);
+        $this->createObject()->create('foo', 'cpu', '5', '3', false);
     }
 
     public function testCreateExceptionCategoryWrongClass()
     {
         $this->expectException(QuotaWrongConfigurationException::class);
-        $this->createObject()->create('wrong', 'cpu', '5', false);
+        $this->createObject()->create('wrong', 'cpu', '5', '3', false);
     }
 }

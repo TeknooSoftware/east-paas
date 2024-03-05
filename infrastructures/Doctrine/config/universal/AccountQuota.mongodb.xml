@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--infrastructures/Doctrine/config/Environment.mongodb.xml-->
+<doctrine-mongo-mapping xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
+
+    <embedded-document name="Teknoo\East\Paas\Object\AccountQuota">
+        <field field-name="category" type="string" nullable="false"/>
+        <field field-name="type" type="string" nullable="false"/>
+        <field field-name="capacity" type="string" nullable="false"/>
+        <field field-name="require" type="string" nullable="true"/>
+    </embedded-document>
+</doctrine-mongo-mapping>

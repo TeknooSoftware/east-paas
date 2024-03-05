@@ -23,7 +23,9 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\DTO;
+namespace Teknoo\East\Paas\Object;
+
+use JsonSerializable;
 
 /**
  * DTO Object to manage account's quota in a Symfony Doctrine Form Type
@@ -33,12 +35,45 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\DTO;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class AccountQuota
+class AccountQuota implements JsonSerializable
 {
     public function __construct(
         public string $category = '',
         public string $type = '',
         public string $capacity = '',
+        public string $require = '',
     ) {
+    }
+
+    public function getRequire(): string
+    {
+        if (empty($this->require)) {
+            return $this->capacity;
+        }
+
+        return $this->require;
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'category' => $this->category,
+            'type' => $this->type,
+            'capacity' => $this->capacity,
+            'require' => $this->getRequire(),
+        ];
+    }
+
+    /**
+     * @param array{category: string, type: string, capacity: string, require: string} $values
+     */
+    public static function create(array $values): self
+    {
+        return new self(
+            category: $values['category'],
+            type: $values['type'],
+            capacity: $values['capacity'],
+            require: (string) ($values['require'] ?? null),
+        );
     }
 }

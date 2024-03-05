@@ -26,12 +26,13 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Behat;
 
 use Behat\Behat\Context\Context;
-use DI\Container as DiContainer;
 use DateTime;
+use DI\Container as DiContainer;
 use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\Persistence\ObjectManager;
+use phpseclib3\Crypt\RSA;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\Generator\Generator;
@@ -50,16 +51,16 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Teknoo\DI\SymfonyBridge\DIBridgeBundle;
-use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
 use Teknoo\East\Common\Object\User;
-use Teknoo\East\FoundationBundle\EastFoundationBundle;
+use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
 use Teknoo\East\Foundation\Time\DatesService;
+use Teknoo\East\FoundationBundle\EastFoundationBundle;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -77,6 +78,7 @@ use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
+use Teknoo\East\Paas\Object\AccountQuota;
 use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\East\Paas\Object\Environment;
@@ -89,13 +91,11 @@ use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\Model;
-use Teknoo\Kubernetes\RepositoryRegistry;
 use Teknoo\Kubernetes\Repository\Repository;
+use Teknoo\Kubernetes\RepositoryRegistry;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 use Traversable;
-use phpseclib3\Crypt\RSA;
-
 use function base64_encode;
 use function dirname;
 use function file_exists;
@@ -105,8 +105,8 @@ use function is_readable;
 use function json_decode;
 use function json_encode;
 use function random_int;
+use function round;
 use function str_replace;
-use function stripslashes;
 use function strlen;
 use function strtolower;
 use function var_export;
@@ -590,12 +590,8 @@ class FeatureContext implements Context
     {
         $this->account?->setQuotas(
             $this->quotasAllowed = [
-                'compute' => [
-                    'cpu' => 10,
-                ],
-                'memory' => [
-                    'memory' => '1 Gi',
-                ]
+                new AccountQuota('compute', 'cpu', '10'),
+                new AccountQuota('memory', 'memory', '1 Gi'),
             ]
         );
     }
@@ -885,7 +881,7 @@ class FeatureContext implements Context
         $content = json_decode($this->response->getContent(), true);
 
         try {
-            Assert::assertEquals($job, $content);
+            Assert::assertEquals(json_decode(json_encode($job), true), $content);
         } catch (ExpectationFailedException $error) {
             throw new RuntimeException((string) $error, $error->getCode(), $error);
         }
@@ -923,7 +919,7 @@ class FeatureContext implements Context
         $content = json_decode($this->response->getContent(), true);
 
         try {
-            Assert::assertEquals($job, $content);
+            Assert::assertEquals(json_decode(json_encode($job), true), $content);
         } catch (ExpectationFailedException $error) {
             throw new RuntimeException((string) $error, $error->getCode(), $error);
         }
@@ -951,11 +947,16 @@ class FeatureContext implements Context
 
         $quotas = $this->quotasAllowed;
         if ($countVCore) {
-            $quotas['compute']['cpu'] = $countVCore;
+            $quotas[] = new AccountQuota(
+                category: 'compute',
+                type: 'cpu',
+                capacity: (string) $countVCore,
+                require: (string) round($countVCore*0.75, 1)
+            );
         }
 
         if ($countMemory) {
-            $quotas['memory']['memory'] = $countMemory;
+            $quotas[] = new AccountQuota(category: 'memory', type: 'memory', capacity: $countMemory);
         }
 
         if (!empty($quotas)) {

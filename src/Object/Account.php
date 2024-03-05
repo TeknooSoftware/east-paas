@@ -83,9 +83,9 @@ class Account implements
     protected ?string $prefixNamespace = null;
 
     /**
-     * @var array<string, array<string, string|int>>|null
+     * @var iterable<AccountQuota>|null
      */
-    protected ?array $quotas = null;
+    protected ?iterable $quotas = null;
 
     protected bool $useHierarchicalNamespaces = false;
 
@@ -196,17 +196,17 @@ class Account implements
     }
 
     /**
-     * @return array<string, array<string, string|int>>|null
+     * @return iterable<AccountQuota>|null
      */
-    private function getQuotas(): ?array
+    private function getQuotas(): ?iterable
     {
         return $this->quotas;
     }
 
     /**
-     * @param array<string, array<string, string|int>>|null $quotas
+     * @param iterable<AccountQuota>|null $quotas
      */
-    public function setQuotas(?array $quotas): Account
+    public function setQuotas(?iterable $quotas): Account
     {
         $this->quotas = $quotas;
 

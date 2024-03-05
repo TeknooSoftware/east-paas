@@ -34,7 +34,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Common\Object\User;
-use Teknoo\East\Paas\Infrastructures\Symfony\Form\DTO\AccountQuota;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountQuotaType;
 use Teknoo\East\Paas\Object\Account;
 use Traversable;
@@ -131,24 +130,7 @@ class AccountType extends AbstractType
 
                 $visitors = array_map(
                     static function (FormInterface $form): callable {
-                        if ('quotas' !== $form->getName()) {
-                            return $form->setData(...);
-                        }
-
-                        return function (array $quotas) use ($form): void {
-                            $collection = [];
-                            foreach ($quotas as $category => $types) {
-                                foreach ($types as $type => $capacity) {
-                                    $collection[] = new AccountQuota(
-                                        category: $category,
-                                        type: $type,
-                                        capacity: $capacity,
-                                    );
-                                }
-                            }
-
-                            $form->setData($collection);
-                        };
+                        return $form->setData(...);
                     },
                     iterator_to_array($forms)
                 );
@@ -172,20 +154,7 @@ class AccountType extends AbstractType
                 $data->setPrefixNamespace($forms['prefix_namespace']->getData());
                 $data->setUseHierarchicalNamespaces($forms['use_hierarchical_namespaces']->getData());
                 $data->setUsers($forms['users']->getData());
-
-                if (isset($forms['quotas'])) {
-                    /** @var AccountQuota[] $collection */
-                    $collection = $forms['quotas']->getData() ?? [];
-                    $quotas = [];
-                    foreach ($collection as $quota) {
-                        if (empty($quota->category)) {
-                            continue;
-                        }
-
-                        $quotas[$quota->category][$quota->type] = $quota->category;
-                    }
-                    $data->setQuotas($quotas);
-                }
+                $data->setQuotas($forms['quotas']->getData());
             }
         });
 

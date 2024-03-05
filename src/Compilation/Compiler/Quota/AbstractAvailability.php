@@ -51,9 +51,12 @@ abstract class AbstractAvailability implements AvailabilityInterface
 {
     protected int $normalizedCapacity = 0;
 
+    protected int $normalizedRequire = 0;
+
     public function __construct(
         protected readonly string $type,
         protected string $capacity,
+        protected string $require,
         private readonly bool $isSoft,
     ) {
         if (!$this->isSoft && $this->isRelative($this->capacity)) {
@@ -62,8 +65,26 @@ abstract class AbstractAvailability implements AvailabilityInterface
                 code: 400,
             );
         }
+        if (!$this->isSoft && $this->isRelative($this->require)) {
+            throw new QuotaWrongConfigurationException(
+                message: "Error, the requires capacity of the quota `{$type}` must be not relative",
+                code: 400,
+            );
+        }
+
+        if (empty($this->require)) {
+            $this->require = $this->capacity;
+        }
 
         $this->normalizedCapacity = $this->stringCapacityToValue($this->capacity);
+        $this->normalizedRequire = $this->stringCapacityToValue($this->require);
+
+        if (!$this->isRelative($this->capacity) && $this->normalizedCapacity < $this->normalizedRequire) {
+            throw new QuotaWrongConfigurationException(
+                message: "Error, the capacity of the quota `{$type}` must be bigger of require",
+                code: 400,
+            );
+        }
     }
 
     abstract protected function stringCapacityToValue(string $capacity): int;
@@ -79,7 +100,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
     {
         return $this->valueToStringCapacity(
             $this->stringCapacityToValue(
-                $capacity,
+                capacity: $capacity,
             )
         );
     }
@@ -92,18 +113,18 @@ abstract class AbstractAvailability implements AvailabilityInterface
         return $requireValue <= $limitValue;
     }
 
-    private function checkIfLower(string $capacity, int $numberOfReplicas): bool
+    private function checkIfLower(int $from, string $capacity, int $numberOfReplicas): bool
     {
-        if ($this->isValidRelativeCapacity($capacity)) {
+        if ($this->isValidRelative($capacity)) {
             $testValue = $this->getRelativeValueFromCapacity((int) $capacity) * $numberOfReplicas;
         } else {
             $testValue = $this->stringCapacityToValue($capacity) * $numberOfReplicas;
         }
 
-        return $this->normalizedCapacity >= $testValue;
+        return $from >= $testValue;
     }
 
-    private function subtract(string $capacity, int $numberOfReplicas): void
+    private function subtractCapacity(string $capacity, int $numberOfReplicas): void
     {
         $currentValue = $this->normalizedCapacity;
         $testValue = $this->stringCapacityToValue($capacity) * $numberOfReplicas;
@@ -114,12 +135,23 @@ abstract class AbstractAvailability implements AvailabilityInterface
         $this->capacity = $this->valueToStringCapacity($currentValue);
     }
 
+    private function subtractRequire(string $capacity, int $numberOfReplicas): void
+    {
+        $currentValue = $this->normalizedRequire;
+        $testValue = $this->stringCapacityToValue($capacity) * $numberOfReplicas;
+
+        $currentValue -= $testValue;
+
+        $this->normalizedRequire = $currentValue;
+        $this->require = $this->valueToStringCapacity($currentValue);
+    }
+
     protected function isRelative(string $capacity): bool
     {
         return str_ends_with($capacity, '%');
     }
 
-    private function isValidRelativeCapacity(string $capacity): bool
+    private function isValidRelative(string $capacity): bool
     {
         if (!$this->isRelative($capacity)) {
             return false;
@@ -146,6 +178,11 @@ abstract class AbstractAvailability implements AvailabilityInterface
         return $this->capacity;
     }
 
+    public function getRequire(): string
+    {
+        return $this->require;
+    }
+
     public function update(AvailabilityInterface $availability): AvailabilityInterface
     {
         if ($availability::class !== static::class) {
@@ -159,7 +196,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
             );
         }
 
-        if (!$this->checkIfLower($availability->getCapacity(), 1)) {
+        if (!$this->checkIfLower($this->normalizedCapacity, $availability->getCapacity(), 1)) {
             throw new ResourceCapacityExceededException(
                 message: sprintf(
                     "Error, the deployment quota definition exceed the available capacity `%s` for `%s`",
@@ -191,7 +228,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
             );
         }
 
-        if (!$this->checkIfLower($limit, $numberOfReplicas)) {
+        if (!$this->checkIfLower($this->normalizedCapacity, $limit, $numberOfReplicas)) {
             $isSoftDefined = '';
             if ($this->isSoft) {
                 $isSoftDefined = ' (soft defined limit)';
@@ -199,9 +236,27 @@ abstract class AbstractAvailability implements AvailabilityInterface
 
             throw new ResourceCapacityExceededException(
                 message: sprintf(
-                    "Error, available capacity for `%s` is `%s`%s, but require `%s`",
+                    "Error, available capacity for `%s` is `%s`%s, but limited `%s`",
                     $this->type,
                     $this->getCapacity(),
+                    $isSoftDefined,
+                    $limit,
+                ),
+                code: 400,
+            );
+        }
+
+        if (!$this->checkIfLower($this->normalizedRequire, $limit, $numberOfReplicas)) {
+            $isSoftDefined = '';
+            if ($this->isSoft) {
+                $isSoftDefined = ' (soft defined limit)';
+            }
+
+            throw new ResourceCapacityExceededException(
+                message: sprintf(
+                    "Error, available requires capacity for `%s` is `%s`%s, but require `%s`",
+                    $this->type,
+                    $this->getRequire(),
                     $isSoftDefined,
                     $require,
                 ),
@@ -209,7 +264,8 @@ abstract class AbstractAvailability implements AvailabilityInterface
             );
         }
 
-        $this->subtract($limit, $numberOfReplicas);
+        $this->subtractRequire($require, $numberOfReplicas);
+        $this->subtractCapacity($limit, $numberOfReplicas);
 
         $set->add(
             new Resource(
@@ -225,10 +281,10 @@ abstract class AbstractAvailability implements AvailabilityInterface
     public function updateResource(AutomaticResource $resource, int $limit): AvailabilityInterface
     {
         $resource->setLimit(
-            $this->valueToStringCapacity(
+            require: $this->valueToStringCapacity(
                 $this->getRelativeValueFromCapacity((int) ceil($limit * 0.10)),
             ),
-            $this->valueToStringCapacity(
+            limit: $this->valueToStringCapacity(
                 $this->getRelativeValueFromCapacity($limit),
             ),
         );

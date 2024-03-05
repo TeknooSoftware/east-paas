@@ -30,7 +30,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Teknoo\East\Paas\Infrastructures\Symfony\Form\DTO\AccountQuota;
+use Teknoo\East\Paas\Object\AccountQuota;
 
 /**
  * Subform type to manage account's quota into a Symfony Doctrine Account Form type
@@ -65,6 +65,8 @@ class AccountQuotaType extends AbstractType
         $builder->add('type', TextType::class, ['required' => true]);
 
         $builder->add('capacity', TextType::class, ['required' => true]);
+
+        $builder->add('require', TextType::class, ['required' => false]);
 
         return $this;
     }
