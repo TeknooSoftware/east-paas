@@ -53,7 +53,7 @@ class AccountQuotaTest extends TestCase
                     'category' => 'cat',
                     'type' => 'ty',
                     'capacity' => 'cap',
-                    'require' => 'cap',
+                    'requires' => 'cap',
                 ]
             ),
             json_encode($object),
@@ -66,7 +66,7 @@ class AccountQuotaTest extends TestCase
                     'category' => 'cat',
                     'type' => 'ty',
                     'capacity' => 'cap',
-                    'require' => 'req',
+                    'requires' => 'req',
                 ]
             ),
             json_encode($object),

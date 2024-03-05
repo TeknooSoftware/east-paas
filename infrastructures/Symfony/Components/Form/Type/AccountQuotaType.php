@@ -66,7 +66,7 @@ class AccountQuotaType extends AbstractType
 
         $builder->add('capacity', TextType::class, ['required' => true]);
 
-        $builder->add('require', TextType::class, ['required' => false]);
+        $builder->add('requires', TextType::class, ['required' => false]);
 
         return $this;
     }

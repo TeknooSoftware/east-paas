@@ -60,7 +60,7 @@
       <xs:element name="category" type="epv:resource_type" minOccurs="1"/>
       <xs:element name="type" type="epv:paas_token" minOccurs="1"/>
       <xs:element name="capacity" type="epv:resource_value" minOccurs="1"/>
-      <xs:element name="require" type="epv:resource_value" minOccurs="0"/>
+      <xs:element name="requires" type="epv:resource_value" minOccurs="0"/>
     </xs:all>
   </xs:complexType>
 

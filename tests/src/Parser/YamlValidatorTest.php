@@ -53,7 +53,7 @@ paas: #Dedicated to compiler
     - category: compute
       type: cpu
       capacity: 2
-      require: 1
+      requires: 1
     - category: memory
       type: memory
       capacity: 512Mi

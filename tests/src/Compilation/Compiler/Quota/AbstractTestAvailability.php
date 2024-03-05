@@ -100,12 +100,12 @@ abstract class AbstractTestAvailability extends TestCase
     {
         self::assertEquals(
             $this->getSmallerCapacity(),
-            $this->createAvailability($this->getDefaultCapacity(), $this->getSmallerCapacity(), false)->getRequire(),
+            $this->createAvailability($this->getDefaultCapacity(), $this->getSmallerCapacity(), false)->getRequires(),
         );
 
         self::assertEquals(
             $this->getDefaultCapacity(),
-            $this->createAvailability($this->getDefaultCapacity(), '', false)->getRequire(),
+            $this->createAvailability($this->getDefaultCapacity(), '', false)->getRequires(),
         );
     }
 

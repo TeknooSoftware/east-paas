@@ -951,7 +951,7 @@ class FeatureContext implements Context
                 category: 'compute',
                 type: 'cpu',
                 capacity: (string) $countVCore,
-                require: (string) round($countVCore*0.75, 1)
+                requires: (string) round($countVCore*0.75, 1)
             );
         }
 

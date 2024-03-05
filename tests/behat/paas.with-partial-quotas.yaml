@@ -4,7 +4,7 @@ paas: #Dedicated to compiler
         - category: compute
           type: cpu
           capacity: 2
-          require: 1.5
+          requires: 1.5
         - category: memory
           type: memory
           capacity: '512Mi'

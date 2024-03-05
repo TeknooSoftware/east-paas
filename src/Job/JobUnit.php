@@ -333,7 +333,7 @@ class JobUnit implements JobUnitInterface
                 category: $quota->category,
                 type: $quota->type,
                 capacity: $quota->capacity,
-                require: $quota->getRequire(),
+                requires: $quota->getRequires(),
                 isSoft: false,
             );
         }

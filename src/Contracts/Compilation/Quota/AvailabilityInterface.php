@@ -41,7 +41,7 @@ use Teknoo\East\Paas\Compilation\Compiler\Exception\QuotasNotCompliantException;
  */
 interface AvailabilityInterface
 {
-    public function __construct(string $type, string $capacity, string $require, bool $isSoft);
+    public function __construct(string $type, string $capacity, string $requires, bool $isSoft);
 
     /**
      * Return the current available remaining capacity for this quota
@@ -51,7 +51,7 @@ interface AvailabilityInterface
     /**
      * Return the current available remaining require capacity for this quota
      */
-    public function getRequire(): string;
+    public function getRequires(): string;
 
     /**
      * To update the quota from the deployment file to decrease it.

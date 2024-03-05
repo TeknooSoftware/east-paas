@@ -54,7 +54,7 @@ class Factory
         string $category,
         string $type,
         string $capacity,
-        string $require,
+        string $requires,
         bool $isSoft,
     ): AvailabilityInterface {
         if (!isset($this->configuration[$category])) {
@@ -79,7 +79,7 @@ class Factory
         return new $class(
             type: $type,
             capacity: $capacity,
-            require: $require,
+            requires: $requires,
             isSoft: $isSoft,
         );
     }

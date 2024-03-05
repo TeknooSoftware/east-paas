@@ -56,7 +56,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
     public function __construct(
         protected readonly string $type,
         protected string $capacity,
-        protected string $require,
+        protected string $requires,
         private readonly bool $isSoft,
     ) {
         if (!$this->isSoft && $this->isRelative($this->capacity)) {
@@ -65,19 +65,19 @@ abstract class AbstractAvailability implements AvailabilityInterface
                 code: 400,
             );
         }
-        if (!$this->isSoft && $this->isRelative($this->require)) {
+        if (!$this->isSoft && $this->isRelative($this->requires)) {
             throw new QuotaWrongConfigurationException(
                 message: "Error, the requires capacity of the quota `{$type}` must be not relative",
                 code: 400,
             );
         }
 
-        if (empty($this->require)) {
-            $this->require = $this->capacity;
+        if (empty($this->requires)) {
+            $this->requires = $this->capacity;
         }
 
         $this->normalizedCapacity = $this->stringCapacityToValue($this->capacity);
-        $this->normalizedRequire = $this->stringCapacityToValue($this->require);
+        $this->normalizedRequire = $this->stringCapacityToValue($this->requires);
 
         if (!$this->isRelative($this->capacity) && $this->normalizedCapacity < $this->normalizedRequire) {
             throw new QuotaWrongConfigurationException(
@@ -143,7 +143,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
         $currentValue -= $testValue;
 
         $this->normalizedRequire = $currentValue;
-        $this->require = $this->valueToStringCapacity($currentValue);
+        $this->requires = $this->valueToStringCapacity($currentValue);
     }
 
     protected function isRelative(string $capacity): bool
@@ -178,9 +178,9 @@ abstract class AbstractAvailability implements AvailabilityInterface
         return $this->capacity;
     }
 
-    public function getRequire(): string
+    public function getRequires(): string
     {
-        return $this->require;
+        return $this->requires;
     }
 
     public function update(AvailabilityInterface $availability): AvailabilityInterface
@@ -256,7 +256,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
                 message: sprintf(
                     "Error, available requires capacity for `%s` is `%s`%s, but require `%s`",
                     $this->type,
-                    $this->getRequire(),
+                    $this->getRequires(),
                     $isSoftDefined,
                     $require,
                 ),

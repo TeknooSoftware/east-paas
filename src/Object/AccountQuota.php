@@ -41,17 +41,17 @@ class AccountQuota implements JsonSerializable
         public string $category = '',
         public string $type = '',
         public string $capacity = '',
-        public string $require = '',
+        public string $requires = '',
     ) {
     }
 
-    public function getRequire(): string
+    public function getRequires(): string
     {
-        if (empty($this->require)) {
+        if (empty($this->requires)) {
             return $this->capacity;
         }
 
-        return $this->require;
+        return $this->requires;
     }
 
     public function jsonSerialize(): mixed
@@ -60,7 +60,7 @@ class AccountQuota implements JsonSerializable
             'category' => $this->category,
             'type' => $this->type,
             'capacity' => $this->capacity,
-            'require' => $this->getRequire(),
+            'requires' => $this->getRequires(),
         ];
     }
 
@@ -73,7 +73,7 @@ class AccountQuota implements JsonSerializable
             category: $values['category'],
             type: $values['type'],
             capacity: $values['capacity'],
-            require: (string) ($values['require'] ?? null),
+            requires: (string) ($values['requires'] ?? null),
         );
     }
 }
