@@ -1049,9 +1049,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given a project with a complete paas file without quota
+     * @Given a project with a complete paas file without resources
      */
-    public function aProjectWithACompletePaasFileWithoutData()
+    public function aProjectWithACompletePaasFileWithoutResource()
     {
         $this->paasFile = __DIR__ . '/paas.yaml';
         self::$quotasDefined = 'automatic';
@@ -1067,20 +1067,20 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given a project with a complete paas file with partial quota
+     * @Given a project with a complete paas file with partial resources
      */
-    public function aProjectWithAPaasFileWithPartialQuota()
+    public function aProjectWithAPaasFileWithPartialResources()
     {
-        $this->paasFile = __DIR__ . '/paas.with-partial-quotas.yaml';
+        $this->paasFile = __DIR__ . '/paas.with-partial-resources.yaml';
         self::$quotasDefined = 'partial';
     }
 
     /**
-     * @Given a project with a complete paas file with quota
+     * @Given a project with a complete paas file with resources
      */
-    public function aProjectWithAPaasFileWithQuota()
+    public function aProjectWithAPaasFileWithResources()
     {
-        $this->paasFile = __DIR__ . '/paas.with-quotas.yaml';
+        $this->paasFile = __DIR__ . '/paas.with-resources.yaml';
         self::$quotasDefined = 'full';
     }
 
@@ -1595,7 +1595,7 @@ EOF;
                     'memory' => '163.840Mi',
                 ],
             ],
-            JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
+            JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT,
         );
 
         $phpRunResources = match (self::$quotasDefined) {

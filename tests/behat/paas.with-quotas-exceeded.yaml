@@ -213,6 +213,7 @@ pods:
                     - type: memory
                       require: '128Mi'
 
+
 #Pods expositions
 services:
     php-service: #Service name
