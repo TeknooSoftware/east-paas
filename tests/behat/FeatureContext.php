@@ -597,6 +597,19 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given larges quotas defined for this account
+     */
+    public function largesQuotasDefinedForThisAccount()
+    {
+        $this->account?->setQuotas(
+            $this->quotasAllowed = [
+                new AccountQuota('compute', 'cpu', '5'),
+                new AccountQuota('memory', 'memory', '1 Gi'),
+            ]
+        );
+    }
+
+    /**
      * @Given a project on this account :name with the id :id
      * @Given a project on this account :name with the id :id and a prefix :prefix
      */
@@ -1081,6 +1094,15 @@ class FeatureContext implements Context
     public function aProjectWithAPaasFileWithResources()
     {
         $this->paasFile = __DIR__ . '/paas.with-resources.yaml';
+        self::$quotasDefined = 'full';
+    }
+
+    /**
+     * @Given a project with a complete paas file with resources and relative quota
+     */
+    public function aProjectWithAPaasFileWithResourcesAndRelativeQuota()
+    {
+        $this->paasFile = __DIR__ . '/paas.with-resources-and-relative-quota.yaml';
         self::$quotasDefined = 'full';
     }
 
@@ -1678,11 +1700,11 @@ EOF;
             'full' => $prefixResource . json_encode(
                 [
                     'requests' => [
-                        'cpu' => '81m',
+                        'cpu' => '200m',
                         'memory' => '64Mi',
                     ],
                     'limits' => [
-                        'cpu' => '81m',
+                        'cpu' => '200m',
                         'memory' => '64Mi',
                     ],
                 ],

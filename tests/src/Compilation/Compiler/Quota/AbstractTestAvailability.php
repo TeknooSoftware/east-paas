@@ -48,6 +48,10 @@ abstract class AbstractTestAvailability extends TestCase
 
     abstract protected function getDefaultCapacity(): string;
 
+    abstract protected function getMiddleCapacity(): string;
+
+    abstract protected function getQuarterCapacity(): string;
+
     abstract protected function getLargerCapacity(): string;
 
     abstract protected function getSmallerCapacity(): string;
@@ -132,6 +136,40 @@ abstract class AbstractTestAvailability extends TestCase
             $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)->update(
                 $this->createAvailability($this->getSmallerCapacity(), $this->getSmallerCapacity(), false),
             )->getCapacity()
+        );
+    }
+
+    public function testUpdateFromRelative()
+    {
+        self::assertInstanceOf(
+            AvailabilityInterface::class,
+            $hard = $this->createAvailability($this->getDefaultCapacity(), $this->getSmallerCapacity(), false)
+        );
+
+        self::assertInstanceOf(
+            AvailabilityInterface::class,
+            $soft = $this->createAvailability('50%', '25%', true)
+        );
+
+        $final = $hard->update($soft);
+        self::assertInstanceOf(
+            AvailabilityInterface::class,
+            $final,
+        );
+
+        self::assertNotSame(
+            $final,
+            $soft,
+        );
+
+        self::assertEquals(
+            $this->getMiddleCapacity(),
+            $final->getCapacity(),
+        );
+
+        self::assertEquals(
+            $this->getQuarterCapacity(),
+            $final->getRequires(),
         );
     }
 

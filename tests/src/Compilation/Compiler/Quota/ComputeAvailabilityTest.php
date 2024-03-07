@@ -46,6 +46,16 @@ class ComputeAvailabilityTest extends AbstractTestAvailability
         return '2';
     }
 
+    protected function getMiddleCapacity(): string
+    {
+        return '1.000';
+    }
+
+    protected function getQuarterCapacity(): string
+    {
+        return '500m';
+    }
+
     protected function getLargerCapacity(): string
     {
         return '3';

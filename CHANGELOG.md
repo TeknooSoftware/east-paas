@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.8.1] - 2024-03-07
+### Stable Release
+- Fix issue with relative resources requires :
+  - % of initial quota capacity and not remaining capacity
+- Fix issue when a soft quota is relative to the hard limit
+
 ## [2.8.0] - 2024-03-04
 ### Stable Release
 - Add support of quotas into an Account

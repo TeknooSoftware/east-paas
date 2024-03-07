@@ -46,6 +46,16 @@ class MemoryAvailabilityTest extends AbstractTestAvailability
         return '64Mi';
     }
 
+    protected function getMiddleCapacity(): string
+    {
+        return '32Mi';
+    }
+
+    protected function getQuarterCapacity(): string
+    {
+        return '16Mi';
+    }
+
     protected function getLargerCapacity(): string
     {
         return '128Mi';

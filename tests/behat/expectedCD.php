@@ -249,7 +249,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix, string $wi
             (new CompiledDeployment\AutomaticResource('memory'))->setLimit('9.600Mi', '80Mi'),
         ],
         'full' => [
-            new CompiledDeployment\Resource('cpu', '81m', '81m'),
+            new CompiledDeployment\Resource('cpu', '200m', '200m'),
             new CompiledDeployment\Resource('memory', '64Mi', '64Mi'),
         ],
         default => []

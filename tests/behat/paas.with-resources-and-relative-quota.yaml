@@ -3,11 +3,11 @@ paas: #Dedicated to compiler
     quotas:
         - category: compute
           type: cpu
-          capacity: 2
+          capacity: '40%'
           requires: 1.5
         - category: memory
           type: memory
-          capacity: '512Mi'
+          capacity: '50%'
 
 #Config
 maps:
@@ -127,6 +127,13 @@ pods:
                     period-seconds: 30
                     probe:
                         command: ['ps', 'aux', 'php']
+                resources:
+                    - type: cpu
+                      require: 200m
+                      limit: 500m
+                    - type: memory
+                      require: '64Mi'
+                      limit: '96Mi'
     shell:
         replicas: 1
         containers:
@@ -136,6 +143,8 @@ pods:
                 resources:
                     - type: cpu
                       require: 100m
+                    - type: memory
+                      require: '32Mi'
     demo:
         replicas: 1
         upgrade:
@@ -169,6 +178,11 @@ pods:
                     threshold:
                         success: 3
                         failure: 2
+                resources:
+                    - type: cpu
+                      require: '10%'
+                    - type: memory
+                      require: '64Mi'
             waf:
                 image: registry.hub.docker.com/library/waf
                 version: alpine

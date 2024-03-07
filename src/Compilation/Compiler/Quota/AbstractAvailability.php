@@ -51,6 +51,10 @@ abstract class AbstractAvailability implements AvailabilityInterface
 {
     protected int $normalizedCapacity = 0;
 
+    protected int $initialNormalizedCapacity = 0;
+
+    protected int $sharableNormalizedCapacity = 0;
+
     protected int $normalizedRequire = 0;
 
     public function __construct(
@@ -60,11 +64,17 @@ abstract class AbstractAvailability implements AvailabilityInterface
         private readonly bool $isSoft,
     ) {
         if (!$this->isSoft && $this->isRelative($this->capacity)) {
+            $this->initialNormalizedCapacity = 0;
+
             throw new QuotaWrongConfigurationException(
                 message: "Error, the capacity of the quota `{$type}` must be not relative",
                 code: 400,
             );
         }
+
+        $this->sharableNormalizedCapacity = $this->normalizedCapacity = $this->stringCapacityToValue($this->capacity);
+        $this->initialNormalizedCapacity = $this->normalizedCapacity;
+
         if (!$this->isSoft && $this->isRelative($this->requires)) {
             throw new QuotaWrongConfigurationException(
                 message: "Error, the requires capacity of the quota `{$type}` must be not relative",
@@ -76,7 +86,6 @@ abstract class AbstractAvailability implements AvailabilityInterface
             $this->requires = $this->capacity;
         }
 
-        $this->normalizedCapacity = $this->stringCapacityToValue($this->capacity);
         $this->normalizedRequire = $this->stringCapacityToValue($this->requires);
 
         if (!$this->isRelative($this->capacity) && $this->normalizedCapacity < $this->normalizedRequire) {
@@ -91,9 +100,9 @@ abstract class AbstractAvailability implements AvailabilityInterface
 
     abstract protected function valueToStringCapacity(int $value): string;
 
-    protected function getRelativeValueFromCapacity(int $value): int
+    protected function getRelativeValueFromCapacity(int $value, ?int $fromValue = null): int
     {
-        return (int) ($this->normalizedCapacity * $value / 100);
+        return (int) (($fromValue ?? $this->initialNormalizedCapacity) * $value / 100);
     }
 
     private function normalizedValue(string $capacity): string
@@ -131,7 +140,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
 
         $currentValue -= $testValue;
 
-        $this->normalizedCapacity = $currentValue;
+        $this->sharableNormalizedCapacity = $this->normalizedCapacity = $currentValue;
         $this->capacity = $this->valueToStringCapacity($currentValue);
     }
 
@@ -185,7 +194,10 @@ abstract class AbstractAvailability implements AvailabilityInterface
 
     public function update(AvailabilityInterface $availability): AvailabilityInterface
     {
-        if ($availability::class !== static::class) {
+        if (
+            !$availability instanceof AbstractAvailability //PHPStan...
+            || $availability::class !== static::class
+        ) {
             throw new QuotasNotCompliantException(
                 message: sprintf(
                     "Error, `%s` and `%s` are not compliant",
@@ -205,6 +217,21 @@ abstract class AbstractAvailability implements AvailabilityInterface
                 ),
                 code: 400,
             );
+        }
+
+        $availability = clone $availability;
+        if ($this->isValidRelative($availability->capacity)) {
+            $availability->initialNormalizedCapacity = $this->getRelativeValueFromCapacity(
+                (int) $availability->capacity
+            );
+            $availability->capacity = $this->normalizedValue($availability->capacity);
+            $availability->normalizedCapacity = $this->stringCapacityToValue($availability->capacity);
+            $availability->sharableNormalizedCapacity = $availability->normalizedCapacity;
+        }
+
+        if ($this->isValidRelative($availability->requires)) {
+            $availability->requires = $this->normalizedValue($availability->requires);
+            $availability->normalizedRequire = $this->stringCapacityToValue($availability->requires);
         }
 
         return $availability;
@@ -236,7 +263,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
 
             throw new ResourceCapacityExceededException(
                 message: sprintf(
-                    "Error, available capacity for `%s` is `%s`%s, but limited `%s`",
+                    "Error, remaining available capacity for `%s` is `%s`%s, but limit required is `%s`",
                     $this->type,
                     $this->getCapacity(),
                     $isSoftDefined,
@@ -254,7 +281,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
 
             throw new ResourceCapacityExceededException(
                 message: sprintf(
-                    "Error, available requires capacity for `%s` is `%s`%s, but require `%s`",
+                    "Error, remaining available capacity to require for `%s` is `%s`%s, but current requires `%s`",
                     $this->type,
                     $this->getRequires(),
                     $isSoftDefined,
@@ -264,16 +291,16 @@ abstract class AbstractAvailability implements AvailabilityInterface
             );
         }
 
+        $resource = new Resource(
+            $this->getType(),
+            $this->normalizedValue($require),
+            $this->normalizedValue($limit),
+        );
+
         $this->subtractRequire($require, $numberOfReplicas);
         $this->subtractCapacity($limit, $numberOfReplicas);
 
-        $set->add(
-            new Resource(
-                $this->getType(),
-                $this->normalizedValue($require),
-                $this->normalizedValue($limit),
-            ),
-        );
+        $set->add($resource);
 
         return $this;
     }
@@ -282,10 +309,10 @@ abstract class AbstractAvailability implements AvailabilityInterface
     {
         $resource->setLimit(
             require: $this->valueToStringCapacity(
-                $this->getRelativeValueFromCapacity((int) ceil($limit * 0.10)),
+                $this->getRelativeValueFromCapacity((int) ceil($limit * 0.10), $this->sharableNormalizedCapacity),
             ),
             limit: $this->valueToStringCapacity(
-                $this->getRelativeValueFromCapacity($limit),
+                $this->getRelativeValueFromCapacity($limit, $this->sharableNormalizedCapacity),
             ),
         );
 

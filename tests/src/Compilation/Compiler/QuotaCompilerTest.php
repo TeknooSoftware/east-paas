@@ -54,7 +54,7 @@ class QuotaCompilerTest extends TestCase
                 'category' => 'compute',
                 'type' => 'cpu',
                 'capacity' => 2,
-                'require' => 1,
+                'requires' => 1,
             ],
             [
                 'category' => 'memory',
