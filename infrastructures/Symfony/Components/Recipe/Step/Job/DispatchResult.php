@@ -142,7 +142,7 @@ class DispatchResult implements DispatchResultInterface
                                 promise: $promise,
                             );
                         }
-                    }
+                    },
                 );
 
                 $this->normalizer->normalize(

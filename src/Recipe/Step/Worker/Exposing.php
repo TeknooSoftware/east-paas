@@ -66,7 +66,7 @@ class Exposing
     ): self {
         /** @var Promise<array<string, mixed>, mixed, mixed> $promise */
         $promise = new Promise(
-            function (array $result) use ($projectId, $envName, $jobUnit): void {
+            onSuccess: function (array $result) use ($projectId, $envName, $jobUnit): void {
                 ($this->dispatchHistory)(
                     $projectId,
                     $envName,
@@ -75,7 +75,7 @@ class Exposing
                     $result,
                 );
             },
-            static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.cluster.exposing_error',
                     500,

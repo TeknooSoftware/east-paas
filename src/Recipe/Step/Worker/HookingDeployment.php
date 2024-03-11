@@ -63,7 +63,7 @@ class HookingDeployment
     ): self {
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
-            function (string $buildSuccess) use ($projectId, $envName, $jobUnit): void {
+            onSuccess: function (string $buildSuccess) use ($projectId, $envName, $jobUnit): void {
                 ($this->dispatchHistory)(
                     $projectId,
                     $envName,
@@ -72,7 +72,7 @@ class HookingDeployment
                     ['hook_output' => $buildSuccess]
                 );
             },
-            static fn(Throwable $error) => throw $error,
+            onFail: static fn(Throwable $error) => throw $error,
         );
 
         $workspace->runInRepositoryPath(

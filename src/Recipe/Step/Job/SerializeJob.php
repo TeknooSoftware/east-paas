@@ -58,16 +58,16 @@ class SerializeJob
     {
         /** @var Promise<string, mixed, mixed> $serializedPromise */
         $serializedPromise = new Promise(
-            static function (string $jobSerialized) use ($manager): void {
+            onSuccess: static function (string $jobSerialized) use ($manager): void {
                 $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
             },
-            static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.job.serialization_error',
                     500,
                     $error
                 )
-            )
+            ),
         );
 
         $this->serializer->serialize(

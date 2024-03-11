@@ -72,8 +72,8 @@ class Running implements StateInterface
 
             try {
                 $promise = new Promise(
-                    $mainPromise->success(...),
-                    static function (Throwable $error): never {
+                    onSuccess: $mainPromise->success(...),
+                    onFail: static function (Throwable $error): never {
                         //To break the foreach loop
                         throw $error;
                     }

@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [2.8.2] - 2024-03-13
+### Stable Release
+- Use Recipe 5+
+- some `Promise` with new features
+
 ## [2.8.1] - 2024-03-07
 ### Stable Release
 - Fix issue with relative resources requires :

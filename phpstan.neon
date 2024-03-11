@@ -44,7 +44,7 @@ parameters:
             message: '#mixed given#'
             path: infrastructures/Doctrine/Form/Type/AccountType.php
         -
-            message: '# expects array<string, mixed>\|null, mixed given#'
+            message: '# expects array<string, mixed>, mixed given#'
             path: infrastructures/Symfony/Components/Configuration/YamlParser.php
         -
             message: '#mixed given#'
@@ -59,7 +59,7 @@ parameters:
             message: '#ClassFinderDenormalizer::denormalize#'
             path: infrastructures/Symfony/Components/Normalizer/ClassFinderDenormalizer.php
         -
-            message: '# expects array<string, mixed>\|null, array\|ArrayObject\|bool\|float\|int\|string\|null given#'
+            message: '# expects array<string, mixed>, array\|ArrayObject\|bool\|float\|int\|string\|null given#'
             path: infrastructures/Symfony/Components/Serializing/Normalizer.php
         -
             message: '#mixed#' #array validated by validation schema

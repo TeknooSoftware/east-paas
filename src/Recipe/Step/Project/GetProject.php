@@ -54,16 +54,16 @@ class GetProject
     {
         /** @var Promise<Project, mixed, mixed> $fetchedPromise */
         $fetchedPromise = new Promise(
-            static function (Project $project) use ($manager): void {
+            onSuccess: static function (Project $project) use ($manager): void {
                 $manager->updateWorkPlan([Project::class => $project]);
             },
-            static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                 new DomainException(
                     'teknoo.east.paas.error.recipe.project.not_found',
                     404,
                     $error
                 )
-            )
+            ),
         );
 
         $this->projectLoader->load(

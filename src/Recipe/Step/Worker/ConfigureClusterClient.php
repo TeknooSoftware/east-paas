@@ -58,14 +58,14 @@ class ConfigureClusterClient
     ): self {
         /** @var Promise<Collection, mixed, mixed> $promise */
         $promise = new Promise(
-            static function (Collection $clients) use ($manager): void {
+            onSuccess: static function (Collection $clients) use ($manager): void {
                 $manager->updateWorkPlan(
                     [
                         Collection::class => $clients
                     ]
                 );
             },
-            static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.cluster.configuration_error',
                     500,

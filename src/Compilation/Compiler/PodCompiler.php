@@ -283,15 +283,12 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             $compiledDeployment->importVolume(
                 $volumeFrom,
                 $mountPath,
-                new Promise(
-                    static function (VolumeInterface $volume) use (&$containerVolumes, $volumeName): void {
-                        $containerVolumes[(string) $volumeName] = $volume;
-                    },
-                    static function (Throwable $error): never {
-                        throw $error;
-                    }
+                $promise = new Promise(
+                    static fn (VolumeInterface $volume) => $volume,
+                    static fn (Throwable $error): never => throw $error,
                 )
             );
+            $containerVolumes[(string) $volumeName] = $promise->fetchResultIfCalled();
         }
     }
 

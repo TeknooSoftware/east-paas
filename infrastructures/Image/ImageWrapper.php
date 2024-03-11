@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Image;
 
 use DomainException;
+use SplQueue;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
@@ -146,9 +147,9 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
         string $workingPath,
         PromiseInterface $promise
     ): BuilderInterface {
-        $processes = [];
+        $processes = new SplQueue();
         $compiledDeployment->foreachBuildable(
-            function (BuildableInterface $image) use (&$processes, $workingPath, $compiledDeployment): void {
+            function (BuildableInterface $image) use ($processes, $workingPath, $compiledDeployment): void {
                 $newImage = $image->withRegistry((string) $this->getUrl());
                 $compiledDeployment->updateBuildable($image, $newImage);
 
@@ -227,13 +228,13 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
         string $workingPath,
         PromiseInterface $promise
     ): BuilderInterface {
-        $processes = [];
+        $processes = new SplQueue();
         $compiledDeployment->foreachVolume(
             function (
                 string $name,
                 VolumeInterface $volume
             ) use (
-                &$processes,
+                $processes,
                 $workingPath,
                 $compiledDeployment
             ): void {

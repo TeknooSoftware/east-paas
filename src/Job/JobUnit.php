@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Job;
 
 use DomainException;
+use SplQueue;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Cluster\Collection as ClusterCollection;
@@ -159,13 +160,13 @@ class JobUnit implements JobUnitInterface
         PromiseInterface $promise
     ): JobUnitInterface {
         try {
-            $selectedClients = [];
+            $selectedClients = new SplQueue();
             /** @var Promise<ClusterClientInterface, mixed, mixed> $clusterPromise */
             $clusterPromise = new Promise(
-                static function (ClusterClientInterface $client) use (&$selectedClients): void {
+                onSuccess: static function (ClusterClientInterface $client) use ($selectedClients): void {
                     $selectedClients[] = $client;
                 },
-                static fn(Throwable $error) => throw $error,
+                onFail: static fn(Throwable $error) => throw $error,
             );
 
             foreach ($this->clusters as $cluster) {
@@ -269,7 +270,7 @@ class JobUnit implements JobUnitInterface
                 $value = preg_replace_callback(
                     $pattern,
                     /** @var callable(array<int|string, string>) $matches */
-                    function (
+                    static function (
                         array $matches,
                     ) use (
                         &$prefix,

@@ -154,25 +154,23 @@ class Conductor implements ConductorInterface, AutomatedInterface
         try {
             /** @var Promise<array<string, mixed>, mixed, array<string, mixed>> $configuredPromise */
             $configuredPromise = new Promise(
-                function ($result, PromiseInterface $next): void {
+                onSuccess: function ($result, PromiseInterface $next): void {
                     $this->configuration = $result;
 
                     $next->success($result);
                 },
-                allowNext: true
             );
 
             /** @var Promise<array<int|string, mixed>, mixed, array<string, mixed>> $validatedPromise */
             $validatedPromise = new Promise(
-                fn ($result, PromiseInterface $next) => $this->getJob()->updateVariablesIn(
+                onSuccess: fn ($result, PromiseInterface $next) => $this->getJob()->updateVariablesIn(
                     $result,
                     $next
                 ),
-                allowNext: true
             );
 
             $parsedPromise = new Promise(
-                function (array $result): array {
+                onSuccess: function (array $result): array {
                     foreach ($this->compilers as $pattern => $compiler) {
                         if (!$compiler instanceof ExtenderInterface) {
                             continue;
@@ -198,7 +196,6 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
                     return $result;
                 },
-                allowNext: true
             );
 
             /**
@@ -209,7 +206,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
              * > $extendedPromise
              */
             $extendedPromise = new Promise(
-                fn ($result, PromiseInterface $next): YamlValidator => $this->validator->validate(
+                onSuccess: fn ($result, PromiseInterface $next): YamlValidator => $this->validator->validate(
                     $result,
                     $this->factory->getSchema(),
                     $next

@@ -54,10 +54,10 @@ class GetJob
     {
         /** @var Promise<Job, mixed, mixed> $fetchedPromise */
         $fetchedPromise = new Promise(
-            static function (Job $job) use ($manager): void {
+            onSuccess: static function (Job $job) use ($manager): void {
                 $manager->updateWorkPlan([Job::class => $job]);
             },
-            static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                 throw new DomainException(
                     'teknoo.east.paas.error.recipe.job.not_found',
                     404,

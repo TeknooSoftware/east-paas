@@ -54,12 +54,12 @@ class CompileDeployment
     ): self {
         /** @var Promise<CompiledDeploymentInterface, mixed, mixed> $promise */
         $promise = new Promise(
-            static function (CompiledDeploymentInterface $deployment) use ($manager): void {
+            onSuccess: static function (CompiledDeploymentInterface $deployment) use ($manager): void {
                 $manager->updateWorkPlan([
                     CompiledDeploymentInterface::class => $deployment,
                 ]);
             },
-            static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.configuration.compilation_error',
                     $error->getCode() > 0 ? $error->getCode() : 500,

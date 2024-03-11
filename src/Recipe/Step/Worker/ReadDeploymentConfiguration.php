@@ -53,8 +53,7 @@ class ReadDeploymentConfiguration
     ): self {
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
-            null,
-            static function (Throwable $error) use ($manager): ChefInterface {
+            onFail: static function (Throwable $error) use ($manager): ChefInterface {
                 $message = 'teknoo.east.paas.error.recipe.configuration.read_error';
                 if (!empty($error->getMessage())) {
                     $message = $error->getMessage();

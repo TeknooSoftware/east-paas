@@ -57,10 +57,10 @@ class ConfigureImagesBuilder
     ): self {
         /** @var Promise<ImageBuilder, mixed, mixed> $promise */
         $promise = new Promise(
-            static function (ImageBuilder $builder) use ($manager): void {
+            onSuccess: static function (ImageBuilder $builder) use ($manager): void {
                 $manager->updateWorkPlan([ImageBuilder::class => $builder]);
             },
-            static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.images.configuration_error',
                     500,

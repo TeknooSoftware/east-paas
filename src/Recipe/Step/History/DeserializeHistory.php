@@ -57,10 +57,10 @@ class DeserializeHistory
             History::class,
             'json',
             new Promise(
-                static function (History $history) use ($manager): void {
+                onSuccess: static function (History $history) use ($manager): void {
                     $manager->updateWorkPlan([History::class => $history]);
                 },
-                static fn(Throwable $error): ChefInterface => $manager->error(
+                onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                     new RuntimeException(
                         'teknoo.east.paas.error.recipe.history.mal_formed',
                         400,

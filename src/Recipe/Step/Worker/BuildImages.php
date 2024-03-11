@@ -65,7 +65,7 @@ class BuildImages
     ): self {
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
-            function (string $buildSuccess) use ($projectId, $envName, $jobUnit): void {
+            onSuccess: function (string $buildSuccess) use ($projectId, $envName, $jobUnit): void {
                 ($this->dispatchHistory)(
                     $projectId,
                     $envName,
@@ -76,7 +76,7 @@ class BuildImages
                     ],
                 );
             },
-            static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.images.building_error',
                     500,

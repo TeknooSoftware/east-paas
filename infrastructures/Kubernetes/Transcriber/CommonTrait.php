@@ -48,10 +48,10 @@ trait CommonTrait
 
 
     /**
-     * @param array<string, string|array<string, mixed>>|null $result
-     * @return array<string, string|array<string, mixed>>|null
+     * @param array<string, string|array<string, mixed>> $result
+     * @return array<string, string|array<string, mixed>>
      */
-    private static function cleanResult(?array $result): ?array
+    private static function cleanResult(?array $result): array
     {
         if (null !== $result && isset($result['data'])) {
             $result['data'] = '#removed#';
@@ -61,6 +61,6 @@ trait CommonTrait
             $result['metadata']['managedFields'] = '#removed#';
         }
 
-        return $result;
+        return $result ?? [];
     }
 }
