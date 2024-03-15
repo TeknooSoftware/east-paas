@@ -25,17 +25,18 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Exception\UnsupportedIdentityException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Generator;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Running;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
+use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
-use Teknoo\East\Paas\Object\ClusterCredentials;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\AutomatedInterface;
@@ -66,7 +67,13 @@ class Driver implements DriverInterface, AutomatedInterface
 
     private ?ClusterCredentials $credentials = null;
 
+    private ?DefaultsBag $defaultsBag = null;
+
     private ?KubernetesClient $client = null;
+
+    private ?string $namespace = null;
+
+    private ?bool $useHierarchicalNamespaces = null;
 
 
     public function __construct(
@@ -95,15 +102,22 @@ class Driver implements DriverInterface, AutomatedInterface
     {
         return [
             (new Property(Running::class))
-                ->with('master', new Property\IsNotEmpty()),
-
+                ->with('master', new Property\IsNotEmpty())
+                ->with('defaultsBag', new Property\IsNotEmpty())
+                ->with('namespace', new Property\IsNotEmpty())
+                ->with('useHierarchicalNamespaces', new Property\IsNotNull()),
             (new Property(Generator::class))
-                ->with('master', new Property\IsEmpty()),
+                ->with('master', new Property\IsEmpty())
         ];
     }
 
-    public function configure(string $url, ?IdentityInterface $identity): DriverInterface
-    {
+    public function configure(
+        string $url,
+        ?IdentityInterface $identity,
+        DefaultsBag $defaultsBag,
+        string $namespace,
+        bool $useHierarchicalNamespaces,
+    ): DriverInterface {
         if (null !== $identity && !$identity instanceof ClusterCredentials) {
             throw new UnsupportedIdentityException('Not Supported');
         }
@@ -111,6 +125,9 @@ class Driver implements DriverInterface, AutomatedInterface
         $that = clone $this;
         $that->master = $url;
         $that->credentials = $identity;
+        $that->defaultsBag = $defaultsBag;
+        $that->namespace = $namespace;
+        $that->useHierarchicalNamespaces = $useHierarchicalNamespaces;
 
         $that->updateStates();
 

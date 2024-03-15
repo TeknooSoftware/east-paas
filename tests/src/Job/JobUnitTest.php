@@ -32,6 +32,7 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -114,9 +115,7 @@ class JobUnitTest extends TestCase
     }
 
     private function buildObject(
-        ?string $namespace = 'foo',
         array $extra = [],
-        bool $hierarchicalNS = false,
         ImageRegistryInterface $imageRegistry = null,
         string $id = 'test',
         string $prefix = 'bar',
@@ -127,7 +126,6 @@ class JobUnitTest extends TestCase
             id: $id,
             projectResume: ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
             environment: new Environment('foo'),
-            baseNamespace: $namespace,
             prefix: $prefix,
             sourceRepository: $this->getSourceRepositoryMock(),
             imagesRegistry: $imageRegistry ?? $this->getImagesRegistryMock(),
@@ -139,7 +137,6 @@ class JobUnitTest extends TestCase
             history: new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),
             extra: $extra,
             defaults: $defaults,
-            hierarchicalNamespaces: $hierarchicalNS,
             quotas: $quotas,
         );
     }
@@ -166,6 +163,20 @@ class JobUnitTest extends TestCase
         self::assertEquals(
             'azer-jklm',
             $obj->getShortId(),
+        );
+    }
+
+    public function testGetEnvironmentTag()
+    {
+        self::assertIsString(
+            $this->buildObject()->getEnvironmentTag()
+        );
+    }
+
+    public function testGetProjectNormalizedName()
+    {
+        self::assertIsString(
+            $this->buildObject()->getProjectNormalizedName()
         );
     }
 
@@ -267,7 +278,7 @@ class JobUnitTest extends TestCase
             ->method('selectCluster')
             ->with($directory)
             ->willReturnCallback(
-                function ($c, PromiseInterface $p) use ($directory) {
+                function ($c, CompiledDeploymentInterface $cd, PromiseInterface $p) {
                     $p->success($this->createMock(ClusterClientInterface::class));
 
                     return $this->getClusterMock();
@@ -276,7 +287,7 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($directory, $promise)
+            $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
         );
     }
 
@@ -297,7 +308,7 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($directory, $promise)
+            $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
         );
     }
 
@@ -324,7 +335,7 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($directory, $promise)
+            $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
         );
     }
 
@@ -353,9 +364,7 @@ class JobUnitTest extends TestCase
                 'id' => 'test',
                 'project' => ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
                 'environment' => new Environment('foo'),
-                'base_namespace' => 'foo',
                 'prefix' => 'bar',
-                'hierarchical_namespaces' => false,
                 'source_repository' => $this->getSourceRepositoryMock(),
                 'images_repository' => $this->getImagesRegistryMock(),
                 'clusters' => [$this->getClusterMock()],
@@ -409,9 +418,7 @@ class JobUnitTest extends TestCase
                                 'test-prefix' => 'value/bar',
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo',
                                     'prefix' => '',
-                                    'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [
                                     'oci-registry-config-name' => 'fooName',
@@ -466,9 +473,7 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo',
                                     'prefix' => 'bar',
-                                    'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [
                                     'oci-registry-config-name' => 'barName',
@@ -520,9 +525,7 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo',
                                     'prefix' => 'bar',
-                                    'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [],
                             ],
@@ -578,9 +581,7 @@ class JobUnitTest extends TestCase
                                 'test-prefix' => 'value/bar',
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo',
                                     'prefix' => '',
-                                    'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [
                                     'foo' => 'bar',
@@ -601,6 +602,13 @@ class JobUnitTest extends TestCase
     public function testUpdateVariablesInWithDefaultsAlreadyDefinedInJob()
     {
         $ori = [
+            'defaults' => [
+                'clusters' => [
+                    'cluster-one' => [
+                        'storage-size' => 'bar'
+                    ],
+                ],
+            ],
             'foo' => 'foo',
             'bar' => [
                 '${foo}',
@@ -621,7 +629,14 @@ class JobUnitTest extends TestCase
         self::assertInstanceOf(
             JobUnit::class,
             $this->buildObject(
-                defaults: ['oci-registry-config-name' => 'barName'],
+                defaults: [
+                    'oci-registry-config-name' => 'barName',
+                    'clusters' => [
+                        'cluster-one' => [
+                            'storage-provider' => 'foo'
+                        ],
+                    ],
+                ],
                 imageRegistry: $imageRegistry
             )->updateVariablesIn(
                 $ori,
@@ -636,12 +651,16 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo',
                                     'prefix' => 'bar',
-                                    'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [
                                     'oci-registry-config-name' => 'barName',
+                                    'clusters' => [
+                                        'cluster-one' => [
+                                            'storage-provider' => 'foo',
+                                            'storage-size' => 'bar',
+                                        ],
+                                    ],
                                 ],
                             ],
                             $result
@@ -690,54 +709,9 @@ class JobUnitTest extends TestCase
                                 ],
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo',
                                     'prefix' => 'bar',
-                                    'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => ['foo' => 'bar'],
-                            ],
-                            $result
-                        );
-                    },
-                    function (\Throwable  $error): never {
-                        throw $error;
-                    }
-                )
-            )
-        );
-    }
-
-    public function testUpdateVariablesInWithoutHirerachicalNS()
-    {
-        $ori = [
-            'foo' => 'foo',
-            'bar' => [
-                '${foo}',
-                '${foo} text ${bar}',
-            ],
-            '${foo}' => 'text'
-        ];
-
-        self::assertInstanceOf(
-            JobUnit::class,
-            $this->buildObject(hierarchicalNS: false)->updateVariablesIn(
-                $ori,
-                new Promise(
-                    function (array $result) {
-                        self::assertEquals(
-                            [
-                                'foo' => 'foo',
-                                'bar' => [
-                                    'bar',
-                                    'bar text FOO',
-                                ],
-                                '${foo}' => 'text',
-                                'paas' => [
-                                    'namespace' => 'foo',
-                                    'prefix' => 'bar',
-                                    'hierarchical-namespaces' => false,
-                                ],
-                                'defaults' => [],
                             ],
                             $result
                         );
@@ -764,7 +738,7 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $this->buildObject(hierarchicalNS: false, prefix: 'a-prefix')->updateVariablesIn(
+            $this->buildObject(prefix: 'a-prefix')->updateVariablesIn(
                 $ori,
                 new Promise(
                     function (array $result) {
@@ -778,95 +752,7 @@ class JobUnitTest extends TestCase
                                 'test-prefix' => 'a-prefix-value/bar',
                                 '${foo}' => 'text',
                                 'paas' => [
-                                    'namespace' => 'foo',
                                     'prefix' => 'a-prefix',
-                                    'hierarchical-namespaces' => false,
-                                ],
-                                'defaults' => [],
-                            ],
-                            $result
-                        );
-                    },
-                    function (\Throwable  $error): never {
-                        throw $error;
-                    }
-                )
-            )
-        );
-    }
-
-    public function testUpdateVariablesInWithHirerachicalNS()
-    {
-        $ori = [
-            'foo' => 'foo',
-            'bar' => [
-                '${foo}',
-                '${foo} text ${bar}',
-            ],
-            '${foo}' => 'text'
-        ];
-
-        self::assertInstanceOf(
-            JobUnit::class,
-            $this->buildObject(hierarchicalNS: true)->updateVariablesIn(
-                $ori,
-                new Promise(
-                    function (array $result) {
-                        self::assertEquals(
-                            [
-                                'foo' => 'foo',
-                                'bar' => [
-                                    'bar',
-                                    'bar text FOO',
-                                ],
-                                '${foo}' => 'text',
-                                'paas' => [
-                                    'namespace' => 'foo-hllobar',
-                                    'prefix' => 'bar',
-                                    'hierarchical-namespaces' => true,
-                                ],
-                                'defaults' => [],
-                            ],
-                            $result
-                        );
-                    },
-                    function (\Throwable  $error): never {
-                        throw $error;
-                    }
-                )
-            )
-        );
-    }
-
-    public function testUpdateVariablesInWithoutNamespaceAlreadyDefinedAndNonHierarchicalNS()
-    {
-        $ori = [
-            'foo' => 'foo',
-            'bar' => [
-                '${foo}',
-                '${foo} text ${bar}',
-            ],
-            '${foo}' => 'text'
-        ];
-
-        self::assertInstanceOf(
-            JobUnit::class,
-            $this->buildObject(null)->updateVariablesIn(
-                $ori,
-                new Promise(
-                    function (array $result) {
-                        self::assertEquals(
-                            [
-                                'foo' => 'foo',
-                                'bar' => [
-                                    'bar',
-                                    'bar text FOO',
-                                ],
-                                '${foo}' => 'text',
-                                'paas' => [
-                                    'namespace' => 'hllobar',
-                                    'prefix' => 'bar',
-                                    'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [],
                             ],
@@ -887,16 +773,14 @@ class JobUnitTest extends TestCase
 
         self::assertInstanceOf(
             JobUnit::class,
-            $this->buildObject(null)->updateVariablesIn(
+            $this->buildObject()->updateVariablesIn(
                 $ori,
                 new Promise(
                     function (array $result) {
                         self::assertEquals(
                             [
                                 'paas' => [
-                                    'namespace' => 'hllobar',
                                     'prefix' => 'bar',
-                                    'hierarchical-namespaces' => false,
                                 ],
                                 'defaults' => [],
                             ],
@@ -948,7 +832,7 @@ class JobUnitTest extends TestCase
         $extra = [];
         self::assertInstanceOf(
             JobUnitInterface::class,
-            $this->buildObject('foo', ['foo' => 'bar'])->runWithExtra(function ($e) use (&$extra) {
+            $this->buildObject(['foo' => 'bar'])->runWithExtra(function ($e) use (&$extra) {
                 $extra = $e;
             })
         );

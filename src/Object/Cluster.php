@@ -26,17 +26,19 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Object;
 
 use Stringable;
-use Teknoo\East\Common\Object\VisitableTrait;
-use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
-use Teknoo\Recipe\Promise\Promise;
-use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Contracts\Object\VisitableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
+use Teknoo\East\Common\Object\VisitableTrait;
+use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
+use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
@@ -56,11 +58,17 @@ class Cluster implements
     Stringable
 {
     use ObjectTrait;
-    use VisitableTrait;
+    use VisitableTrait {
+        VisitableTrait::runVisit as realRunVisit;
+    }
 
     private ?Project $project = null;
 
     private ?string $name = null;
+
+    private ?string $namespace = null;
+
+    private bool $useHierarchicalNamespaces = false;
 
     private ?string $type = null;
 
@@ -95,6 +103,31 @@ class Cluster implements
     public function setName(string $name): Cluster
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    private function getNamespace(): string
+    {
+        return (string) $this->namespace;
+    }
+
+    public function setNamespace(string $namespace): Cluster
+    {
+        $this->namespace = $namespace;
+
+        return $this;
+    }
+
+    private function hasHierarchicalNamespaces(): bool
+    {
+        return $this->useHierarchicalNamespaces;
+    }
+
+    public function useHierarchicalNamespaces(bool $hierarchicalNamespaces): Cluster
+    {
+        $this->useHierarchicalNamespaces = $hierarchicalNamespaces;
+
         return $this;
     }
 
@@ -184,12 +217,27 @@ class Cluster implements
         return $this;
     }
 
+    /**
+     * @param array<string, callable> $visitors
+     */
+    private function runVisit(array &$visitors): void
+    {
+        if (isset($visitors['use_hierarchical_namespaces'])) {
+            $visitors['useHierarchicalNamespaces'] = $visitors['use_hierarchical_namespaces'];
+            unset($visitors['use_hierarchical_namespaces']);
+        }
+
+        $this->realRunVisit($visitors);
+    }
+
     public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
     {
         $normalizer->injectData([
             '@class' => self::class,
             'id' => $this->getId(),
             'name' => $this->getName(),
+            'namespace' => $this->getNamespace(),
+            'use_hierarchical_namespaces' => $this->hasHierarchicalNamespaces(),
             'type' => $this->getType(),
             'address' => $this->getAddress(),
             'identity' => $this->getIdentity(),
@@ -203,9 +251,26 @@ class Cluster implements
     /**
      * @param PromiseInterface<DriverInterface, mixed> $promise
      */
-    public function selectCluster(Directory $clientsDirectory, PromiseInterface $promise): self
-    {
-        $clientsDirectory->require((string) $this->getType(), $this, $promise);
+    public function selectCluster(
+        Directory $clientsDirectory,
+        CompiledDeploymentInterface $compiledDeployment,
+        PromiseInterface $promise
+    ): self {
+        /** @var Promise<DefaultsBag, DefaultsBag, mixed> $defaultsBagPromise */
+        $defaultsBagPromise = new Promise(
+            fn (DefaultsBag $defaultsBag) => $defaultsBag,
+            fn (Throwable $error) => throw $error,
+        );
+        $defaultsBagPromise->setDefaultResult(new DefaultsBag());
+
+        $compiledDeployment->compileDefaultsBags(
+            $this->getName(),
+            $defaultsBagPromise,
+        );
+
+        /** @var DefaultsBag $defaultsBag */
+        $defaultsBag = $defaultsBagPromise->fetchResult();
+        $clientsDirectory->require((string) $this->getType(), $defaultsBag, $this, $promise);
 
         return $this;
     }
@@ -213,13 +278,19 @@ class Cluster implements
     /**
      * @param PromiseInterface<DriverInterface, mixed> $promise
      */
-    public function configureCluster(DriverInterface $client, PromiseInterface $promise): self
-    {
+    public function configureCluster(
+        DriverInterface $client,
+        DefaultsBag $resolver,
+        PromiseInterface $promise,
+    ): self {
         try {
             $promise->success(
                 $client->configure(
-                    $this->getAddress(),
-                    $this->getIdentity()
+                    url: $this->getAddress(),
+                    identity: $this->getIdentity(),
+                    defaultsBag: $resolver,
+                    namespace: $this->getNamespace(),
+                    useHierarchicalNamespaces: $this->hasHierarchicalNamespaces(),
                 )
             );
         } catch (Throwable $error) {

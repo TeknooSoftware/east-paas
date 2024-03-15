@@ -28,6 +28,12 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="paas_token_with_space">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z][a-zA-Z0-9 \-]{1,}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="resource_value">
     <xs:restriction base="xs:NMTOKEN">
       <xs:pattern value="[0-9][\.0-9]*(pc|m|K|M|G|T|P|E|Ki|Mi|Gi|Ti|Pi|Ei)?"/>
@@ -43,8 +49,6 @@
   <xs:complexType name="paas">
     <xs:all>
       <xs:element name="version" type="xs:string" minOccurs="0" />
-      <xs:element name="namespace" type="xs:string" minOccurs="0" />
-      <xs:element name="hierarchical-namespaces" type="xs:boolean" minOccurs="0" />
       <xs:element name="quotas" minOccurs="0">
         <xs:complexType>
           <xs:choice>
@@ -77,7 +81,23 @@
       <xs:element name="storage-provider" type="xs:string" minOccurs="0"/>
       <xs:element name="storage-size" type="xs:string" minOccurs="0"/>
       <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
+      <xs:element name="clusters" type="epv:clusters" minOccurs="0" />
     </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="cluster_node">
+    <xs:all>
+      <xs:element name="storage-provider" type="xs:string" minOccurs="0"/>
+      <xs:element name="storage-size" type="xs:string" minOccurs="0"/>
+      <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
+    </xs:all>
+    <xs:attribute name="name" type="epv:paas_token_with_space" />
+  </xs:complexType>
+
+  <xs:complexType name="clusters">
+    <xs:choice>
+      <xs:element name="node" type="epv:cluster_node" maxOccurs="unbounded" />
+    </xs:choice>
   </xs:complexType>
 
   <xs:complexType name="map_node">

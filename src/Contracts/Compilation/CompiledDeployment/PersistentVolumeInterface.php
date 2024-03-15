@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
+
 /**
  * Extension of VolumeInterface to define persistend volume, able to keep data between pods execution.
  *
@@ -35,9 +37,9 @@ namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
  */
 interface PersistentVolumeInterface extends VolumeInterface
 {
-    public function getStorageIdentifier(): ?string;
+    public function getStorageIdentifier(): string|Reference|null;
 
-    public function getStorageSize(): ?string;
+    public function getStorageSize(): string|Reference|null;
 
     public function isResetOnDeployment(): bool;
 }

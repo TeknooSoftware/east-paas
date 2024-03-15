@@ -26,13 +26,19 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Behat;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 
-return static function (bool $hnc, string $hncSuffix, string $prefix, string $withQuota): CompiledDeployment {
+return static function (
+    string $prefix,
+    string $withQuota,
+    string $withDefaults,
+    string $projectName,
+): CompiledDeployment {
     $cd = new CompiledDeployment(
         version: 1,
-        namespace: 'behat-test' . $hncSuffix,
-        hierarchicalNamespaces: $hnc,
-        prefix: $prefix
+        prefix: $prefix,
+        projectName: $projectName,
     );
 
     if (!empty($prefix)) {
@@ -299,7 +305,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix, string $wi
                         'data' => new CompiledDeployment\Volume\PersistentVolume(
                             name: 'data',
                             mountPath: '/opt/data',
-                            storageIdentifier: 'nfs',
+                            storageIdentifier: new Reference('storage-provider'),
                             storageSize: '3Gi',
                             resetOnDeployment: false,
                         ),
@@ -363,6 +369,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix, string $wi
                     resources: new CompiledDeployment\ResourceSet($phpRunResources),
                 ),
             ],
+            ociRegistryConfigName: new Reference('oci-registry-config-name'),
             maxUpgradingPods: 2,
             maxUnavailablePods: 1,
             fsGroup: null,
@@ -391,6 +398,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix, string $wi
                     resources: new CompiledDeployment\ResourceSet($shellResources),
                 ),
             ],
+            ociRegistryConfigName: new Reference('oci-registry-config-name'),
         ),
     );
 
@@ -461,6 +469,7 @@ return static function (bool $hnc, string $hncSuffix, string $prefix, string $wi
                     resources: new CompiledDeployment\ResourceSet($blackfireResources),
                 ),
             ],
+            ociRegistryConfigName: new Reference('oci-registry-config-name'),
             upgradeStrategy: CompiledDeployment\UpgradeStrategy::Recreate,
             fsGroup: 1000,
         ),
@@ -536,6 +545,64 @@ return static function (bool $hnc, string $hncSuffix, string $prefix, string $wi
             tlsSecret: 'demo-vault',
             httpsBackend: true,
         )
+    );
+
+    $cd->setDefaultBags(
+        match ($withDefaults) {
+            'system' => new DefaultsBag(
+                values: [
+                    'storage-provider' => 'system-defaults-storage-identifiers',
+                    'storage-size' => '987Gi',
+                    'oci-registry-config-name' => 'system-oci-registry-behat',
+                ]
+            ),
+            'generic' => new DefaultsBag(
+                values: [
+                    'storage-provider' => 'user-default-behat-provider',
+                    'storage-size' => '123Gi',
+                    'oci-registry-config-name' => 'oci-registry-behat',
+                ]
+            ),
+            'cluster' => (static function () {
+                $parent = new DefaultsBag(
+                    values: [
+                        'storage-provider' => 'user-default-behat-provider',
+                        'storage-size' => '123Gi',
+                        'oci-registry-config-name' => 'oci-registry-behat',
+                    ]
+                );
+                $parent->forCluster('behat-cluster')
+                    ->set('storage-provider', 'cluster-default-behat-provider');
+
+                return $parent;
+            })(),
+            'job-generic' => new DefaultsBag(
+                values: [
+                    'storage-provider' => 'job-default-behat-provider',
+                    'storage-size' => '45Gi',
+                    'oci-registry-config-name' => 'oci-registry-behat-job',
+                ]
+            ),
+            'job-cluster' => (static function () {
+                $parent = new DefaultsBag(
+                    values: [
+                        'storage-provider' => 'job-default-behat-provider',
+                        'storage-size' => '45Gi',
+                        'oci-registry-config-name' => 'oci-registry-behat-job',
+                    ]
+                );
+                $parent->forCluster('behat-cluster')
+                    ->set('storage-provider', 'job-cluster-default-behat-provider');
+
+                return $parent;
+            })(),
+            default => new DefaultsBag(
+                values: [
+                    'storage-provider' => 'nfs',
+                    'oci-registry-config-name' => null,
+                ]
+            ),
+        },
     );
 
     return $cd;

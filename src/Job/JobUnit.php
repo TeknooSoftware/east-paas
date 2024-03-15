@@ -34,6 +34,7 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface as ClusterClientInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
@@ -83,7 +84,6 @@ class JobUnit implements JobUnitInterface
         private readonly string $id,
         private readonly array $projectResume,
         private readonly Environment $environment,
-        private readonly ?string $baseNamespace,
         private readonly ?string $prefix,
         private readonly SourceRepositoryInterface $sourceRepository,
         private readonly ImageRegistryInterface $imagesRegistry,
@@ -92,7 +92,6 @@ class JobUnit implements JobUnitInterface
         private readonly History $history,
         private readonly array $extra = [],
         private readonly array $defaults = [],
-        private readonly bool $hierarchicalNamespaces = false,
         private readonly iterable $quotas = []
     ) {
     }
@@ -112,9 +111,19 @@ class JobUnit implements JobUnitInterface
         return substr(string: $id, offset: 0, length: 4) . '-' . substr(string: $id, offset: -4);
     }
 
+    private static function normalizeString(string $text, string $replace): string
+    {
+        return strtolower(trim((string) preg_replace('#[^A-Za-z0-9-]+#', $replace, $text)));
+    }
+
     public function getEnvironmentTag(): string
     {
-        return strtolower(trim((string) preg_replace('#[^A-Za-z0-9-]+#', '-', (string) $this->environment)));
+        return self::normalizeString((string) $this->environment, '-');
+    }
+
+    public function getProjectNormalizedName(): string
+    {
+        return self::normalizeString((string) ($this->projectResume['name'] ?? ''), '');
     }
 
     public function configureCloningAgent(
@@ -157,7 +166,8 @@ class JobUnit implements JobUnitInterface
 
     public function configureCluster(
         Directory $clientsDirectory,
-        PromiseInterface $promise
+        PromiseInterface $promise,
+        CompiledDeploymentInterface $compiledDeployment,
     ): JobUnitInterface {
         try {
             $selectedClients = new SplQueue();
@@ -170,7 +180,7 @@ class JobUnit implements JobUnitInterface
             );
 
             foreach ($this->clusters as $cluster) {
-                $cluster->selectCluster($clientsDirectory, $clusterPromise);
+                $cluster->selectCluster($clientsDirectory, $compiledDeployment, $clusterPromise);
             }
 
             $promise->success(new ClusterCollection($selectedClients));
@@ -187,9 +197,7 @@ class JobUnit implements JobUnitInterface
             '@class' => Job::class,
             'id' => $this->getId(),
             'project' => $this->projectResume,
-            'base_namespace' => $this->baseNamespace,
             'prefix' => $this->prefix,
-            'hierarchical_namespaces' => $this->hierarchicalNamespaces,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
             'images_repository' => $this->imagesRegistry,
@@ -204,23 +212,8 @@ class JobUnit implements JobUnitInterface
     /**
      * @param array{paas: array<string, mixed>} $values
      */
-    private function updateNamespace(array &$values): void
+    private function updateConfig(array &$values): void
     {
-        $parts = [];
-        if (!empty($this->baseNamespace)) {
-            $parts[] = $this->baseNamespace;
-        }
-
-        if (empty($parts) || true === $this->hierarchicalNamespaces) {
-            $subPart = strtolower((string) ($values['paas']['namespace'] ?? $this->projectResume['name']));
-            $subPart = trim($subPart);
-            $subPart = preg_replace('#[^\pL\d]+#u', '', $subPart);
-
-            $parts[] = $subPart;
-        }
-
-        $values['paas']['namespace'] = implode('-', $parts);
-        $values['paas']['hierarchical-namespaces'] = $this->hierarchicalNamespaces;
         $values['paas']['prefix'] = $this->prefix;
     }
 
@@ -229,7 +222,21 @@ class JobUnit implements JobUnitInterface
      */
     private function updateDefaults(array &$values): void
     {
-        $values['defaults'] = array_merge(
+        $recursiveMerge = function (callable $recursiveMerge, array $array1, array $array2): array {
+            $final = $array1;
+            foreach ($array2 as $key => &$value) {
+                if (is_array($value) && isset($final[$key]) && is_array($final[$key])) {
+                    $final[$key] = $recursiveMerge($recursiveMerge, $final[$key], $value);
+                } else {
+                    $final[$key] = $value;
+                }
+            }
+
+            return $final;
+        };
+
+        $values['defaults'] = $recursiveMerge(
+            $recursiveMerge,
             $this->defaults,
             $values['defaults'] ?? [],
         );
@@ -258,6 +265,7 @@ class JobUnit implements JobUnitInterface
 
         $variables = $this->variables;
         $variables['JOB_ENV_TAG'] = $this->getEnvironmentTag();
+        $variables['JOB_PROJECT_NAME'] = $this->getProjectNormalizedName();
 
         $updateClosure = static function (&$values, callable $recursive) use (&$prefix, &$pattern, &$variables): void {
             foreach ($values as &$value) {
@@ -306,7 +314,7 @@ class JobUnit implements JobUnitInterface
         array $values,
         PromiseInterface $promise
     ): JobUnitInterface {
-        $this->updateNamespace($values);
+        $this->updateConfig($values);
         $this->updateDefaults($values);
 
         $this->updateVariables($values, $promise);

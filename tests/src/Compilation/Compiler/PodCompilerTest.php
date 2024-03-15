@@ -29,13 +29,14 @@ use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
-use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -236,6 +237,7 @@ class PodCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $this->createMock(ResourceManager::class),
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -272,8 +274,7 @@ class PodCompilerTest extends TestCase
                 $workspace,
                 $jobUnit,
                 $this->createMock(ResourceManager::class),
-                'fooBar',
-                'fooBar',
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -310,83 +311,7 @@ class PodCompilerTest extends TestCase
                 $workspace,
                 $jobUnit,
                 $this->createMock(ResourceManager::class),
-                'fooBar',
-                'fooBar',
-            )
-        );
-    }
-
-    public function testCompileWithoutStorageIdentifierInVolume()
-    {
-        $definitions = $this->getDefinitionsArray();
-        unset($definitions['node-pod']);
-        unset($definitions['shell']);
-        $builder = $this->buildCompiler();
-
-        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addPod');
-        $compiledDeployment->expects(self::any())
-            ->method('importVolume')
-            ->willReturnCallback(
-                function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment) {
-                    $promise->fail(new DomainException('foo'));
-
-                    return $compiledDeployment;
-                }
-            );
-
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-
-        $this->expectException(\RuntimeException::class);
-
-        self::assertInstanceOf(
-            PodCompiler::class,
-            $builder->compile(
-                $definitions,
-                $compiledDeployment,
-                $workspace,
-                $jobUnit,
-                $this->createMock(ResourceManager::class),
-                null,
-                'fooBar',
-            )
-        );
-    }
-
-    public function testCompileWithoutStorageSizeInVolume()
-    {
-        $definitions = $this->getDefinitionsArray();
-        unset($definitions['node-pod']);
-        unset($definitions['shell']);
-        $builder = $this->buildCompiler();
-
-        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addPod');
-        $compiledDeployment->expects(self::any())
-            ->method('importVolume')
-            ->willReturnCallback(
-                function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment) {
-                    $promise->fail(new DomainException('foo'));
-
-                    return $compiledDeployment;
-                }
-            );
-
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-
-        $this->expectException(\RuntimeException::class);
-
-        self::assertInstanceOf(
-            PodCompiler::class,
-            $builder->compile(
-                $definitions,
-                $compiledDeployment,
-                $workspace,
-                $jobUnit,
-                $this->createMock(ResourceManager::class),
-                'fooBar',
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -415,8 +340,7 @@ class PodCompilerTest extends TestCase
                 $workspace,
                 $jobUnit,
                 $this->createMock(ResourceManager::class),
-                'fooBar',
-                'fooBar',
+                $this->createMock(DefaultsBag::class),
             )
         );
     }

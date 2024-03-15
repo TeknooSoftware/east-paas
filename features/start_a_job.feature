@@ -27,7 +27,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -46,7 +46,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -66,7 +66,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -86,7 +86,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -107,7 +107,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -127,7 +127,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -148,7 +148,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -168,7 +168,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -189,7 +189,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -197,8 +197,7 @@ Feature: Start a job, by running a new deployment on a worker
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be encrypted
 
-  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with resources defined
-  and relative quota
+  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with resources defined and relative quota
     Given I have a configured platform
     And the platform is booted
     And a project with a complete paas file with resources and relative quota
@@ -210,7 +209,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And larges quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -218,8 +217,7 @@ Feature: Start a job, by running a new deployment on a worker
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the job with encrypted message and quota exists and paas file is valid
-  with resources defined and relative quota
+  Scenario: Return a valid JSON answer when the job with encrypted message and quota exists and paas file is valid with resources defined and relative quota
     Given I have a configured platform
     And encryption capacities between servers and agents
     And the platform is booted
@@ -232,7 +230,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And larges quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -252,7 +250,7 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -273,12 +271,264 @@ Feature: Start a job, by running a new deployment on a worker
     And A consumer Account "fooBar"
     And quotas defined for this account
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "400"
     And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Error, remaining available capacity for `memory` is `6Mi` (soft defined limit), but limit required is `32Mi`"]}'
+    And all messages must be encrypted
+
+  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid with encrypted message
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be encrypted
+
+  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid and have defaults
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file with defaults
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid and have defaults with encrypted message
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with defaults
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be encrypted
+
+  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid and have defaults for the cluster
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file with defaults for the cluster
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid and have defaults for the cluster, with encrypted message
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with defaults for the cluster
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be encrypted
+
+  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have generic defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid with encrypted message
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have generic defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be encrypted
+
+  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have cluster's defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid, with encrypted message
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have cluster's defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be encrypted
+
+  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid and have defaults for the cluster
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file with defaults for the cluster
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have cluster's defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid and have defaults for the cluster, with encrypted message
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with defaults for the cluster
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an image builder
+    And a cluster client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have cluster's defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
     And all messages must be encrypted
 
   Scenario: Return a valid JSON answer when the job exists and paas file with extends is valid
@@ -293,7 +543,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -312,7 +562,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -332,7 +582,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
@@ -351,7 +601,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     And simulate a too long image building
@@ -372,7 +622,7 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster client
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
     And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     And simulate a too long image building
@@ -393,9 +643,9 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster supporting hierarchical namespace
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
@@ -414,9 +664,9 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster supporting hierarchical namespace
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
@@ -434,9 +684,9 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster supporting hierarchical namespace
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body
@@ -455,9 +705,9 @@ Feature: Start a job, by running a new deployment on a worker
     And a cluster supporting hierarchical namespace
     And A consumer Account "fooBar"
     And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
-    And a cluster "kubernetes" dedicated to the environment "prod"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
     And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC" and HNC
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 20 in the body

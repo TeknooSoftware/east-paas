@@ -77,7 +77,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->visit(['name' => $form->setData(...)])
+            $object->visit('name', $form->setData(...))
         );
     }
 
@@ -107,7 +107,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->visit(['name' => $form->setData(...)])
+            $object->visit('name', $form->setData(...))
         );
     }
 
@@ -115,34 +115,6 @@ class AccountTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->setName(new \stdClass());
-    }
-
-    /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
-     */
-    public function testSetUseHierarchicalNamespaces()
-    {
-        $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setUseHierarchicalNamespaces(true)
-        );
-
-        $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
-            ->method('setData')
-            ->with(true);
-
-        self::assertInstanceOf(
-            Account::class,
-            $object->visit(['use_hierarchical_namespaces' => $form->setData(...)])
-        );
-    }
-
-    public function testSetUseHierarchicalNamespacesExceptionOnBadArgument()
-    {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setUseHierarchicalNamespaces(new \stdClass());
     }
 
     public function testSetNamespace()
@@ -160,7 +132,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->visit(['namespace' => $form->setData(...)])
+            $object->visit('namespace', $form->setData(...))
         );
     }
 
@@ -169,6 +141,7 @@ class AccountTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildObject()->setNamespace(new \stdClass());
     }
+
     public function testSetQuotas()
     {
         $object = $this->buildObject();
@@ -184,7 +157,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->visit(['quotas' => $form->setData(...)])
+            $object->visit('quotas', $form->setData(...))
         );
     }
 
@@ -212,7 +185,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->visit(['prefix_namespace' => $form->setData(...)])
+            $object->visit('prefix_namespace', $form->setData(...))
         );
     }
 
@@ -306,7 +279,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->visit(['users' => $form->setData(...)])
+            $object->visit('users', $form->setData(...))
         );
     }
 
@@ -330,7 +303,7 @@ class AccountTest extends TestCase
 
         self::assertInstanceOf(
             Account::class,
-            $object->visit(['users' => $form->setData(...)])
+            $object->visit('users', $form->setData(...))
         );
     }
 
@@ -384,7 +357,7 @@ class AccountTest extends TestCase
         $this->buildObject()->canIPrepareNewJob($project, $job, new \stdClass(), $env);
     }
 
-    public function testCanIPrepareNewJobActiveWithPrefixNameSpace()
+    public function testCanIPrepareNewJobActive()
     {
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
@@ -396,8 +369,6 @@ class AccountTest extends TestCase
                 $job,
                 $date = new \DateTime('2018-05-01'),
                 $env,
-                'foobar',
-                false,
                 null,
             ]
         );
@@ -409,63 +380,6 @@ class AccountTest extends TestCase
                 ->setName('foo')
                 ->setNamespace('bar')
                 ->setPrefixNamespace('foo')
-                ->canIPrepareNewJob($project, $job, $date, $env)
-        );
-    }
-
-    public function testCanIPrepareNewJobActiveWithoutNameSpace()
-    {
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
-
-        $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')->with(
-            'configure',
-            [
-                $job,
-                $date = new \DateTime('2018-05-01'),
-                $env,
-                null,
-                false,
-                null,
-            ]
-        );
-        $project->expects(self::never())->method('refuseExecution');
-
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()
-                ->setName('foo')
-                ->canIPrepareNewJob($project, $job, $date, $env)
-        );
-    }
-
-    public function testCanIPrepareNewJobActiveWithHierarchicalNamespace()
-    {
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
-
-        $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')
-            ->with(
-                'configure',
-                [
-                    $job,
-                    $date = new \DateTime('2018-05-01'),
-                    $env,
-                    'bar',
-                    true,
-                    null,
-                ]
-            );
-        $project->expects(self::never())->method('refuseExecution');
-
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()
-                ->setName('foo')
-                ->setNamespace('bar')
-                ->setUseHierarchicalNamespaces(true)
                 ->canIPrepareNewJob($project, $job, $date, $env)
         );
     }
@@ -483,8 +397,6 @@ class AccountTest extends TestCase
                     $job,
                     $date = new \DateTime('2018-05-01'),
                     $env,
-                    'bar',
-                    false,
                     ['compute' => ['cpu' => 5]],
                 ]
             );
@@ -604,7 +516,6 @@ class AccountTest extends TestCase
                             ?string $name,
                             ?string $namespace,
                             ?string $prefixNamespace,
-                            bool $useHierarchicalNamespaces,
                         ): AccountAwareInterface {
                             AccountTest::assertEquals('fooBar', $name);
                             AccountTest::assertEquals('barFoo', $namespace);

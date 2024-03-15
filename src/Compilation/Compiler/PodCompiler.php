@@ -27,33 +27,33 @@ namespace Teknoo\East\Paas\Compilation\Compiler;
 
 use DomainException;
 use InvalidArgumentException;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
-use Teknoo\East\Paas\Compilation\Compiler\Exception\MissingAttributeException;
-use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
-use Teknoo\Recipe\Promise\Promise;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
-use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
+use Teknoo\East\Paas\Compilation\Compiler\Exception\MissingAttributeException;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\Recipe\Promise\Promise;
 use Throwable;
 
 use function array_map;
 use function array_pop;
 use function explode;
-use function intval;
 use function is_string;
 use function trim;
 
@@ -135,27 +135,22 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     }
 
     /**
-     * @param array<string, mixed> $volumeDefinition
+     * @param array<string, mixed> $vDefinition
      */
     private function buildPersistentVolume(
         string $volumeName,
         string $mountPath,
-        array &$volumeDefinition,
-        ?string $storageIdentifier,
-        ?string $defaultStorageSize,
+        array &$vDefinition,
+        DefaultsBag $defaultsBag,
         bool $resetOnDeployment,
     ): PersistentVolume {
-        $identifier = $volumeDefinition[self::KEY_STORAGE_IDENTIFIER] ?? $storageIdentifier;
+        $identifier = $vDefinition[self::KEY_STORAGE_IDENTIFIER] ?? $defaultsBag->getReference(
+            self::KEY_STORAGE_IDENTIFIER,
+        );
 
-        if (empty($identifier)) {
-            throw new MissingAttributeException("Missing 'storage-provider' in $volumeName pod volume definition");
-        }
-
-        $storageSize = $volumeDefinition[self::KEY_STORAGE_SIZE] ?? $defaultStorageSize;
-
-        if (empty($storageSize)) {
-            throw new MissingAttributeException("Missing 'storage-size' in $volumeName pod volume definition");
-        }
+        $storageSize = $vDefinition[self::KEY_STORAGE_SIZE] ?? $defaultsBag->getReference(
+            self::KEY_STORAGE_SIZE,
+        );
 
         return new PersistentVolume(
             $volumeName,
@@ -224,8 +219,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         array &$embeddedVolumes,
         array &$containerVolumes,
         CompiledDeploymentInterface $compiledDeployment,
-        ?string $storageIdentifier,
-        ?string $defaultStorageSize,
+        DefaultsBag $defaultsBag,
         bool &$isStateless,
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
@@ -241,8 +235,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                     $volumeName,
                     $mountPath,
                     $volumeDefinition,
-                    $storageIdentifier,
-                    $defaultStorageSize,
+                    $defaultsBag,
                     !empty($volumeDefinition[self::KEY_RESET_ON_DEPLOYMENT] ?? false),
                 );
 
@@ -371,10 +364,10 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         JobWorkspaceInterface $workspace,
         JobUnitInterface $job,
         ResourceManager $resourceManager,
-        ?string $storageIdentifier = null,
-        ?string $defaultStorageSize = null,
-        ?string $ociRegistryConfig = null,
+        DefaultsBag $defaultsBag,
     ): CompilerInterface {
+        $ociKey = self::KEY_OCI_REGISTRY_CONFIG_NAME;
+
         foreach ($definitions as $nameSet => &$podsList) {
             $containers = [];
             $isStateless = true;
@@ -389,8 +382,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                     $embeddedVolumes,
                     $containerVolumes,
                     $compiledDeployment,
-                    $storageIdentifier,
-                    $defaultStorageSize,
+                    $defaultsBag,
                     $isStateless,
                 );
 
@@ -492,13 +484,14 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                 $upgradeStrategy = UpgradeStrategy::from($podsList[self::KEY_UPGRADE][self::KEY_STRATEGY]);
             }
 
+            $ociRegistryConfig = $podsList[$ociKey] ?? $defaultsBag->getReference($ociKey);
             $compiledDeployment->addPod(
                 $nameSet,
                 new Pod(
                     name: $nameSet,
                     replicas: $numberOfReplicas,
                     containers: $containers,
-                    ociRegistryConfigName: $podsList[self::KEY_OCI_REGISTRY_CONFIG_NAME] ?? $ociRegistryConfig,
+                    ociRegistryConfigName: $ociRegistryConfig,
                     maxUpgradingPods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UPGRADING_PODS] ?? 1),
                     maxUnavailablePods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UNAVAILABLE_PODS] ?? 0),
                     upgradeStrategy: $upgradeStrategy,

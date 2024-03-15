@@ -29,13 +29,15 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\Account;
+use Teknoo\East\Paas\Object\Cluster;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Paas\Object\Cluster;
-use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
@@ -109,6 +111,59 @@ class ClusterTest extends TestCase
     {
         $this->expectException(\Throwable::class);
         $this->buildObject()->setName(new \stdClass());
+    }
+
+    public function testSetNamespace()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->setNamespace('fooBar')
+        );
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with('fooBar');
+
+        self::assertInstanceOf(
+            Cluster::class,
+            $object->visit(['namespace' => $form->setData(...)])
+        );
+    }
+
+    public function testSetNamespaceExceptionOnBadArgument()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->setNamespace(new \stdClass());
+    }
+
+    /**
+     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     */
+    public function testUseHierarchicalNamespaces()
+    {
+        $object = $this->buildObject();
+        self::assertInstanceOf(
+            $object::class,
+            $object->useHierarchicalNamespaces(true)
+        );
+
+        $form = $this->createMock(FormInterface::class);
+        $form->expects(self::once())
+            ->method('setData')
+            ->with(true);
+
+        self::assertInstanceOf(
+            Cluster::class,
+            $object->visit(['use_hierarchical_namespaces' => $form->setData(...)])
+        );
+    }
+
+    public function testUseHierarchicalNamespacesExceptionOnBadArgument()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->useHierarchicalNamespaces(new \stdClass());
     }
 
     /**
@@ -348,6 +403,8 @@ class ClusterTest extends TestCase
                 '@class' => Cluster::class,
                 'id' => '123',
                 'name' => 'fooName',
+                'namespace' => 'foo-bar',
+                'use_hierarchical_namespaces' => true,
                 'type' => 'fooType',
                 'address' => 'fooAddress',
                 'identity' => ($identity = $this->createMock(IdentityInterface::class)),
@@ -359,6 +416,8 @@ class ClusterTest extends TestCase
             Cluster::class,
             $this->buildObject()->setId('123')
                 ->setName('fooName')
+                ->setNamespace('foo-bar')
+                ->useHierarchicalNamespaces(true)
                 ->setType('fooType')
                 ->setAddress('fooAddress')
                 ->setIdentity($identity)
@@ -463,6 +522,7 @@ class ClusterTest extends TestCase
             Cluster::class,
             $cluster->selectCluster(
                 $directory,
+                $this->createMock(CompiledDeploymentInterface::class),
                 $promise
             )
         );
@@ -473,7 +533,8 @@ class ClusterTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildObject()->configureCluster(
             new \stdClass(),
-            $this->createMock(PromiseInterface::class)
+            $this->createMock(DefaultsBag::class),
+            $this->createMock(PromiseInterface::class),
         );
     }
 
@@ -483,7 +544,8 @@ class ClusterTest extends TestCase
 
         $this->buildObject()->configureCluster(
             $this->createMock(DriverInterface::class),
-            new \stdClass()
+            $this->createMock(DefaultsBag::class),
+            new \stdClass(),
         );
     }
 
@@ -511,6 +573,7 @@ class ClusterTest extends TestCase
             Cluster::class,
             $cluster->configureCluster(
                 $client,
+                $this->createMock(DefaultsBag::class),
                 $promise
             )
         );
@@ -540,6 +603,7 @@ class ClusterTest extends TestCase
             Cluster::class,
             $cluster->configureCluster(
                 $client,
+                $this->createMock(DefaultsBag::class),
                 $promise
             )
         );

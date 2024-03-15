@@ -5,7 +5,7 @@ Teknoo Software - PaaS library
 
 Project demo available [here](https://github.com/TeknooSoftware/east-paas-project-demo).
 
-    paas: #Dedicated to compiler
+      paas: #Dedicated to compiler
         version: v1
         resources:
             - category: compute
@@ -15,7 +15,20 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
             - category: memory
               type: memory
               capacity: 512Mi
-    
+
+      #Defaults
+      defaults:
+        storage-provider: foo
+        storage-size: 1Gi
+        oci-registry-config-name: 'paas-config'
+        clusters:
+            cluster-east:
+                storage-provider: foo
+                storage-size: 2Gi
+                oci-registry-config-name: 'paas-config'
+            cluster-west:
+                storage-provider: bar
+
       #Config
       maps:
           map1:

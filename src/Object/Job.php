@@ -85,10 +85,6 @@ class Job implements
 
     protected ?Environment $environment = null;
 
-    protected ?string $baseNamespace = null;
-
-    protected bool $hierarchicalNamespaces = false;
-
     protected ?string $prefix = null;
 
     protected ?SourceRepositoryInterface $sourceRepository = null;
@@ -125,8 +121,6 @@ class Job implements
         'id' => ['default', 'api', 'digest'],
         'project' => ['default', 'api', 'digest'],
         'environment' => ['default', 'api', 'digest'],
-        'base_namespace' => ['default', 'api'],
-        'hierarchical_namespaces' => ['default', 'api'],
         'prefix' => ['default', 'api'],
         'source_repository' => ['default', 'api'],
         'images_repository' => ['default', 'api'],
@@ -215,23 +209,9 @@ class Job implements
         ];
     }
 
-    public function setBaseNamespace(?string $baseNamespace): Job
-    {
-        $this->baseNamespace = $baseNamespace;
-
-        return $this;
-    }
-
     public function setPrefix(?string $prefix): Job
     {
         $this->prefix = $prefix;
-
-        return $this;
-    }
-
-    public function useHierarchicalNamespaces(bool $hierarchicalNamespaces): Job
-    {
-        $this->hierarchicalNamespaces = $hierarchicalNamespaces;
 
         return $this;
     }
@@ -365,9 +345,7 @@ class Job implements
             '@class' => self::class,
             'id' => $this->getId(),
             'project' => $this->getProject(),
-            'base_namespace' => $this->baseNamespace,
             'prefix' => $this->prefix,
-            'hierarchical_namespaces' => $this->hierarchicalNamespaces,
             'environment' => $this->environment,
             'source_repository' => $this->sourceRepository,
             'images_repository' => $this->imagesRegistry,

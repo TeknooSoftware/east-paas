@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Cluster;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -40,7 +41,13 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  */
 interface DriverInterface
 {
-    public function configure(string $url, ?IdentityInterface $identity): DriverInterface;
+    public function configure(
+        string $url,
+        ?IdentityInterface $identity,
+        DefaultsBag $defaultsBag,
+        string $namespace,
+        bool $useHierarchicalNamespaces,
+    ): DriverInterface;
 
     /**
      * @param PromiseInterface<array<string, mixed>, mixed> $promise

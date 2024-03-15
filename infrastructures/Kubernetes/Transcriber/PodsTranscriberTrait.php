@@ -32,6 +32,8 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
@@ -286,7 +288,8 @@ trait PodsTranscriberTrait
         callable $prefixer,
         string $requireLabel,
         callable $updateStrategy,
-        bool $addServiceName
+        bool $addServiceName,
+        DefaultsBag $defaultsBag,
     ): array {
         $hostAlias = [
             'hostnames' => [],
@@ -341,9 +344,16 @@ trait PodsTranscriberTrait
 
         $specs['spec']['strategy'] = $updateStrategy();
 
-        if (!empty($imagePullSecretsName = $pod->getOciRegistryConfigName())) {
+        $imagePullSecretsName = $pod->getOciRegistryConfigName();
+        if ($imagePullSecretsName instanceof Reference) {
+            $imagePullSecretsName = $defaultsBag->resolve($imagePullSecretsName);
+        }
+
+        if (!empty($imagePullSecretsName)) {
             $specs['spec']['template']['spec']['imagePullSecrets'] = [
-                ['name' => $imagePullSecretsName,],
+                [
+                    'name' => $imagePullSecretsName,
+                ],
             ];
         }
 

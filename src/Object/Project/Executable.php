@@ -62,17 +62,13 @@ class Executable implements StateInterface
             Job $job,
             DateTimeInterface $date,
             Environment $environment,
-            ?string $namespace,
-            bool $hierarchicalNamespaces,
             ?iterable $quotas = [],
         ): Project {
             $job->setProject($this);
             $job->setEnvironment($environment);
             $job->setSourceRepository($this->getSourceRepository());
             $job->setImagesRegistry($this->getImagesRegistry());
-            $job->setBaseNamespace($namespace);
             $job->setPrefix($this->getPrefix());
-            $job->useHierarchicalNamespaces($hierarchicalNamespaces);
             if (!empty($quotas)) {
                 $job->setQuotas($quotas);
             }

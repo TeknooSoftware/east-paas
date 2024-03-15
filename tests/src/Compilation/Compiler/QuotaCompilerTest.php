@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory;
 use Teknoo\East\Paas\Compilation\Compiler\QuotaCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
@@ -80,6 +81,7 @@ class QuotaCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $manager,
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -100,6 +102,7 @@ class QuotaCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $manager,
+                $this->createMock(DefaultsBag::class),
             )
         );
     }

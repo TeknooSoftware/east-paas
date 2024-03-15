@@ -110,7 +110,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['name' => $form->setData(...)])
+            $object->visit('name', $form->setData(...))
         );
     }
 
@@ -142,7 +142,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['name' => $form->setData(...)])
+            $object->visit('name', $form->setData(...))
         );
     }
 
@@ -172,7 +172,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['prefix' => $form->setData(...)])
+            $object->visit('prefix', $form->setData(...))
         );
     }
 
@@ -194,7 +194,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['sourceRepository' => $form->setData(...)])
+            $object->visit('sourceRepository', $form->setData(...))
         );
     }
 
@@ -218,7 +218,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['sourceRepository' => $form->setData(...)])
+            $object->visit('sourceRepository', $form->setData(...))
         );
     }
 
@@ -240,7 +240,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['imagesRegistry' => $form->setData(...)])
+            $object->visit('imagesRegistry', $form->setData(...))
         );
     }
 
@@ -264,7 +264,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['imagesRegistry' => $form->setData(...)])
+            $object->visit('imagesRegistry', $form->setData(...))
         );
     }
 
@@ -286,7 +286,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['clusters' => $form->setData(...)])
+            $object->visit('clusters', $form->setData(...))
         );
     }
 
@@ -309,7 +309,7 @@ class ProjectTest extends TestCase
 
         self::assertInstanceOf(
             Project::class,
-            $object->visit(['clusters' => $form->setData(...)])
+            $object->visit('clusters', $form->setData(...))
         );
     }
 
@@ -487,7 +487,7 @@ class ProjectTest extends TestCase
                 ->setSourceRepository($sourceRepository)
                 ->setImagesRegistry($imagesRegistry)
                 ->setClusters([$cluster1, $cluster2])
-                ->configure($job, new \DateTime('2018-05-01'), $env, 'default', false)
+                ->configure($job, new \DateTime('2018-05-01'), $env)
         );
     }
 
@@ -538,7 +538,7 @@ class ProjectTest extends TestCase
                 ->setSourceRepository($sourceRepository)
                 ->setImagesRegistry($imagesRegistry)
                 ->setClusters([$cluster1, $cluster2])
-                ->configure($job, new \DateTime('2018-05-01'), $env, 'default', false, $quotas)
+                ->configure($job, new \DateTime('2018-05-01'), $env, $quotas)
         );
     }
 

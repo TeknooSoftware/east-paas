@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Compilation\Compiler\SecretCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -78,6 +79,7 @@ class SecretCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $this->createMock(ResourceManager::class),
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -101,6 +103,7 @@ class SecretCompilerTest extends TestCase
                 $workspace,
                 $jobUnit,
                 $this->createMock(ResourceManager::class),
+                $this->createMock(DefaultsBag::class),
             )
         );
     }

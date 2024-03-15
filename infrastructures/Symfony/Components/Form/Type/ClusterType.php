@@ -71,7 +71,13 @@ class ClusterType extends AbstractType
         parent::buildForm($builder, $options);
 
         $builder->add('name', TextType::class, ['required' => true]);
+
+        $builder->add('namespace', TextType::class, ['required' => true]);
+
+        $builder->add('useHierarchicalNamespaces', CheckboxType::class, ['required' => false]);
+
         $builder->add('type', ChoiceType::class, ['required' => true, 'choices' => $this->clustersTypes]);
+
         $builder->add(
             'address',
             TextType::class,
@@ -169,9 +175,11 @@ class ClusterType extends AbstractType
                 $forms = iterator_to_array($forms);
 
                 if ($this->allowEditingOfLocked || !$data->isLocked()) {
-                    $data->setName($forms['name']->getData());
-                    $data->setType($forms['type']->getData());
-                    $data->setAddress($forms['address']->getData());
+                    $data->setName((string) $forms['name']->getData());
+                    $data->setNamespace((string) $forms['namespace']->getData());
+                    $data->useHierarchicalNamespaces(!empty($forms['useHierarchicalNamespaces']->getData()));
+                    $data->setType((string) $forms['type']->getData());
+                    $data->setAddress((string) $forms['address']->getData());
                     $data->setEnvironment($forms['environment']->getData());
                     $data->setIdentity($forms['identity']->getData());
 

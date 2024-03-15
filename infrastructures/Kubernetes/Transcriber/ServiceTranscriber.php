@@ -25,13 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\Model\Service as KubeService;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
 use function strtolower;
@@ -99,10 +100,13 @@ class ServiceTranscriber implements ExposingInterface
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
-        PromiseInterface $promise
+        PromiseInterface $promise,
+        DefaultsBag $defaultsBag,
+        string $namespace,
+        bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $compiledDeployment->foreachService(
-            static function (Service $service, string $namespace, string $prefix,) use ($client, $promise): void {
+            static function (Service $service, string $prefix,) use ($client, $namespace, $promise): void {
                 $prefixer = self::createPrefixer($prefix);
                 $kubeService = self::convertToService($service, $namespace, $prefixer);
 

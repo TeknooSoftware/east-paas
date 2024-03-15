@@ -71,14 +71,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
     private const CONFIG_PAAS = '[paas]';
     private const CONFIG_KEY_VERSION = 'version';
-    private const CONFIG_KEY_NAMESPACE = 'namespace';
-    private const CONFIG_KEY_HNC = 'hierarchical-namespaces';
     private const CONFIG_KEY_PREFIX = 'prefix';
-
-    private const CONFIG_DEFAULTS = '[defaults]';
-    private const CONFIG_KEY_STORAGE_PROVIDER = 'storage-provider';
-    private const CONFIG_KEY_STORAGE_SIZE = 'storage-size';
-    private const CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
 
     private JobUnitInterface $job;
 
@@ -99,9 +92,6 @@ class Conductor implements ConductorInterface, AutomatedInterface
         private readonly YamlValidator $validator,
         private readonly QuotaFactory $quotaFactory,
         private readonly iterable $compilers,
-        private readonly ?string $storageIdentifier,
-        private readonly ?string $storageSize,
-        private readonly ?string $defaultOciRegistryConfig,
     ) {
         $this->setPropertyAccessor($propertyAccessor);
         $this->setParser($parser);
@@ -234,65 +224,40 @@ class Conductor implements ConductorInterface, AutomatedInterface
      */
     public function compileDeployment(
         PromiseInterface $promise,
-        ?string $storageIdentifier = null,
-        ?string $storageSize = null,
-        ?string $ociRegistryConfig = null,
     ): ConductorInterface {
         $this->extract(
             $this->configuration,
-            self::CONFIG_DEFAULTS,
+            self::CONFIG_PAAS,
             [
-                self::CONFIG_KEY_STORAGE_PROVIDER => $storageIdentifier,
-                self::CONFIG_KEY_STORAGE_SIZE => $storageSize,
-                self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME => $ociRegistryConfig ?? $this->defaultOciRegistryConfig,
+                self::CONFIG_KEY_VERSION => 'v1',
+                self::CONFIG_KEY_PREFIX => null,
             ],
-            function ($defaults) use ($promise): void {
-                $storageIdentifier = $defaults[self::CONFIG_KEY_STORAGE_PROVIDER] ?? null;
-                $storageSize = $defaults[self::CONFIG_KEY_STORAGE_SIZE] ?? null;
-                $ociRegistryConfig = $defaults[self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME] ?? null;
+            function ($paas) use ($promise): void {
+                if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
+                    $promise->fail(new RuntimeException('Paas config file version not supported', 400));
 
-                $this->extract(
-                    $this->configuration,
-                    self::CONFIG_PAAS,
-                    [
-                        self::CONFIG_KEY_VERSION => 'v1',
-                        self::CONFIG_KEY_NAMESPACE => 'default',
-                        self::CONFIG_KEY_PREFIX => null,
-                    ],
-                    function ($paas) use ($promise, $storageIdentifier, $storageSize, $ociRegistryConfig): void {
-                        if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
-                            $promise->fail(new RuntimeException('Paas config file version not supported', 400));
+                    return;
+                }
 
-                            return;
-                        }
+                $version = (int) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
+                $prefix = $paas[self::CONFIG_KEY_PREFIX] ?? null;
 
-                        $version = (int) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
-                        $namespace = $paas[self::CONFIG_KEY_NAMESPACE] ?? 'default';
-                        $hierarchicalNamespaces = $paas[self::CONFIG_KEY_HNC] ?? false;
-                        $prefix = $paas[self::CONFIG_KEY_PREFIX] ?? null;
+                try {
+                    $compiledDeployment = $this->factory->build(
+                        version: $version,
+                        prefix: $prefix,
+                        projectName: $this->job->getProjectNormalizedName(),
+                    );
 
-                        try {
-                            $compiledDeployment = $this->factory->build(
-                                version: $version,
-                                namespace: $namespace,
-                                hierarchicalNamespaces: !empty($hierarchicalNamespaces),
-                                prefix: $prefix,
-                            );
+                    $this->extractAndCompile(
+                        $compiledDeployment,
+                    );
 
-                            $this->extractAndCompile(
-                                $compiledDeployment,
-                                $storageIdentifier ?? $this->storageIdentifier,
-                                $storageSize ?? $this->storageSize,
-                                $ociRegistryConfig ?? $this->defaultOciRegistryConfig,
-                            );
-
-                            $promise->success($compiledDeployment);
-                        } catch (Throwable $error) {
-                            $promise->fail($error);
-                        }
-                    }
-                );
-            },
+                    $promise->success($compiledDeployment);
+                } catch (Throwable $error) {
+                    $promise->fail($error);
+                }
+            }
         );
 
         return $this;

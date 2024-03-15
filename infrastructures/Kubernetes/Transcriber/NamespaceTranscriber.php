@@ -25,18 +25,16 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DriverAwareInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\GenericTranscriberInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\Model\SubnamespaceAnchor;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\GenericTranscriberInterface;
 use Throwable;
-
-use function array_pop;
-use function explode;
-use function implode;
-use function strtolower;
 
 /**
  * "Exposing transcriber" to translate CompiledDeployment's namespace to Kubernetes namespace manifest.
@@ -46,62 +44,92 @@ use function strtolower;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class NamespaceTranscriber implements GenericTranscriberInterface
+class NamespaceTranscriber implements GenericTranscriberInterface, DriverAwareInterface
 {
     use CommonTrait;
 
+    private ?Driver $driver = null;
+
+    public function setDriver(Driver $driver): DriverAwareInterface
+    {
+        $that = clone $this;
+        $that->driver = $driver;
+
+        return $that;
+    }
+
     /**
-     * @param array<int, string> $parts
      * @return array<string, mixed>
      */
-    protected static function writeSpec(array $parts, string $namespace): array
+    protected static function writeSpec(string $namespace, string $projectName, string $finalNs): array
     {
-        $namespaceChild = array_pop($parts);
-        $namespaceParent = implode('-', $parts);
-
         return [
             'metadata' => [
-                'name' => $namespaceChild,
-                'namespace' => $namespaceParent,
+                'name' => $projectName,
+                'namespace' => $namespace,
                 'labels' => [
-                    'name' => $namespace,
+                    'name' => $finalNs,
                 ],
             ],
         ];
     }
 
-    /**
-     * @param array<int, string> $parts
-     */
-    private static function convertToSubnamespace(array $parts, string $namespace): SubnamespaceAnchor
-    {
+    private static function convertToSubnamespace(
+        string $namespace,
+        string $projectName,
+        string $finalNs,
+    ): SubnamespaceAnchor {
         return new SubnamespaceAnchor(
-            static::writeSpec($parts, $namespace)
+            static::writeSpec(
+                namespace: $namespace,
+                projectName: $projectName,
+                finalNs: $finalNs,
+            )
         );
     }
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
-        PromiseInterface $promise
+        PromiseInterface $promise,
+        DefaultsBag $defaultsBag,
+        string $namespace,
+        bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
-        $compiledDeployment->forNamespace(
-            static function (string $namespace, bool $hierarchicalNamespaces) use ($client, $promise): void {
-                $namespace = strtolower($namespace);
-                $parts = explode('-', $namespace);
+        if (false === $useHierarchicalNamespaces) {
+            $promise->success([]);
 
-                if (false === $hierarchicalNamespaces || 1 === count($parts)) {
-                    $promise->success([]);
+            return $this;
+        }
 
-                    return;
-                }
+        $driver = $this->driver;
 
+        $compiledDeployment->withJobSettings(
+            static function (
+                int $version,
+                string $prefix,
+                string $projectName,
+            ) use (
+                $namespace,
+                $client,
+                $promise,
+                $driver,
+            ): void {
                 try {
+                    $client->setNamespace($namespace);
                     $subnamespacesAnchorsRepository = $client->subnamespacesAnchors();
 
+                    $finalNs = $namespace . '-' . $projectName;
                     $result = $subnamespacesAnchorsRepository->apply(
-                        self::convertToSubnamespace($parts, $namespace)
+                        self::convertToSubnamespace(
+                            $namespace,
+                            $projectName,
+                            $finalNs,
+                        )
                     );
+
+                    $client->setNamespace($finalNs);
+                    $driver?->updateNamespace($finalNs);
 
                     $result = self::cleanResult($result);
 

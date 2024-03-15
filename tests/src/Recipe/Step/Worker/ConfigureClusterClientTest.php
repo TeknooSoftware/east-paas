@@ -29,6 +29,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Cluster\Collection;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -118,7 +119,7 @@ class ConfigureClusterClientTest extends TestCase
 
         self::assertInstanceOf(
             ConfigureClusterClient::class,
-            ($this->buildStep())($job, $client, $manager)
+            ($this->buildStep())($job, $client, $manager, $this->createMock(CompiledDeploymentInterface::class))
         );
     }
 
@@ -146,7 +147,7 @@ class ConfigureClusterClientTest extends TestCase
 
         self::assertInstanceOf(
             ConfigureClusterClient::class,
-            ($this->buildStep())($job, $client, $manager)
+            ($this->buildStep())($job, $client, $manager, $this->createMock(CompiledDeploymentInterface::class))
         );
     }
 }

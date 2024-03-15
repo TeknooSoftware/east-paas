@@ -26,10 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Cluster;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Object\Cluster;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -130,6 +131,7 @@ class DirectoryTest extends TestCase
             Directory::class,
             $directory->require(
                 'bar',
+                $this->createMock(DefaultsBag::class),
                 $cluster,
                 $promise
             )
@@ -159,6 +161,7 @@ class DirectoryTest extends TestCase
             Directory::class,
             $directory->require(
                 'foo',
+                $this->createMock(DefaultsBag::class),
                 $cluster,
                 $promise
             )

@@ -31,6 +31,7 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface as ImageBuilder;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -52,6 +53,8 @@ interface JobUnitInterface extends NormalizableInterface
     public function getShortId(): string;
 
     public function getEnvironmentTag(): string;
+
+    public function getProjectNormalizedName(): string;
 
     /**
      * @param PromiseInterface<CloningAgentInterface, mixed> $promise
@@ -75,7 +78,8 @@ interface JobUnitInterface extends NormalizableInterface
      */
     public function configureCluster(
         Directory $clientsDirectory,
-        PromiseInterface $promise
+        PromiseInterface $promise,
+        CompiledDeploymentInterface $compiledDeployment,
     ): JobUnitInterface;
 
     /**

@@ -25,13 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Teknoo\Kubernetes\Client as KubeClient;
-use Teknoo\Kubernetes\Repository\SecretRepository;
 use PHPUnit\Framework\TestCase;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Repository\SecretRepository;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -54,10 +55,10 @@ class SecretTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachSecret')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
-                $callback(new Secret('foo2', 'map', ['foo' => 'bar'], 'tls'), 'default_namespace', 'a-prefix');
-                $callback(new Secret('foo3', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]], 'foo'), 'default_namespace', 'a-prefix');
-                $callback(new Secret('foo4', 'foo', ['bar'], 'tls'), 'default_namespace', 'a-prefix');
+                $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'a-prefix');
+                $callback(new Secret('foo2', 'map', ['foo' => 'bar'], 'tls'), 'a-prefix');
+                $callback(new Secret('foo3', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]], 'foo'), 'a-prefix');
+                $callback(new Secret('foo4', 'foo', ['bar'], 'tls'), 'a-prefix');
                 return $cd;
             });
 
@@ -91,7 +92,14 @@ class SecretTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             SecretTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -103,7 +111,7 @@ class SecretTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachSecret')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
+                $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'a-prefix');
                 return $cd;
             });
 
@@ -123,7 +131,14 @@ class SecretTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             SecretTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 }

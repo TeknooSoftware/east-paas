@@ -25,16 +25,17 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\Model\StatefulSet;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
 use function substr;
@@ -74,6 +75,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
         int $version,
         callable $prefixer,
         string $requireLabel,
+        DefaultsBag $defaultsBag,
     ): array {
         return static::commonSpecWriting(
             name: $name,
@@ -100,6 +102,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                 ],
             },
             addServiceName: true,
+            defaultsBag: $defaultsBag,
         );
     }
 
@@ -116,17 +119,19 @@ class StatefulSetsTranscriber implements DeploymentInterface
         int $version,
         callable $prefixer,
         string $requireLabel,
+        defaultsBag $defaultsBag,
     ): StatefulSet {
         return new StatefulSet(
             static::writeSpec(
-                $name,
-                $pod,
-                $images,
-                $volumes,
-                $namespace,
-                $version,
-                $prefixer,
-                $requireLabel,
+                name: $name,
+                pod: $pod,
+                images: $images,
+                volumes: $volumes,
+                namespace: $namespace,
+                version: $version,
+                prefixer: $prefixer,
+                requireLabel: $requireLabel,
+                defaultsBag: $defaultsBag,
             )
         );
     }
@@ -134,7 +139,10 @@ class StatefulSetsTranscriber implements DeploymentInterface
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
-        PromiseInterface $promise
+        PromiseInterface $promise,
+        defaultsBag $defaultsBag,
+        string $namespace,
+        bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $requireLabel = $this->requireLabel;
         $compiledDeployment->foreachPod(
@@ -142,12 +150,13 @@ class StatefulSetsTranscriber implements DeploymentInterface
                 Pod $pod,
                 array $images,
                 array $volumes,
-                string $namespace,
                 string $prefix,
             ) use (
                 $client,
+                $namespace,
                 $promise,
-                $requireLabel
+                $requireLabel,
+                $defaultsBag,
             ): void {
                 if ($pod->isStateless()) {
                     return;
@@ -189,6 +198,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                     version: $version,
                     prefixer: $prefixer,
                     requireLabel:$requireLabel,
+                    defaultsBag: $defaultsBag,
                 );
 
                 try {

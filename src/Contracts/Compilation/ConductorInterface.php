@@ -59,8 +59,5 @@ interface ConductorInterface
      */
     public function compileDeployment(
         PromiseInterface $promise,
-        ?string $storageIdentifier = null,
-        ?string $storageSize = null,
-        ?string $ociRegistryConfig = null,
     ): ConductorInterface;
 }

@@ -2,6 +2,9 @@
 /**
  * @author      Richard Déloge <richard@teknoo.software>
  */
+
+use Symfony\Component\HttpKernel\Kernel;
+
 defined('RUN_CLI_MODE')
     || define('RUN_CLI_MODE', true);
 

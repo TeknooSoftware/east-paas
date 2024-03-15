@@ -25,14 +25,16 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Teknoo\Kubernetes\Client as KubernetesClient;
-use Teknoo\Kubernetes\Model\PersistentVolumeClaim;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
+use Teknoo\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\Model\PersistentVolumeClaim;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
 /**
@@ -55,7 +57,18 @@ class VolumeTranscriber implements DeploymentInterface
         PersistentVolumeInterface $volume,
         string $namespace,
         callable $prefixer,
+        DefaultsBag $defaultsBag,
     ): array {
+        $storageIdentifier = $volume->getStorageIdentifier();
+        if ($storageIdentifier instanceof Reference) {
+            $storageIdentifier = $defaultsBag->resolve($storageIdentifier);
+        }
+
+        $storageSize = $volume->getStorageSize();
+        if ($storageSize instanceof Reference) {
+            $storageSize = $defaultsBag->resolve($storageSize);
+        }
+
         return [
             'metadata' => [
                 'name' => $prefixer($volume->getName()),
@@ -68,10 +81,10 @@ class VolumeTranscriber implements DeploymentInterface
                 'accessModes' => [
                     'ReadWriteOnce'
                 ],
-                'storageClassName' => $volume->getStorageIdentifier(),
+                'storageClassName' => (string) $storageIdentifier,
                 'resources' => [
                     'requests' => [
-                        'storage' => $volume->getStorageSize()
+                        'storage' => (string) $storageSize,
                     ]
                 ],
             ],
@@ -82,33 +95,38 @@ class VolumeTranscriber implements DeploymentInterface
         PersistentVolumeInterface $volume,
         string $namespace,
         callable $prefixer,
+        defaultsBag $defaultsBag,
     ): PersistentVolumeClaim {
         return new PersistentVolumeClaim(
-            static::writeSpec($volume, $namespace, $prefixer)
+            static::writeSpec($volume, $namespace, $prefixer, $defaultsBag)
         );
     }
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
-        PromiseInterface $promise
+        PromiseInterface $promise,
+        defaultsBag $defaultsBag,
+        string $namespace,
+        bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $compiledDeployment->foreachVolume(
             function (
                 string $name,
                 VolumeInterface $volume,
-                string $namespace,
                 string $prefix,
             ) use (
                 $client,
+                $namespace,
                 $promise,
+                $defaultsBag,
             ) {
                 $prefixer = self::createPrefixer($prefix);
                 if (!$volume instanceof PersistentVolumeInterface) {
                     return;
                 }
 
-                $pvc = self::convertToPVC($volume, $namespace, $prefixer);
+                $pvc = self::convertToPVC($volume, $namespace, $prefixer, $defaultsBag);
 
                 try {
                     if (!empty($namespace)) {

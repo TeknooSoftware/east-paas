@@ -58,6 +58,19 @@ paas: #Dedicated to compiler
       type: memory
       capacity: 512Mi
 
+#Defaults
+defaults:
+  storage-provider: foo
+  storage-size: 1Gi
+  oci-registry-config-name: 'paas-config'
+  clusters:
+    cluster-east:
+      storage-provider: foo
+      storage-size: 2Gi
+      oci-registry-config-name: 'paas-config'
+    cluster-west:
+      storage-provider: bar
+
 #Config
 maps:
   map1:

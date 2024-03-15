@@ -87,8 +87,6 @@ class Account implements
      */
     protected ?iterable $quotas = null;
 
-    protected bool $useHierarchicalNamespaces = false;
-
     /**
      * @var Project[]
      */
@@ -109,7 +107,6 @@ class Account implements
         'namespace' => ['default', 'admin'],
         'prefixNamespace' => ['admin'],
         'quota' => ['default', 'admin'],
-        'useHierarchicalNamespaces' => ['admin'],
         'users' => ['admin'],
     ];
 
@@ -162,15 +159,6 @@ class Account implements
         return $this;
     }
 
-    private function getFullNamespace(): ?string
-    {
-        if (null === $this->namespace) {
-            return null;
-        }
-
-        return $this->prefixNamespace . $this->namespace;
-    }
-
     private function getNamespace(): ?string
     {
         return $this->namespace;
@@ -209,18 +197,6 @@ class Account implements
     public function setQuotas(?iterable $quotas): Account
     {
         $this->quotas = $quotas;
-
-        return $this;
-    }
-
-    private function isUseHierarchicalNamespaces(): bool
-    {
-        return $this->useHierarchicalNamespaces;
-    }
-
-    public function setUseHierarchicalNamespaces(bool $useHierarchicalNamespaces): self
-    {
-        $this->useHierarchicalNamespaces = $useHierarchicalNamespaces;
 
         return $this;
     }
@@ -267,16 +243,9 @@ class Account implements
      */
     private function runVisit(array &$visitors): void
     {
-        $aliases = [
-            'prefix_namespace' => 'prefixNamespace',
-            'use_hierarchical_namespaces' => 'useHierarchicalNamespaces',
-        ];
-
-        foreach ($aliases as $from => $to) {
-            if (isset($visitors[$from])) {
-                $visitors[$to] = $visitors[$from];
-                unset($visitors[$from]);
-            }
+        if (isset($visitors['prefix_namespace'])) {
+            $visitors['prefixNamespace'] = $visitors['prefix_namespace'];
+            unset($visitors['prefix_namespace']);
         }
 
         $this->realRunVisit($visitors);
@@ -289,7 +258,6 @@ class Account implements
             $this->name,
             $this->namespace,
             $this->prefixNamespace,
-            $this->useHierarchicalNamespaces,
         );
 
         return $this;
@@ -304,7 +272,6 @@ class Account implements
             'namespace' => $this->getNamespace(),
             'prefixNamespace' => $this->getPrefixNamespace(),
             'quotas' => $this->getQuotas(),
-            'useHierarchicalNamespaces' => $this->isUseHierarchicalNamespaces(),
             'users' => fn () => $this->getUsers(),
         ];
 

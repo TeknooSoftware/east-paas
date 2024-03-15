@@ -25,13 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Teknoo\Kubernetes\Client as KubeClient;
-use Teknoo\Kubernetes\Repository\ConfigMapRepository;
 use PHPUnit\Framework\TestCase;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Repository\ConfigMapRepository;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -54,9 +55,9 @@ class ConfigMapTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachMap')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Map('foo', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
-                $callback(new Map('foo2', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
-                $callback(new Map('foo3', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]]), 'default_namespace', 'a-prefix');
+                $callback(new Map('foo', ['foo' => 'bar']), 'a-prefix');
+                $callback(new Map('foo2', ['foo' => 'bar']), 'a-prefix');
+                $callback(new Map('foo3', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]]), 'a-prefix');
                 return $cd;
             });
 
@@ -82,7 +83,14 @@ class ConfigMapTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             ConfigMapTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -94,7 +102,7 @@ class ConfigMapTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachMap')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback(new Map('foo', ['foo' => 'bar']), 'default_namespace', 'a-prefix');
+                $callback(new Map('foo', ['foo' => 'bar']), 'a-prefix');
                 return $cd;
             });
 
@@ -114,7 +122,14 @@ class ConfigMapTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             ConfigMapTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 }

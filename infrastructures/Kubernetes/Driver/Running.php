@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 
 use Closure;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DriverAwareInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -60,6 +61,15 @@ class Running implements StateInterface
         );
     }
 
+    public function updateNamespace(): Closure
+    {
+        return function (string $namespace) {
+            $this->namespace = $namespace;
+
+            return $this;
+        };
+    }
+
     private function runTranscriber(): Closure
     {
         return function (
@@ -80,6 +90,10 @@ class Running implements StateInterface
                 );
 
                 foreach ($this->transcribers as $transcriber) {
+                    if ($transcriber instanceof DriverAwareInterface) {
+                        $transcriber = $transcriber->setDriver($this);
+                    }
+
                     if (
                         ($runDeployment && $transcriber instanceof GenericTranscriberInterface)
                         || ($runDeployment && $transcriber instanceof DeploymentInterface)
@@ -88,7 +102,14 @@ class Running implements StateInterface
                         /**
                          * @var PromiseInterface<array<string, mixed>, mixed> $promise
                          */
-                        $transcriber->transcribe($compiledDeployment, $client, $promise);
+                        $transcriber->transcribe(
+                            $compiledDeployment,
+                            $client,
+                            $promise,
+                            $this->defaultsBag,
+                            (string) $this->namespace,
+                            !empty($this->useHierarchicalNamespaces),
+                        );
                     }
                 }
             } catch (Throwable $error) {

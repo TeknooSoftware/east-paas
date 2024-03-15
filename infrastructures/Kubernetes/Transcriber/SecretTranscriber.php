@@ -25,20 +25,21 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\Model\Secret as KubeSecret;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Throwable;
 
 use function base64_encode;
 use function is_array;
 use function is_string;
-use function strlen;
 use function str_starts_with;
+use function strlen;
 use function substr;
 
 /**
@@ -119,10 +120,13 @@ class SecretTranscriber implements DeploymentInterface
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
-        PromiseInterface $promise
+        PromiseInterface $promise,
+        DefaultsBag $defaultsBag,
+        string $namespace,
+        bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $compiledDeployment->foreachSecret(
-            static function (Secret $secret, string $namespace, string $prefix,) use ($client, $promise): void {
+            static function (Secret $secret, string $prefix,) use ($client, $namespace, $promise): void {
                 $prefixer = self::createPrefixer($prefix);
                 $kubeSecret = self::convertToSecret($secret, $namespace, $prefixer);
 

@@ -25,14 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Teknoo\Kubernetes\Client as KubeClient;
-use Teknoo\Kubernetes\Repository\ServiceRepository;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Repository\ServiceRepository;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -58,12 +59,10 @@ class ServiceTranscriberTest extends TestCase
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(
                     new Service('foo', 'foo', [80 => 8080], Transport::Udp, false),
-                    'default_namespace',
                     'a-prefix',
                 );
                 $callback(
                     new Service('foo', 'foo', [81 => 8081], Transport::Tcp, true),
-                    'default_namespace',
                     'a-prefix',
                 );
                 return $cd;
@@ -100,7 +99,14 @@ class ServiceTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             ServiceTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -113,12 +119,10 @@ class ServiceTranscriberTest extends TestCase
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(
                     new Service('foo', 'foo', [80 => 8080], Transport::Tcp, false),
-                    'default_namespace',
                     'a-prefix',
                 );
                 $callback(
                     new Service('foo', 'foo', [81 => 8081], Transport::Tcp, true),
-                    'default_namespace',
                     '',
                 );
                 return $cd;
@@ -156,7 +160,14 @@ class ServiceTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             ServiceTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 }

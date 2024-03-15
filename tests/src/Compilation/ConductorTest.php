@@ -28,22 +28,24 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as ResourceFactory;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
-use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
-use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
-use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\East\Paas\Compilation\Conductor;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentFactoryInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Compilation\Conductor;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
+use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
+use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Parser\YamlValidator;
+use Teknoo\Recipe\Promise\PromiseInterface;
+use TypeError;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -135,9 +137,6 @@ class ConductorTest extends TestCase
     }
 
     public function buildConductor(
-        ?string $storageProvider = null,
-        ?string $storageSize = null,
-        ?string $defaultOciRegistryConfig = null,
         array $compilers = []
     ): Conductor {
         if (empty($compilers)) {
@@ -150,9 +149,7 @@ class ConductorTest extends TestCase
                         JobWorkspaceInterface $workspace,
                         JobUnitInterface $job,
                         ResourceManager $resourceManager,
-                        ?string $storageIdentifier = null,
-                        ?string $defaultStorageSize = null,
-                        ?string $ociRegistryConfig = null,
+                        DefaultsBag $defaultsBag,
                     ): CompilerInterface {
                         return $this;
                     }
@@ -175,15 +172,12 @@ class ConductorTest extends TestCase
             $this->getYamlValidator(),
             $this->getResourceFactory(),
             $compilers,
-            $storageProvider,
-            $storageSize,
-            $defaultOciRegistryConfig,
         );
     }
 
     public function testConfigureBadJobUnit()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         $this->buildConductor()->configure(
             new \stdClass(),
@@ -193,7 +187,7 @@ class ConductorTest extends TestCase
 
     public function testConfigureBadJobWorkspace()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         $this->buildConductor()->configure(
             $this->createMock(JobUnitInterface::class),
@@ -222,34 +216,21 @@ class ConductorTest extends TestCase
 
     public function testPrepareBadPath()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         $this->buildConductor()->configure(
             new \stdClass(),
-            'foo',
-            $this->createMock(PromiseInterface::class)
+            $this->createMock(JobWorkspaceInterface::class)
         );
     }
 
     public function testPrepareBadConfiguration()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         $this->buildConductor()->configure(
-            'foo',
+            $this->createMock(JobUnitInterface::class),
             new \stdClass(),
-            $this->createMock(PromiseInterface::class)
-        );
-    }
-
-    public function testPrepareBadPromise()
-    {
-        $this->expectException(\TypeError::class);
-
-        $this->buildConductor()->configure(
-            'foo',
-            'bar',
-            new \stdClass()
         );
     }
 
@@ -652,7 +633,7 @@ EOF;
 
     public function testCompileDeploymentBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         $this->buildConductor()->compileDeployment(
             new \stdClass()
@@ -750,7 +731,6 @@ EOF;
     private function prepareTestForCompile(
         array $result,
         ?Conductor $conductor = null,
-        ?string $storage = null,
         array $quotas = [],
     ): Conductor {
         $yaml = <<<'EOF'
@@ -781,7 +761,7 @@ EOF;
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
-        $conductor = ($conductor ?? $this->buildConductor($storage))->configure($jobUnit, $workspace);
+        $conductor = ($conductor ?? $this->buildConductor())->configure($jobUnit, $workspace);
         $this->getYamlParser()
             ->expects(self::any())
             ->method('parse')
@@ -883,93 +863,6 @@ EOF;
         );
     }
 
-    public function testCompileDeploymentWithDefaults()
-    {
-        $result = $this->getResultArray();
-        $result['defaults'] = [
-            'storage-provider' => 'fooProvider',
-            'storage-size' => 'fooSize',
-            'oci-registry-config-name' => 'ociConfigName',
-        ];
-
-        $compiler = $this->createMock(CompilerInterface::class);
-
-        $compiler->expects(self::once())
-            ->method('compile')
-            ->willReturnCallback(
-                function (
-                    array &$definitions,
-                    CompiledDeploymentInterface $compiledDeployment,
-                    JobWorkspaceInterface $workspace,
-                    JobUnitInterface $job,
-                    ResourceManager $resourceManager,
-                    ?string $storageIdentifier = null,
-                    ?string $defaultStorageSize = null,
-                    ?string $ociRegistryConfig = null,
-                ) use ($compiler) {
-                    self::assertEquals('fooProvider', $storageIdentifier);
-                    self::assertEquals('fooSize', $defaultStorageSize);
-                    self::assertEquals('ociConfigName', $ociRegistryConfig);
-                    return $compiler;
-                }
-            );
-
-        $conductor = $this->buildConductor(compilers: ['[secrets]' => $compiler]);
-
-        $conductor = $this->prepareTestForCompile(
-            result: $result,
-            conductor: $conductor,
-        );
-
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
-            ->method('success')
-            ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
-
-        $promise->expects(self::never())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise)
-        );
-    }
-
-    public function testCompileDeploymentWithDefaultStorage()
-    {
-        $result = $this->getResultArray();
-
-        $conductor = $this->prepareTestForCompile($result, null, 'bar');
-
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
-            ->method('success')
-            ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
-        $promise->expects(self::never())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise)
-        );
-    }
-
-    public function testCompileDeploymentWithStorage()
-    {
-        $result = $this->getResultArray();
-
-        $conductor = $this->prepareTestForCompile($result);
-
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
-            ->method('success')
-            ->with(self::callback(fn ($x) => $x instanceof CompiledDeploymentInterface));
-        $promise->expects(self::never())->method('fail');
-
-        self::assertInstanceOf(
-            ConductorInterface::class,
-            $conductor->compileDeployment($promise, 'foo')
-        );
-    }
-
     public function testCompileDeploymentErrorIntercepted()
     {
         $result = $this->getResultArray();
@@ -987,9 +880,6 @@ EOF;
                 '[secrets]' => $compiler,
                 '[volumes]' => $compiler,
             ],
-            'fooBar',
-            'barFoo',
-            'foo',
         );
         $conductor = $this->prepareTestForCompile($result, $conductor);
 

@@ -25,13 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Teknoo\Kubernetes\Client as KubernetesClient;
-use Teknoo\Kubernetes\Model\Ingress as KubeIngress;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
+use Teknoo\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\Model\Ingress as KubeIngress;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
 use function array_keys;
@@ -212,7 +213,10 @@ class IngressTranscriber implements ExposingInterface
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
-        PromiseInterface $promise
+        PromiseInterface $promise,
+        DefaultsBag $defaultsBag,
+        string $namespace,
+        bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
 
         $defaultIngressClass = $this->defaultIngressClass;
@@ -223,10 +227,10 @@ class IngressTranscriber implements ExposingInterface
         $compiledDeployment->foreachIngress(
             static function (
                 Ingress $ingress,
-                string $namespace,
                 string $prefix,
             ) use (
                 $client,
+                $namespace,
                 $promise,
                 $defaultIngressClass,
                 $defaultIngressService,

@@ -25,30 +25,32 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
-use Teknoo\Kubernetes\Client as KubeClient;
-use Teknoo\Kubernetes\Collection\PodCollection;
-use Teknoo\Kubernetes\Model\Deployment;
-use Teknoo\Kubernetes\Model\Pod as PodModel;
-use Teknoo\Kubernetes\Repository\PodRepository;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
-use Teknoo\Kubernetes\Repository\StatefulSetRepository;
-use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Collection\PodCollection;
+use Teknoo\Kubernetes\Model\Deployment;
+use Teknoo\Kubernetes\Model\Pod as PodModel;
+use Teknoo\Kubernetes\Repository\PodRepository;
+use Teknoo\Kubernetes\Repository\StatefulSetRepository;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -188,7 +190,7 @@ class StatefulSetsTranscriberTest extends TestCase
                     isStateless: true,
                 );
 
-                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'a-prefix');
                 $callback(
                     $pod2,
                     [
@@ -200,7 +202,6 @@ class StatefulSetsTranscriberTest extends TestCase
                         'vault' => new SecretVolume('foo', '/secret', 'bar'),
                         'map' => new MapVolume('bar', '/bar', 'bar'),
                     ],
-                    'default_namespace',
                     'a-prefix',
                 );
                 $callback(
@@ -209,7 +210,6 @@ class StatefulSetsTranscriberTest extends TestCase
                     ],
                     [
                     ],
-                    'default_namespace',
                     'a-prefix',
                 );
                 $callback(
@@ -218,7 +218,6 @@ class StatefulSetsTranscriberTest extends TestCase
                     ],
                     [
                     ],
-                    'default_namespace',
                     'a-prefix',
                 );
                 return $cd;
@@ -270,10 +269,16 @@ class StatefulSetsTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
-
 
     public function testRunWithOciRegistryConfigName()
     {
@@ -387,7 +392,7 @@ class StatefulSetsTranscriberTest extends TestCase
                     upgradeStrategy: UpgradeStrategy::Recreate,
                 );
 
-                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'a-prefix');
                 $callback(
                     $pod2,
                     [
@@ -398,7 +403,6 @@ class StatefulSetsTranscriberTest extends TestCase
                         'data' => new PersistentVolume('foo', 'bar'),
                         'vault' => new SecretVolume('foo', '/secret', 'bar'),
                     ],
-                    'default_namespace',
                     'a-prefix',
                 );
                 return $cd;
@@ -457,7 +461,206 @@ class StatefulSetsTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
+        );
+    }
+
+    public function testRunWithOciRegistryConfigNameAsReference()
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects(self::once())
+            ->method('foreachPod')
+            ->willReturnCallback(function (callable $callback) use ($cd) {
+                $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
+                $image1 = $image1->withRegistry('repository.teknoo.run');
+                $image2 = new Image('bar', '/bar', true, '7.4', []);
+                $image2 = $image2->withRegistry('repository.teknoo.run');
+
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+                $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
+
+                $c1 = new Container(
+                    'c1',
+                    'foo',
+                    '7.4',
+                    [80],
+                    ['foo' => $volume1->import('/foo')],
+                    ['foo' => 'bar', 'bar' => 'foo'],
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Command,
+                        command: ['ps', 'aux', 'php'],
+                        path: null,
+                        port: null,
+                        isSecure: null,
+                        successThreshold: 2,
+                        failureThreshold: 5,
+                    ),
+                    new ResourceSet([
+                        new Resource('cpu', '100m', '200m'),
+                        new Resource('cpu', '100m', '200m'),
+                    ]),
+                );
+                $c2 = new Container(
+                    'c2',
+                    'bar',
+                    '7.4',
+                    [80],
+                    [
+                        'bar' => $volume2->import('/bar'),
+                        'data' => new PersistentVolume('foo', 'bar'),
+                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                    ],
+                    [
+                        'foo' => 'bar',
+                        'secret' => new SecretReference('foo', 'bar'),
+                        'map' => new MapReference('foo', 'bar'),
+                        'secret2' => new SecretReference('foo', null, true),
+                        'map2' => new MapReference('foo', null, true),
+                    ],
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Http,
+                        command: null,
+                        path: '/status',
+                        port: 8080,
+                        isSecure: false,
+                        successThreshold: 5,
+                        failureThreshold: 3,
+                    ),
+                    new ResourceSet(),
+                );
+                $c3 = new Container(
+                    'c4',
+                    'alpine',
+                    '3.16',
+                    [8080],
+                    [],
+                    [],
+                    new HealthCheck(
+                        initialDelay: 10,
+                        period: 30,
+                        type: HealthCheckType::Tcp,
+                        command: null,
+                        path: null,
+                        port: 8080,
+                        isSecure: null,
+                        successThreshold: 4,
+                        failureThreshold: 1,
+                    ),
+                    new ResourceSet([
+                        new Resource('cpu', '100m', '200m'),
+                        new Resource('cpu', '100m', '200m'),
+                    ]),
+                );
+
+                $pod1 = new Pod(
+                    name: 'p1',
+                    replicas: 1,
+                    containers: [$c1],
+                    ociRegistryConfigName: new Reference('oci-registry-config-name'),
+                    isStateless: false,
+                    upgradeStrategy: UpgradeStrategy::Recreate
+                );
+                $pod2 = new Pod(
+                    name: 'p2',
+                    replicas: 1,
+                    containers: [$c2, $c3],
+                    fsGroup: 1000,
+                    requires: ['x86_64', 'avx'],
+                    isStateless: false,
+                    upgradeStrategy: UpgradeStrategy::Recreate,
+                );
+
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'a-prefix');
+                $callback(
+                    $pod2,
+                    [
+                        'bar' => ['7.4' => $image2]
+                    ],
+                    [
+                        'bar' => $volume2,
+                        'data' => new PersistentVolume('foo', 'bar'),
+                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                    ],
+                    'a-prefix',
+                );
+                return $cd;
+            });
+
+        $sfsRepo = $this->createMock(StatefulSetRepository::class);
+        $pRepo = $this->createMock(PodRepository::class);
+
+        $kubeClient->expects(self::atLeastOnce())
+            ->method('setNamespace')
+            ->with('default_namespace');
+
+        $kubeClient->expects(self::any())
+            ->method('__call')
+            ->willReturnMap([
+                ['statefulsets', [], $sfsRepo],
+                ['pods', [], $pRepo],
+            ]);
+
+        $sfsRepo->expects(self::any())
+            ->method('setLabelSelector')
+            ->willReturnSelf();
+
+        $pRepo->expects(self::any())
+            ->method('setLabelSelector')
+            ->willReturnSelf();
+
+        $sfsRepo->expects(self::exactly(2))
+            ->method('first')
+            ->willReturnOnConsecutiveCalls(
+                null,
+                new Deployment(['metadata' => ['name' => 'foo']]),
+            );
+
+        $pRepo->expects(self::any())
+            ->method('find')
+            ->willReturnOnConsecutiveCalls(
+                new PodCollection([
+                    new PodModel(['metadata' => ['name' => 'foo']]),
+                    new PodModel(['metadata' => ['name' => 'foo']]),
+                ]),
+                new PodCollection([]),
+            );
+
+        $sfsRepo->expects(self::exactly(2))
+            ->method('apply')
+            ->willReturn(['foo']);
+
+        $pRepo->expects(self::exactly(2))
+            ->method('delete')
+            ->willReturn(['foo']);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
+        $promise->expects(self::never())->method('fail');
+
+        self::assertInstanceOf(
+            StatefulSetsTranscriber::class,
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -541,8 +744,8 @@ class StatefulSetsTranscriberTest extends TestCase
                 $pod1 = new Pod('p1', 1, [$c1], isStateless: false);
                 $pod2 = new Pod('p2', 1, [$c2, $c3], upgradeStrategy: UpgradeStrategy::RollingUpgrade, fsGroup: 1000, isStateless: false);
 
-                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
-                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'a-prefix');
+                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'a-prefix');
                 return $cd;
             });
 
@@ -579,7 +782,14 @@ class StatefulSetsTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -643,8 +853,8 @@ class StatefulSetsTranscriberTest extends TestCase
                 $pod1 = new Pod('p1', 1, [$c1], isStateless: false);
                 $pod2 = new Pod('p2', 1, [$c2], fsGroup: 1000, requires: ['x86_64', 'avx'], isStateless: false);
 
-                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'default_namespace', 'a-prefix');
-                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'default_namespace', 'a-prefix');
+                $callback($pod1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'a-prefix');
+                $callback($pod2, ['bar' => ['7.4' => $image2]], ['bar' => $volume2], 'a-prefix');
                 return $cd;
             });
 
@@ -684,7 +894,14 @@ class StatefulSetsTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 }

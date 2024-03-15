@@ -25,14 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Teknoo\Kubernetes\Client as KubeClient;
-use Teknoo\Kubernetes\Repository\IngressRepository;
 use PHPUnit\Framework\TestCase;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Repository\IngressRepository;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -66,7 +67,6 @@ class IngressTranscriberTest extends TestCase
                         null,
                         false
                     ),
-                    'default_namespace',
                     'a-prefix',
                 );
                 $callback(
@@ -84,7 +84,6 @@ class IngressTranscriberTest extends TestCase
                         ['annotations' => 'foo'],
                         ['alias.foo.com']
                     ),
-                    'default_namespace',
                     'a-prefix',
                 );
 
@@ -113,7 +112,14 @@ class IngressTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             IngressTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -136,7 +142,6 @@ class IngressTranscriberTest extends TestCase
                         null,
                         false
                     ),
-                    'default_namespace',
                     'a-prefix',
                 );
                 $callback(
@@ -153,7 +158,6 @@ class IngressTranscriberTest extends TestCase
                         true,
                         ['annotations' => ['foo' => 'bar']],
                     ),
-                    'default_namespace',
                     'a-prefix',
                 );
                 return $cd;
@@ -183,7 +187,14 @@ class IngressTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             IngressTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 }

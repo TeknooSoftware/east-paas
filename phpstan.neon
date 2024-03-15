@@ -8,6 +8,9 @@ parameters:
             message: '#constructor expects array#'
             path: infrastructures/Kubernetes/Transcriber
         -
+            message: '#DefaultsBag\|null given#'
+            path: infrastructures/Kubernetes/
+        -
             message: '#Anonymous function should return [a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
             path: infrastructures/
         -
@@ -30,7 +33,7 @@ parameters:
             path: infrastructures/ProjectBuilding/AbstractHook.php
         -
             message: '#mixed#'
-            path: infrastructures/Kubernetes/Driver.php
+            path: infrastructures/Kubernetes/
         -
             message: '#mixed#'
             path: infrastructures/Kubernetes/Transcriber/DeploymentTranscriber.php
@@ -71,13 +74,13 @@ parameters:
             message: '#always true#' #false positive
             path:  src/Compilation/Compiler/Quota/MemoryAvailability.php
         -
-            message: '#version is never read, only written#'
-            path:  src/Compilation/CompiledDeployment.php
-        -
             message: '#is unused#'
             path:  src/Object/Account.php
         -
             message: '#project is never read, only written#'
+            path:  src/Object/Cluster.php
+        -
+            message: '#runVisit\(\) is unused#'
             path:  src/Object/Cluster.php
         -
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'

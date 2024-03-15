@@ -26,12 +26,13 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
 use DomainException;
-use Teknoo\Recipe\Promise\Promise;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\Recipe\Promise\Promise;
 use Throwable;
 
 use function is_array;
@@ -69,9 +70,7 @@ class HookCompiler implements CompilerInterface
         JobWorkspaceInterface $workspace,
         JobUnitInterface $job,
         ResourceManager $resourceManager,
-        ?string $storageIdentifier = null,
-        ?string $defaultStorageSize = null,
-        ?string $ociRegistryConfig = null,
+        DefaultsBag $defaultsBag,
     ): CompilerInterface {
         foreach ($definitions as $name => &$hooksList) {
             foreach ($hooksList as $hookName => &$configuration) {

@@ -1,5 +1,38 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.0.0] - 2024-03-18
+### Stable Release
+- Rework defaults values in job :
+  - Defaults values management is migrated into a dedicated compiler `DefaultsCompiler` and no
+    longer from the `Conductor`
+  - Defaults values are stored into a `DefaultBag` instance, and are no longer passed in dedicated variables
+    - `CompilerInterface` (and all implementations) have been updated, following parameters :
+      - `?string $storageIdentifier = null`
+      - `?string $defaultStorageSize = null`
+      - `?string $ociRegistryConfig = null`
+      by `DefaultsBag $defaultsBag`
+    - `Conductor` inject a new defaultBag in the `CompiledDeploymentInterface` instance and pass it to 
+      each compiler. Like Cluster's drivers and Kubernetes Transcribers.
+    - Defaults values, from runners's configurations, and from JobUnit's defaults or paas.yaml file are injected
+      from the `DefaultsCompiler`. This compiler is the first compiler
+    - The `PodCompiler` will use references generated from the `DefaultsBag` instead of scalar value
+    - Kubernetes Transcribers get scalar value thanks to the reference via the bag
+  - Defaults values can be overidden for a cluster (defined in the project and in the job)
+    - RunJob cookbooks, and JobUnit have been updated to pass goods values in the bag to transcriber, defined for 
+      the cluster.
+    - To override a value for a cluster, you can set it into a new dictionnary, under the cluster'name under 
+      `defaults.clusters` in the paas.yaml file. (Like in the documentation).
+- To allow configuration of heterogeneous clusters, Job's namespace and hierarchical namespaces are now managed from 
+  the cluster's definition and not from the account and the job.
+  - Update Account's form type and Cluster form type with the field migration.
+  - Remove namespaces information from `Job` and `JobUnit`.
+  - Remove namespaces information from `CompiledDeploymentInterface` (and remove `foreachNamespace`).
+  - Update Cluster's `DriverInterface` to pass in `configure` method the namespace and the `hnc` behavior.
+    - This method is called by a `Cluster` instance.
+    - The kubernetes driver pass values to transcriber as parameter of `transcribe`.
+  - Remove in `paas.yaml` file information about `namespace` and `use-hierarchical-namespace`.
+- Add job variable `JOB_PROJECT_NAME`
+
 ## [2.8.2] - 2024-03-13
 ### Stable Release
 - Use Recipe 5+

@@ -42,6 +42,5 @@ interface AccountAwareInterface
         ?string $name,
         ?string $namespace,
         ?string $prefixNamespace,
-        bool $useHierarchicalNamespaces,
     ): AccountAwareInterface;
 }

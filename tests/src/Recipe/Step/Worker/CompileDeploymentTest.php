@@ -79,41 +79,8 @@ class CompileDeploymentTest extends TestCase
         $conductor->expects(self::once())
             ->method('compileDeployment')
             ->willReturnCallback(
-                function (PromiseInterface $promise, $storage) use ($conductor, $compiled) {
+                function (PromiseInterface $promise) use ($conductor, $compiled) {
                     $promise->success($compiled);
-                    self::assertNull($storage);
-
-                    return $conductor;
-                }
-            );
-
-        self::assertInstanceOf(
-            CompileDeployment::class,
-            ($this->buildStep())(
-                $manager,
-                $client,
-                $conductor
-            )
-        );
-    }
-
-    public function testInvokeWithStorage()
-    {
-        $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
-        $conductor = $this->createMock(ConductorInterface::class);
-        $compiled = $this->createMock(CompiledDeploymentInterface::class);
-
-        $manager->expects(self::once())
-            ->method('updateWorkPlan')
-            ->with([CompiledDeploymentInterface::class => $compiled,]);
-
-        $conductor->expects(self::once())
-            ->method('compileDeployment')
-            ->willReturnCallback(
-                function (PromiseInterface $promise, $storage) use ($conductor, $compiled) {
-                    $promise->success($compiled);
-                    self::assertEquals('foo', $storage);
 
                     return $conductor;
                 }
@@ -125,7 +92,6 @@ class CompileDeploymentTest extends TestCase
                 $manager,
                 $client,
                 $conductor,
-                'foo'
             )
         );
     }

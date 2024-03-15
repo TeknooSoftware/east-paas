@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Compilation;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -49,8 +50,6 @@ interface CompilerInterface
         JobWorkspaceInterface $workspace,
         JobUnitInterface $job,
         ResourceManager $resourceManager,
-        ?string $storageIdentifier = null,
-        ?string $defaultStorageSize = null,
-        ?string $ociRegistryConfig = null,
+        DefaultsBag $defaultsBag,
     ): CompilerInterface;
 }

@@ -30,6 +30,7 @@ use Teknoo\East\Foundation\Liveness\PingServiceInterface;
 use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 use Teknoo\East\Foundation\Time\DatesService;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\Compiler\DefaultsCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\Exception\MissingAttributeException;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
@@ -276,6 +277,30 @@ return [
 
         return new PodCompiler($podslibrary, $containerslibrary);
     },
+
+    DefaultsCompiler::class => static function (ContainerInterface $container): DefaultsCompiler {
+        $storageProvider = null;
+        if ($container->has('teknoo.east.paas.default_storage_provider')) {
+            $storageProvider = $container->get('teknoo.east.paas.default_storage_provider');
+        }
+
+        $storageSize = null;
+        if ($container->has('teknoo.east.paas.default_storage_size')) {
+            $storageSize = $container->get('teknoo.east.paas.default_storage_size');
+        }
+
+        $defaultOciRegistryConfig = null;
+        if ($container->has('teknoo.east.paas.default_oci_registry_config_name')) {
+            $defaultOciRegistryConfig = $container->get('teknoo.east.paas.default_oci_registry_config_name');
+        }
+
+        return new DefaultsCompiler(
+            storageIdentifier: $storageProvider,
+            storageSize: $storageSize,
+            defaultOciRegistryConfig: $defaultOciRegistryConfig,
+        );
+    },
+
     QuotaCompiler::class => create()
         ->constructor(DIGet(QuotaFactory::class)),
 
@@ -310,6 +335,7 @@ return [
         };
 
         $collection->add('[paas][quotas]', $container->get(QuotaCompiler::class));
+        $collection->add('[defaults]', $container->get(DefaultsCompiler::class));
         $collection->add('[maps]', $container->get(MapCompiler::class));
         $collection->add('[secrets]', $container->get(SecretCompiler::class));
         $collection->add('[volumes]', $container->get(VolumeCompiler::class));
@@ -332,21 +358,6 @@ return [
 
     ConductorInterface::class => DIGet(Conductor::class),
     Conductor::class => static function (ContainerInterface $container): Conductor {
-        $storageProvider = null;
-        if ($container->has('teknoo.east.paas.default_storage_provider')) {
-            $storageProvider = $container->get('teknoo.east.paas.default_storage_provider');
-        }
-
-        $storageSize = null;
-        if ($container->has('teknoo.east.paas.default_storage_size')) {
-            $storageSize = $container->get('teknoo.east.paas.default_storage_size');
-        }
-
-        $defaultOciRegistryConfig = null;
-        if ($container->has('teknoo.east.paas.default_oci_registry_config_name')) {
-            $defaultOciRegistryConfig = $container->get('teknoo.east.paas.default_oci_registry_config_name');
-        }
-
         return new Conductor(
             $container->get(CompiledDeploymentFactoryInterface::class),
             $container->get(PropertyAccessorInterface::class),
@@ -354,9 +365,6 @@ return [
             $container->get(YamlValidator::class),
             $container->get(QuotaFactory::class),
             $container->get(CompilerCollectionInterface::class),
-            $storageProvider,
-            $storageSize,
-            $defaultOciRegistryConfig,
         );
     },
 

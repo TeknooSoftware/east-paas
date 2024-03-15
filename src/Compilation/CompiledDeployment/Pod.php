@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
 
 use IteratorAggregate;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 use Traversable;
@@ -55,7 +56,7 @@ class Pod implements ImmutableInterface, IteratorAggregate
         private readonly string $name,
         private readonly int $replicas,
         private readonly array $containers,
-        private readonly ?string $ociRegistryConfigName = null,
+        private readonly string|Reference|null $ociRegistryConfigName = null,
         private readonly int $maxUpgradingPods = 1,
         private readonly int $maxUnavailablePods = 0,
         private readonly UpgradeStrategy $upgradeStrategy = UpgradeStrategy::RollingUpgrade,
@@ -84,7 +85,7 @@ class Pod implements ImmutableInterface, IteratorAggregate
         yield from $this->containers;
     }
 
-    public function getOciRegistryConfigName(): ?string
+    public function getOciRegistryConfigName(): string|Reference|null
     {
         return $this->ociRegistryConfigName;
     }

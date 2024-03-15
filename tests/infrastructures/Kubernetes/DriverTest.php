@@ -25,18 +25,21 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
-use Teknoo\Kubernetes\Client as KubernetesClient;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 use Teknoo\East\Paas\Object\ClusterCredentials;
+use Teknoo\Kubernetes\Client as KubernetesClient;
+use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\States\Exception\MethodNotImplemented;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -45,7 +48,7 @@ use Teknoo\East\Paas\Object\ClusterCredentials;
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Generator
  * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Running
  */
-class ClientTest extends TestCase
+class DriverTest extends TestCase
 {
     private ?ClientFactoryInterface $clientFactory = null;
 
@@ -88,7 +91,10 @@ class ClientTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildClient()->configure(
             new \stdClass(),
-            $this->createMock(IdentityInterface::class)
+            $this->createMock(IdentityInterface::class),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
         );
     }
 
@@ -97,7 +103,10 @@ class ClientTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->buildClient()->configure(
             'foo',
-            new \stdClass()
+            new \stdClass(),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
         );
     }
 
@@ -106,7 +115,10 @@ class ClientTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->buildClient()->configure(
             'foo',
-            $this->createMock(IdentityInterface::class)
+            $this->createMock(IdentityInterface::class),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
         );
     }
 
@@ -116,7 +128,10 @@ class ClientTest extends TestCase
             Driver::class,
             $this->buildClient()->configure(
                 'foo',
-                $this->createMock(ClusterCredentials::class)
+                $this->createMock(ClusterCredentials::class),
+                $this->createMock(DefaultsBag::class),
+                'namespace',
+                false,
             )
         );
     }
@@ -144,6 +159,9 @@ class ClientTest extends TestCase
 
     public function testDeployWithConfiguration()
     {
+        $c0 = $this->createMock(NamespaceTranscriber::class);
+        $c0->expects(self::once())->method('setDriver')->willReturnSelf();
+        $c0->expects(self::once())->method('transcribe');
         $c1 = $this->createMock(DeploymentInterface::class);
         $c1->expects(self::once())->method('transcribe');
         $c2 = $this->createMock(DeploymentInterface::class);
@@ -156,8 +174,8 @@ class ClientTest extends TestCase
         $this->getTranscriberCollection()
             ->expects(self::any())
             ->method('getIterator')
-            ->willReturnCallback(function () use ($c1, $c2, $c3, $c4) {
-                yield from [$c1, $c2, $c3, $c4];
+            ->willReturnCallback(function () use ($c0, $c1, $c2, $c3, $c4) {
+                yield from [$c0, $c1, $c2, $c3, $c4];
             });
 
         $client = $this->buildClient();
@@ -166,7 +184,10 @@ class ClientTest extends TestCase
             Driver::class,
             $client = $client->configure(
                 'foo',
-                $this->createMock(ClusterCredentials::class)
+                $this->createMock(ClusterCredentials::class),
+                $this->createMock(DefaultsBag::class),
+                'namespace',
+                false,
             )
         );
 
@@ -179,6 +200,39 @@ class ClientTest extends TestCase
             $client->deploy(
                 $cd,
                 $promise
+            )
+        );
+    }
+
+    public function testUpdateNamespaceWithNoConfiguration()
+    {
+        $client = $this->buildClient();
+
+        $this->expectException(MethodNotImplemented::class);
+        $client->updateNamespace(
+            'foo'
+        );
+    }
+
+    public function testUpdateNamespace()
+    {
+        $client = $this->buildClient();
+
+        self::assertInstanceOf(
+            Driver::class,
+            $client = $client->configure(
+                'foo',
+                $this->createMock(ClusterCredentials::class),
+                $this->createMock(DefaultsBag::class),
+                'namespace',
+                false,
+            )
+        );
+
+        self::assertInstanceOf(
+            Driver::class,
+            $client->updateNamespace(
+                'foo'
             )
         );
     }
@@ -215,7 +269,10 @@ class ClientTest extends TestCase
             Driver::class,
             $client = $client->configure(
                 'foo',
-                $this->createMock(ClusterCredentials::class)
+                $this->createMock(ClusterCredentials::class),
+                $this->createMock(DefaultsBag::class),
+                'namespace',
+                false,
             )
         );
 
@@ -278,7 +335,10 @@ class ClientTest extends TestCase
             Driver::class,
             $client = $client->configure(
                 'foo',
-                $this->createMock(ClusterCredentials::class)
+                $this->createMock(ClusterCredentials::class),
+                $this->createMock(DefaultsBag::class),
+                'namespace',
+                false,
             )
         );
 
@@ -327,7 +387,10 @@ class ClientTest extends TestCase
             Driver::class,
             $client = $client->configure(
                 'foo',
-                $this->createMock(ClusterCredentials::class)
+                $this->createMock(ClusterCredentials::class),
+                $this->createMock(DefaultsBag::class),
+                'namespace',
+                false,
             )
         );
 

@@ -85,17 +85,6 @@ class AccountType extends AbstractType
         );
 
         $builder->add(
-            'use_hierarchical_namespaces',
-            CheckboxType::class,
-            [
-                'required' => false,
-                'attr' => [
-                    'readonly' => !empty($options['namespace_in_readonly']),
-                ],
-            ]
-        );
-
-        $builder->add(
             'quotas',
             CollectionType::class,
             [
@@ -152,7 +141,6 @@ class AccountType extends AbstractType
                 $data->setName($forms['name']->getData());
                 $data->setNamespace($forms['namespace']->getData());
                 $data->setPrefixNamespace($forms['prefix_namespace']->getData());
-                $data->setUseHierarchicalNamespaces($forms['use_hierarchical_namespaces']->getData());
                 $data->setUsers($forms['users']->getData());
                 $data->setQuotas($forms['quotas']->getData());
             }

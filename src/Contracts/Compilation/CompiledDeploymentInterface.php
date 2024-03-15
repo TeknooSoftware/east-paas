@@ -25,15 +25,16 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Compilation;
 
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * To define object able to grouping normalized instructions and states of a deployment. Understable by adapters and
@@ -46,6 +47,14 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
  */
 interface CompiledDeploymentInterface
 {
+    public function __construct(
+        int $version,
+        ?string $prefix,
+        ?string $projectName,
+    );
+
+    public function setDefaultBags(DefaultsBag $bag): CompiledDeploymentInterface;
+
     public function addBuildable(BuildableInterface $buildable): CompiledDeploymentInterface;
 
     public function updateBuildable(BuildableInterface $old, BuildableInterface $new): CompiledDeploymentInterface;
@@ -73,8 +82,6 @@ interface CompiledDeploymentInterface
 
     public function addIngress(string $name, Ingress $ingress): CompiledDeploymentInterface;
 
-    public function forNamespace(callable $callback): CompiledDeploymentInterface;
-
     public function foreachHook(callable $callback): CompiledDeploymentInterface;
 
     public function foreachVolume(callable $callback): CompiledDeploymentInterface;
@@ -90,4 +97,8 @@ interface CompiledDeploymentInterface
     public function foreachService(callable $callback): CompiledDeploymentInterface;
 
     public function foreachIngress(callable $callback): CompiledDeploymentInterface;
+
+    public function compileDefaultsBags(string $name, callable $callback): CompiledDeploymentInterface;
+
+    public function withJobSettings(callable $callback): CompiledDeploymentInterface;
 }

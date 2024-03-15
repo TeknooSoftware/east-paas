@@ -1,0 +1,4 @@
+Teknoo\East\Paas\Object\Cluster:
+    attributes:
+        useHierarchicalNamespaces:
+            serialized_name: use_hierarchical_namespaces

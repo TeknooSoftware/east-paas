@@ -26,13 +26,14 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
-use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -75,6 +76,7 @@ class HookCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $this->createMock(ResourceManager::class),
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -111,6 +113,7 @@ class HookCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $this->createMock(ResourceManager::class),
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -141,6 +144,7 @@ class HookCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $this->createMock(ResourceManager::class),
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -165,6 +169,7 @@ class HookCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $this->createMock(ResourceManager::class),
+                $this->createMock(DefaultsBag::class),
             )
         );
     }
@@ -195,6 +200,7 @@ class HookCompilerTest extends TestCase
                 $this->createMock(JobWorkspaceInterface::class),
                 $this->createMock(JobUnitInterface::class),
                 $this->createMock(ResourceManager::class),
+                $this->createMock(DefaultsBag::class),
             )
         );
     }

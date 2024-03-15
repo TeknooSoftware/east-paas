@@ -110,50 +110,6 @@ class JobTest extends TestCase
         $this->buildObject()->setProject(new \stdClass());
     }
 
-    public function testSetBaseNamespaceBadArgument()
-    {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->setBaseNamespace(new \stdClass());
-    }
-
-    public function testSetBaseNamespace()
-    {
-        $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setBaseNamespace('foo')
-        );
-
-        $rP = new \ReflectionProperty($object, 'baseNamespace');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            'foo',
-            $rP->getValue($object)
-        );
-    }
-
-    public function testUseHierarchicalNamespacesBadArgument()
-    {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->useHierarchicalNamespaces(new \stdClass());
-    }
-
-    public function testUseHierarchicalNamespaces()
-    {
-        $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->useHierarchicalNamespaces(true)
-        );
-
-        $rP = new \ReflectionProperty($object, 'hierarchicalNamespaces');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            true,
-            $rP->getValue($object)
-        );
-    }
-
     public function testAddToHistory()
     {
         $object = $this->buildObject();
@@ -484,12 +440,11 @@ class JobTest extends TestCase
         self::assertInstanceOf(
             Job::class,
             $object->visit(
-                [
-                    'clusters' => fn ($clusters) => self::assertInstanceOf(
-                        Cluster::class,
-                        iterator_to_array($clusters)[0],
-                    ),
-                ],
+                'clusters',
+                fn ($clusters) => self::assertInstanceOf(
+                    Cluster::class,
+                    iterator_to_array($clusters)[0],
+                ),
             ),
         );
     }
@@ -550,9 +505,7 @@ class JobTest extends TestCase
                 'images_repository' => null,
                 'clusters' => [],
                 'history' => null,
-                'base_namespace' => 'foo',
                 'prefix' => 'bar',
-                'hierarchical_namespaces' => false,
                 'extra' => ['foo' => 'bar', 'bar' => 'foo'],
                 'defaults' => ['hello' => 'world'],
                 'quotas' => [
@@ -565,7 +518,6 @@ class JobTest extends TestCase
         self::assertInstanceOf(
             Job::class,
             $this->buildObject()->setId('123')
-                ->setBaseNamespace('foo')
                 ->setPrefix('bar')
                 ->setExtra(['foo' => 'bar'])
                 ->setExtra(['bar' => 'foo'])
@@ -596,9 +548,7 @@ class JobTest extends TestCase
                 'images_repository' => null,
                 'clusters' => [],
                 'history' => null,
-                'base_namespace' => 'foo',
                 'prefix' => 'bar',
-                'hierarchical_namespaces' => false,
                 'extra' => ['foo' => 'bar', 'bar' => 'foo'],
                 'defaults' => ['hello' => 'world'],
                 'quotas' => [
@@ -611,7 +561,6 @@ class JobTest extends TestCase
         self::assertInstanceOf(
             Job::class,
             $this->buildObject()->setId('123')
-                ->setBaseNamespace('foo')
                 ->setPrefix('bar')
                 ->setExtra(['foo' => 'bar'])
                 ->setExtra(['bar' => 'foo'])
@@ -643,7 +592,6 @@ class JobTest extends TestCase
         self::assertInstanceOf(
             Job::class,
             $this->buildObject()->setId('123')
-                ->setBaseNamespace('foo')
                 ->setPrefix('bar')
                 ->setExtra(['foo' => 'bar'])
                 ->setExtra(['bar' => 'foo'])

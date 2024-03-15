@@ -25,14 +25,16 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
-use Teknoo\Kubernetes\Client as KubeClient;
-use Teknoo\Kubernetes\Repository\PersistentVolumeClaimRepository;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
+use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Repository\PersistentVolumeClaimRepository;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -55,10 +57,10 @@ class VolumeTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace', 'a-prefix');
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace', 'a-prefix');
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar', true), 'default_namespace', 'a-prefix');
-                $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'default_namespace', 'a-prefix');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', new Reference('storage-size')), 'a-prefix');
+                $callback('foo', new PersistentVolume('foo', 'foo', new Reference('storage-provider'), 'bar'), 'a-prefix');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar', true), 'a-prefix');
+                $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'a-prefix');
                 return $cd;
             });
 
@@ -101,7 +103,14 @@ class VolumeTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             VolumeTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -113,7 +122,7 @@ class VolumeTranscriberTest extends TestCase
         $cd->expects(self::once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'default_namespace', 'a-prefix');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'a-prefix');
                 return $cd;
             });
 
@@ -133,7 +142,14 @@ class VolumeTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             VolumeTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 }

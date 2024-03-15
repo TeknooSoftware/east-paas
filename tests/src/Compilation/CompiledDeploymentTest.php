@@ -25,24 +25,24 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation;
 
-use DomainException;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
-use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -53,7 +53,23 @@ class CompiledDeploymentTest extends TestCase
 {
     private function buildObject(): CompiledDeployment
     {
-        return new CompiledDeployment(1, 'default_namespace', true, 'prefix');
+        return new CompiledDeployment(1, 'prefix', 'project');
+    }
+
+    public function testSetDefaultBagsWrongBuildable()
+    {
+        $this->expectException(\TypeError::class);
+        $this->buildObject()->setDefaultBags(new \stdClass());
+    }
+
+    public function testSetDefaultBags()
+    {
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $this->buildObject()->setDefaultBags(
+                $this->createMock(DefaultsBag::class)
+            )
+        );
     }
 
     public function testAddBuildableWrongBuildable()
@@ -371,31 +387,6 @@ class CompiledDeploymentTest extends TestCase
                     ])
                 )
         );
-    }
-
-    public function testForNamespaceBadCallback()
-    {
-        $this->expectException(\TypeError::class);
-
-        $this->buildObject()->forNamespace(new \stdClass());
-    }
-
-    public function testForNamespace()
-    {
-        $cd = $this->buildObject();
-
-        $count = 0;
-        self::assertInstanceOf(
-            CompiledDeployment::class,
-            $cd->forNamespace(function ($namespace, $hnc) use (&$count) {
-                self::assertEquals('default_namespace', $namespace);
-                self::assertTrue($hnc);
-
-                $count++;
-            })
-        );
-
-        self::assertEquals(1, $count);
     }
 
     public function testForeachHookBadCallback()
@@ -853,5 +844,59 @@ class CompiledDeploymentTest extends TestCase
         );
 
         self::assertEquals(2, $count);
+    }
+
+    public function testCompileDefaultsBagsBadCallback()
+    {
+        $this->expectException(\TypeError::class);
+
+        $this->buildObject()->compileDefaultsBags(new \stdClass());
+    }
+
+    public function testCompileDefaultsBags()
+    {
+        $cd = $this->buildObject();
+
+        $cd->setDefaultBags(
+            $this->createMock(DefaultsBag::class),
+        );
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->compileDefaultsBags('foo', function ($bag) use (&$count) {
+                self::assertInstanceOf(DefaultsBag::class, $bag);
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(1, $count);
+    }
+
+    public function testWithJobSettingsBadCallback()
+    {
+        $this->expectException(\TypeError::class);
+
+        $this->buildObject()->withJobSettings(new \stdClass());
+    }
+
+    public function testWithJobSettings()
+    {
+        $cd = $this->buildObject();
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->withJobSettings(function ($version, $prefix, $projectName) use (&$count) {
+                self::assertEquals(1, $version);
+                self::assertEquals('prefix', $prefix);
+                self::assertEquals('project', $projectName);
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(1, $count);
     }
 }

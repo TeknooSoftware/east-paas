@@ -26,12 +26,14 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Exception;
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
-use PHPUnit\Framework\TestCase;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -46,18 +48,29 @@ class NamespaceTranscriberTest extends TestCase
         return new NamespaceTranscriber();
     }
 
+    public function testSetDriver()
+    {
+        $transcriber = $this->buildTranscriber();
+        $transcriber2 = $transcriber->setDriver($this->createMock(Driver::class));
+
+        self::assertInstanceOf(
+            NamespaceTranscriber::class,
+            $transcriber2,
+        );
+
+        self::assertNotSame(
+            $transcriber,
+            $transcriber2
+        );
+    }
+
     public function testRun()
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
-            ->method('forNamespace')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('default-namespace', false);
-                $callback('default-namespace', false);
-                return $cd;
-            });
+        $cd->expects(self::never())
+            ->method('withJobSettings');
 
         $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
@@ -71,7 +84,7 @@ class NamespaceTranscriberTest extends TestCase
             ->method('apply');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))
+        $promise->expects(self::exactly(1))
             ->method('success')
             ->with(
                 $this->callback(
@@ -85,7 +98,14 @@ class NamespaceTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default_namespace',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -95,10 +115,10 @@ class NamespaceTranscriberTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects(self::once())
-            ->method('forNamespace')
+            ->method('withJobSettings')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('default-namespace-foo', true);
-                $callback('default-namespace-foo', true);
+                $callback(1, 'prefix', 'myproject');
+
                 return $cd;
             });
 
@@ -110,17 +130,24 @@ class NamespaceTranscriberTest extends TestCase
                 ['subnamespacesAnchors', [], $snRepo],
             ]);
 
-        $snRepo->expects(self::exactly(2))
+        $snRepo->expects(self::once())
             ->method('apply')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
+        $promise->expects(self::once())->method('success')->with(['foo']);
         $promise->expects(self::never())->method('fail');
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default-namespace-foo',
+                useHierarchicalNamespaces: true,
+            )
         );
     }
 
@@ -129,12 +156,8 @@ class NamespaceTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
-            ->method('forNamespace')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('default', true);
-                return $cd;
-            });
+        $cd->expects(self::never())
+            ->method('withJobSettings');
 
         $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
@@ -153,7 +176,14 @@ class NamespaceTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default',
+                useHierarchicalNamespaces: false,
+            )
         );
     }
 
@@ -163,9 +193,10 @@ class NamespaceTranscriberTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects(self::once())
-            ->method('forNamespace')
+            ->method('withJobSettings')
             ->willReturnCallback(function (callable $callback) use ($cd) {
-                $callback('default-namespace-foo', true);
+                $callback(1, 'prefix', 'myproject');
+
                 return $cd;
             });
 
@@ -187,7 +218,14 @@ class NamespaceTranscriberTest extends TestCase
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,
-            $this->buildTranscriber()->transcribe($cd, $kubeClient, $promise)
+            $this->buildTranscriber()->transcribe(
+                compiledDeployment: $cd,
+                client: $kubeClient,
+                promise: $promise,
+                defaultsBag: $this->createMock(DefaultsBag::class),
+                namespace: 'default-namespace-foo',
+                useHierarchicalNamespaces: true,
+            )
         );
     }
 }

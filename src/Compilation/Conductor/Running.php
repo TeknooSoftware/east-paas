@@ -26,9 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\Conductor;
 
 use Closure;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\Conductor;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -66,9 +67,6 @@ class Running implements StateInterface
     {
         return function (
             CompiledDeploymentInterface $compiledDeployment,
-            ?string $storageIdentifier,
-            ?string $storageSize,
-            ?string $ociRegistryConfig = null,
         ): void {
             $workspace = $this->getWorkspace();
             $job = $this->getJob();
@@ -85,6 +83,9 @@ class Running implements StateInterface
                 )
             );
 
+            $defaultsBags = new DefaultsBag();
+            $compiledDeployment->setDefaultBags($defaultsBags);
+
             /** @var CompilerInterface $compiler */
             foreach ($this->compilers as $pattern => $compiler) {
                 $this->extract(
@@ -99,9 +100,7 @@ class Running implements StateInterface
                         $workspace,
                         $job,
                         $resourceManager,
-                        $storageIdentifier,
-                        $storageSize,
-                        $ociRegistryConfig,
+                        $defaultsBags,
                     ): void {
                         $compiler->compile(
                             definitions: $configuration,
@@ -109,9 +108,7 @@ class Running implements StateInterface
                             workspace: $workspace,
                             job: $job,
                             resourceManager: $resourceManager,
-                            storageIdentifier: $storageIdentifier,
-                            defaultStorageSize: $storageSize,
-                            ociRegistryConfig: $ociRegistryConfig,
+                            defaultsBag: $defaultsBags,
                         );
                     }
                 );

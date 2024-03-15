@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Recipe\Step\Worker;
 use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Cluster\Collection;
@@ -54,7 +55,8 @@ class ConfigureClusterClient
     public function __invoke(
         JobUnitInterface $job,
         EastClient $eastClient,
-        ManagerInterface $manager
+        ManagerInterface $manager,
+        CompiledDeploymentInterface $compiledDeployment,
     ): self {
         /** @var Promise<Collection, mixed, mixed> $promise */
         $promise = new Promise(
@@ -74,7 +76,7 @@ class ConfigureClusterClient
             ),
         );
 
-        $job->configureCluster($this->clientsDirectory, $promise);
+        $job->configureCluster($this->clientsDirectory, $promise, $compiledDeployment);
 
         return $this;
     }

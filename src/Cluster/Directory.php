@@ -26,9 +26,10 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Cluster;
 
 use DomainException;
-use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Object\Cluster;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * Cluster's drivers directory, configured in the DI, available in PaaS, able to find and configure a Cluster instance
@@ -56,15 +57,19 @@ class Directory
     /**
      * @param PromiseInterface<DriverInterface, mixed> $promise
      */
-    public function require(string $type, Cluster $cluster, PromiseInterface $promise): self
-    {
+    public function require(
+        string $type,
+        DefaultsBag $defaultsBag,
+        Cluster $cluster,
+        PromiseInterface $promise
+    ): self {
         if (!isset($this->clients[$type])) {
             $promise->fail(new DomainException("No available client for $type", 500));
 
             return $this;
         }
 
-        $cluster->configureCluster($this->clients[$type], $promise);
+        $cluster->configureCluster($this->clients[$type], $defaultsBag, $promise);
 
         return $this;
     }

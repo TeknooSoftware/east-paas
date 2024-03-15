@@ -10,7 +10,6 @@
         <field field-name="name" type="string" nullable="false"/>
         <field field-name="namespace" type="string" nullable="true"/>
         <field field-name="prefixNamespace" name="prefix_namespace" type="string" nullable="true"/>
-        <field field-name="useHierarchicalNamespaces" name="use_hierarchical_namespaces" type="bool" nullable="false"/>
         <embed-many field="quotas"
                     field-name="quotas"
                     target-document="Teknoo\East\Paas\Object\AccountQuota"

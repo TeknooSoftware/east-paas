@@ -8,6 +8,8 @@
     <document name="Teknoo\East\Paas\Object\Cluster" collection="clusters" inheritance-type="COLLECTION_PER_CLASS">
         <id type="string" strategy="UUID"/>
         <field field-name="name" type="string" nullable="false"/>
+        <field field-name="namespace" type="string" nullable="false"/>
+        <field field-name="useHierarchicalNamespaces" name="use_hierarchical_namespaces" type="bool" nullable="false"/>
         <field field-name="type" type="string" nullable="false"/>
         <field field-name="address" type="string" nullable="false"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>

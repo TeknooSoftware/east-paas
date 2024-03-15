@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\CompiledDeployment\Volume;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
@@ -46,8 +47,8 @@ class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
     public function __construct(
         private readonly string $name,
         private readonly string $mountPath,
-        private readonly ?string $storageIdentifier = null,
-        private readonly ?string $storageSize = null,
+        private readonly string|Reference|null $storageIdentifier = null,
+        private readonly string|Reference|null $storageSize = null,
         private readonly bool $resetOnDeployment = false,
     ) {
         $this->uniqueConstructorCheck();
@@ -63,12 +64,12 @@ class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
         return $this->mountPath;
     }
 
-    public function getStorageIdentifier(): ?string
+    public function getStorageIdentifier(): string|Reference|null
     {
         return $this->storageIdentifier;
     }
 
-    public function getStorageSize(): ?string
+    public function getStorageSize(): string|Reference|null
     {
         return $this->storageSize;
     }
