@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.0.1] - 2024-03-22
+### Stable Release
+- Fix support of last PHPStan 1.10.64
+- Use State 6.2
+
 ## [3.0.0] - 2024-03-18
 ### Stable Release
 - Rework defaults values in job :

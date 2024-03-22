@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
 
+use Stringable;
+
 /**
  * Interface to define an object buildable to create an OCI image and push it to a repository
  *
@@ -46,7 +48,7 @@ interface BuildableInterface extends RegistrableInterface
     public function getTag(): ?string;
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, Stringable>
      */
     public function getVariables(): array;
 }

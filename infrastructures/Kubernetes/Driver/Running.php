@@ -55,21 +55,26 @@ class Running implements StateInterface
 
     private function getClient(): Closure
     {
-        return fn(): KubernetesClient => $this->client ?? ($this->clientFactory)(
-            (string) $this->master,
-            $this->credentials
-        );
+        return function (): KubernetesClient {
+            return $this->client ?? ($this->clientFactory)(
+                (string) $this->master,
+                $this->credentials,
+            );
+        };
     }
 
     public function updateNamespace(): Closure
     {
-        return function (string $namespace) {
+        return function (string $namespace): self {
             $this->namespace = $namespace;
 
             return $this;
         };
     }
 
+    /**
+     * @param \Teknoo\Recipe\Promise\PromiseInterface<mixed, mixed> $mainPromise
+     */
     private function runTranscriber(): Closure
     {
         return function (

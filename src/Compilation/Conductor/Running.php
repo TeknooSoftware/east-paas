@@ -55,12 +55,16 @@ class Running implements StateInterface
 
     private function getJob(): Closure
     {
-        return fn(): JobUnitInterface => $this->job;
+        return function (): JobUnitInterface {
+            return $this->job;
+        };
     }
 
     private function getWorkspace(): Closure
     {
-        return fn(): JobWorkspaceInterface => $this->workspace;
+        return function (): JobWorkspaceInterface {
+            return $this->workspace;
+        };
     }
 
     private function extractAndCompile(): Closure

@@ -47,7 +47,9 @@ class Running implements StateInterface
 
     private function getJob(): Closure
     {
-        return fn(): JobUnitInterface => $this->job;
+        return function (): JobUnitInterface {
+            return $this->job;
+        };
     }
 
     private function doClean(): Closure
@@ -82,6 +84,8 @@ class Running implements StateInterface
 
     private function getRepositoryPath(): Closure
     {
-        return fn(): string => 'repository/';
+        return function (): string {
+            return 'repository/';
+        };
     }
 }

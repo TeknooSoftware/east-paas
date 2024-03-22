@@ -52,9 +52,14 @@ class Running implements StateInterface
 
     private function getWorkspace(): Closure
     {
-        return fn(): JobWorkspaceInterface => $this->workspace;
+        return function (): JobWorkspaceInterface {
+            return $this->workspace;
+        };
     }
 
+    /**
+     * @param \Teknoo\Recipe\Promise\PromiseInterface<mixed, mixed> $promise
+     */
     private function clone(): Closure
     {
         return function (PromiseInterface $promise): Hook {
@@ -100,6 +105,9 @@ class Running implements StateInterface
         };
     }
 
+    /**
+     * @param \Teknoo\Recipe\Promise\PromiseInterface<mixed, mixed> $promise
+     */
     private function prepareThenClone(): Closure
     {
         return function (PromiseInterface $promise): Hook {

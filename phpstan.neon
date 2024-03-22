@@ -11,11 +11,11 @@ parameters:
             message: '#DefaultsBag\|null given#'
             path: infrastructures/Kubernetes/
         -
-            message: '#Anonymous function should return [a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
-            path: infrastructures/
-        -
             message: '#mixed#'
             path: infrastructures/Image/di.php
+        -
+            message: '#Process::setEnv#'
+            path: infrastructures/Image/ImageWrapper.php
         -
             message: '#non-native method stdClass::#'
             path: infrastructures/PhpSecLib/Security/Encryption.php
@@ -98,38 +98,8 @@ parameters:
             message: '#[a-zA-Z\\]+\|null given#'
             path:  src/Object/Project.php
         -
-            message: '#prepareJob\(\) invoked with 3 parameters, 2 required#'
-            path:  src/Recipe/Step/Job/PrepareJob.php
-        -
             message: '#mixed#'
             path:  */di.php
         -   '#Unreachable statement - code above always terminates#'
         -   '#is never read, only written.#'
-services:
-    -
-        class: Teknoo\States\PHPStan\MethodsClassExtension
-        arguments:
-            parser: @defaultAnalysisParser
-        tags:
-            - phpstan.broker.methodsClassReflectionExtension
-
-    -
-        class: Teknoo\States\PHPStan\Analyser\ASTVisitor
-        arguments:
-            parser: @defaultAnalysisParser
-
-    -
-        class: Teknoo\States\PHPStan\Analyser\NodeScopeResolver
-        autowired: PHPStan\Analyser\NodeScopeResolver
-        arguments:
-            parser: @defaultAnalysisParser
-            reflector: @nodeScopeResolverReflector
-            polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
-            polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
-            earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
-            earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
-            universalObjectCratesClasses: %universalObjectCratesClasses%
-            implicitThrows: %exceptions.implicitThrows%
-            treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-            detectDeadTypeInMultiCatch: %featureToggles.detectDeadTypeInMultiCatch%
-            paramOutType: %featureToggles.paramOutType%
+        -   '#[a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'

@@ -45,6 +45,9 @@ class Executing implements StateInterface
 {
     use StateTrait;
 
+    /**
+     * @param \Teknoo\Recipe\Promise\PromiseInterface<mixed, mixed> $promise
+     */
     public function isRunnable(): Closure
     {
         return function (PromiseInterface $promise): Job {

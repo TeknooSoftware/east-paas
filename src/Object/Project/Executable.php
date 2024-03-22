@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Object\Project;
 
 use Closure;
 use DateTimeInterface;
+use Teknoo\East\Paas\Object\AccountQuota;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
@@ -56,6 +57,9 @@ class Executable implements StateInterface
         };
     }
 
+    /**
+     * @param AccountQuota[] $quotas
+     */
     public function configure(): Closure
     {
         return function (

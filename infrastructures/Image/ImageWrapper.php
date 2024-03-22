@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Image;
 
 use DomainException;
 use SplQueue;
+use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
@@ -147,6 +148,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
         string $workingPath,
         PromiseInterface $promise
     ): BuilderInterface {
+        /** @var SplQueue<Process> $processes */
         $processes = new SplQueue();
         $compiledDeployment->foreachBuildable(
             function (BuildableInterface $image) use ($processes, $workingPath, $compiledDeployment): void {
@@ -228,6 +230,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
         string $workingPath,
         PromiseInterface $promise
     ): BuilderInterface {
+        /** @var SplQueue<Process> $processes */
         $processes = new SplQueue();
         $compiledDeployment->foreachVolume(
             function (

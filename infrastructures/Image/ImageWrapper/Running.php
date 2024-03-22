@@ -59,19 +59,28 @@ class Running implements StateInterface
 
     private function getUrl(): Closure
     {
-        return fn(): string => (string) $this->url;
+        return function (): string {
+            return (string)$this->url;
+        };
     }
 
     private function getAuth(): Closure
     {
-        return fn(): ?XRegistryAuth => $this->auth;
+        return function (): ?XRegistryAuth {
+            return $this->auth;
+        };
     }
 
     private function hash(): Closure
     {
-        return fn(string $name): string => substr(hash('sha256', $this->projectId . $name), 0, 10);
+        return function (string $name): string {
+            return substr(hash('sha256', $this->projectId . $name), 0, 10);
+        };
     }
 
+    /**
+     * @param array<string, \Stringable> $variables
+     */
     private function generateShellScript(): Closure
     {
         return function (
@@ -111,6 +120,10 @@ class Running implements StateInterface
         };
     }
 
+    /**
+     * @param array<string, string> $paths
+     * @param string[] $writables
+     */
     private function generateDockerFile(): Closure
     {
         return function (string $fromImage, array $paths, array $writables = [], ?string $command = null): string {
@@ -135,11 +148,14 @@ class Running implements StateInterface
         };
     }
 
+    /**
+     * @param array<string, mixed> $variables
+     */
     private function startProcess(): Closure
     {
         /**
-         * @param Process<string> $process
-         * @param array<string, mixed> $variables
+         * @param \Symfony\Component\Process\Process<string> $process
+         * @param array<string, \Stringable> $variables
          */
         return function (Process $process, array $variables): void {
             $authEnvs = [
@@ -165,10 +181,14 @@ class Running implements StateInterface
         };
     }
 
+    /**
+     * @param \Symfony\Component\Process\Process[] $processes
+     * @param \Teknoo\Recipe\Promise\PromiseInterface<string, mixed> $promise
+     */
     private function waitProcess(): Closure
     {
         /**
-         * @param Process[] $processes
+         * @param \Symfony\Component\Process\Process[] $processes
          */
         return function (iterable $processes, PromiseInterface $promise): void {
             $error = null;

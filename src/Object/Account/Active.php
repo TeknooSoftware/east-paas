@@ -67,6 +67,9 @@ class Active implements StateInterface
         };
     }
 
+    /**
+     * @param \Teknoo\Recipe\Promise\PromiseInterface<bool, bool> $promise
+     */
     public function verifyAccessToUser(): Closure
     {
         return function (User $user, PromiseInterface $promise): Account {

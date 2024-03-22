@@ -44,7 +44,7 @@ class Generator implements StateInterface
 
     private function update(): Closure
     {
-        return function ($key, $value): Hook {
+        return function (string $key, mixed $value): Hook {
             $this->{$key} = $value;
 
             $this->updateStates();

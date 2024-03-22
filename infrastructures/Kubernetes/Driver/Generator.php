@@ -49,6 +49,9 @@ class Generator implements StateInterface
 {
     use StateTrait;
 
+    /**
+     * @param \Teknoo\Recipe\Promise\PromiseInterface<mixed, mixed> $mainPromise
+     */
     private function runTranscriber(): Closure
     {
         return function (
