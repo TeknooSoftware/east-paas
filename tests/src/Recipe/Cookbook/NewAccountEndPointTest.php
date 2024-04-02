@@ -35,6 +35,7 @@ use Teknoo\East\Common\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Common\Recipe\Step\CreateObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
+use Teknoo\East\Paas\Recipe\Step;
 use Teknoo\Recipe\RecipeInterface;
 use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 
@@ -173,7 +174,19 @@ class NewAccountEndPointTest extends TestCase
             $this->getRenderError(),
             [
                 static function () {},
-                static function () {},
+                new class {
+                    public function __invoke() {}
+                },
+                [
+                    new class {
+                        public function foo() {}
+                    },
+                    'foo',
+                ],
+                new Step(
+                    static function () {},
+                    ['foo' => 'bar']
+                ),
             ]
         );
     }

@@ -25,45 +25,44 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe;
 
-use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\Recipe\Bowl\BowlInterface;
-use Traversable;
-
-use function ksort;
+use Teknoo\Recipe\Value;
 
 /**
- * Abstract class used by the DI to implement `AdditionalStepsInterface` collections to customize East PaaS cookbooks.
+ * Value Object to pass step with mapping to AdditionalStepsList
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-abstract class AbstractAdditionalStepsList implements AdditionalStepsInterface
+class Step
 {
     /**
-     * @var array<int, array<int,BowlInterface|Step|callable>>
+     * @var BowlInterface|callable
      */
-    private array $steps = [];
+    private $step;
 
-    public function add(int $priority, BowlInterface|Step|callable $step): self
+    /**
+     * @param array<string, string|string[]|Value> $with
+     */
+    public function __construct(
+        BowlInterface | callable $step,
+        private readonly array $with = [],
+    ) {
+        $this->step = $step;
+    }
+
+    public function getStep(): callable|BowlInterface
     {
-        $this->steps[$priority][] = $step;
-
-        return $this;
+        return $this->step;
     }
 
     /**
-     * @return Traversable<BowlInterface|Step|callable>
+     * @return array<string, string|string[]|Value>
      */
-    public function getIterator(): Traversable
+    public function getWith(): array
     {
-        $stepsList = $this->steps;
-        ksort($stepsList);
-        foreach ($stepsList as $priority => &$stepSubLists) {
-            foreach ($stepSubLists as &$step) {
-                yield $priority => $step;
-            }
-        }
+        return $this->with;
     }
 }

@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.1.0] - 2024-04-02
+### Stable Release
+- Add value object `Step` to use with `AdditionalStepsList` to custom `mapping/with` for 
+  dynamic steps
+- `AdditionalStepsList` use now the class name of the step instead of `AdditionalStepsInterface` when the added step
+  is an object.
+
 ## [3.0.1] - 2024-03-22
 ### Stable Release
 - Fix support of last PHPStan 1.10.64

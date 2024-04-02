@@ -25,9 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Traits;
 
+use Closure;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
+use Teknoo\East\Paas\Recipe\Step;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\RecipeInterface;
+
+use function is_array;
+use function is_object;
 
 /**
  * Traits to implements AdditionalStepsInterface in cookbook to allow developper to custom these cookbooks in theirs
@@ -56,7 +61,20 @@ trait AdditionalStepsTrait
     private function registerAdditionalSteps(RecipeInterface $recipe, iterable $steps): RecipeInterface
     {
         foreach ($steps as $position => $step) {
-            $recipe = $recipe->cook($step, AdditionalStepsInterface::class, [], (int) $position);
+            $with = [];
+            if ($step instanceof Step) {
+                $with = $step->getWith();
+                $step = $step->getStep();
+            }
+
+            $class = AdditionalStepsInterface::class;
+            if (is_object($step) && !$step instanceof Closure) {
+                $class = $step::class;
+            } elseif (is_array($step) && is_object($step[0])) {
+                $class = $step[0]::class;
+            }
+
+            $recipe = $recipe->cook($step, $class, $with, (int) $position);
         }
 
         return $recipe;
