@@ -56,6 +56,12 @@ parameters:
             message: "#Cannot access offset 'readonly' on mixed#"
             path: infrastructures/Symfony/Components/Form/Type/ClusterType.php
         -
+            message: "#Cannot access an offset on mixed#"
+            path: infrastructures/Symfony/Components/Form/Type/ClusterType.php
+        -
+            message: "#allowEditingOfLocked in empty#"
+            path: infrastructures/Symfony/Components/Form/Type/ClusterType.php
+        -
             message: '#cast mixed to#'
             path: infrastructures/Symfony/Components/Form/Type/
         -

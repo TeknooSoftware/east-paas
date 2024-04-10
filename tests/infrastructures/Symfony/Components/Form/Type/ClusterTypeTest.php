@@ -191,17 +191,32 @@ class ClusterTypeTest extends TestCase
                         $this->createMock(ResolvedFormTypeInterface::class)
                     );
 
-                $form = $this->createMock(Form::class);
-                $form->expects(self::any())
+                $form1 = $this->createMock(Form::class);
+                $form1->expects(self::any())
                     ->method('getConfig')
                     ->willReturn($config);
 
-                $form->expects(self::once())
+                $form2 = $this->createMock(Form::class);
+                $form2->expects(self::any())
+                    ->method('getConfig')
+                    ->willReturn($config);
+                $form2->expects(self::any())
+                    ->method('getData')
+                    ->willReturn('foo');
+
+                $form = $this->createMock(Form::class);
+
+                $form->expects(self::exactly(2))
                     ->method('add');
 
                 $form->expects(self::any())
                     ->method('getIterator')
-                    ->willReturn(new \ArrayIterator([$form]));
+                    ->willReturn(
+                        new \ArrayIterator([
+                            $form1,
+                            $form2,
+                        ])
+                    );
 
                 $object = $this->getObject();
                 $object->setLocked(true);

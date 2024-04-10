@@ -35,6 +35,8 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Blank;
+use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Teknoo\East\Paas\Object\Cluster;
@@ -42,6 +44,7 @@ use Traversable;
 
 use function array_map;
 use function is_array;
+use function is_bool;
 use function iterator_to_array;
 
 /**
@@ -125,6 +128,15 @@ class ClusterType extends AbstractType
                     $options = $config->getOptions();
                     if (!isset($options['attr']) || is_array($options['attr'])) {
                         $options['attr']['readonly'] = true;
+                    }
+
+                    if ('locked' !== $children->getName() || !empty($allowEditingOfLocked)) {
+                        $value = $children->getData();
+                        if (empty($value) && !is_bool($value)) {
+                            $options['constraints'][] = new Blank();
+                        } else {
+                            $options['constraints'][] = new EqualTo($value);
+                        }
                     }
 
                     $typeClass = ($config->getType()->getInnerType())::class;

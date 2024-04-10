@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.1.1] - 2024-04-10
+### Stable Release
+- Improve `ClusterType` to add constraints to avoid editing of locked cluster with forged requests.
+
 ## [3.1.0] - 2024-04-02
 ### Stable Release
 - Add value object `Step` to use with `AdditionalStepsList` to custom `mapping/with` for 
