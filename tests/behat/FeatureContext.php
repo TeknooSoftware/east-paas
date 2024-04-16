@@ -422,7 +422,7 @@ class FeatureContext implements Context
             public function find(string $className, mixed $id) {}
             public function persist($object): void {
                 if ($this->context->slowDb) {
-                    $expectedTime = time() + 20;
+                    $expectedTime = time() + 25;
                     while (time() < $expectedTime) {
                         $x = str_repeat('x', 100000);
                     }
@@ -1500,7 +1500,7 @@ class FeatureContext implements Context
                 PromiseInterface $promise
             ): BuilderInterface {
                 if ($this->context->slowBuilder) {
-                    $expectedTime = time() + 20;
+                    $expectedTime = time() + 25;
                     while (time() < $expectedTime) {
                         $x = str_repeat('x', 100000);
                     }
@@ -1596,7 +1596,7 @@ class FeatureContext implements Context
             ->willReturnCallback(
                 function () {
                     if ($this->slowBuilder) {
-                        $expectedTime = time() + 20;
+                        $expectedTime = time() + 25;
                         while (time() < $expectedTime) {
                             $x = str_repeat('x', 100000);
                         }
