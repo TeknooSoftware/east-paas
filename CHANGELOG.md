@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.2.0] - 2024-04-21
+### Stable Release
+- Rename `Teknoo\East\Paas\Contracts\Message\MessageInterface` to `Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface`
+- Upgrade libs requirements
+
 ## [3.1.1] - 2024-04-10
 ### Stable Release
 - Improve `ClusterType` to add constraints to avoid editing of locked cluster with forged requests.
@@ -930,7 +935,7 @@
 
 ## [0.0.42] - 2021-03-09
 ### Dev release
-- Rename `Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\DispatchJob` to `DispatchJob`
+- Rename `Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Sensitive\DispatchJob` to `DispatchJob`
 
 ## [0.0.41] - 2021-03-08
 ### Dev release

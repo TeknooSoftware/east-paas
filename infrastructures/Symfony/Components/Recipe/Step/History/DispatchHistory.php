@@ -29,9 +29,9 @@ use DateTimeInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Time\DatesService;
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
@@ -65,7 +65,7 @@ class DispatchHistory implements DispatchHistoryInterface
         string $envName,
         string $jobId,
     ): callable {
-        return fn (MessageInterface $message) => $this->bus->dispatch(
+        return fn (SensitiveContentInterface $message) => $this->bus->dispatch(
             new Envelope(
                 message: $message,
                 stamps: [
@@ -114,7 +114,7 @@ class DispatchHistory implements DispatchHistoryInterface
                 if (null === $this->encryption) {
                     $dispatching($message);
                 } else {
-                    /** @var Promise<MessageInterface, mixed, mixed> $promise */
+                    /** @var Promise<SensitiveContentInterface, mixed, mixed> $promise */
                     $promise = new Promise(
                         onSuccess: $dispatching,
                         onFail: fn (Throwable $error) => throw $error,

@@ -30,8 +30,8 @@ use phpseclib3\Crypt\Common\PublicKey;
 use phpseclib3\Crypt\RSA;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\UnsupportedAlgorithmException;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\WrongLibraryAPIException;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Security\Encryption;
@@ -57,9 +57,9 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn('foo');
 
         $promise = $this->createMock(PromiseInterface::class);
@@ -72,7 +72,7 @@ class EncryptionTest extends TestCase
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->encrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
@@ -88,31 +88,31 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn('foo');
-        $message->expects(self::once())
+        $content->expects(self::once())
             ->method('cloneWith')
             ->willReturnCallback(
-                function ($message, $algo) {
+                function ($content, $algo) {
                     self::assertEquals('rsa', $algo);
 
-                    return $this->createMock(MessageInterface::class);
+                    return $this->createMock(SensitiveContentInterface::class);
                 }
             );
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())
             ->method('success')
-            ->with($this->callback(fn ($message) => $message instanceof MessageInterface));
+            ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
         $promise->expects(self::never())
             ->method('fail');
 
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->encrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
@@ -126,7 +126,7 @@ class EncryptionTest extends TestCase
             public function encrypt($plaintext): string {
                 return 'foo';
             }
-            public function verify($message, $signature) {}
+            public function verify($content, $signature) {}
             public function toString($type, array $options = []) {}
             public function getFingerprint($algorithm) {}
         };
@@ -137,31 +137,31 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn('foo');
-        $message->expects(self::once())
+        $content->expects(self::once())
             ->method('cloneWith')
             ->willReturnCallback(
-                function ($message, $algo) {
+                function ($content, $algo) {
                     self::assertEquals('rsa', $algo);
 
-                    return $this->createMock(MessageInterface::class);
+                    return $this->createMock(SensitiveContentInterface::class);
                 }
             );
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())
             ->method('success')
-            ->with($this->callback(fn ($message) => $message instanceof MessageInterface));
+            ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
         $promise->expects(self::never())
             ->method('fail');
 
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->encrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
@@ -175,7 +175,7 @@ class EncryptionTest extends TestCase
             public function encrypt($plaintext): string {
                 throw new RuntimeException('foo');
             }
-            public function verify($message, $signature) {}
+            public function verify($content, $signature) {}
             public function toString($type, array $options = []) {}
             public function getFingerprint($algorithm) {}
         };
@@ -186,11 +186,11 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn('foo');
-        $message->expects(self::never())
+        $content->expects(self::never())
             ->method('cloneWith');
 
         $promise = $this->createMock(PromiseInterface::class);
@@ -202,7 +202,7 @@ class EncryptionTest extends TestCase
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->encrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
@@ -219,11 +219,11 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn('foo');
-        $message->expects(self::any())
+        $content->expects(self::any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('rsa');
 
@@ -237,7 +237,7 @@ class EncryptionTest extends TestCase
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->decrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
@@ -254,11 +254,11 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn('foo');
-        $message->expects(self::any())
+        $content->expects(self::any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('foo');
 
@@ -272,13 +272,13 @@ class EncryptionTest extends TestCase
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->decrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
     }
 
-    public function testDecryptWithNotEncryptedMessage()
+    public function testDecryptWithNotEncryptedContent()
     {
         $privateKey = RSA::createKey(1024);
         $publicKey = $this->createMock(PublicKey::class);
@@ -289,11 +289,11 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn('foo');
-        $message->expects(self::any())
+        $content->expects(self::any())
             ->method('getEncryptionAlgorithm')
             ->willReturn(null);
 
@@ -307,7 +307,7 @@ class EncryptionTest extends TestCase
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->decrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
@@ -324,11 +324,11 @@ class EncryptionTest extends TestCase
             alogirthm: '',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn('foo');
-        $message->expects(self::any())
+        $content->expects(self::any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('foo');
 
@@ -342,7 +342,7 @@ class EncryptionTest extends TestCase
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->decrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
@@ -358,34 +358,34 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn($publicKey->encrypt('foo'));
-        $message->expects(self::any())
+        $content->expects(self::any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('rsa');
-        $message->expects(self::once())
+        $content->expects(self::once())
             ->method('cloneWith')
             ->willReturnCallback(
-                function ($message, $algo) {
+                function ($content, $algo) {
                     self::assertEmpty($algo);
 
-                    return $this->createMock(MessageInterface::class);
+                    return $this->createMock(SensitiveContentInterface::class);
                 }
             );
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects(self::once())
             ->method('success')
-            ->with($this->callback(fn ($message) => $message instanceof MessageInterface));
+            ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
         $promise->expects(self::never())
             ->method('fail');
 
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->decrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );
@@ -400,7 +400,7 @@ class EncryptionTest extends TestCase
                 throw new RuntimeException('foo');
             }
 
-            public function sign($message) {}
+            public function sign($content) {}
             public function getPublicKey() {}
             public function toString($type, array $options = []) {}
             public function withPassword($password = false) {}
@@ -412,14 +412,14 @@ class EncryptionTest extends TestCase
             alogirthm: 'rsa',
         );
 
-        $message = $this->createMock(MessageInterface::class);
-        $message->expects(self::any())
-            ->method('getMessage')
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
             ->willReturn($publicKey->encrypt('foo'));
-        $message->expects(self::any())
+        $content->expects(self::any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('rsa');
-        $message->expects(self::never())
+        $content->expects(self::never())
             ->method('cloneWith');
 
         $promise = $this->createMock(PromiseInterface::class);
@@ -431,7 +431,7 @@ class EncryptionTest extends TestCase
         self::assertInstanceOf(
             EncryptionInterface::class,
             $service->decrypt(
-                data: $message,
+                data: $content,
                 promise: $promise,
             )
         );

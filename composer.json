@@ -37,7 +37,7 @@
         "teknoo/states": "^6.2",
         "teknoo/recipe": "^5.0.1",
         "teknoo/east-foundation": "^7.6.3",
-        "teknoo/east-common": "^2.10"
+        "teknoo/east-common": "^2.10.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -83,7 +83,7 @@
         "symfony/var-exporter": "^6.3||^7",
         "symfony/yaml": "^6.3||^7",
         "teknoo/bridge-phpdi-symfony": "^6.0.5",
-        "teknoo/kubernetes-client": "^1.4.4"
+        "teknoo/kubernetes-client": "^1.5.1"
     },
     "autoload": {
         "psr-4": {

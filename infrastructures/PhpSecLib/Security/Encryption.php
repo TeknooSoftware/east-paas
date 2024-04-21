@@ -27,8 +27,8 @@ namespace Teknoo\East\Paas\Infrastructures\PhpSecLib\Security;
 
 use phpseclib3\Crypt\Common\PrivateKey;
 use phpseclib3\Crypt\Common\PublicKey;
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\UnsupportedAlgorithmException;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\WrongLibraryAPIException;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -39,7 +39,7 @@ use function strlen;
 use function substr;
 
 /**
- * Service build on PhpSecLib able to encrypt and decrypt message between servers, agents and workers to keep secrets
+ * Service build on PhpSecLib able to encrypt and decrypt content between servers, agents and workers to keep secrets
  *  credentials and all others confidential data.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -56,25 +56,25 @@ class Encryption implements EncryptionInterface
     ) {
     }
 
-    private function processMessage(
+    private function processContent(
         callable $method,
-        string $message,
+        string $content,
         PrivateKey|PublicKey $key,
         int $coef = 1,
     ): string {
         if (!method_exists($key, 'getLength')) {
-            return $method($message);
+            return $method($content);
         }
 
         $length = $key->getLength();
         $bytesLength = $length / (8 * $coef) - (($coef - 1) * 2);
-        $messageLength = strlen($message);
+        $contentLength = strlen($content);
 
         $final = '';
-        for ($i = 0; $i < $messageLength; $i += $bytesLength) {
+        for ($i = 0; $i < $contentLength; $i += $bytesLength) {
             $final .= $method(
                 substr(
-                    string: $message,
+                    string: $content,
                     offset: $i,
                     length: $bytesLength
                 )
@@ -84,7 +84,7 @@ class Encryption implements EncryptionInterface
         return $final;
     }
 
-    public function encrypt(MessageInterface $data, PromiseInterface $promise,): EncryptionInterface
+    public function encrypt(SensitiveContentInterface $data, PromiseInterface $promise,): EncryptionInterface
     {
         if (!method_exists($this->publicKey, 'encrypt')) {
             $promise->fail(
@@ -95,9 +95,9 @@ class Encryption implements EncryptionInterface
         }
 
         try {
-            $encryptedMessage = $this->processMessage(
+            $encryptedContent = $this->processContent(
                 method: $this->publicKey->encrypt(...),
-                message: $data->getMessage(),
+                content: $data->getContent(),
                 key: $this->publicKey,
                 coef: 2,
             );
@@ -108,14 +108,14 @@ class Encryption implements EncryptionInterface
         }
 
         $promise->success($data->cloneWith(
-            message: $encryptedMessage,
+            content: $encryptedContent,
             encryptionAlgorithm: $this->alogirthm,
         ));
 
         return $this;
     }
 
-    public function decrypt(MessageInterface $data, PromiseInterface $promise,): EncryptionInterface
+    public function decrypt(SensitiveContentInterface $data, PromiseInterface $promise,): EncryptionInterface
     {
         if (!method_exists($this->privateKey, 'decrypt')) {
             $promise->fail(
@@ -127,23 +127,23 @@ class Encryption implements EncryptionInterface
 
         if ($this->alogirthm !== ($algo = $data->getEncryptionAlgorithm())) {
             if (empty($algo)) {
-                $message = "This agent requires encryption in message, but this message is not encrypted";
+                $content = "This agent requires encryption in content, but this content is not encrypted";
             } elseif (empty($this->alogirthm)) {
-                $message = "This agent does not support encryption in message, but this message is encrypted";
+                $content = "This agent does not support encryption in content, but this content is encrypted";
             } else {
-                $message = "$algo is not supported by this current configuration of this encryption service";
+                $content = "$algo is not supported by this current configuration of this encryption service";
             }
 
-            $promise->fail(new UnsupportedAlgorithmException(message: $message));
+            $promise->fail(new UnsupportedAlgorithmException(message: $content));
 
             return $this;
         }
 
 
         try {
-            $decryptedMessage = $this->processMessage(
+            $decryptedContent = $this->processContent(
                 method: $this->privateKey->decrypt(...),
-                message: $data->getMessage(),
+                content: $data->getContent(),
                 key: $this->privateKey,
             );
         } catch (Throwable $error) {
@@ -154,7 +154,7 @@ class Encryption implements EncryptionInterface
 
         $promise->success(
             $data->cloneWith(
-                message: $decryptedMessage,
+                content: $decryptedContent,
                 encryptionAlgorithm: null,
             )
         );

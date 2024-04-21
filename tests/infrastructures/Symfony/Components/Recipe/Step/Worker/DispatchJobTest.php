@@ -25,17 +25,17 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
-use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob as JobMessage;
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob as JobMessage;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
+use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
-use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
@@ -124,7 +124,7 @@ class DispatchJobTest extends TestCase
             ->method('encrypt')
             ->willReturnCallback(
                 function (
-                    MessageInterface $message,
+                    SensitiveContentInterface $message,
                     PromiseInterface $promise,
                 ) use ($encryption) {
                     $promise->success($message);

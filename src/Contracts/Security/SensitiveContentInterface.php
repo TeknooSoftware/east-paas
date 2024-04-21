@@ -23,7 +23,7 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Message;
+namespace Teknoo\East\Paas\Contracts\Security;
 
 /**
  * To define a message between servers, workers and agents
@@ -33,11 +33,11 @@ namespace Teknoo\East\Paas\Contracts\Message;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface MessageInterface
+interface SensitiveContentInterface
 {
-    public function getMessage(): string;
+    public function getContent(): string;
 
     public function getEncryptionAlgorithm(): ?string;
 
-    public function cloneWith(string $message, ?string $encryptionAlgorithm): MessageInterface;
+    public function cloneWith(string $content, ?string $encryptionAlgorithm): SensitiveContentInterface;
 }

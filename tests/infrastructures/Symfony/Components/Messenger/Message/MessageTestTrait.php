@@ -77,6 +77,14 @@ trait MessageTestTrait
         );
     }
 
+    public function testGetContent()
+    {
+        self::assertEquals(
+            'world',
+            $this->buildMessage()->getContent()
+        );
+    }
+
     public function testToString()
     {
         self::assertEquals(

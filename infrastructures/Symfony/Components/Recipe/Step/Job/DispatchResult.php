@@ -31,10 +31,10 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Time\DatesService;
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
@@ -73,7 +73,7 @@ class DispatchResult implements DispatchResultInterface
         string $envName,
         string $jobId,
     ): callable {
-        return fn (MessageInterface $message) => $this->bus->dispatch(
+        return fn (SensitiveContentInterface $message) => $this->bus->dispatch(
             new Envelope(
                 message: $message,
                 stamps: [
@@ -131,7 +131,7 @@ class DispatchResult implements DispatchResultInterface
                         if (null === $this->encryption) {
                             $dispatching($message);
                         } else {
-                            /** @var Promise<MessageInterface, mixed, mixed> $promise */
+                            /** @var Promise<SensitiveContentInterface, mixed, mixed> $promise */
                             $promise = new Promise(
                                 onSuccess: $dispatching,
                                 onFail: fn (Throwable $error) => throw $error,

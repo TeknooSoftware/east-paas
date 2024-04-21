@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Security;
 
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
@@ -40,18 +39,18 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 interface EncryptionInterface
 {
     /**
-     * @param PromiseInterface<MessageInterface, mixed> $promise
+     * @param PromiseInterface<SensitiveContentInterface, mixed> $promise
      */
     public function encrypt(
-        MessageInterface $data,
+        SensitiveContentInterface $data,
         PromiseInterface $promise,
     ): EncryptionInterface;
 
     /**
-     * @param PromiseInterface<MessageInterface, mixed> $promise
+     * @param PromiseInterface<SensitiveContentInterface, mixed> $promise
      */
     public function decrypt(
-        MessageInterface $data,
+        SensitiveContentInterface $data,
         PromiseInterface $promise,
     ): EncryptionInterface;
 }

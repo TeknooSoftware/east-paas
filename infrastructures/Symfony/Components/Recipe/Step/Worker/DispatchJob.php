@@ -25,13 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
-use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob;
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
+use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
@@ -60,7 +60,7 @@ class DispatchJob implements DispatchJobInterface
         string $envName,
         string $jobId,
     ): callable {
-        return fn (MessageInterface $message) => $this->bus->dispatch(
+        return fn (SensitiveContentInterface $message) => $this->bus->dispatch(
             new Envelope(
                 message: $message,
                 stamps: [
@@ -90,7 +90,7 @@ class DispatchJob implements DispatchJobInterface
         if (null === $this->encryption) {
             $dispatching($message);
         } else {
-            /** @var Promise<MessageInterface, mixed, mixed> $promise */
+            /** @var Promise<SensitiveContentInterface, mixed, mixed> $promise */
             $promise = new Promise(
                 onSuccess: $dispatching,
                 onFail: fn (Throwable $error) => throw $error,

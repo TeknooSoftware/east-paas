@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
@@ -70,18 +70,23 @@ trait MessageTrait
         return $this->message;
     }
 
+    public function getContent(): string
+    {
+        return $this->getMessage();
+    }
+
     public function getEncryptionAlgorithm(): ?string
     {
         return $this->encryptionAlgorithm;
     }
 
-    public function cloneWith(string $message, ?string $encryptionAlgorithm): MessageInterface
+    public function cloneWith(string $content, ?string $encryptionAlgorithm): SensitiveContentInterface
     {
         return new self(
             projectId: $this->getProjectId(),
             environment: $this->getEnvironment(),
             jobId: $this->getJobId(),
-            message: $message,
+            message: $content,
             encryptionAlgorithm: $encryptionAlgorithm,
         );
     }

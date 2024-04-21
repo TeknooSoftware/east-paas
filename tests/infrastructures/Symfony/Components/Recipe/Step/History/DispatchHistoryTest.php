@@ -29,8 +29,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Time\DatesService;
-use Teknoo\East\Paas\Contracts\Message\MessageInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History\DispatchHistory;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -156,7 +156,7 @@ class DispatchHistoryTest extends TestCase
             ->method('encrypt')
             ->willReturnCallback(
                 function (
-                    MessageInterface $message,
+                    SensitiveContentInterface $message,
                     PromiseInterface $promise,
                 ) use ($encryption) {
                     $promise->success($message);
