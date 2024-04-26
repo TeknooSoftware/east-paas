@@ -29,6 +29,8 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Object\AccountQuota;
 use function json_encode;
 
+use const JSON_THROW_ON_ERROR;
+
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
@@ -54,9 +56,10 @@ class AccountQuotaTest extends TestCase
                     'type' => 'ty',
                     'capacity' => 'cap',
                     'requires' => 'cap',
-                ]
+                ],
+                flags: \JSON_THROW_ON_ERROR
             ),
-            json_encode($object),
+            json_encode($object, flags: \JSON_THROW_ON_ERROR),
         );
 
         $object = new AccountQuota('cat', 'ty', 'cap', 'req');
@@ -67,9 +70,10 @@ class AccountQuotaTest extends TestCase
                     'type' => 'ty',
                     'capacity' => 'cap',
                     'requires' => 'req',
-                ]
+                ],
+                flags: \JSON_THROW_ON_ERROR
             ),
-            json_encode($object),
+            json_encode(value: $object, flags: JSON_THROW_ON_ERROR),
         );
     }
 

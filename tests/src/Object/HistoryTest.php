@@ -104,7 +104,7 @@ class HistoryTest extends TestCase
         self::assertEquals(
             '{"message":"bar","date":"2018-05-01 00:00:00 UTC","is_final":true,"extra":[],"previous":{"message":"foo","date":"2018-04-01 00:00:00 UTC","is_final":false,"extra":{"foo":"bar"},"previous":null,"serial_number":123},"serial_number":0}',
             \json_encode(
-                new History(
+                value: new History(
                     new History(
                         null,
                         'foo',
@@ -118,7 +118,7 @@ class HistoryTest extends TestCase
                     true,
                     serialNumber: 0,
                 ),
-                JSON_THROW_ON_ERROR
+                flags: JSON_THROW_ON_ERROR
             )
         );
     }

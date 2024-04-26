@@ -37,6 +37,9 @@ use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\WrongLibraryAPIExceptio
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Security\Encryption;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+use function base64_decode;
+use function base64_encode;
+
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
@@ -114,6 +117,52 @@ class EncryptionTest extends TestCase
             $service->encrypt(
                 data: $content,
                 promise: $promise,
+            )
+        );
+    }
+
+    public function testEncryptWithBase64()
+    {
+        $privateKey = RSA::createKey(1024);
+
+        $service = new Encryption(
+            privateKey: $privateKey,
+            publicKey: $privateKey->getPublicKey(),
+            alogirthm: 'rsa',
+        );
+
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
+            ->willReturn('foo');
+        $content->expects(self::once())
+            ->method('cloneWith')
+            ->willReturnCallback(
+                function ($content, $algo) use ($privateKey) {
+                    self::assertEquals('rsa', $algo);
+
+                    self::assertEquals(
+                        'foo',
+                        $privateKey->decrypt(base64_decode($content)),
+                    );
+
+                    return $this->createMock(SensitiveContentInterface::class);
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
+        $promise->expects(self::never())
+            ->method('fail');
+
+        self::assertInstanceOf(
+            EncryptionInterface::class,
+            $service->encrypt(
+                data: $content,
+                promise: $promise,
+                returnBase64: true,
             )
         );
     }
@@ -387,6 +436,50 @@ class EncryptionTest extends TestCase
             $service->decrypt(
                 data: $content,
                 promise: $promise,
+            )
+        );
+    }
+
+    public function testDecryptWithBase64()
+    {
+        $privateKey = RSA::createKey(1024);
+
+        $service = new Encryption(
+            privateKey: $privateKey,
+            publicKey: $publicKey = $privateKey->getPublicKey(),
+            alogirthm: 'rsa',
+        );
+
+        $content = $this->createMock(SensitiveContentInterface::class);
+        $content->expects(self::any())
+            ->method('getContent')
+            ->willReturn(base64_encode($publicKey->encrypt('foo')));
+        $content->expects(self::any())
+            ->method('getEncryptionAlgorithm')
+            ->willReturn('rsa');
+        $content->expects(self::once())
+            ->method('cloneWith')
+            ->willReturnCallback(
+                function ($content, $algo) {
+                    self::assertEmpty($algo);
+
+                    return $this->createMock(SensitiveContentInterface::class);
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())
+            ->method('success')
+            ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
+        $promise->expects(self::never())
+            ->method('fail');
+
+        self::assertInstanceOf(
+            EncryptionInterface::class,
+            $service->decrypt(
+                data: $content,
+                promise: $promise,
+                isBase64: true,
             )
         );
     }

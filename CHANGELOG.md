@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.3.0] - 2024-04-26
+### Stable Release
+- Rename `Teknoo\East\Paas\Contracts\Security\EncryptionInterface` supports now base64 encoded for encrypted content.
+
 ## [3.2.0] - 2024-04-21
 ### Stable Release
 - Rename `Teknoo\East\Paas\Contracts\Message\MessageInterface` to `Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface`

@@ -34,6 +34,8 @@ use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\WrongLibraryAPIExceptio
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
+use function base64_decode;
+use function base64_encode;
 use function method_exists;
 use function strlen;
 use function substr;
@@ -84,8 +86,11 @@ class Encryption implements EncryptionInterface
         return $final;
     }
 
-    public function encrypt(SensitiveContentInterface $data, PromiseInterface $promise,): EncryptionInterface
-    {
+    public function encrypt(
+        SensitiveContentInterface $data,
+        PromiseInterface $promise,
+        bool $returnBase64 = false,
+    ): EncryptionInterface {
         if (!method_exists($this->publicKey, 'encrypt')) {
             $promise->fail(
                 new WrongLibraryAPIException('PHPSecLib key as not encrypt capacity')
@@ -107,6 +112,10 @@ class Encryption implements EncryptionInterface
             return $this;
         }
 
+        if ($returnBase64) {
+            $encryptedContent = base64_encode($encryptedContent);
+        }
+
         $promise->success($data->cloneWith(
             content: $encryptedContent,
             encryptionAlgorithm: $this->alogirthm,
@@ -115,8 +124,11 @@ class Encryption implements EncryptionInterface
         return $this;
     }
 
-    public function decrypt(SensitiveContentInterface $data, PromiseInterface $promise,): EncryptionInterface
-    {
+    public function decrypt(
+        SensitiveContentInterface $data,
+        PromiseInterface $promise,
+        bool $isBase64 = false,
+    ): EncryptionInterface {
         if (!method_exists($this->privateKey, 'decrypt')) {
             $promise->fail(
                 new WrongLibraryAPIException('PHPSecLib key as not decrypt capacity')
@@ -139,11 +151,15 @@ class Encryption implements EncryptionInterface
             return $this;
         }
 
+        $encryptedContent = $data->getContent();
+        if ($isBase64) {
+            $encryptedContent = base64_decode($encryptedContent);
+        }
 
         try {
             $decryptedContent = $this->processContent(
                 method: $this->privateKey->decrypt(...),
-                content: $data->getContent(),
+                content: $encryptedContent,
                 key: $this->privateKey,
             );
         } catch (Throwable $error) {

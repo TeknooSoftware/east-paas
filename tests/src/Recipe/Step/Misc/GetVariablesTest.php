@@ -33,6 +33,8 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Recipe\Step\Misc\GetVariables;
 use function json_encode;
 
+use const JSON_THROW_ON_ERROR;
+
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
@@ -72,7 +74,7 @@ class GetVariablesTest extends TestCase
         $message->expects(self::any())->method('getHeader')->willReturn(['application/json']);
         $message->expects(self::any())->method('getBody')->willReturn(
             (new StreamFactory())->createStream(
-                json_encode($data = ['foo' => 'bar'])
+                json_encode($data = ['foo' => 'bar'], flags: JSON_THROW_ON_ERROR)
             )
         );
 

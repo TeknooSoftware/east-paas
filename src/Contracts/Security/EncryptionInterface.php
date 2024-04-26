@@ -40,17 +40,21 @@ interface EncryptionInterface
 {
     /**
      * @param PromiseInterface<SensitiveContentInterface, mixed> $promise
+     * @param bool $returnBase64 the encrypted content is encoded in Base64
      */
     public function encrypt(
         SensitiveContentInterface $data,
         PromiseInterface $promise,
+        bool $returnBase64 = false,
     ): EncryptionInterface;
 
     /**
      * @param PromiseInterface<SensitiveContentInterface, mixed> $promise
+     * @param bool $isBase64 the encrypted content is encoded in Base64
      */
     public function decrypt(
         SensitiveContentInterface $data,
         PromiseInterface $promise,
+        bool $isBase64 = false,
     ): EncryptionInterface;
 }

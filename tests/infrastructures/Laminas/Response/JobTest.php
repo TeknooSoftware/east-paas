@@ -42,7 +42,7 @@ class JobTest extends TestCase
             200,
             'foo',
             new BaseJob(),
-            \json_encode(['foo' => 'bar', 'bar' => 'foo'])
+            \json_encode(value: ['foo' => 'bar', 'bar' => 'foo'], flags: \JSON_THROW_ON_ERROR)
         );
     }
 
