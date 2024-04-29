@@ -62,26 +62,21 @@ class Cluster implements
         VisitableTrait::runVisit as realRunVisit;
     }
 
-    private ?Project $project = null;
-
-    private ?string $name = null;
-
-    private ?string $namespace = null;
-
-    private bool $useHierarchicalNamespaces = false;
-
-    private ?string $type = null;
-
-    private ?string $address = null;
-
-    private ?IdentityInterface $identity = null;
-
-    private ?Environment $environment = null;
-
-    /**
-     * To not allow editing of the cluster
-     */
-    private bool $locked = false;
+    public function __construct(
+        private ?Project $project = null,
+        private ?string $name = null,
+        private ?string $namespace = null,
+        private bool $useHierarchicalNamespaces = false,
+        private ?string $type = null,
+        private ?string $address = null,
+        private ?IdentityInterface $identity = null,
+        private ?Environment $environment = null,
+        /**
+         * To not allow editing of the cluster
+         */
+        private bool $locked = false,
+    ) {
+    }
 
     public function setProject(Project $project): Cluster
     {

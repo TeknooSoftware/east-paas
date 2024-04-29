@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.3.1] - 2024-04-29
+### Stable Release
+- Fix and prevent regression with Cluster in Symfony Serializer 7.0.7 
+
 ## [3.3.0] - 2024-04-26
 ### Stable Release
 - Rename `Teknoo\East\Paas\Contracts\Security\EncryptionInterface` supports now base64 encoded for encrypted content.
