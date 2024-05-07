@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Job;
 
 use DateTimeInterface;
+use SensitiveParameter;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
@@ -134,7 +135,7 @@ class DispatchResult implements DispatchResultInterface
                             /** @var Promise<SensitiveContentInterface, mixed, mixed> $promise */
                             $promise = new Promise(
                                 onSuccess: $dispatching,
-                                onFail: fn (Throwable $error) => throw $error,
+                                onFail: fn (#[SensitiveParameter] Throwable $error) => throw $error,
                             );
 
                             $this->encryption->encrypt(
@@ -164,9 +165,9 @@ class DispatchResult implements DispatchResultInterface
         string $projectId,
         string $envName,
         string $jobId,
-        mixed $result = null,
+        #[SensitiveParameter] mixed $result = null,
         ?Throwable $exception = null,
-        array $extra = []
+        #[SensitiveParameter] array $extra = []
     ): DispatchResultInterface {
         if (empty($result)) {
             $result = [];

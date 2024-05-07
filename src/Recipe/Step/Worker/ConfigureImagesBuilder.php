@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\ChefInterface;
@@ -51,7 +52,7 @@ class ConfigureImagesBuilder
     }
 
     public function __invoke(
-        JobUnitInterface $jobUnit,
+        #[SensitiveParameter] JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
@@ -60,7 +61,7 @@ class ConfigureImagesBuilder
             onSuccess: static function (ImageBuilder $builder) use ($manager): void {
                 $manager->updateWorkPlan([ImageBuilder::class => $builder]);
             },
-            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.images.configuration_error',
                     500,

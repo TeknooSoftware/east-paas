@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\History;
 
 use DateTimeInterface;
+use SensitiveParameter;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Foundation\Time\DatesService;
@@ -117,7 +118,7 @@ class DispatchHistory implements DispatchHistoryInterface
                     /** @var Promise<SensitiveContentInterface, mixed, mixed> $promise */
                     $promise = new Promise(
                         onSuccess: $dispatching,
-                        onFail: fn (Throwable $error) => throw $error,
+                        onFail: fn (#[SensitiveParameter] Throwable $error) => throw $error,
                     );
 
                     $this->encryption->encrypt(
@@ -138,7 +139,7 @@ class DispatchHistory implements DispatchHistoryInterface
         string $envName,
         string $jobId,
         string $step,
-        array $historyExtra = []
+        #[SensitiveParameter] array $historyExtra = []
     ): DispatchHistoryInterface {
         $this->sendStep($projectId, $envName, $jobId, $step, $historyExtra);
 

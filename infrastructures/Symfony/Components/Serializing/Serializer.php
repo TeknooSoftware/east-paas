@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Serializing;
 
+use SensitiveParameter;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -46,7 +47,7 @@ class Serializer implements SerializerInterface
     }
 
     public function serialize(
-        mixed $data,
+        #[SensitiveParameter] mixed $data,
         string $format,
         PromiseInterface $promise,
         array $context = []

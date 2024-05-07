@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Laminas\Response;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
@@ -47,7 +48,7 @@ class ErrorFactory implements ErrorFactoryInterface
         int $statusCode,
         ?string $reasonPhrase,
     ): callable {
-        return static function (Throwable $error) use (
+        return static function (#[SensitiveParameter] Throwable $error) use (
             $client,
             $manager,
             $statusCode,

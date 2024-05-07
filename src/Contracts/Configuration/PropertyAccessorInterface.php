@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Configuration;
 
+use SensitiveParameter;
+
 /**
  * To define service able to parse a path of key' split by a dot, to read / pass the value of a
  * multidimensional array to a callable
@@ -39,13 +41,17 @@ interface PropertyAccessorInterface
     /**
      * @param array<string, mixed> $array
      */
-    public function setValue(array &$array, string $propertyPath, mixed $value): PropertyAccessorInterface;
+    public function setValue(
+        #[SensitiveParameter] array &$array,
+        string $propertyPath,
+        mixed $value,
+    ): PropertyAccessorInterface;
 
     /**
      * @param array<string, mixed> $array
      */
     public function getValue(
-        array $array,
+        #[SensitiveParameter] array $array,
         string $propertyPath,
         callable $callback,
         mixed $default = null

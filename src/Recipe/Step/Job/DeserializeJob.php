@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
@@ -55,20 +56,23 @@ class DeserializeJob
     ) {
     }
 
-    public function __invoke(string $serializedJob, ManagerInterface $manager, ClientInterface $client): self
-    {
+    public function __invoke(
+        #[SensitiveParameter] string $serializedJob,
+        ManagerInterface $manager,
+        ClientInterface $client,
+    ): self {
         $this->deserializer->deserialize(
             $serializedJob,
             JobUnitInterface::class,
             'json',
             new Promise(
-                static function (JobUnitInterface $jobUnit) use ($manager): void {
+                static function (#[SensitiveParameter] JobUnitInterface $jobUnit) use ($manager): void {
                     $manager->updateWorkPlan([JobUnitInterface::class => $jobUnit]);
                     $jobUnit->runWithExtra(
                         static fn($extra): ChefInterface => $manager->updateWorkPlan(['extra' => $extra]),
                     );
                 },
-                static fn(Throwable $error): ChefInterface => $manager->error(
+                static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                     new RuntimeException(
                         'teknoo.east.paas.error.recipe.job.mal_formed',
                         400,

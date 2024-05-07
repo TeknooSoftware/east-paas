@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Misc;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
@@ -45,8 +46,11 @@ class DispatchError
     ) {
     }
 
-    public function __invoke(ManagerInterface $manager, ClientInterface $client, Throwable $exception): self
-    {
+    public function __invoke(
+        ManagerInterface $manager,
+        ClientInterface $client,
+        #[SensitiveParameter] Throwable $exception,
+    ): self {
         $this->errorFactory->buildFailureHandler($client, $manager, 500, null)($exception);
 
         $manager->stopErrorReporting();

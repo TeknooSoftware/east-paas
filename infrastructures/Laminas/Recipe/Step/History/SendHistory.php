@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\History;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\History as HystoryResponse;
@@ -40,8 +41,10 @@ use Teknoo\East\Paas\Object\History;
  */
 class SendHistory implements SendHistoryInterface
 {
-    public function __invoke(ClientInterface $client, History $history): SendHistoryInterface
-    {
+    public function __invoke(
+        ClientInterface $client,
+        #[SensitiveParameter] History $history
+    ): SendHistoryInterface {
         $client->acceptResponse(
             new HystoryResponse(200, '', $history)
         );

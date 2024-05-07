@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use DomainException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\ChefInterface;
@@ -57,7 +58,7 @@ class GetJob
             onSuccess: static function (Job $job) use ($manager): void {
                 $manager->updateWorkPlan([Job::class => $job]);
             },
-            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 throw new DomainException(
                     'teknoo.east.paas.error.recipe.job.not_found',
                     404,

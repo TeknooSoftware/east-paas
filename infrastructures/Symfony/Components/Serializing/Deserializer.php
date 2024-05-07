@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Serializing;
 
+use SensitiveParameter;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -46,11 +47,11 @@ class Deserializer implements DeserializerInterface
     }
 
     public function deserialize(
-        string $data,
+        #[SensitiveParameter] string $data,
         string $type,
         string $format,
         PromiseInterface $promise,
-        array $context = []
+        array $context = [],
     ): DeserializerInterface {
         try {
             $promise->success(

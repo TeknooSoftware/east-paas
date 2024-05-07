@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\SerializerInterface;
@@ -54,14 +55,18 @@ class SerializeJob
     /**
      * @param array<string, mixed> $envVars
      */
-    public function __invoke(Job $job, ManagerInterface $manager, ClientInterface $client, array $envVars = []): self
-    {
+    public function __invoke(
+        #[SensitiveParameter] Job $job,
+        ManagerInterface $manager,
+        ClientInterface $client,
+        #[SensitiveParameter] array $envVars = [],
+    ): self {
         /** @var Promise<string, mixed, mixed> $serializedPromise */
         $serializedPromise = new Promise(
             onSuccess: static function (string $jobSerialized) use ($manager): void {
                 $manager->updateWorkPlan(['jobSerialized' => $jobSerialized]);
             },
-            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.job.serialization_error',
                     500,

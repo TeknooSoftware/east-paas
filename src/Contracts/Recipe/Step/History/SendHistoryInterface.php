@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Recipe\Step\History;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Object\History;
 
@@ -40,6 +41,6 @@ interface SendHistoryInterface
 {
     public function __invoke(
         ClientInterface $client,
-        History $history,
+        #[SensitiveParameter] History $history,
     ): SendHistoryInterface;
 }

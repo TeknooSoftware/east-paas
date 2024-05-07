@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
 use DomainException;
+use SensitiveParameter;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
@@ -65,10 +66,10 @@ class HookCompiler implements CompilerInterface
     }
 
     public function compile(
-        array &$definitions,
+        #[SensitiveParameter] array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
-        JobWorkspaceInterface $workspace,
-        JobUnitInterface $job,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobUnitInterface $job,
         ResourceManager $resourceManager,
         DefaultsBag $defaultsBag,
     ): CompilerInterface {
@@ -83,7 +84,7 @@ class HookCompiler implements CompilerInterface
                     (array) $configuration,
                     new Promise(
                         null,
-                        static function (Throwable $error): never {
+                        static function (#[SensitiveParameter] Throwable $error): never {
                             throw $error;
                         }
                     )

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
 use LogicException;
+use SensitiveParameter;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Throwable;
 
@@ -43,7 +44,7 @@ class ExceptionNormalizer implements NormalizerInterface
      * @param array<string, mixed> $context
      * @return array{class: class-string<\Throwable>&string, message: string, code: int|string, file: string, line: int}
      */
-    public function normalize($object, $format = null, array $context = []): array
+    public function normalize(#[SensitiveParameter] $object, $format = null, array $context = []): array
     {
         if (!$object instanceof Throwable) {
             throw new LogicException('teknoo.east.paas.normalizer.exception.non_manager');

@@ -34,10 +34,10 @@
         "php-di/php-di": "^7.0.6",
         "psr/http-client": "^1.0.3",
         "teknoo/immutable": "^3.0.17",
-        "teknoo/states": "^6.2",
-        "teknoo/recipe": "^5.0.1",
-        "teknoo/east-foundation": "^7.6.3",
-        "teknoo/east-common": "^2.10.1"
+        "teknoo/states": "^6.3",
+        "teknoo/recipe": "^5.1",
+        "teknoo/east-foundation": "^7.7",
+        "teknoo/east-common": "^2.11"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Recipe\Step\History;
 
+use SensitiveParameter;
+
 /**
  * To define step able to dispatch any job's event to any bus.
  *
@@ -43,6 +45,6 @@ interface DispatchHistoryInterface
         string $envName,
         string $jobId,
         string $step,
-        array $historyExtra = []
+        #[SensitiveParameter] array $historyExtra = []
     ): DispatchHistoryInterface;
 }

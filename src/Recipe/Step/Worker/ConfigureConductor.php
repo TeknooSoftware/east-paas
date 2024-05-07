@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -48,8 +49,8 @@ class ConfigureConductor
     }
 
     public function __invoke(
-        JobUnitInterface $job,
-        JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobUnitInterface $job,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
         ManagerInterface $manager
     ): self {
         $conductor = $this->conductor->configure($job, $workspace);

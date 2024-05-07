@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Recipe\Step\Job;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Throwable;
@@ -48,8 +49,8 @@ interface DispatchResultInterface
         string $projectId,
         string $envName,
         string $jobId,
-        mixed $result = null,
+        #[SensitiveParameter] mixed $result = null,
         ?Throwable $exception = null,
-        array $extra = [],
+        #[SensitiveParameter] array $extra = [],
     ): DispatchResultInterface;
 }

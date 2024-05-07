@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use DateTimeInterface;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Foundation\Time\DatesService;
@@ -54,9 +55,9 @@ class PrepareJob
     }
 
     public function __invoke(
-        Project $project,
+        #[SensitiveParameter] Project $project,
         Environment $environment,
-        Job $job,
+        #[SensitiveParameter] Job $job,
         ManagerInterface $manager,
         ClientInterface $client
     ): self {

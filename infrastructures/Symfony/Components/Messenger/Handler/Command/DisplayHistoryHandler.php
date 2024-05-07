@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command;
 
+use SensitiveParameter;
 use Symfony\Component\Console\Output\OutputInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
@@ -71,7 +72,7 @@ class DisplayHistoryHandler implements HistorySentHandlerInterface
             /** @var Promise<HistorySent, mixed, mixed> $promise */
             $promise = new Promise(
                 onSuccess: $processMessage,
-                onFail: fn (Throwable $error) => throw $error,
+                onFail: fn (#[SensitiveParameter] Throwable $error) => throw $error,
             );
 
             $this->encryption->decrypt(

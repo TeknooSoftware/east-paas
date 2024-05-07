@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\ChefInterface;
@@ -59,7 +60,7 @@ class BuildVolumes
         JobWorkspaceInterface $workspace,
         string $projectId,
         string $envName,
-        JobUnitInterface $jobUnit,
+        #[SensitiveParameter] JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
@@ -74,7 +75,7 @@ class BuildVolumes
                     ['build_output' => $buildSuccess]
                 );
             },
-            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.volumes.building_error',
                     500,

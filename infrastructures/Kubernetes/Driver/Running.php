@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 
 use Closure;
+use SensitiveParameter;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DriverAwareInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\Promise;
@@ -88,7 +89,7 @@ class Running implements StateInterface
             try {
                 $promise = new Promise(
                     onSuccess: $mainPromise->success(...),
-                    onFail: static function (Throwable $error): never {
+                    onFail: static function (#[SensitiveParameter] Throwable $error): never {
                         //To break the foreach loop
                         throw $error;
                     }

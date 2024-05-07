@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
+use SensitiveParameter;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -83,10 +84,10 @@ class ImageCompiler implements CompilerInterface
     }
 
     public function compile(
-        array &$definitions,
+        #[SensitiveParameter] array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
-        JobWorkspaceInterface $workspace,
-        JobUnitInterface $job,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobUnitInterface $job,
         ResourceManager $resourceManager,
         DefaultsBag $defaultsBag,
     ): CompilerInterface {

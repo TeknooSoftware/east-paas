@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
+use SensitiveParameter;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
@@ -72,8 +73,12 @@ class DispatchJob implements DispatchJobInterface
         );
     }
 
-    public function __invoke(Project $project, Environment $environment, Job $job, string $jobSerialized): self
-    {
+    public function __invoke(
+        Project $project,
+        Environment $environment,
+        #[SensitiveParameter] Job $job,
+        #[SensitiveParameter] string $jobSerialized,
+    ): self {
         $dispatching = $this->buildDispatching(
             projectId: $project->getId(),
             envName: (string) $environment,
@@ -93,7 +98,7 @@ class DispatchJob implements DispatchJobInterface
             /** @var Promise<SensitiveContentInterface, mixed, mixed> $promise */
             $promise = new Promise(
                 onSuccess: $dispatching,
-                onFail: fn (Throwable $error) => throw $error,
+                onFail: fn (#[SensitiveParameter] Throwable $error) => throw $error,
             );
 
             $this->encryption->encrypt(

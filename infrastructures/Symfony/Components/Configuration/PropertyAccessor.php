@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Configuration;
 
+use SensitiveParameter;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
 use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 
@@ -44,15 +45,18 @@ class PropertyAccessor implements PropertyAccessorInterface
     ) {
     }
 
-    public function setValue(array &$array, string $propertyPath, mixed $value): PropertyAccessorInterface
-    {
+    public function setValue(
+        #[SensitiveParameter] array &$array,
+        string $propertyPath,
+        mixed $value,
+    ): PropertyAccessorInterface {
         $this->propertyAccessor->setValue($array, $propertyPath, $value);
 
         return $this;
     }
 
     public function getValue(
-        array $array,
+        #[SensitiveParameter] array $array,
         string $propertyPath,
         callable $callback,
         mixed $default = null

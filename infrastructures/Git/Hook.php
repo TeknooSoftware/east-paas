@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
+use SensitiveParameter;
 use Symfony\Component\Process\Process;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
@@ -128,8 +129,10 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
         $this->updateStates();
     }
 
-    public function setContext(JobUnitInterface $jobUnit, JobWorkspaceInterface $workspace): HookAwareInterface
-    {
+    public function setContext(
+        #[SensitiveParameter] JobUnitInterface $jobUnit,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
+    ): HookAwareInterface {
         $this->update('jobUnit', $jobUnit);
         $this->update('workspace', $workspace);
 

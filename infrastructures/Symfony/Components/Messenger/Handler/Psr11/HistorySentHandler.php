@@ -29,6 +29,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use SensitiveParameter;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
@@ -88,7 +89,7 @@ class HistorySentHandler implements HistorySentHandlerInterface
             /** @var Promise<HistorySent, mixed, mixed> $promise */
             $promise = new Promise(
                 onSuccess: $processMessage,
-                onFail: fn (Throwable $error) => throw $error,
+                onFail: fn (#[SensitiveParameter] Throwable $error) => throw $error,
             );
 
             $this->encryption->decrypt(

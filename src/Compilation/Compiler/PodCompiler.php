@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Compilation\Compiler;
 
 use DomainException;
 use InvalidArgumentException;
+use SensitiveParameter;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
@@ -278,7 +279,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                 $mountPath,
                 $promise = new Promise(
                     static fn (VolumeInterface $volume) => $volume,
-                    static fn (Throwable $error): never => throw $error,
+                    static fn (#[SensitiveParameter] Throwable $error): never => throw $error,
                 )
             );
             $containerVolumes[(string) $volumeName] = $promise->fetchResultIfCalled();
@@ -359,10 +360,10 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     }
 
     public function compile(
-        array &$definitions,
+        #[SensitiveParameter] array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
-        JobWorkspaceInterface $workspace,
-        JobUnitInterface $job,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobUnitInterface $job,
         ResourceManager $resourceManager,
         DefaultsBag $defaultsBag,
     ): CompilerInterface {

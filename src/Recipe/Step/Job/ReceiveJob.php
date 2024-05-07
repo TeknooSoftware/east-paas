@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use Psr\Http\Message\MessageInterface;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 
 /**
@@ -38,7 +39,7 @@ use Teknoo\East\Foundation\Manager\ManagerInterface;
  */
 class ReceiveJob
 {
-    public function __invoke(MessageInterface $message, ManagerInterface $manager): self
+    public function __invoke(#[SensitiveParameter] MessageInterface $message, ManagerInterface $manager): self
     {
         $manager->updateWorkPlan(['serializedJob' => (string) $message->getBody()]);
 

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Job;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\Promise\Promise;
@@ -49,11 +50,14 @@ class SaveJob
     ) {
     }
 
-    public function __invoke(Job $job, ManagerInterface $manager, ClientInterface $client): self
-    {
+    public function __invoke(
+        #[SensitiveParameter] Job $job,
+        ManagerInterface $manager,
+        ClientInterface $client,
+    ): self {
         /** @var Promise<Job, mixed, mixed> $savedPromise */
         $savedPromise = new Promise(
-            onFail: static fn (Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn (#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     message: 'teknoo.east.paas.job.save_error',
                     code: 500,

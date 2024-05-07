@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Serializing;
 
+use SensitiveParameter;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
@@ -42,7 +43,7 @@ interface SerializerInterface
      * @param array<string, mixed> $context
      */
     public function serialize(
-        mixed $data,
+        #[SensitiveParameter] mixed $data,
         string $format,
         PromiseInterface $promise,
         array $context = []

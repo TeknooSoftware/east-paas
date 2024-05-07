@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\ChefInterface;
@@ -46,14 +47,14 @@ use Throwable;
 class ReadDeploymentConfiguration
 {
     public function __invoke(
-        JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
         ConductorInterface $conductor,
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
-            onFail: static function (Throwable $error) use ($manager): ChefInterface {
+            onFail: static function (#[SensitiveParameter] Throwable $error) use ($manager): ChefInterface {
                 $message = 'teknoo.east.paas.error.recipe.configuration.read_error';
                 if (!empty($error->getMessage())) {
                     $message = $error->getMessage();

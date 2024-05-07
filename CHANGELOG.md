@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.3.2] - 2024-05-07
+### Stable Release
+- Add sensitive parameter attribute on methods catching throwable and jobs' data to prevent leak.
+
 ## [3.3.1] - 2024-04-29
 ### Stable Release
 - Fix and prevent regression with Cluster in Symfony Serializer 7.0.7 

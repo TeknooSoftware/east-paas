@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\Promise\Promise;
@@ -53,11 +54,11 @@ class HookingDeployment
     }
 
     public function __invoke(
-        JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
         CompiledDeploymentInterface $compiledDeployment,
         string $projectId,
         string $envName,
-        JobUnitInterface $jobUnit,
+        #[SensitiveParameter] JobUnitInterface $jobUnit,
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
@@ -72,7 +73,7 @@ class HookingDeployment
                     ['hook_output' => $buildSuccess]
                 );
             },
-            onFail: static fn(Throwable $error) => throw $error,
+            onFail: static fn(#[SensitiveParameter] Throwable $error) => throw $error,
         );
 
         $workspace->runInRepositoryPath(

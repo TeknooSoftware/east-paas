@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\History;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
@@ -60,7 +61,7 @@ class DeserializeHistory
                 onSuccess: static function (History $history) use ($manager): void {
                     $manager->updateWorkPlan([History::class => $history]);
                 },
-                onFail: static fn(Throwable $error): ChefInterface => $manager->error(
+                onFail: static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                     new RuntimeException(
                         'teknoo.east.paas.error.recipe.history.mal_formed',
                         400,

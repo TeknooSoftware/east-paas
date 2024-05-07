@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Security;
 
+use SensitiveParameter;
+
 /**
  * To define a message between servers, workers and agents
  *
@@ -39,5 +41,8 @@ interface SensitiveContentInterface
 
     public function getEncryptionAlgorithm(): ?string;
 
-    public function cloneWith(string $content, ?string $encryptionAlgorithm): SensitiveContentInterface;
+    public function cloneWith(
+        #[SensitiveParameter] string $content,
+        ?string $encryptionAlgorithm,
+    ): SensitiveContentInterface;
 }

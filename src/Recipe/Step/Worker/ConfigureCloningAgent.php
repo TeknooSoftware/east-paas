@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\ChefInterface;
@@ -53,8 +54,8 @@ class ConfigureCloningAgent
     }
 
     public function __invoke(
-        JobUnitInterface $job,
-        JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobUnitInterface $job,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
         ClientInterface $client,
         ManagerInterface $manager
     ): self {
@@ -63,7 +64,7 @@ class ConfigureCloningAgent
             onSuccess: static function (CloningAgentInterface $agent) use ($manager): void {
                 $manager->updateWorkPlan([CloningAgentInterface::class => $agent]);
             },
-            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.agent.configuration_error',
                     500,

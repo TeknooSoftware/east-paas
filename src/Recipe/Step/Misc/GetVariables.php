@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Misc;
 
 use Psr\Http\Message\MessageInterface;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 
@@ -50,7 +51,7 @@ class GetVariables
 
     public function __invoke(
         ManagerInterface $manager,
-        MessageInterface $message,
+        #[SensitiveParameter] MessageInterface $message,
         ClientInterface $client,
     ): self {
         $contentType = $message->getHeader('Content-Type');

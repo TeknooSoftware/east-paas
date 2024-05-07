@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Job;
 
 use DomainException;
+use SensitiveParameter;
 use SplQueue;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
@@ -176,7 +177,7 @@ class JobUnit implements JobUnitInterface
                 onSuccess: static function (ClusterClientInterface $client) use ($selectedClients): void {
                     $selectedClients[] = $client;
                 },
-                onFail: static fn(Throwable $error) => throw $error,
+                onFail: static fn(#[SensitiveParameter] Throwable $error) => throw $error,
             );
 
             foreach ($this->clusters as $cluster) {
@@ -212,7 +213,7 @@ class JobUnit implements JobUnitInterface
     /**
      * @param array{paas: array<string, mixed>} $values
      */
-    private function updateConfig(array &$values): void
+    private function updateConfig(#[SensitiveParameter] array &$values): void
     {
         $values['paas']['prefix'] = $this->prefix;
     }
@@ -220,7 +221,7 @@ class JobUnit implements JobUnitInterface
     /**
      * @param array{paas: array<string, mixed>} $values
      */
-    private function updateDefaults(array &$values): void
+    private function updateDefaults(#[SensitiveParameter] array &$values): void
     {
         $recursiveMerge = function (callable $recursiveMerge, array $array1, array $array2): array {
             $final = $array1;
@@ -254,8 +255,10 @@ class JobUnit implements JobUnitInterface
      * @param array<string, mixed> $values
      * @param PromiseInterface<array<string, mixed>, mixed> $promise
      */
-    private function updateVariables(array &$values, PromiseInterface $promise): void
-    {
+    private function updateVariables(
+        #[SensitiveParameter] array &$values,
+        PromiseInterface $promise,
+    ): void {
         $pattern = '#((?:\$|R)\{[A-Za-z]\w*\})#iS';
 
         $prefix = $this->prefix;
@@ -311,7 +314,7 @@ class JobUnit implements JobUnitInterface
     }
 
     public function updateVariablesIn(
-        array $values,
+        #[SensitiveParameter] array $values,
         PromiseInterface $promise
     ): JobUnitInterface {
         $this->updateConfig($values);

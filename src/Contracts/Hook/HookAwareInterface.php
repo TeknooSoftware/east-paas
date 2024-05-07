@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Hook;
 
+use SensitiveParameter;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
@@ -40,7 +41,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 interface HookAwareInterface
 {
     public function setContext(
-        JobUnitInterface $jobUnit,
-        JobWorkspaceInterface $workspace
+        #[SensitiveParameter] JobUnitInterface $jobUnit,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace
     ): HookAwareInterface;
 }

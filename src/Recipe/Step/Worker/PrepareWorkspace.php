@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
@@ -44,7 +45,7 @@ class PrepareWorkspace
     ) {
     }
 
-    public function __invoke(JobUnitInterface $job, ManagerInterface $manager): self
+    public function __invoke(#[SensitiveParameter] JobUnitInterface $job, ManagerInterface $manager): self
     {
         $workspace = $this->workspace->setJob($job);
 

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Recipe\Step\Job;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Object\Job;
 
@@ -40,7 +41,7 @@ interface SendJobInterface
 {
     public function __invoke(
         ClientInterface $client,
-        Job $job,
-        string $jobSerialized,
+        #[SensitiveParameter] Job $job,
+        #[SensitiveParameter] string $jobSerialized,
     ): SendJobInterface;
 }

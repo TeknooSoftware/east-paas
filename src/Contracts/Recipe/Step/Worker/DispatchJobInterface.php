@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Recipe\Step\Worker;
 
+use SensitiveParameter;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
@@ -40,10 +41,17 @@ use Teknoo\East\Paas\Object\Project;
  */
 interface DispatchJobInterface
 {
+    /**
+     * @param Project $project
+     * @param Environment $environment
+     * @param Job $job
+     * @param string $jobSerialized
+     * @return DispatchJobInterface
+     */
     public function __invoke(
         Project $project,
         Environment $environment,
-        Job $job,
-        string $jobSerialized
+        #[SensitiveParameter] Job $job,
+        #[\SensitiveParameter] string $jobSerialized
     ): DispatchJobInterface;
 }

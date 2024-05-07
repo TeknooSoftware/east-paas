@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Worker;
 
 use RuntimeException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\ChefInterface;
@@ -47,7 +48,7 @@ class CompileDeployment
     public function __invoke(
         ManagerInterface $manager,
         ClientInterface $client,
-        ConductorInterface $conductor,
+        #[SensitiveParameter] ConductorInterface $conductor,
     ): self {
         /** @var Promise<CompiledDeploymentInterface, mixed, mixed> $promise */
         $promise = new Promise(
@@ -56,7 +57,7 @@ class CompileDeployment
                     CompiledDeploymentInterface::class => $deployment,
                 ]);
             },
-            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     'teknoo.east.paas.error.recipe.configuration.compilation_error',
                     $error->getCode() > 0 ? $error->getCode() : 500,

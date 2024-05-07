@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Normalizer;
 
+use SensitiveParameter;
 use Teknoo\East\FoundationBundle\Normalizer\EastNormalizer as BaseEastNormalizer;
 use Teknoo\East\Paas\Object\Job;
 
@@ -44,7 +45,7 @@ class EastNormalizer extends BaseEastNormalizer
     /**
      * @param array<string, string[]> $context
      */
-    public function normalize(mixed $object, ?string $format = null, array $context = []): array
+    public function normalize(#[SensitiveParameter] mixed $object, ?string $format = null, array $context = []): array
     {
         $data = parent::normalize($object, $format, $context);
 

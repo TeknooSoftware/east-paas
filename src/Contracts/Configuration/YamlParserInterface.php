@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Configuration;
 
+use SensitiveParameter;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
@@ -41,5 +42,9 @@ interface YamlParserInterface
     /**
      * @param PromiseInterface<array<string, mixed>, mixed> $promise
      */
-    public function parse(string $value, PromiseInterface $promise, int $flags = 0): YamlParserInterface;
+    public function parse(
+        #[SensitiveParameter] string $value,
+        PromiseInterface $promise,
+        int $flags = 0,
+    ): YamlParserInterface;
 }

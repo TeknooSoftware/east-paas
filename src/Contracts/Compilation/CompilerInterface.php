@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Compilation;
 
+use SensitiveParameter;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -45,10 +46,10 @@ interface CompilerInterface
      * @param array<string, mixed> $definitions
      */
     public function compile(
-        array &$definitions,
+        #[SensitiveParameter] array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
-        JobWorkspaceInterface $workspace,
-        JobUnitInterface $job,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobUnitInterface $job,
         ResourceManager $resourceManager,
         DefaultsBag $defaultsBag,
     ): CompilerInterface;

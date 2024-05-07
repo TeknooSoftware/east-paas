@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Compilation\Compiler;
 
 use DomainException;
 use InvalidArgumentException;
+use SensitiveParameter;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
@@ -76,10 +77,10 @@ class IngressCompiler implements CompilerInterface, ExtenderInterface
     }
 
     public function compile(
-        array &$definitions,
+        #[SensitiveParameter] array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
-        JobWorkspaceInterface $workspace,
-        JobUnitInterface $job,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
+        #[SensitiveParameter] JobUnitInterface $job,
         ResourceManager $resourceManager,
         DefaultsBag $defaultsBag,
     ): CompilerInterface {

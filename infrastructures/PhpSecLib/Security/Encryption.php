@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\PhpSecLib\Security;
 
 use phpseclib3\Crypt\Common\PrivateKey;
 use phpseclib3\Crypt\Common\PublicKey;
+use SensitiveParameter;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\UnsupportedAlgorithmException;
@@ -87,7 +88,7 @@ class Encryption implements EncryptionInterface
     }
 
     public function encrypt(
-        SensitiveContentInterface $data,
+        #[SensitiveParameter] SensitiveContentInterface $data,
         PromiseInterface $promise,
         bool $returnBase64 = false,
     ): EncryptionInterface {
@@ -125,7 +126,7 @@ class Encryption implements EncryptionInterface
     }
 
     public function decrypt(
-        SensitiveContentInterface $data,
+        #[SensitiveParameter] SensitiveContentInterface $data,
         PromiseInterface $promise,
         bool $isBase64 = false,
     ): EncryptionInterface {

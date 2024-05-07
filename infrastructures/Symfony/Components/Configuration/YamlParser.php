@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Configuration;
 
+use SensitiveParameter;
 use Symfony\Component\Yaml\Parser;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -46,8 +47,11 @@ class YamlParser implements YamlParserInterface
     ) {
     }
 
-    public function parse(string $value, PromiseInterface $promise, int $flags = 0): YamlParserInterface
-    {
+    public function parse(
+        #[SensitiveParameter] string $value,
+        PromiseInterface $promise,
+        int $flags = 0,
+    ): YamlParserInterface {
         try {
             $promise->success($this->parser->parse($value, $flags));
         } catch (Throwable $throwable) {

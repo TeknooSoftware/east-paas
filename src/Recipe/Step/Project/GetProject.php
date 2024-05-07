@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Recipe\Step\Project;
 
 use DomainException;
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\ChefInterface;
@@ -57,7 +58,7 @@ class GetProject
             onSuccess: static function (Project $project) use ($manager): void {
                 $manager->updateWorkPlan([Project::class => $project]);
             },
-            onFail: static fn(Throwable $error): ChefInterface => $manager->error(
+            onFail: static fn(#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new DomainException(
                     'teknoo.east.paas.error.recipe.project.not_found',
                     404,

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Object;
 
+use SensitiveParameter;
 use Stringable;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
@@ -254,7 +255,7 @@ class Cluster implements
         /** @var Promise<DefaultsBag, DefaultsBag, mixed> $defaultsBagPromise */
         $defaultsBagPromise = new Promise(
             fn (DefaultsBag $defaultsBag) => $defaultsBag,
-            fn (Throwable $error) => throw $error,
+            fn (#[SensitiveParameter] Throwable $error) => throw $error,
         );
         $defaultsBagPromise->setDefaultResult(new DefaultsBag());
 

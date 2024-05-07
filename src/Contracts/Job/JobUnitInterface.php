@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Job;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Cluster\Collection as ClusterCollection;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -87,8 +88,8 @@ interface JobUnitInterface extends NormalizableInterface
      * @param PromiseInterface<array<string, mixed>, mixed> $promise
      */
     public function updateVariablesIn(
-        array $values,
-        PromiseInterface $promise
+        #[SensitiveParameter] array $values,
+        PromiseInterface $promise,
     ): JobUnitInterface;
 
     public function runWithExtra(callable $callback): JobUnitInterface;

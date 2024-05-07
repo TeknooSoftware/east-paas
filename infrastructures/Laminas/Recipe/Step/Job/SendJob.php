@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job;
 
+use SensitiveParameter;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\Job as JobResponse;
@@ -40,8 +41,11 @@ use Teknoo\East\Paas\Object\Job;
  */
 class SendJob implements SendJobInterface
 {
-    public function __invoke(ClientInterface $client, Job $job, string $jobSerialized): SendJobInterface
-    {
+    public function __invoke(
+        ClientInterface $client,
+        #[SensitiveParameter] Job $job,
+        #[SensitiveParameter] string $jobSerialized,
+    ): SendJobInterface {
         $client->acceptResponse(
             new JobResponse(200, '', $job, $jobSerialized)
         );
