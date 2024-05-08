@@ -255,7 +255,7 @@ class Job implements
 
     public function setHistory(?History $history): Job
     {
-        $this->history = $history;
+        $this->history = $history->limit(150);
 
         $this->updateStates();
 

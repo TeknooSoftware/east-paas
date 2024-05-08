@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use DateTime;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -126,12 +127,12 @@ class HistoryTest extends TestCase
     public function testCloneBadPrevious()
     {
         $this->expectException(\TypeError::class);
-        (new History(null, 'foo', new \DateTime('2018-11-25')))->clone(new \stdClass());
+        (new History(null, 'foo', new DateTime('2018-11-25')))->clone(new \stdClass());
     }
 
     public function testCloneWithoutParent()
     {
-        $history = new History(null, 'foo', new \DateTime('2018-11-25'));
+        $history = new History(null, 'foo', new DateTime('2018-11-25'));
         $cloned = $history->clone(null);
 
         self::assertNotSame($history, $cloned);
@@ -140,9 +141,9 @@ class HistoryTest extends TestCase
 
     public function testCloneWithoutParentWithParent()
     {
-        $parent = new History(null, 'bar', new \DateTime('2018-10-25'), serialNumber: 0,);
-        $history = new History(null, 'foo', new \DateTime('2018-11-25'), serialNumber: 0,);
-        $expected = new History($parent, 'foo', new \DateTime('2018-11-25'), serialNumber: 0,);
+        $parent = new History(null, 'bar', new DateTime('2018-10-25'), serialNumber: 0,);
+        $history = new History(null, 'foo', new DateTime('2018-11-25'), serialNumber: 0,);
+        $expected = new History($parent, 'foo', new DateTime('2018-11-25'), serialNumber: 0,);
         $cloned = $history->clone($parent);
 
         self::assertNotSame($history, $cloned);
@@ -152,12 +153,12 @@ class HistoryTest extends TestCase
 
     public function testCloneWithoutParentWithMoreRecent()
     {
-        $recent = new History(null, 'bar', new \DateTime('2019-10-25'), serialNumber: 0,);
-        $history = new History(null, 'foo', new \DateTime('2018-11-25'), serialNumber: 0,);
+        $recent = new History(null, 'bar', new DateTime('2019-10-25'), serialNumber: 0,);
+        $history = new History(null, 'foo', new DateTime('2018-11-25'), serialNumber: 0,);
         $expected = new History(
             $history,
             'bar',
-            new \DateTime('2019-10-25'),
+            new DateTime('2019-10-25'),
             serialNumber: 0,
         );
 
@@ -170,10 +171,10 @@ class HistoryTest extends TestCase
 
     public function testCloneWithNewHistoryToInsert()
     {
-        $newHistory = new History(null, 'bar', new \DateTime('2019-10-25'), serialNumber: 0,);
-        $history1 = new History(null, 'foo1', new \DateTime('2017-11-25'), serialNumber: 0,);
-        $history2 = new History($history1, 'foo2', new \DateTime('2018-11-25'), serialNumber: 0,);
-        $history3 = new History($history2, 'foo3', new \DateTime('2020-11-25'), serialNumber: 0,);
+        $newHistory = new History(null, 'bar', new DateTime('2019-10-25'), serialNumber: 0,);
+        $history1 = new History(null, 'foo1', new DateTime('2017-11-25'), serialNumber: 0,);
+        $history2 = new History($history1, 'foo2', new DateTime('2018-11-25'), serialNumber: 0,);
+        $history3 = new History($history2, 'foo3', new DateTime('2020-11-25'), serialNumber: 0,);
 
         $expected = new History(
             new History(
@@ -181,19 +182,19 @@ class HistoryTest extends TestCase
                     new History(
                         null,
                         'foo1',
-                        new \DateTime('2017-11-25'),
+                        new DateTime('2017-11-25'),
                         serialNumber: 0,
                     ),
                     'foo2',
-                    new \DateTime('2018-11-25'),
+                    new DateTime('2018-11-25'),
                     serialNumber: 0,
                 ),
                 'bar',
-                new \DateTime('2019-10-25'),
+                new DateTime('2019-10-25'),
                 serialNumber: 0,
             ),
             'foo3',
-            new \DateTime('2020-11-25'),
+            new DateTime('2020-11-25'),
             serialNumber: 0,
         );
 
@@ -208,10 +209,10 @@ class HistoryTest extends TestCase
 
     public function testCloneWithNewHistoryToInsert2()
     {
-        $newHistory = new History(null, 'bar', new \DateTime('2018-10-25'), serialNumber: 0,);
-        $history1 = new History(null, 'foo1', new \DateTime('2017-11-25'), serialNumber: 0,);
-        $history2 = new History($history1, 'foo2', new \DateTime('2019-11-25'), serialNumber: 0,);
-        $history3 = new History($history2, 'foo3', new \DateTime('2020-11-25'), serialNumber: 0,);
+        $newHistory = new History(null, 'bar', new DateTime('2018-10-25'), serialNumber: 0,);
+        $history1 = new History(null, 'foo1', new DateTime('2017-11-25'), serialNumber: 0,);
+        $history2 = new History($history1, 'foo2', new DateTime('2019-11-25'), serialNumber: 0,);
+        $history3 = new History($history2, 'foo3', new DateTime('2020-11-25'), serialNumber: 0,);
 
         $expected = new History(
             new History(
@@ -219,19 +220,19 @@ class HistoryTest extends TestCase
                     new History(
                         null,
                         'foo1',
-                        new \DateTime('2017-11-25'),
+                        new DateTime('2017-11-25'),
                         serialNumber: 0,
                     ),
                     'bar',
-                    new \DateTime('2018-10-25'),
+                    new DateTime('2018-10-25'),
                     serialNumber: 0,
                 ),
                 'foo2',
-                new \DateTime('2019-11-25'),
+                new DateTime('2019-11-25'),
                 serialNumber: 0,
             ),
             'foo3',
-            new \DateTime('2020-11-25'),
+            new DateTime('2020-11-25'),
             serialNumber: 0,
         );
 
@@ -249,21 +250,21 @@ class HistoryTest extends TestCase
         $recent = new History(
             previous: null,
             message: 'bar',
-            date: new \DateTime('2019-10-25'),
+            date: new DateTime('2019-10-25'),
             serialNumber: 4,
         );
 
         $history = new History(
             previous: null,
             message: 'foo',
-            date: new \DateTime('2018-11-25'),
+            date: new DateTime('2018-11-25'),
             serialNumber: 3,
         );
 
         $expected = new History(
             previous: $history,
             message: 'bar',
-            date: new \DateTime('2019-10-25'),
+            date: new DateTime('2019-10-25'),
             serialNumber: 4,
         );
 
@@ -279,25 +280,25 @@ class HistoryTest extends TestCase
         $newHistory = new History(
             previous: null,
             message: 'bar',
-            date: new \DateTime('2020-11-25'),
+            date: new DateTime('2020-11-25'),
             serialNumber: 3,
         );
         $history1 = new History(
             previous: null,
             message: 'foo1',
-            date: new \DateTime('2020-11-25'),
+            date: new DateTime('2020-11-25'),
             serialNumber: 1,
         );
         $history2 = new History(
             previous: $history1,
             message: 'foo2',
-            date: new \DateTime('2020-11-25'),
+            date: new DateTime('2020-11-25'),
             serialNumber: 2,
         );
         $history3 = new History(
             previous: $history2,
             message: 'foo3',
-            date: new \DateTime('2020-11-25'),
+            date: new DateTime('2020-11-25'),
             serialNumber: 5,
         );
 
@@ -307,19 +308,19 @@ class HistoryTest extends TestCase
                     previous: new History(
                         previous:null,
                         message: 'foo1',
-                        date: new \DateTime('2020-11-25'),
+                        date: new DateTime('2020-11-25'),
                         serialNumber: 1,
                     ),
                     message: 'foo2',
-                    date: new \DateTime('2020-11-25'),
+                    date: new DateTime('2020-11-25'),
                     serialNumber: 2,
                 ),
                 message: 'bar',
-                date: new \DateTime('2020-11-25'),
+                date: new DateTime('2020-11-25'),
                 serialNumber: 3,
             ),
             message: 'foo3',
-            date: new \DateTime('2020-11-25'),
+            date: new DateTime('2020-11-25'),
             serialNumber: 5,
         );
 
@@ -337,37 +338,37 @@ class HistoryTest extends TestCase
         $newHistory = new History(
             previous:null,
             message: 'bar',
-            date: new \DateTime('2018-10-25'),
+            date: new DateTime('2018-10-25'),
             serialNumber: 0,
         );
         $history1 = new History(
             previous:null,
             message: 'foo1',
-            date: new \DateTime('2017-11-25'),
+            date: new DateTime('2017-11-25'),
             serialNumber: 1,
         );
         $history2 = new History(
             previous:$history1,
             message: 'foo2',
-            date: new \DateTime('2019-11-25'),
+            date: new DateTime('2019-11-25'),
             serialNumber: 0,
         );
         $history3 = new History(
             previous:$history2,
             message: 'foo3',
-            date: new \DateTime('2020-11-25'),
+            date: new DateTime('2020-11-25'),
             serialNumber: 5,
         );
         $history4 = new History(
             previous:$history3,
             message: 'foo4',
-            date: new \DateTime('2021-11-25'),
+            date: new DateTime('2021-11-25'),
             serialNumber: 0,
         );
         $history5 = new History(
             previous:$history4,
             message: 'foo5',
-            date: new \DateTime('2021-11-25'),
+            date: new DateTime('2021-11-25'),
             serialNumber: 5,
         );
 
@@ -379,27 +380,27 @@ class HistoryTest extends TestCase
                             previous: new History(
                                 previous: null,
                                 message: 'foo1',
-                                date: new \DateTime('2017-11-25'),
+                                date: new DateTime('2017-11-25'),
                                 serialNumber: 1,
                             ),
                             message: 'bar',
-                            date: new \DateTime('2018-10-25'),
+                            date: new DateTime('2018-10-25'),
                             serialNumber: 0,
                         ),
                         message: 'foo2',
-                        date: new \DateTime('2019-11-25'),
+                        date: new DateTime('2019-11-25'),
                         serialNumber: 0,
                     ),
                     message: 'foo3',
-                    date: new \DateTime('2020-11-25'),
+                    date: new DateTime('2020-11-25'),
                     serialNumber: 5,
                 ),
                 message: 'foo4',
-                date: new \DateTime('2021-11-25'),
+                date: new DateTime('2021-11-25'),
                 serialNumber: 0,
             ),
             message: 'foo5',
-            date: new \DateTime('2021-11-25'),
+            date: new DateTime('2021-11-25'),
             serialNumber: 5,
         );
 
@@ -417,14 +418,14 @@ class HistoryTest extends TestCase
         $recent = new History(
             previous: null,
             message: 'bar',
-            date: new \DateTime('2019-10-25'),
+            date: new DateTime('2019-10-25'),
             serialNumber: 1,
         );
 
         $history = new History(
             previous: null,
             message: 'foo',
-            date: new \DateTime('2018-11-25'),
+            date: new DateTime('2018-11-25'),
             serialNumber: 3,
             isFinal: true,
         );
@@ -432,7 +433,7 @@ class HistoryTest extends TestCase
         $expected = new History(
             previous: $recent,
             message: 'foo',
-            date: new \DateTime('2018-11-25'),
+            date: new DateTime('2018-11-25'),
             serialNumber: 3,
             isFinal: true,
         );
@@ -446,7 +447,7 @@ class HistoryTest extends TestCase
         $recent = new History(
             previous: null,
             message: 'bar',
-            date: new \DateTime('2019-10-25'),
+            date: new DateTime('2019-10-25'),
             serialNumber: 1,
             isFinal: true,
         );
@@ -454,14 +455,14 @@ class HistoryTest extends TestCase
         $history = new History(
             previous: null,
             message: 'foo',
-            date: new \DateTime('2018-11-25'),
+            date: new DateTime('2018-11-25'),
             serialNumber: 3,
         );
 
         $expected = new History(
             previous: $history,
             message: 'bar',
-            date: new \DateTime('2019-10-25'),
+            date: new DateTime('2019-10-25'),
             serialNumber: 1,
             isFinal: true,
         );
@@ -470,6 +471,106 @@ class HistoryTest extends TestCase
 
         self::assertNotSame($history, $cloned);
         self::assertNotSame($recent, $cloned);
+        self::assertEquals($expected, $cloned);
+    }
+
+    public function testLimitNotExceed()
+    {
+        $history = new History(
+            previous: new History(
+                previous: null,
+                message: 'foo',
+                date: new DateTime('2024-10-25'),
+                serialNumber: 1,
+                isFinal: true,
+            ),
+            message: 'bar',
+            date: new DateTime('2024-10-25'),
+            serialNumber: 1,
+            isFinal: true,
+        );
+
+        $expected = new History(
+            previous: new History(
+                previous: null,
+                message: 'foo',
+                date: new DateTime('2024-10-25'),
+                serialNumber: 1,
+                isFinal: true,
+            ),
+            message: 'bar',
+            date: new DateTime('2024-10-25'),
+            serialNumber: 1,
+            isFinal: true,
+        );
+
+        $cloned = $history->limit(5);
+
+        self::assertEquals($expected, $cloned);
+    }
+
+    public function testLimitExceed()
+    {
+        $history = new History(
+            previous: new History(
+                previous: new History(
+                    previous: new History(
+                        previous: new History(
+                            previous: new History(
+                                previous: new History(
+                                    previous: null,
+                                    message: 'foo1',
+                                    date: new DateTime('2024-10-25'),
+                                    serialNumber: 1,
+                                    isFinal: true,
+                                ),
+                                message: 'foo2',
+                                date: new DateTime('2024-10-25'),
+                                serialNumber: 1,
+                                isFinal: true,
+                            ),
+                            message: 'foo3',
+                            date: new DateTime('2024-10-25'),
+                            serialNumber: 1,
+                            isFinal: true,
+                        ),
+                        message: 'foo4',
+                        date: new DateTime('2024-10-25'),
+                        serialNumber: 1,
+                        isFinal: true,
+                    ),
+                    message: 'foo5',
+                    date: new DateTime('2024-10-25'),
+                    serialNumber: 1,
+                    isFinal: true,
+                ),
+                message: 'foo6',
+                date: new DateTime('2024-10-25'),
+                serialNumber: 1,
+                isFinal: true,
+            ),
+            message: 'foo7',
+            date: new DateTime('2024-10-25'),
+            serialNumber: 1,
+            isFinal: true,
+        );
+
+        $expected = new History(
+            previous: new History(
+                previous: null,
+                message: 'foo6',
+                date: new DateTime('2024-10-25'),
+                serialNumber: 1,
+                isFinal: true,
+            ),
+            message: 'foo7',
+            date: new DateTime('2024-10-25'),
+            serialNumber: 1,
+            isFinal: true,
+        );
+
+        $cloned = $history->limit(2);
+
         self::assertEquals($expected, $cloned);
     }
 }

@@ -171,4 +171,16 @@ class History implements IdentifiedObjectInterface, ImmutableInterface, JsonSeri
 
         return $newHistory;
     }
+
+    public function limit(int $count): self
+    {
+        $that = clone $this;
+        if ($count > 1) {
+            $that->previous = $that->previous?->limit($count - 1);
+        } else {
+            $that->previous = null;
+        }
+
+        return $that;
+    }
 }

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.3.3] - 2024-05-08
+### Stable Release
+- Fix issue in too long history and limit arbitrary to 150, oldest entries are deleted.
+
 ## [3.3.2] - 2024-05-07
 ### Stable Release
 - Add sensitive parameter attribute on methods catching throwable and jobs' data to prevent leak.
