@@ -54,7 +54,7 @@ class Encryption implements EncryptionInterface
 {
     public function __construct(
         private PublicKey $publicKey,
-        private PrivateKey $privateKey,
+        private ?PrivateKey $privateKey,
         private string $alogirthm,
     ) {
     }
@@ -130,7 +130,7 @@ class Encryption implements EncryptionInterface
         PromiseInterface $promise,
         bool $isBase64 = false,
     ): EncryptionInterface {
-        if (!method_exists($this->privateKey, 'decrypt')) {
+        if (!$this->privateKey || !method_exists($this->privateKey, 'decrypt')) {
             $promise->fail(
                 new WrongLibraryAPIException('PHPSecLib key as not decrypt capacity')
             );

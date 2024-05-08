@@ -33,12 +33,15 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
+use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
 use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\History\SendHistory;
 use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\DIException;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\InvalidConfigurationException;
+use Teknoo\Recipe\Promise\PromiseInterface;
+
 use function file_put_contents;
 
 /**
@@ -122,8 +125,16 @@ class ContainerTest extends TestCase
 
         $_ENV[$publicKeyEnvKey] = __DIR__ . '/../../var/keys/public.pem';
 
-        $this->expectException(DIException::class);
-        $container->get(EncryptionInterface::class);
+        $service = $container->get(EncryptionInterface::class);
+        self::assertInstanceOf(EncryptionInterface::class, $service);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects(self::once())->method('fail');
+
+        $service->decrypt(
+            $this->createMock(SensitiveContentInterface::class),
+            $promise,
+        );
     }
 
     public function testGetEncryptionWhenNoPublicKeyDefined()

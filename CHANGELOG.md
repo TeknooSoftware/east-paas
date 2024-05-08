@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.3.4] - 2024-05-08
+### Stable Release
+- Private key is now not mandatory to initialize `Encryption` service, but `decrypt` function is not available
+
 ## [3.3.3] - 2024-05-08
 ### Stable Release
 - Fix issue in too long history and limit arbitrary to 150, oldest entries are deleted.
