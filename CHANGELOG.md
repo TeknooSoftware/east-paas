@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.3.5] - 2024-05-13
+### Stable Release
+- Fix issue with initContainer without requirements
+
 ## [3.3.4] - 2024-05-08
 ### Stable Release
 - Private key is now not mandatory to initialize `Encryption` service, but `decrypt` function is not available

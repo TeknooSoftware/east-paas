@@ -2392,7 +2392,7 @@ EOF;
                                         "mountPath": "/opt/extra",
                                         "readOnly": false
                                     }
-                                ]
+                                ]$phpRunResources
                             }
                         ],
                         "volumes": [
@@ -2663,7 +2663,8 @@ EOF;
                 $expectedPretty,
                 $json,
             );
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            throw $e;
         }
     }
 

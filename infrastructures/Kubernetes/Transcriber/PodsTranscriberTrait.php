@@ -217,7 +217,7 @@ trait PodsTranscriberTrait
      * @param array<string, mixed> $specs
      * @param array<string, SecretVolume|MapVolume|Volume> $volumes
      */
-    private static function convertToVolumes(array &$specs, array $volumes, callable $prefixer,): void
+    private static function convertToVolumes(array &$specs, Pod $pod, array $volumes, callable $prefixer,): void
     {
         foreach ($volumes as $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
@@ -253,7 +253,20 @@ trait PodsTranscriberTrait
                 continue;
             }
 
-            $specs['spec']['template']['spec']['initContainers'][] = [
+            $resourcesReqs = [];
+            foreach ($pod as $container) {
+                /** @var Resource $resource */
+                foreach ($container->getResources() as $resource) {
+                    $resourcesReqs['requests'][$resource->getType()] = $resource->getRequire();
+                    $resourcesReqs['limits'][$resource->getType()] = $resource->getLimit();
+                }
+
+                if (!empty($resourcesReqs)) {
+                    break;
+                }
+            }
+
+            $initContainerSpec = [
                 'name' => $volume->getName(),
                 'image' => $volume->getUrl(),
                 'imagePullPolicy' => 'Always',
@@ -263,8 +276,14 @@ trait PodsTranscriberTrait
                         'mountPath' => $volume->getMountPath(),
                         'readOnly' => false,
                     ]
-                ]
+                ],
             ];
+
+            if (!empty($resourcesReqs)) {
+                $initContainerSpec['resources'] = $resourcesReqs;
+            }
+
+            $specs['spec']['template']['spec']['initContainers'][] = $initContainerSpec;
 
             $specs['spec']['template']['spec']['volumes'][] = [
                 'name' => $volume->getName() . self::VOLUME_SUFFIX,
@@ -381,7 +400,7 @@ trait PodsTranscriberTrait
             ];
         }
 
-        self::convertToVolumes($specs, $volumes, $prefixer);
+        self::convertToVolumes($specs, $pod, $volumes, $prefixer);
         self::convertToContainer($specs, $pod, $images, $prefixer);
 
         return $specs;
