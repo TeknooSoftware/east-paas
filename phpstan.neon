@@ -20,6 +20,9 @@ parameters:
             message: '#non-native method stdClass::#'
             path: infrastructures/PhpSecLib/Security/Encryption.php
         -
+            message: '#Cannot call method decrypt#'
+            path: infrastructures/Symfony/Components/Messenger/Handler/Psr11
+        -
             message: '#mixed#'
             path: src/Job/JobUnit.php
         -
