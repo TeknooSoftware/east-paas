@@ -175,7 +175,7 @@ return static function (
     $cd->addVolume(
         name: 'extra',
         volume: new CompiledDeployment\Volume\Volume(
-            name: 'extra-jobid',
+            name: 'extra-foobarproject',
             paths: [
                 'extra',
             ],
@@ -188,7 +188,7 @@ return static function (
     $cd->addVolume(
         name: 'other-name',
         volume: new CompiledDeployment\Volume\Volume(
-            name: 'other-name-jobid',
+            name: 'other-name-foobarproject',
             paths: [
                 'vendor',
             ],
@@ -294,7 +294,7 @@ return static function (
                     ],
                     volumes: [
                         'extra' => new CompiledDeployment\Volume\Volume(
-                            name: 'extra-jobid',
+                            name: 'extra-foobarproject',
                             paths: [
                                 'extra',
                             ],

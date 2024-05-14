@@ -274,9 +274,9 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                 $variables = [
                     'PAAS_IMAGE_PLATFORM' => $this->platforms,
                     'PAAS_DOCKERFILE_CONTENT' => $this->generateDockerFile(
-                        fromImage: 'alpine:latest',
+                        fromImage: 'busybox:latest',
                         paths: $paths,
-                        command: 'cp -rf ' . $volumeUpdated->getLocalPath()
+                        command: 'cp -afv ' . $volumeUpdated->getLocalPath()
                             . '/. '
                             . $volumeUpdated->getMountPath(),
                     ),

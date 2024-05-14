@@ -2321,7 +2321,7 @@ EOF;
                                 ],
                                 "volumeMounts": [
                                     {
-                                        "name": "extra-jobid-volume",
+                                        "name": "extra-foobarproject-volume",
                                         "mountPath": "/opt/extra",
                                         "readOnly": true
                                     },
@@ -2383,12 +2383,12 @@ EOF;
                         },
                         "initContainers": [
                             {
-                                "name": "extra-jobid",
-                                "image": "https://foo.bar/extra-jobid",
+                                "name": "extra-foobarproject",
+                                "image": "https://foo.bar/extra-foobarproject",
                                 "imagePullPolicy": "Always",
                                 "volumeMounts": [
                                     {
-                                        "name": "extra-jobid-volume",
+                                        "name": "extra-foobarproject-volume",
                                         "mountPath": "/opt/extra",
                                         "readOnly": false
                                     }
@@ -2397,7 +2397,7 @@ EOF;
                         ],
                         "volumes": [
                             {
-                                "name": "extra-jobid-volume",
+                                "name": "extra-foobarproject-volume",
                                 "emptyDir": []
                             },
                             {

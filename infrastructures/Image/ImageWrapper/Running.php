@@ -60,7 +60,7 @@ class Running implements StateInterface
     private function getUrl(): Closure
     {
         return function (): string {
-            return (string)$this->url;
+            return (string) $this->url;
         };
     }
 

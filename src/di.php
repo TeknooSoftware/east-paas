@@ -430,7 +430,7 @@ return [
     SetTimeLimit::class => static function (ContainerInterface $container): SetTimeLimit {
         $seconds = 5 * 60;
         if ($container->has('teknoo.east.paas.worker.time_limit')) {
-            $seconds = (int)$container->get('teknoo.east.paas.worker.time_limit');
+            $seconds = (int) $container->get('teknoo.east.paas.worker.time_limit');
         }
 
         return new SetTimeLimit(

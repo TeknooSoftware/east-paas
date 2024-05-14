@@ -65,7 +65,7 @@ class VolumeCompiler implements CompilerInterface
             $compiledDeployment->addVolume(
                 $volumeName,
                 $volume = new Volume(
-                    $volumeName . '-' . $job->getShortId(),
+                    $volumeName . '-' . $job->getProjectNormalizedName(),
                     $config[self::KEY_ADD],
                     $config[self::KEY_LOCAL_PATH] ?? self::DEFAULT_LOCAL_PATH_IN_VOLUME,
                     $config[self::KEY_MOUNT_PATH] ?? self::DEFAULT_MOUNT_PATH_IN_VOLUME

@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.3.6] - 2024-05-14
+### Stable Release
+- Fix issue for buildable volume, use the project name instead of the job id, with date as tag
+- Fix initContainer to add log
+
 ## [3.3.5] - 2024-05-13
 ### Stable Release
 - Fix issue with initContainer without requirements
