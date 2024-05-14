@@ -2392,6 +2392,12 @@ EOF;
                                         "mountPath": "/opt/extra",
                                         "readOnly": false
                                     }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "MOUNT_PATH",
+                                        "value": "/opt/extra"
+                                    }
                                 ]$phpRunResources
                             }
                         ],

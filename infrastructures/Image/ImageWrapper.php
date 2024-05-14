@@ -276,9 +276,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                     'PAAS_DOCKERFILE_CONTENT' => $this->generateDockerFile(
                         fromImage: 'busybox:latest',
                         paths: $paths,
-                        command: 'cp -afv ' . $volumeUpdated->getLocalPath()
-                            . '/. '
-                            . $volumeUpdated->getMountPath(),
+                        command: 'cp -afv ' . $volumeUpdated->getLocalPath() . '/. $MOUNT_PATH'
                     ),
                 ];
 

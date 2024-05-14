@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.3.7] - 2024-05-14
+### Stable Release
+- Fix issue with buildable volume, to pass the final mount point as env var instead from variable because it is updated
+ when its linked to a pod and each pod can have an individual mount point.
+
 ## [3.3.6] - 2024-05-14
 ### Stable Release
 - Fix issue for buildable volume, use the project name instead of the job id, with date as tag

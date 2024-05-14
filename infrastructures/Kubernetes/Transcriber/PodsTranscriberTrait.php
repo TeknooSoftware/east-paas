@@ -277,6 +277,12 @@ trait PodsTranscriberTrait
                         'readOnly' => false,
                     ]
                 ],
+                'env' => [
+                    [
+                        'name' => 'MOUNT_PATH',
+                        'value' => $volume->getMountPath(),
+                    ]
+                ]
             ];
 
             if (!empty($resourcesReqs)) {
