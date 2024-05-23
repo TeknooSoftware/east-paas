@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * East Paas.
  *
@@ -23,38 +21,24 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Hook;
+declare(strict_types=1);
 
-use Teknoo\Immutable\ImmutableInterface;
-use Teknoo\Immutable\ImmutableTrait;
-use Teknoo\East\Paas\Contracts\Hook\HookInterface;
-use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
-use Traversable;
+namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts;
+
+use Symfony\Component\Process\Process;
 
 /**
- * Collections of available hooks to pass them to the Conductor to configure the
- * CompiledDeployment object
+ * Contract to define a Process factory to wrap a builder command in a deployment
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class HooksCollection implements HooksCollectionInterface, ImmutableInterface
+interface ProcessFactoryInterface
 {
-    use ImmutableTrait;
-
     /**
-     * @param array<string, HookInterface> $hooks
+     * @param string[] $command
      */
-    public function __construct(
-        private readonly array $hooks
-    ) {
-        $this->uniqueConstructorCheck();
-    }
-
-    public function getIterator(): Traversable
-    {
-        yield from $this->hooks;
-    }
+    public function __invoke(array $command, string $cwd, float $timeout): Process;
 }

@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding;
 
 use RuntimeException;
 use Symfony\Component\Process\Process;
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\InvalidArgumentException;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
@@ -54,12 +55,11 @@ abstract class AbstractHook implements HookInterface
     /**
      * @var string[]
      */
-    private readonly array $binary;
+    private readonly array $command;
 
-    /**
-     * @var callable
-     */
-    private $factory;
+    private readonly float $timeout;
+
+    private readonly ProcessFactoryInterface $factory;
 
     private ?string $path = '';
 
@@ -71,17 +71,19 @@ abstract class AbstractHook implements HookInterface
     private array $options = [];
 
     /**
-     * @param string|string[] $binary
+     * @param string|string[] $command
      */
     public function __construct(
-        string|array $binary,
-        callable $factory,
+        string|array $command,
+        float $timeout,
+        ProcessFactoryInterface $factory,
     ) {
-        if (is_string($binary)) {
-            $binary = [$binary];
+        if (is_string($command)) {
+            $command = [$command];
         }
 
-        $this->binary = $binary;
+        $this->command = $command;
+        $this->timeout = $timeout;
         $this->factory = $factory;
     }
 
@@ -174,18 +176,17 @@ abstract class AbstractHook implements HookInterface
     {
         $path = $this->path . $this->localPath;
 
-        $binary = str_replace(
+        $command = str_replace(
             search: '${PWD}',
             replace: $path,
-            subject: $this->binary,
+            subject: $this->command,
         );
 
-        $command = ($this->factory)([...$binary, ...$this->options], $path);
-        if (!$command instanceof Process) {
-            $promise->fail(new RuntimeException('Bad process manager'));
-
-            return $this;
-        }
+        $command = ($this->factory)(
+            command: [...$command, ...$this->options],
+            cwd: $path,
+            timeout: $this->timeout,
+        );
 
         $command->run();
 

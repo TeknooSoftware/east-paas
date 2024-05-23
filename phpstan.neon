@@ -35,6 +35,9 @@ parameters:
             message: '#Cannot cast array#'
             path: infrastructures/ProjectBuilding/AbstractHook.php
         -
+            message: '#expects array<string>, array given#'
+            path: infrastructures/ProjectBuilding/AbstractHook.php
+        -
             message: '#mixed#'
             path: infrastructures/Kubernetes/
         -

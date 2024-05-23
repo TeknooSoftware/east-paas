@@ -1,5 +1,41 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.4.0] - 2024-05-23
+### Stable Release
+- *Minor BC break on provided embedded hooks.* To simplify the creation of Hooks of a same type in different versions,
+  like, provide Composer under several version of PHP, the creation in the container of Hooks is not embedded in this
+  library and must be implemented into the final project. Usage of Hooks in PaaS stay unchanged, and requires to define
+  a collection implementing `HooksCollectionInterface`.
+    - Remove DI entries :
+        - `teknoo.east.paas.project_building.get_array_from_value`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\ComposerHook:factory`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\ComposerHook`
+        - `teknoo.east.paas.composer.timeout`
+        - `teknoo.east.paas.composer.path`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\MakeHook:factory`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\MakeHook`
+        - `teknoo.east.paas.make.timeout`
+        - `teknoo.east.paas.make.path`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\SfConsoleHook:factory`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\SfConsoleHook`
+        - `teknoo.east.paas.symfony_console.timeout`
+        - `teknoo.east.paas.symfony_console.path`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\NpmHook:factory`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\NpmHook`
+        - `teknoo.east.paas.npm.timeout`
+        - `teknoo.east.paas.bpm.path`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\PipHook:factory`
+        - `Teknoo\East\Paas\Infrastructures\ProjectBuilding\PipHook`
+        - `teknoo.east.paas.pip.timeout`
+        - `teknoo.east.paas.pip.path`
+    - All Hooks requires now as constructor's arguments :
+        - the command (a string or an array of string)
+        - the timeout
+        - the factory to create a `Process` instance, the factory must implement the interface `ProcessFactoryInterface`
+          instead of a callable.
+          - A default factory is available in the DI under the key `ProcessFactoryInterface`, usable with any provided
+            hooks.
+
 ## [3.3.7] - 2024-05-14
 ### Stable Release
 - Fix issue with buildable volume, to pass the final mount point as env var instead from variable because it is updated

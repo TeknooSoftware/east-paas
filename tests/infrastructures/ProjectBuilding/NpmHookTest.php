@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\ProjectBuilding;
 
+use PHPUnit\Framework\MockObject\MockObject;
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts\ProcessFactoryInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\NpmHook;
 use PHPUnit\Framework\TestCase;
@@ -39,6 +41,11 @@ use function str_replace;
  */
 class NpmHookTest extends TestCase
 {
+    public function createMock(string $originalClassName): MockObject
+    {
+        return parent::createMock($originalClassName);
+    }
+
     public function buildHook(
         bool $success = true,
         ?array $expectedArguments = null,
@@ -46,17 +53,29 @@ class NpmHookTest extends TestCase
     ): NpmHook {
         return new NpmHook(
             $bin,
-            function (array $args) use ($bin, $success, $expectedArguments) {
-                if (null !== $expectedArguments) {
-                    $bin = str_replace('${PWD}', '/foo', $bin);
-                    self::assertEquals([...((array) $bin), ...$expectedArguments], $args);
+            10,
+            new class($bin, $success, $expectedArguments, $this) implements ProcessFactoryInterface {
+                public function __construct(
+                    private string|array $bin,
+                    private bool $success,
+                    private ?array $expectedArguments,
+                    private NpmHookTest $test,
+                ) {
                 }
 
-                $process = $this->createMock(Process::class);
-                $process->expects(self::any())->method('isSuccessful')->willReturn($success);
+                public function __invoke(array $command, string $cwd, float $timeout): Process
+                {
+                    if (null !== $this->expectedArguments) {
+                        $bin = str_replace('${PWD}', '/foo', $this->bin);
+                        NpmHookTest::assertEquals([...((array) $bin), ...$this->expectedArguments], $command);
+                    }
 
-                return $process;
-            }
+                    $process = $this->test->createMock(Process::class);
+                    $process->expects(NpmHookTest::any())->method('isSuccessful')->willReturn($this->success);
+
+                    return $process;
+                }
+            },
         );
     }
 
@@ -212,23 +231,6 @@ class NpmHookTest extends TestCase
         self::assertInstanceOf(
             NpmHook::class,
             $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['&']], $promise)
-        );
-    }
-
-    public function testRunNotSfProcess()
-    {
-        $hook = new NpmHook(
-            __DIR__ . '/../../../npm.phar',
-            static fn() => new \stdClass()
-        );
-
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
-
-        self::assertInstanceOf(
-            NpmHook::class,
-            $hook->run($promise)
         );
     }
 
