@@ -294,29 +294,24 @@ class JobUnit implements JobUnitInterface
 
         $updateClosure = static function (&$values, callable $recursive) use (&$replaceCallable, &$pattern): void {
             foreach ($values as $key => &$value) {
-                if (is_array($value)) {
-                    $recursive($value, $recursive);
-
-                    continue;
+                $finalKey = $key;
+                if (is_string($key)) {
+                    $finalKey = preg_replace_callback(
+                        $pattern,
+                        $replaceCallable,
+                        $key,
+                    );
                 }
 
-                if (is_string($value)) {
+                if (is_array($value)) {
+                    $recursive($value, $recursive);
+                } elseif (is_string($value)) {
                     $value = preg_replace_callback(
                         $pattern,
                         $replaceCallable,
                         $value,
                     );
                 }
-
-                if (!is_string($key)) {
-                    continue;
-                }
-
-                $finalKey = preg_replace_callback(
-                    $pattern,
-                    $replaceCallable,
-                    $key,
-                );
 
                 if ($key !== $finalKey) {
                     $values[$finalKey] = $value;
