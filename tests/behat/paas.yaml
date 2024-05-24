@@ -45,7 +45,7 @@ builds:
                 - 'optimize-autoloader'
                 - 'classmap-authoritative'
     custom-hook:
-        hook-id: foo bar
+        hook-id-${FOO}: foo bar
 
 #Volume to build to use with container
 volumes:

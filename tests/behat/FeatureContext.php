@@ -1456,7 +1456,7 @@ class FeatureContext implements Context
     {
         $hook = new HookMock();
 
-        $hooks = ['composer' => clone $hook, 'hook-id' => clone $hook];
+        $hooks = ['composer' => clone $hook, 'hook-id-foo' => clone $hook];
         $collection = new class ($hooks) implements HooksCollectionInterface {
 
             private iterable $hooks;

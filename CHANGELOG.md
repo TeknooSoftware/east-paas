@@ -2,6 +2,13 @@
 
 ## [3.4.0] - 2024-05-23
 ### Stable Release
+- Allow variable usage in some key in the yaml.
+    - Warning, the Yaml validation is executed BEFORE variables substitutions. So you can use variables in your
+      yaml file only in theses locations :
+        - build node (the hook type, not your hook configuration, see the documentation)
+        - health check's command
+        - map (config map)
+        - containers and images variables
 - *Minor BC break on provided embedded hooks.* To simplify the creation of Hooks of a same type in different versions,
   like, provide Composer under several version of PHP, the creation in the container of Hooks is not embedded in this
   library and must be implemented into the final project. Usage of Hooks in PaaS stay unchanged, and requires to define

@@ -213,7 +213,7 @@ return static function (
     );
 
     $cd->addHook(
-        name: 'custom-hook:hook-id',
+        name: 'custom-hook:hook-id-foo',
         hook: new HookMock(['foo bar']),
     );
 
@@ -520,7 +520,7 @@ return static function (
             tlsSecret: 'demo-vault',
             httpsBackend: false,
             meta: [
-                'letsencrypt' => '1',
+                'letsencrypt' => true,
                 'annotations' => [
                     'foo2' => 'bar',
                 ],

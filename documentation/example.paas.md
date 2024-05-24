@@ -66,7 +66,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
       #Hook to build the project before container, Called in this order
       builds:
           composer-build: #Name of the step
-              composer:
+              composer-${FOO}: #You can use key here
                   action: install #Hook to call
                   arguments:
                       - 'no-dev'

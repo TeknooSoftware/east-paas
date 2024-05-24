@@ -55,6 +55,7 @@ use Throwable;
 use function array_merge;
 use function implode;
 use function is_array;
+use function is_string;
 use function preg_replace;
 use function preg_replace_callback;
 use function strlen;
@@ -270,38 +271,57 @@ class JobUnit implements JobUnitInterface
         $variables['JOB_ENV_TAG'] = $this->getEnvironmentTag();
         $variables['JOB_PROJECT_NAME'] = $this->getProjectNormalizedName();
 
-        $updateClosure = static function (&$values, callable $recursive) use (&$prefix, &$pattern, &$variables): void {
-            foreach ($values as &$value) {
+        /** @var callable(array<int|string, string>) $matches */
+        $replaceCallable = static function (
+            array $matches,
+        ) use (
+            &$prefix,
+            &$variables,
+        ): string {
+            $type = $matches[1][0];
+            $key = substr($matches[1], 2, -1);
+
+            if ('R' === $type) {
+                return $prefix . $key;
+            }
+
+            if (!isset($variables[$key])) {
+                throw new DomainException("$key is not available into variables pass to job");
+            }
+
+            return $variables[$key];
+        };
+
+        $updateClosure = static function (&$values, callable $recursive) use (&$replaceCallable, &$pattern): void {
+            foreach ($values as $key => &$value) {
                 if (is_array($value)) {
                     $recursive($value, $recursive);
 
                     continue;
                 }
 
-                $value = preg_replace_callback(
+                if (is_string($value)) {
+                    $value = preg_replace_callback(
+                        $pattern,
+                        $replaceCallable,
+                        $value,
+                    );
+                }
+
+                if (!is_string($key)) {
+                    continue;
+                }
+
+                $finalKey = preg_replace_callback(
                     $pattern,
-                    /** @var callable(array<int|string, string>) $matches */
-                    static function (
-                        array $matches,
-                    ) use (
-                        &$prefix,
-                        &$variables,
-                    ): string {
-                        $type = $matches[1][0];
-                        $key = substr($matches[1], 2, -1);
-
-                        if ('R' === $type) {
-                            return $prefix . $key;
-                        }
-
-                        if (!isset($variables[$key])) {
-                            throw new DomainException("$key is not available into variables pass to job");
-                        }
-
-                        return $variables[$key];
-                    },
-                    (string) $value
+                    $replaceCallable,
+                    $key,
                 );
+
+                if ($key !== $finalKey) {
+                    $values[$finalKey] = $value;
+                    unset($values[$key]);
+                }
             }
         };
 

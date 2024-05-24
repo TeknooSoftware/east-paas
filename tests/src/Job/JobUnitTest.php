@@ -390,7 +390,8 @@ class JobUnitTest extends TestCase
                 '${foo} text ${bar}',
             ],
             'test-prefix' => 'R{value}/bar',
-            '${foo}' => 'text'
+            'bar-test' => 'will-be-removed',
+            '${foo}-test' => 'text',
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
@@ -416,7 +417,7 @@ class JobUnitTest extends TestCase
                                     'bar text FOO',
                                 ],
                                 'test-prefix' => 'value/bar',
-                                '${foo}' => 'text',
+                                'bar-test' => 'text',
                                 'paas' => [
                                     'prefix' => '',
                                 ],
@@ -443,7 +444,8 @@ class JobUnitTest extends TestCase
                 '${foo}',
                 '${foo} text ${bar}',
             ],
-            '${foo}' => 'text',
+            'bar-test' => 'will-be-removed',
+            '${foo}-test' => 'text',
             'defaults' => [
                 'oci-registry-config-name' => 'barName',
             ],
@@ -471,7 +473,7 @@ class JobUnitTest extends TestCase
                                     'bar',
                                     'bar text FOO',
                                 ],
-                                '${foo}' => 'text',
+                                'bar-test' => 'text',
                                 'paas' => [
                                     'prefix' => 'bar',
                                 ],
@@ -498,7 +500,8 @@ class JobUnitTest extends TestCase
                 '${foo}',
                 '${foo} text ${bar}',
             ],
-            '${foo}' => 'text',
+            'bar-test' => 'will-be-removed',
+            '${foo}-test' => 'text',
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
@@ -523,7 +526,7 @@ class JobUnitTest extends TestCase
                                     'bar',
                                     'bar text FOO',
                                 ],
-                                '${foo}' => 'text',
+                                'bar-test' => 'text',
                                 'paas' => [
                                     'prefix' => 'bar',
                                 ],
@@ -549,7 +552,8 @@ class JobUnitTest extends TestCase
                 '${foo} text ${bar}',
             ],
             'test-prefix' => 'R{value}/bar',
-            '${foo}' => 'text'
+            'bar-test' => 'will-be-removed',
+            '${foo}-test' => 'text',
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
@@ -579,7 +583,7 @@ class JobUnitTest extends TestCase
                                     'bar text FOO',
                                 ],
                                 'test-prefix' => 'value/bar',
-                                '${foo}' => 'text',
+                                'bar-test' => 'text',
                                 'paas' => [
                                     'prefix' => '',
                                 ],
@@ -614,7 +618,8 @@ class JobUnitTest extends TestCase
                 '${foo}',
                 '${foo} text ${bar}',
             ],
-            '${foo}' => 'text',
+            'bar-test' => 'will-be-removed',
+            '${foo}-test' => 'text',
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
@@ -649,7 +654,7 @@ class JobUnitTest extends TestCase
                                     'bar',
                                     'bar text FOO',
                                 ],
-                                '${foo}' => 'text',
+                                'bar-test' => 'text',
                                 'paas' => [
                                     'prefix' => 'bar',
                                 ],
@@ -682,7 +687,8 @@ class JobUnitTest extends TestCase
                 '${foo}',
                 '${foo} text ${bar}',
             ],
-            '${foo}' => 'text',
+            'bar-test' => 'will-be-removed',
+            '${foo}-test' => 'text',
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
@@ -707,7 +713,7 @@ class JobUnitTest extends TestCase
                                     'bar',
                                     'bar text FOO',
                                 ],
-                                '${foo}' => 'text',
+                                'bar-test' => 'text',
                                 'paas' => [
                                     'prefix' => 'bar',
                                 ],
@@ -733,7 +739,8 @@ class JobUnitTest extends TestCase
                 '${foo} text ${bar}',
             ],
             'test-prefix' => 'R{value}/bar',
-            '${foo}' => 'text'
+            'bar-test' => 'will-be-removed',
+            '${foo}-test' => 'text',
         ];
 
         self::assertInstanceOf(
@@ -750,7 +757,7 @@ class JobUnitTest extends TestCase
                                     'bar text FOO',
                                 ],
                                 'test-prefix' => 'a-prefix-value/bar',
-                                '${foo}' => 'text',
+                                'bar-test' => 'text',
                                 'paas' => [
                                     'prefix' => 'a-prefix',
                                 ],
