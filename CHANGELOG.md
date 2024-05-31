@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.4.1] - 2024-05-31
+### Stable Release
+- Fix deprecated : replace `Symfony\Component\HttpKernel\DependencyInjection\Extension`
+        by `Symfony\Component\DependencyInjection\Extension\Extension`
+
 ## [3.4.0] - 2024-05-23
 ### Stable Release
 - Allow variable usage in some key in the yaml.
