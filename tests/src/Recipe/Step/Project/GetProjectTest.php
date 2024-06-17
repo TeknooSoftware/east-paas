@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Project;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Project\GetProject
  */
+#[CoversClass(GetProject::class)]
 class GetProjectTest extends TestCase
 {
     /**
@@ -73,7 +74,7 @@ class GetProjectTest extends TestCase
         $projectId = 'dev';
 
         $this->getProjectLoaderMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('load')
             ->with($projectId)
             ->willReturnCallback(function ($criteria, PromiseInterface $promise) use ($project) {
@@ -82,7 +83,7 @@ class GetProjectTest extends TestCase
                 return $this->getProjectLoaderMock();
             });
 
-        $chef->expects(self::once())
+        $chef->expects($this->once())
             ->method('updateWorkPlan')
             ->with([Project::class => $project]);
 
@@ -101,7 +102,7 @@ class GetProjectTest extends TestCase
         $exception = new \DomainException();
 
         $this->getProjectLoaderMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('load')
             ->with($projectId)
             ->willReturnCallback(function ($criteria, PromiseInterface $promise) use ($exception) {
@@ -110,10 +111,10 @@ class GetProjectTest extends TestCase
                 return $this->getProjectLoaderMock();
             });
 
-        $chef->expects(self::never())
+        $chef->expects($this->never())
             ->method('updateWorkPlan');
 
-        $chef->expects(self::once())
+        $chef->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

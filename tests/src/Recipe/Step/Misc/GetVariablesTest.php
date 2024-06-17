@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
 use Laminas\Diactoros\StreamFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Foundation\Client\ClientInterface;
@@ -38,8 +39,8 @@ use const JSON_THROW_ON_ERROR;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Misc\GetVariables
  */
+#[CoversClass(GetVariables::class)]
 class GetVariablesTest extends TestCase
 {
     public function buildStep(): GetVariables
@@ -53,9 +54,9 @@ class GetVariablesTest extends TestCase
         $message = $this->createMock(MessageInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
-        $message->expects(self::any())->method('getHeader')->willReturn(['html']);
+        $message->expects($this->any())->method('getHeader')->willReturn(['html']);
 
-        $chef->expects(self::once())
+        $chef->expects($this->once())
             ->method('updateWorkPlan')
             ->with(['envVars' => []]);
 
@@ -71,14 +72,14 @@ class GetVariablesTest extends TestCase
         $message = $this->createMock(MessageInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
-        $message->expects(self::any())->method('getHeader')->willReturn(['application/json']);
-        $message->expects(self::any())->method('getBody')->willReturn(
+        $message->expects($this->any())->method('getHeader')->willReturn(['application/json']);
+        $message->expects($this->any())->method('getBody')->willReturn(
             (new StreamFactory())->createStream(
                 json_encode($data = ['foo' => 'bar'], flags: JSON_THROW_ON_ERROR)
             )
         );
 
-        $chef->expects(self::once())
+        $chef->expects($this->once())
             ->method('updateWorkPlan')
             ->with(['envVars' => $data]);
 

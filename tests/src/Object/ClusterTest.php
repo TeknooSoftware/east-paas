@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
@@ -44,8 +45,8 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Object\Cluster
  */
+#[CoversClass(Cluster::class)]
 class ClusterTest extends TestCase
 {
     use ObjectTestTrait;
@@ -64,7 +65,7 @@ class ClusterTest extends TestCase
         $object = $this->generateObjectPopulated(['name' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -97,7 +98,7 @@ class ClusterTest extends TestCase
         $object = $this->generateObjectPopulated(['name' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -122,7 +123,7 @@ class ClusterTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
@@ -150,7 +151,7 @@ class ClusterTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with(true);
 
@@ -200,7 +201,7 @@ class ClusterTest extends TestCase
         $object = $this->generateObjectPopulated(['address' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -221,7 +222,7 @@ class ClusterTest extends TestCase
         $argument = 'fooBar';
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -237,7 +238,7 @@ class ClusterTest extends TestCase
         $object = $this->generateObjectPopulated(['type' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -258,7 +259,7 @@ class ClusterTest extends TestCase
         $argument = 'fooBar';
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -279,7 +280,7 @@ class ClusterTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -301,7 +302,7 @@ class ClusterTest extends TestCase
         $object = $this->generateObjectPopulated(['identity' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -322,7 +323,7 @@ class ClusterTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -338,7 +339,7 @@ class ClusterTest extends TestCase
         $object = $this->generateObjectPopulated(['locked' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -363,7 +364,7 @@ class ClusterTest extends TestCase
         $argument = true;
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -397,7 +398,7 @@ class ClusterTest extends TestCase
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => Cluster::class,
@@ -433,7 +434,7 @@ class ClusterTest extends TestCase
     public function testPrepareJobForEnvironmentMissingEnv()
     {
         $job = $this->createMock(Job::class);
-        $job->expects(self::never())->method('__call')->with('addcluster');
+        $job->expects($this->never())->method('__call')->with('addcluster');
 
         $env = new Environment('foo');
 
@@ -446,7 +447,7 @@ class ClusterTest extends TestCase
     public function testPrepareJobForEnvironmentEnvNotEquals()
     {
         $job = $this->createMock(Job::class);
-        $job->expects(self::never())->method('__call')->with('addCluster');
+        $job->expects($this->never())->method('__call')->with('addCluster');
 
         $env = new Environment('foo');
 
@@ -463,7 +464,7 @@ class ClusterTest extends TestCase
         $cluster = $this->buildObject()->setEnvironment($env);
 
         $job = $this->createMock(Job::class);
-        $job->expects(self::once())->method('addCluster')->with($cluster);
+        $job->expects($this->once())->method('addCluster')->with($cluster);
 
         self::assertInstanceOf(
             Cluster::class,
@@ -507,8 +508,8 @@ class ClusterTest extends TestCase
         $directory = $this->createMock(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
 
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->never())->method('fail');
 
         $cluster = $this->generateObjectPopulated(
             [
@@ -561,13 +562,13 @@ class ClusterTest extends TestCase
             ]
         );
 
-        $client->expects(self::once())
+        $client->expects($this->once())
             ->method('configure')
             ->with($address, $identity)
             ->willReturnSelf();
 
-        $promise->expects(self::once())->method('success')->with($client)->willReturnSelf();
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success')->with($client)->willReturnSelf();
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             Cluster::class,
@@ -591,13 +592,13 @@ class ClusterTest extends TestCase
             ]
         );
 
-        $client->expects(self::once())
+        $client->expects($this->once())
             ->method('configure')
             ->with($address, $identity)
             ->willThrowException(new \Exception());
 
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail')->with(new \Exception)->willReturnSelf();
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with(new \Exception)->willReturnSelf();
 
         self::assertInstanceOf(
             Cluster::class,

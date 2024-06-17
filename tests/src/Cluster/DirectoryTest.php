@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Cluster;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
@@ -35,8 +36,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Cluster\Directory
  */
+#[CoversClass(Directory::class)]
 class DirectoryTest extends TestCase
 {
     public function buildDirectory()
@@ -121,11 +122,11 @@ class DirectoryTest extends TestCase
         );
 
         $cluster = $this->createMock(Cluster::class);
-        $cluster->expects(self::never())->method('configureCluster');
+        $cluster->expects($this->never())->method('configureCluster');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         self::assertInstanceOf(
             Directory::class,
@@ -151,11 +152,11 @@ class DirectoryTest extends TestCase
         );
 
         $cluster = $this->createMock(Cluster::class);
-        $cluster->expects(self::once())->method('configureCluster');
+        $cluster->expects($this->once())->method('configureCluster');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             Directory::class,

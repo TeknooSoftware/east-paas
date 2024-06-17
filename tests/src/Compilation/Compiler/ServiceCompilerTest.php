@@ -27,11 +27,13 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use DomainException;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\Compiler\MergeTrait;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -42,9 +44,9 @@ use function func_get_args;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler
- * @covers \Teknoo\East\Paas\Compilation\Compiler\MergeTrait
  */
+#[CoversClass(MergeTrait::class)]
+#[CoversClass(ServiceCompiler::class)]
 class ServiceCompilerTest extends TestCase
 {
     public function buildCompiler(): ServiceCompiler
@@ -102,7 +104,7 @@ class ServiceCompilerTest extends TestCase
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addService');
+        $compiledDeployment->expects($this->never())->method('addService');
 
         self::assertInstanceOf(
             ServiceCompiler::class,
@@ -124,7 +126,7 @@ class ServiceCompilerTest extends TestCase
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment
-            ->expects(self::exactly(3))
+            ->expects($this->exactly(3))
             ->method('addService')
             ->willReturnCallback(
                 function () use ($compiledDeployment) {

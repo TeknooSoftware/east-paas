@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
@@ -55,8 +56,8 @@ use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Cookbook\RunJob
  */
+#[CoversClass(RunJob::class)]
 class RunJobTest extends TestCase
 {
     use BaseCookbookTestTrait;

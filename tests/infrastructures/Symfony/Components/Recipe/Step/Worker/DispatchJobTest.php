@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -41,8 +42,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob
  */
+#[CoversClass(DispatchJob::class)]
 class DispatchJobTest extends TestCase
 {
     /**
@@ -73,15 +74,15 @@ class DispatchJobTest extends TestCase
     public function testInvoke()
     {
         $project = $this->createMock(Project::class);
-        $project->expects(self::any())->method('getId')->willReturn('foo');
+        $project->expects($this->any())->method('getId')->willReturn('foo');
         $job = $this->createMock(Job::class);
-        $job->expects(self::any())->method('getId')->willReturn('bar');
+        $job->expects($this->any())->method('getId')->willReturn('bar');
         $env = new Environment('prod');
 
         $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
 
         $this->getMessageBusInterfaceMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('dispatch')
             ->with($envelope = new Envelope(
                 new JobMessage('foo', 'prod', 'bar', $sJob), [
@@ -100,15 +101,15 @@ class DispatchJobTest extends TestCase
     public function testInvokeWithEncryption()
     {
         $project = $this->createMock(Project::class);
-        $project->expects(self::any())->method('getId')->willReturn('foo');
+        $project->expects($this->any())->method('getId')->willReturn('foo');
         $job = $this->createMock(Job::class);
-        $job->expects(self::any())->method('getId')->willReturn('bar');
+        $job->expects($this->any())->method('getId')->willReturn('bar');
         $env = new Environment('prod');
 
         $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
 
         $this->getMessageBusInterfaceMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('dispatch')
             ->with($envelope = new Envelope(
                 new JobMessage('foo', 'prod', 'bar', $sJob), [
@@ -120,7 +121,7 @@ class DispatchJobTest extends TestCase
 
 
         $encryption = $this->createMock(EncryptionInterface::class);
-        $encryption->expects(self::any())
+        $encryption->expects($this->any())
             ->method('encrypt')
             ->willReturnCallback(
                 function (

@@ -25,8 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -35,19 +38,22 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Deployment
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Generator;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Running;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\Exception\MethodNotImplemented;
+use TypeError;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Driver
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Generator
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Running
  */
+#[CoversClass(Running::class)]
+#[CoversClass(Generator::class)]
+#[CoversClass(Driver::class)]
 class DriverTest extends TestCase
 {
     private ?ClientFactoryInterface $clientFactory = null;
@@ -88,9 +94,9 @@ class DriverTest extends TestCase
 
     public function testConfigureWrongUrl()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildClient()->configure(
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(IdentityInterface::class),
             $this->createMock(DefaultsBag::class),
             'namespace',
@@ -100,10 +106,10 @@ class DriverTest extends TestCase
 
     public function testConfigureWrongAuth()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildClient()->configure(
             'foo',
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(DefaultsBag::class),
             'namespace',
             false,
@@ -112,7 +118,7 @@ class DriverTest extends TestCase
 
     public function testConfigureIdentityNotSupported()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->buildClient()->configure(
             'foo',
             $this->createMock(IdentityInterface::class),
@@ -139,14 +145,14 @@ class DriverTest extends TestCase
     public function testDeployWithoutConfiguration()
     {
         $this->getTranscriberCollection()
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('getIterator');
 
         $client = $this->buildClient();
 
         $promise = $this->createMock(PromiseInterface::class);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         self::assertInstanceOf(
             Driver::class,
@@ -160,19 +166,19 @@ class DriverTest extends TestCase
     public function testDeployWithConfiguration()
     {
         $c0 = $this->createMock(NamespaceTranscriber::class);
-        $c0->expects(self::once())->method('setDriver')->willReturnSelf();
-        $c0->expects(self::once())->method('transcribe');
+        $c0->expects($this->once())->method('setDriver')->willReturnSelf();
+        $c0->expects($this->once())->method('transcribe');
         $c1 = $this->createMock(DeploymentInterface::class);
-        $c1->expects(self::once())->method('transcribe');
+        $c1->expects($this->once())->method('transcribe');
         $c2 = $this->createMock(DeploymentInterface::class);
-        $c2->expects(self::once())->method('transcribe');
+        $c2->expects($this->once())->method('transcribe');
         $c3 = $this->createMock(ExposingInterface::class);
-        $c3->expects(self::never())->method('transcribe');
+        $c3->expects($this->never())->method('transcribe');
         $c4 = $this->createMock(ExposingInterface::class);
-        $c4->expects(self::never())->method('transcribe');
+        $c4->expects($this->never())->method('transcribe');
 
         $this->getTranscriberCollection()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('getIterator')
             ->willReturnCallback(function () use ($c0, $c1, $c2, $c3, $c4) {
                 yield from [$c0, $c1, $c2, $c3, $c4];
@@ -240,24 +246,24 @@ class DriverTest extends TestCase
     public function testDeployWithConfigurationException()
     {
         $c1 = $this->createMock(DeploymentInterface::class);
-        $c1->expects(self::once())->method('transcribe')->willReturnCallback(
+        $c1->expects($this->once())->method('transcribe')->willReturnCallback(
             function (
                 CompiledDeploymentInterface $compiledDeployment,
                 KubernetesClient $client,
                 PromiseInterface $promise
             ) {
-                $promise->fail(new \RuntimeException('foo'));
+                $promise->fail(new RuntimeException('foo'));
             }
         );
         $c2 = $this->createMock(DeploymentInterface::class);
-        $c2->expects(self::never())->method('transcribe');
+        $c2->expects($this->never())->method('transcribe');
         $c3 = $this->createMock(ExposingInterface::class);
-        $c3->expects(self::never())->method('transcribe');
+        $c3->expects($this->never())->method('transcribe');
         $c4 = $this->createMock(ExposingInterface::class);
-        $c4->expects(self::never())->method('transcribe');
+        $c4->expects($this->never())->method('transcribe');
 
         $this->getTranscriberCollection()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('getIterator')
             ->willReturnCallback(function () use ($c1, $c2, $c3, $c4) {
                 yield from [$c1, $c2, $c3, $c4];
@@ -277,7 +283,7 @@ class DriverTest extends TestCase
         );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->once())->method('fail');
 
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
@@ -293,14 +299,14 @@ class DriverTest extends TestCase
     public function testExposeWithoutConfiguration()
     {
         $this->getTranscriberCollection()
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('getIterator');
 
         $client = $this->buildClient();
 
         $promise = $this->createMock(PromiseInterface::class);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         self::assertInstanceOf(
             Driver::class,
@@ -314,16 +320,16 @@ class DriverTest extends TestCase
     public function testExposeWithConfiguration()
     {
         $c1 = $this->createMock(DeploymentInterface::class);
-        $c1->expects(self::never())->method('transcribe');
+        $c1->expects($this->never())->method('transcribe');
         $c2 = $this->createMock(DeploymentInterface::class);
-        $c2->expects(self::never())->method('transcribe');
+        $c2->expects($this->never())->method('transcribe');
         $c3 = $this->createMock(ExposingInterface::class);
-        $c3->expects(self::once())->method('transcribe');
+        $c3->expects($this->once())->method('transcribe');
         $c4 = $this->createMock(ExposingInterface::class);
-        $c4->expects(self::once())->method('transcribe');
+        $c4->expects($this->once())->method('transcribe');
 
         $this->getTranscriberCollection()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('getIterator')
             ->willReturnCallback(function () use ($c1, $c2, $c3, $c4) {
                 yield from [$c1, $c2, $c3, $c4];
@@ -358,24 +364,24 @@ class DriverTest extends TestCase
     public function testExposeWithConfigurationException()
     {
         $c1 = $this->createMock(DeploymentInterface::class);
-        $c1->expects(self::never())->method('transcribe');
+        $c1->expects($this->never())->method('transcribe');
         $c2 = $this->createMock(DeploymentInterface::class);
-        $c2->expects(self::never())->method('transcribe');
+        $c2->expects($this->never())->method('transcribe');
         $c3 = $this->createMock(ExposingInterface::class);
-        $c3->expects(self::once())->method('transcribe')->willReturnCallback(
+        $c3->expects($this->once())->method('transcribe')->willReturnCallback(
             function (
                 CompiledDeploymentInterface $compiledDeployment,
                 KubernetesClient $client,
                 PromiseInterface $promise
             ) {
-                $promise->fail(new \RuntimeException('foo'));
+                $promise->fail(new RuntimeException('foo'));
             }
         );
         $c4 = $this->createMock(ExposingInterface::class);
-        $c4->expects(self::never())->method('transcribe');
+        $c4->expects($this->never())->method('transcribe');
 
         $this->getTranscriberCollection()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('getIterator')
             ->willReturnCallback(function () use ($c1, $c2, $c3, $c4) {
                 yield from [$c1, $c2, $c3, $c4];
@@ -395,7 +401,7 @@ class DriverTest extends TestCase
         );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->once())->method('fail');
 
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 

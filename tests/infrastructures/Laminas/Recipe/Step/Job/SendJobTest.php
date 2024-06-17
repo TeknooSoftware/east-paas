@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Recipe\Step\Job;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob;
@@ -33,14 +34,14 @@ use Teknoo\East\Paas\Object\Job;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob
  */
+#[CoversClass(SendJob::class)]
 class SendJobTest extends TestCase
 {
     public function testInvoke()
     {
         $client = $this->createMock(ClientInterface::class);
-        $client->expects(self::once())->method('acceptResponse');
+        $client->expects($this->once())->method('acceptResponse');
 
         self::assertInstanceOf(
             SendJob::class,

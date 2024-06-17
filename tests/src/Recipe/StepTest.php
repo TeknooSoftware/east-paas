@@ -26,14 +26,15 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe;
 
 use Closure;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Recipe\Step;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step
  */
+#[CoversClass(Step::class)]
 class StepTest extends TestCase
 {
     public function testConstruct()

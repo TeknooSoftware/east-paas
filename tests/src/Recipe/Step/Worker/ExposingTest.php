@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
@@ -40,8 +41,8 @@ use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\Exposing
  */
+#[CoversClass(Exposing::class)]
 class ExposingTest extends TestCase
 {
     private ?DispatchHistoryInterface $dispatchHistory = null;
@@ -74,13 +75,13 @@ class ExposingTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
 
         $client = $this->createMock(DriverInterface::class);
-        $collection->expects(self::any())
+        $collection->expects($this->any())
             ->method('getIterator')
             ->willReturnCallback(function () use ($client) {
                 yield $client;
             });
 
-        $client->expects(self::any())
+        $client->expects($this->any())
             ->method('expose')
             ->willReturnCallback(
                 static function ($compiledExposment, PromiseInterface $promise) use ($client) {
@@ -93,7 +94,7 @@ class ExposingTest extends TestCase
         $project = 'foo';
         $env = 'bar';
 
-        $this->getDispatchHistoryMock()->expects(self::once())
+        $this->getDispatchHistoryMock()->expects($this->once())
             ->method('__invoke')
             ->with($project, $env, $jobUnit->getId(), Exposing::class . ':Result')
             ->willReturnSelf();
@@ -121,13 +122,13 @@ class ExposingTest extends TestCase
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
         $client = $this->createMock(DriverInterface::class);
-        $collection->expects(self::any())
+        $collection->expects($this->any())
             ->method('getIterator')
             ->willReturnCallback(function () use ($client) {
                 yield $client;
             });
 
-        $client->expects(self::any())
+        $client->expects($this->any())
             ->method('expose')
             ->willReturnCallback(
                 static function ($compiledExposment, PromiseInterface $promise) use ($client) {
@@ -137,13 +138,13 @@ class ExposingTest extends TestCase
                 }
             );
 
-        $this->getDispatchHistoryMock()->expects(self::never())
+        $this->getDispatchHistoryMock()->expects($this->never())
             ->method('__invoke');
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

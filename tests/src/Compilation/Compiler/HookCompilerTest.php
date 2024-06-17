@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
@@ -38,8 +39,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\HookCompiler
  */
+#[CoversClass(HookCompiler::class)]
 class HookCompilerTest extends TestCase
 {
     private function getDefinitionsArray(): array
@@ -66,7 +67,7 @@ class HookCompilerTest extends TestCase
         );
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addHook');
+        $compiledDeployment->expects($this->never())->method('addHook');
 
         self::assertInstanceOf(
             HookCompiler::class,
@@ -88,7 +89,7 @@ class HookCompilerTest extends TestCase
         $definitions = $this->getDefinitionsArray();
 
         $hook = $this->createMock(HookInterface::class);
-        $hook->expects(self::any())
+        $hook->expects($this->any())
             ->method('setOptions')
             ->willReturnCallback(function (array $options, PromiseInterface $promise) use ($hook) {
                 $promise->fail(new \Exception());
@@ -103,7 +104,7 @@ class HookCompilerTest extends TestCase
         );
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addHook');
+        $compiledDeployment->expects($this->never())->method('addHook');
 
         self::assertInstanceOf(
             HookCompiler::class,
@@ -123,7 +124,7 @@ class HookCompilerTest extends TestCase
         $definitions = $this->getDefinitionsArray();
 
         $hook = $this->createMock(HookInterface::class);
-        $hook->expects(self::any())
+        $hook->expects($this->any())
             ->method('setOptions')
             ->willReturnSelf();
 
@@ -134,7 +135,7 @@ class HookCompilerTest extends TestCase
         );
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::once())->method('addHook');
+        $compiledDeployment->expects($this->once())->method('addHook');
 
         self::assertInstanceOf(
             HookCompiler::class,
@@ -159,7 +160,7 @@ class HookCompilerTest extends TestCase
         );
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addHook');
+        $compiledDeployment->expects($this->never())->method('addHook');
 
         self::assertInstanceOf(
             HookCompiler::class,
@@ -179,7 +180,7 @@ class HookCompilerTest extends TestCase
         $definitions = $this->getDefinitionsArray();
 
         $hook = $this->createMock(HookInterface::class);
-        $hook->expects(self::any())
+        $hook->expects($this->any())
             ->method('setOptions')
             ->willReturnSelf();
 
@@ -190,7 +191,7 @@ class HookCompilerTest extends TestCase
         );
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::once())->method('addHook');
+        $compiledDeployment->expects($this->once())->method('addHook');
 
         self::assertInstanceOf(
             HookCompiler::class,

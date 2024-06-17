@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\EastPaasBundle\Subscriber;
 
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber;
@@ -37,8 +38,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHa
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers      \Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber
  */
+#[CoversClass(CommandSubscriber::class)]
 class CommandSubscriberTest extends TestCase
 {
     private ?DisplayHistoryHandler $stepDisplayHistory = null;

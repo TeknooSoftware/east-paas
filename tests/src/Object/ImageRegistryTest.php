@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\ImageRegistry;
@@ -34,8 +35,8 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Object\ImageRegistry
  */
+#[CoversClass(ImageRegistry::class)]
 class ImageRegistryTest extends TestCase
 {
     use ObjectTestTrait;
@@ -82,7 +83,7 @@ class ImageRegistryTest extends TestCase
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => ImageRegistry::class,

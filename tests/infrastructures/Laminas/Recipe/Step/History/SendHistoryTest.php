@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Recipe\Step\History;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\History\SendHistory;
@@ -33,14 +34,14 @@ use Teknoo\East\Paas\Object\History;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\History\SendHistory
  */
+#[CoversClass(SendHistory::class)]
 class SendHistoryTest extends TestCase
 {
     public function testInvoke()
     {
         $client = $this->createMock(ClientInterface::class);
-        $client->expects(self::once())->method('acceptResponse');
+        $client->expects($this->once())->method('acceptResponse');
 
         self::assertInstanceOf(
             SendHistory::class,

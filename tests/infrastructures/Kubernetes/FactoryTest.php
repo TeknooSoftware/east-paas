@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Client as KubClient;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\RepositoryRegistry;
@@ -36,8 +37,8 @@ use Teknoo\East\Paas\Object\ClusterCredentials;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Factory
  */
+#[CoversClass(Factory::class)]
 class FactoryTest extends TestCase
 {
     public function buildFactory(?ClientInterface $client = null): Factory

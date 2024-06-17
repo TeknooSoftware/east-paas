@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\History;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Object\History;
@@ -34,8 +35,8 @@ use Teknoo\East\Paas\Recipe\Step\History\AddHistory;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\History\AddHistory
  */
+#[CoversClass(AddHistory::class)]
 class AddHistoryTest extends TestCase
 {
     public function buildStep(): AddHistory
@@ -79,7 +80,7 @@ class AddHistoryTest extends TestCase
         $history = $this->createMock(History::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $job->expects(self::once())
+        $job->expects($this->once())
             ->method('addFromHistory')
             ->with($history)
             ->willReturnCallback(function (History $h, callable $f) use ($job) {
@@ -88,7 +89,7 @@ class AddHistoryTest extends TestCase
                 return $job;
             });
 
-        $manager->expects(self::once())->method('updateWorkPlan')
+        $manager->expects($this->once())->method('updateWorkPlan')
             ->with([History::class => $history])
             ->willReturnSelf();
 

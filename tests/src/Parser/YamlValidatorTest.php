@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Parser;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Parser;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -35,8 +36,8 @@ use Teknoo\East\Paas\Parser\YamlValidator;
  * @author      Richard Déloge <richard@teknoo.software>
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Parser\YamlValidator
  */
+#[CoversClass(YamlValidator::class)]
 class YamlValidatorTest extends TestCase
 {
     private function buildValidator(): YamlValidator
@@ -305,8 +306,8 @@ EOF;
         $configuration = $this->getYamlArray();
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with($configuration);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success')->with($configuration);
+        $promise->expects($this->never())->method('fail');
 
         $xsd = $this->getXsdFile();
 
@@ -326,8 +327,8 @@ EOF;
         unset($configuration['services']['php-service']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $xsd = $this->getXsdFile();
 
@@ -347,8 +348,8 @@ EOF;
         unset($configuration['pods']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $xsd = $this->getXsdFile();
 

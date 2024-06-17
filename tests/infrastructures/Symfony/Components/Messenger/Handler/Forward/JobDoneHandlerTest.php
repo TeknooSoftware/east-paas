@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\JobDoneHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler;
@@ -33,8 +34,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\JobDone;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler
  */
+#[CoversClass(JobDoneHandler::class)]
 class JobDoneHandlerTest extends TestCase
 {
     public function buildStep(): JobDoneHandler
@@ -46,7 +47,7 @@ class JobDoneHandlerTest extends TestCase
     {
         $handler = $this->createMock(JobDoneHandlerInterface::class);
 
-        $handler->expects(self::once())
+        $handler->expects($this->once())
             ->method('__invoke');
 
         self::assertInstanceOf(

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Job;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
@@ -54,8 +55,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Job\JobUnit
  */
+#[CoversClass(JobUnit::class)]
 class JobUnitTest extends TestCase
 {
     /**
@@ -93,8 +94,8 @@ class JobUnitTest extends TestCase
         if (!$this->imagesRegistry instanceof ImageRegistryInterface) {
             $this->imagesRegistry = $this->createMock(ImageRegistryInterface::class);
 
-            $this->imagesRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
-            $this->imagesRegistry->expects(self::any())->method('getIdentity')->willReturn(
+            $this->imagesRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
+            $this->imagesRegistry->expects($this->any())->method('getIdentity')->willReturn(
                 $this->createMock(IdentityInterface::class)
             );
         }
@@ -187,10 +188,10 @@ class JobUnitTest extends TestCase
         $agent = $this->createMock(CloningAgentInterface::class);
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
 
-        $agent->expects(self::once())
+        $agent->expects($this->once())
             ->method('configure')
             ->with($this->getSourceRepositoryMock(), $workspace);
 
@@ -207,10 +208,10 @@ class JobUnitTest extends TestCase
         $agent = $this->createMock(CloningAgentInterface::class);
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
-        $agent->expects(self::once())
+        $agent->expects($this->once())
             ->method('configure')
             ->with($this->getSourceRepositoryMock(), $workspace)
             ->willThrowException(new \Exception());
@@ -227,10 +228,10 @@ class JobUnitTest extends TestCase
 
         $builder = $this->createMock(ImageBuilder::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
 
-        $builder->expects(self::once())
+        $builder->expects($this->once())
             ->method('configure')
             ->with('bar', 'foo', self::callback(
                 fn ($o) => $o instanceof IdentityInterface
@@ -248,10 +249,10 @@ class JobUnitTest extends TestCase
 
         $builder = $this->createMock(ImageBuilder::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
-        $builder->expects(self::once())
+        $builder->expects($this->once())
             ->method('configure')
             ->with('bar', 'foo', self::callback(
                 fn ($o) => $o instanceof IdentityInterface
@@ -270,11 +271,11 @@ class JobUnitTest extends TestCase
 
         $directory = $this->createMock(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
 
         $this->getClusterMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('selectCluster')
             ->with($directory)
             ->willReturnCallback(
@@ -297,11 +298,11 @@ class JobUnitTest extends TestCase
 
         $directory = $this->createMock(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $this->getClusterMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('selectCluster')
             ->with($directory)
             ->willThrowException(new \Exception());
@@ -318,11 +319,11 @@ class JobUnitTest extends TestCase
 
         $directory = $this->createMock(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $this->getClusterMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('selectCluster')
             ->with($directory)
             ->willReturnCallback(
@@ -357,7 +358,7 @@ class JobUnitTest extends TestCase
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => Job::class,
@@ -398,13 +399,13 @@ class JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects(self::any())
+        $identity->expects($this->any())
             ->method('getConfigName')
             ->willReturn('fooName');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         self::assertInstanceOf(
             JobUnit::class,
@@ -461,13 +462,13 @@ class JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects(self::any())
+        $identity->expects($this->any())
             ->method('getConfigName')
             ->willReturn('fooName');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         self::assertInstanceOf(
             JobUnit::class,
@@ -520,13 +521,13 @@ class JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects(self::any())
+        $identity->expects($this->any())
             ->method('getConfigName')
             ->willReturn('');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         self::assertInstanceOf(
             JobUnit::class,
@@ -578,13 +579,13 @@ class JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects(self::any())
+        $identity->expects($this->any())
             ->method('getConfigName')
             ->willReturn('fooName');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         self::assertInstanceOf(
             JobUnit::class,
@@ -650,13 +651,13 @@ class JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects(self::any())
+        $identity->expects($this->any())
             ->method('getConfigName')
             ->willReturn('fooName');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         self::assertInstanceOf(
             JobUnit::class,
@@ -725,13 +726,13 @@ class JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects(self::any())
+        $identity->expects($this->any())
             ->method('getConfigName')
             ->willReturn('');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects(self::any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects(self::any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         self::assertInstanceOf(
             JobUnit::class,
@@ -895,11 +896,11 @@ class JobUnitTest extends TestCase
     public function testPrepareQuotasWithoutQuotas()
     {
         $factory = $this->createMock(QuotaFactory::class);
-        $factory->expects(self::never())
+        $factory->expects($this->never())
             ->method('create');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('success')
             ->with([]);
 
@@ -913,12 +914,12 @@ class JobUnitTest extends TestCase
     {
 
         $factory = $this->createMock(QuotaFactory::class);
-        $factory->expects(self::exactly(2))
+        $factory->expects($this->exactly(2))
             ->method('create')
             ->willReturn($availabilitty = $this->createMock(AvailabilityInterface::class));
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('success')
             ->with(
                 [

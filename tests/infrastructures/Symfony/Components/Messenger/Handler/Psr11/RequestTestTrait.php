@@ -98,32 +98,32 @@ trait RequestTestTrait
     private function doTest($object, $class, $argument)
     {
         $this->getUriFactoryInterfaceMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('createUri')
             ->willReturn($this->createMock(UriInterface::class));
 
         $request = $this->createMock(RequestInterface::class);
 
-        $request->expects(self::any())
+        $request->expects($this->any())
             ->method('withAddedHeader')
             ->willReturnSelf();
 
-        $request->expects(self::any())
+        $request->expects($this->any())
             ->method('withBody')
             ->willReturnSelf($request);
 
         $this->getRequestFactoryInterfaceMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('createRequest')
             ->willReturn($request);
 
         $this->getStreamFactoryInterfaceMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('createStream')
             ->willReturn($this->createMock(StreamInterface::class));
 
         $this->getClientInterfaceMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('sendRequest');
 
         self::assertInstanceOf(

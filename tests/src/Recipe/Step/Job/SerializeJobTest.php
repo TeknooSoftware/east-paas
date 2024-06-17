@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Job\SerializeJob
  */
+#[CoversClass(SerializeJob::class)]
 class SerializeJobTest extends TestCase
 {
     /**
@@ -71,7 +72,7 @@ class SerializeJobTest extends TestCase
         $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
 
         $this->getSerializerInterfaceMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('serialize')
             ->with($job, 'json')
             ->willReturnCallback(
@@ -88,7 +89,7 @@ class SerializeJobTest extends TestCase
             );
 
         $chef = $this->createMock(ManagerInterface::class);
-        $chef->expects(self::once())
+        $chef->expects($this->once())
             ->method('updateWorkPlan')
             ->with(['jobSerialized' => $sJob])
             ->willReturnSelf();
@@ -106,7 +107,7 @@ class SerializeJobTest extends TestCase
         $job = $this->createMock(Job::class);
 
         $this->getSerializerInterfaceMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('serialize')
             ->with($job, 'json')
             ->willReturnCallback(
@@ -123,11 +124,11 @@ class SerializeJobTest extends TestCase
             );
 
         $chef = $this->createMock(ManagerInterface::class);
-        $chef->expects(self::never())->method('updateWorkPlan');
+        $chef->expects($this->never())->method('updateWorkPlan');
 
         $client = $this->createMock(ClientInterface::class);
 
-        $chef->expects(self::once())
+        $chef->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

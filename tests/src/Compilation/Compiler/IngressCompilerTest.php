@@ -27,10 +27,12 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use DomainException;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\MergeTrait;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -39,9 +41,9 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\IngressCompiler
- * @covers \Teknoo\East\Paas\Compilation\Compiler\MergeTrait
  */
+#[CoversClass(MergeTrait::class)]
+#[CoversClass(IngressCompiler::class)]
 class IngressCompilerTest extends TestCase
 {
     public function buildCompiler(): IngressCompiler
@@ -115,7 +117,7 @@ class IngressCompilerTest extends TestCase
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addIngress');
+        $compiledDeployment->expects($this->never())->method('addIngress');
 
         self::assertInstanceOf(
             IngressCompiler::class,
@@ -136,7 +138,7 @@ class IngressCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(2))->method('addIngress');
+        $compiledDeployment->expects($this->exactly(2))->method('addIngress');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
@@ -163,7 +165,7 @@ class IngressCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(2))->method('addIngress');
+        $compiledDeployment->expects($this->exactly(2))->method('addIngress');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 

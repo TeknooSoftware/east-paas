@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory;
@@ -37,8 +38,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\QuotaCompiler
  */
+#[CoversClass(QuotaCompiler::class)]
 class QuotaCompilerTest extends TestCase
 {
     public function buildCompiler(): QuotaCompiler
@@ -70,8 +71,8 @@ class QuotaCompilerTest extends TestCase
         $definitions = [];
 
         $manager = $this->createMock(ResourceManager::class);
-        $manager->expects(self::never())->method('updateQuotaAvailability');
-        $manager->expects(self::once())->method('freeze');
+        $manager->expects($this->never())->method('updateQuotaAvailability');
+        $manager->expects($this->once())->method('freeze');
 
         self::assertInstanceOf(
             QuotaCompiler::class,
@@ -91,8 +92,8 @@ class QuotaCompilerTest extends TestCase
         $definitions = $this->getDefinitionsArray();
 
         $manager = $this->createMock(ResourceManager::class);
-        $manager->expects(self::exactly(2))->method('updateQuotaAvailability');
-        $manager->expects(self::once())->method('freeze');
+        $manager->expects($this->exactly(2))->method('updateQuotaAvailability');
+        $manager->expects($this->once())->method('freeze');
 
         self::assertInstanceOf(
             QuotaCompiler::class,

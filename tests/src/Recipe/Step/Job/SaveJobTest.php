@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Job\SaveJob
  */
+#[CoversClass(SaveJob::class)]
 class SaveJobTest extends TestCase
 {
     /**
@@ -69,7 +70,7 @@ class SaveJobTest extends TestCase
         $job = $this->createMock(Job::class);
 
         $this->getjobWriterMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('save')
             ->with($job)
             ->willReturnCallback(function ($job, PromiseInterface $promise) {
@@ -78,10 +79,10 @@ class SaveJobTest extends TestCase
                 return $this->getjobWriterMock();
             });
 
-        $client->expects(self::never())
+        $client->expects($this->never())
             ->method('errorInRequest');
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('finish');
 
         self::assertInstanceOf(
@@ -99,7 +100,7 @@ class SaveJobTest extends TestCase
         $exception = new \DomainException();
 
         $this->getjobWriterMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('save')
             ->with($job)
             ->willReturnCallback(function ($job, PromiseInterface $promise) use ($exception) {
@@ -108,7 +109,7 @@ class SaveJobTest extends TestCase
                 return $this->getjobWriterMock();
             });
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

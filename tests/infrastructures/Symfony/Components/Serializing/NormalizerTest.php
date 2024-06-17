@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingSerializing;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -36,6 +37,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  * @author      Richard Déloge <richard@teknoo.software>
  * @package Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingSerializing
  */
+
+#[CoversClass(Normalizer::class)]
 class NormalizerTest extends TestCase
 {
     private ?SymfonyNormalizerInterface $normalizer = null;
@@ -52,9 +55,6 @@ class NormalizerTest extends TestCase
         return $this->normalizer;
     }
 
-    /**
-     * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer
-     */
     public function buindNormalizer(): Normalizer
     {
         return new Normalizer(
@@ -98,11 +98,11 @@ class NormalizerTest extends TestCase
     public function testNormalizeGood()
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
 
         $this->getSfNormalizerMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('normalize')
             ->willReturn(['foo' => 'bar']);
 
@@ -120,11 +120,11 @@ class NormalizerTest extends TestCase
     public function testNormalizeFail()
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $this->getSfNormalizerMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('normalize')
             ->willThrowException(new \Exception('foo'));
 

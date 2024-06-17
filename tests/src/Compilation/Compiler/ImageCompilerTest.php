@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
@@ -37,8 +38,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\ImageCompiler
  */
+#[CoversClass(ImageCompiler::class)]
 class ImageCompilerTest extends TestCase
 {
     public function buildCompiler(): ImageCompiler
@@ -80,7 +81,7 @@ class ImageCompilerTest extends TestCase
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addBuildable');
+        $compiledDeployment->expects($this->never())->method('addBuildable');
 
         self::assertInstanceOf(
             ImageCompiler::class,
@@ -101,7 +102,7 @@ class ImageCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(2))
+        $compiledDeployment->expects($this->exactly(2))
             ->method('addBuildable')
             ->willReturnCallback(function (BuildableInterface $buildable) use ($compiledDeployment) {
                 if ('foo' === $buildable->getName()) {
@@ -114,7 +115,7 @@ class ImageCompilerTest extends TestCase
             });
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $workspace->expects(self::any())->method('runInRepositoryPath')->willReturnCallback(
+        $workspace->expects($this->any())->method('runInRepositoryPath')->willReturnCallback(
             static function (callable $callback) use ($workspace) {
                 $callback('/foo');
                 return $workspace;

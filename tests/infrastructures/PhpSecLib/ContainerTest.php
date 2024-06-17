@@ -129,7 +129,7 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(EncryptionInterface::class, $service);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->once())->method('fail');
 
         $service->decrypt(
             $this->createMock(SensitiveContentInterface::class),

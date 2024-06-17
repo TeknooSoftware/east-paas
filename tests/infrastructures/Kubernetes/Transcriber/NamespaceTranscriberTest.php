@@ -26,10 +26,12 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
@@ -38,9 +40,9 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
+#[CoversClass(CommonTrait::class)]
+#[CoversClass(NamespaceTranscriber::class)]
 class NamespaceTranscriberTest extends TestCase
 {
     public function buildTranscriber(): NamespaceTranscriber
@@ -69,22 +71,22 @@ class NamespaceTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::never())
+        $cd->expects($this->never())
             ->method('withJobSettings');
 
         $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['subnamespacesAnchors', [], $snRepo],
             ]);
 
-        $snRepo->expects(self::never())
+        $snRepo->expects($this->never())
             ->method('apply');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(1))
+        $promise->expects($this->exactly(1))
             ->method('success')
             ->with(
                 $this->callback(
@@ -94,7 +96,7 @@ class NamespaceTranscriberTest extends TestCase
                     }
                 )
             );
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,
@@ -114,7 +116,7 @@ class NamespaceTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('withJobSettings')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(1, 'prefix', 'myproject');
@@ -124,19 +126,19 @@ class NamespaceTranscriberTest extends TestCase
 
         $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['subnamespacesAnchors', [], $snRepo],
             ]);
 
-        $snRepo->expects(self::once())
+        $snRepo->expects($this->once())
             ->method('apply')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with(['foo']);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,
@@ -156,23 +158,23 @@ class NamespaceTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::never())
+        $cd->expects($this->never())
             ->method('withJobSettings');
 
         $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['subnamespacesAnchors', [], $snRepo],
             ]);
 
-        $snRepo->expects(self::never())
+        $snRepo->expects($this->never())
             ->method('apply');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with([]);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success')->with([]);
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,
@@ -192,7 +194,7 @@ class NamespaceTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('withJobSettings')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(1, 'prefix', 'myproject');
@@ -202,19 +204,19 @@ class NamespaceTranscriberTest extends TestCase
 
         $snRepo = $this->createMock(SubnamespaceAnchorRepository::class);
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['subnamespacesAnchors', [], $snRepo],
             ]);
 
-        $snRepo->expects(self::once())
+        $snRepo->expects($this->once())
             ->method('apply')
             ->willThrowException(new Exception());
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         self::assertInstanceOf(
             NamespaceTranscriber::class,

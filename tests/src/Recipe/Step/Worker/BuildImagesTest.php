@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
@@ -40,8 +41,8 @@ use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\BuildImages
  */
+#[CoversClass(BuildImages::class)]
 class BuildImagesTest extends TestCase
 {
     private ?DispatchHistoryInterface $dispatchHistory = null;
@@ -171,7 +172,7 @@ class BuildImagesTest extends TestCase
         $client =  $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $imageBuilder->expects(self::once())
+        $imageBuilder->expects($this->once())
             ->method('buildImages')
             ->willReturnCallback(
                 static function ($compiledDeployment, $root, PromiseInterface $promise) use ($imageBuilder) {
@@ -181,7 +182,7 @@ class BuildImagesTest extends TestCase
                 }
             );
 
-        $jobWorkspace->expects(self::once())
+        $jobWorkspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
                 static function (callable $callback) use ($jobWorkspace) {
@@ -194,7 +195,7 @@ class BuildImagesTest extends TestCase
         $project = 'foo';
         $env = 'bar';
 
-        $this->getDispatchHistoryMock()->expects(self::once())
+        $this->getDispatchHistoryMock()->expects($this->once())
             ->method('__invoke')
             ->with($project, $env, $jobUnit->getId(), BuildImages::class . ':Result')
             ->willReturnSelf();
@@ -223,7 +224,7 @@ class BuildImagesTest extends TestCase
         $client =  $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $imageBuilder->expects(self::once())
+        $imageBuilder->expects($this->once())
             ->method('buildImages')
             ->willReturnCallback(
                 static function ($compiledDeployment, $root, PromiseInterface $promise) use ($imageBuilder) {
@@ -233,7 +234,7 @@ class BuildImagesTest extends TestCase
                 }
             );
 
-        $jobWorkspace->expects(self::once())
+        $jobWorkspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
                 static function (callable $callback) use ($jobWorkspace) {
@@ -243,13 +244,13 @@ class BuildImagesTest extends TestCase
                 }
             );
 
-        $this->getDispatchHistoryMock()->expects(self::never())
+        $this->getDispatchHistoryMock()->expects($this->never())
             ->method('__invoke');
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment\Expose;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
@@ -32,9 +33,9 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service
- * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport
  */
+#[CoversClass(Transport::class)]
+#[CoversClass(Service::class)]
 class ServiceTest extends TestCase
 {
     private function buildObject($internal = false): Service

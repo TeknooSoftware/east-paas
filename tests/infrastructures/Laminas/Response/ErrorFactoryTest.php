@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Response;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -34,8 +35,8 @@ use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory
  */
+#[CoversClass(ErrorFactory::class)]
 class ErrorFactoryTest extends TestCase
 {
     public function testBuildFailureHandlerWithReason()
@@ -47,7 +48,7 @@ class ErrorFactoryTest extends TestCase
         $callable = $factory->buildFailureHandler($client, $manager, 500, 'foo');
         self::assertIsCallable($callable);
 
-        $client->expects(self::once())
+        $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
                 function ($error) use ($client) {
@@ -56,7 +57,7 @@ class ErrorFactoryTest extends TestCase
                     return $client;
                 }
             );
-        $manager->expects(self::once())->method('finish');
+        $manager->expects($this->once())->method('finish');
 
         $callable(new \RuntimeException('bar', 501));
     }
@@ -70,7 +71,7 @@ class ErrorFactoryTest extends TestCase
         $callable = $factory->buildFailureHandler($client, $manager, 500, null);
         self::assertIsCallable($callable);
 
-        $client->expects(self::once())
+        $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
                 function ($error) use ($client) {
@@ -79,7 +80,7 @@ class ErrorFactoryTest extends TestCase
                     return $client;
                 }
             );
-        $manager->expects(self::once())->method('finish');
+        $manager->expects($this->once())->method('finish');
 
         $callable(new \RuntimeException('bar', 100));
     }
@@ -93,7 +94,7 @@ class ErrorFactoryTest extends TestCase
         $callable = $factory->buildFailureHandler($client, $manager, 500, null);
         self::assertIsCallable($callable);
 
-        $client->expects(self::once())
+        $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
                 function ($error) use ($client) {
@@ -102,7 +103,7 @@ class ErrorFactoryTest extends TestCase
                     return $client;
                 }
             );
-        $manager->expects(self::once())->method('finish');
+        $manager->expects($this->once())->method('finish');
 
         $callable(new \RuntimeException('bar', 501));
     }

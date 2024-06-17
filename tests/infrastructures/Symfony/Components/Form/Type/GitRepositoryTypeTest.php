@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -35,8 +36,8 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\GitRepositoryType
  */
+#[CoversClass(GitRepositoryType::class)]
 class GitRepositoryTypeTest extends TestCase
 {
     use FormTestTrait;

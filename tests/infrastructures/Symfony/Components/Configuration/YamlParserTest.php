@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingConfiguration;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -34,8 +35,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser
  */
+#[CoversClass(YamlParser::class)]
 class YamlParserTest extends TestCase
 {
     private ?Parser $parser = null;
@@ -80,11 +81,11 @@ class YamlParserTest extends TestCase
     public function testParseGood()
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with(['foo' => 'bar']);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success')->with(['foo' => 'bar']);
+        $promise->expects($this->never())->method('fail');
 
         $this->getParserMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('parse')
             ->willReturn(['foo' => 'bar']);
 
@@ -102,11 +103,11 @@ class YamlParserTest extends TestCase
     public function testParseFail()
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $this->getParserMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('parse')
             ->willThrowException(new \Exception('foo bar'));
 

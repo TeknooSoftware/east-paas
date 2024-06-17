@@ -25,14 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Job\History;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Job\History\SerialGenerator
  */
+#[CoversClass(SerialGenerator::class)]
 class SerialGeneratorTest extends TestCase
 {
     public function testGeneration()

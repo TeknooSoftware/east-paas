@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use DomainException;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
@@ -41,8 +42,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\PodCompiler
  */
+#[CoversClass(PodCompiler::class)]
 class PodCompilerTest extends TestCase
 {
     public function buildCompiler(): PodCompiler
@@ -227,7 +228,7 @@ class PodCompilerTest extends TestCase
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addPod');
+        $compiledDeployment->expects($this->never())->method('addPod');
 
         self::assertInstanceOf(
             PodCompiler::class,
@@ -248,8 +249,8 @@ class PodCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(3))->method('addPod');
-        $compiledDeployment->expects(self::exactly(1))
+        $compiledDeployment->expects($this->exactly(3))->method('addPod');
+        $compiledDeployment->expects($this->exactly(1))
             ->method('importVolume')
             ->willReturnCallback(
                 function (
@@ -287,8 +288,8 @@ class PodCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addPod');
-        $compiledDeployment->expects(self::any())
+        $compiledDeployment->expects($this->never())->method('addPod');
+        $compiledDeployment->expects($this->any())
             ->method('importVolume')
             ->willReturnCallback(
                 function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment) {
@@ -327,7 +328,7 @@ class PodCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::any())->method('addPod');
+        $compiledDeployment->expects($this->any())->method('addPod');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);

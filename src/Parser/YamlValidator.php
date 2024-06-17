@@ -38,6 +38,7 @@ use function is_string;
 use function is_scalar;
 use function libxml_clear_errors;
 use function libxml_get_last_error;
+use function restore_error_handler;
 use function set_error_handler;
 use function str_replace;
 
@@ -248,7 +249,9 @@ class YamlValidator
         } catch (Throwable $error) {
             $xmlError = $error;
         } finally {
-            set_error_handler($previousHandler);
+            if ($previousHandler) {
+                restore_error_handler();
+            }
 
             $libError = libxml_get_last_error();
             libxml_clear_errors();

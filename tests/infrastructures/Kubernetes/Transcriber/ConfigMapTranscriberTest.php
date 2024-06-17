@@ -25,10 +25,12 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Repository\ConfigMapRepository;
@@ -37,9 +39,9 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
+#[CoversClass(CommonTrait::class)]
+#[CoversClass(ConfigMapTranscriber::class)]
 class ConfigMapTranscriberTest extends TestCase
 {
     public function buildTranscriber(): ConfigMapTranscriber
@@ -52,7 +54,7 @@ class ConfigMapTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachMap')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(new Map('foo', ['foo' => 'bar']), 'a-prefix');
@@ -63,23 +65,23 @@ class ConfigMapTranscriberTest extends TestCase
 
         $seRepo = $this->createMock(ConfigMapRepository::class);
 
-        $kubeClient->expects(self::atLeastOnce())
+        $kubeClient->expects($this->atLeastOnce())
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['configMaps', [], $seRepo],
             ]);
 
-        $seRepo->expects(self::exactly(3))
+        $seRepo->expects($this->exactly(3))
             ->method('apply')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(3))->method('success')->with(['foo']);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->exactly(3))->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             ConfigMapTranscriber::class,
@@ -99,7 +101,7 @@ class ConfigMapTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachMap')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(new Map('foo', ['foo' => 'bar']), 'a-prefix');
@@ -107,18 +109,18 @@ class ConfigMapTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(ConfigMapRepository::class);
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->with('configMaps')
             ->willReturn($repo);
 
-        $repo->expects(self::once())
+        $repo->expects($this->once())
             ->method('apply')
             ->willThrowException(new \Exception());
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         self::assertInstanceOf(
             ConfigMapTranscriber::class,

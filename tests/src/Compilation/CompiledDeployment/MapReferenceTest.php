@@ -25,14 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference
  */
+#[CoversClass(MapReference::class)]
 class MapReferenceTest extends TestCase
 {
     private function buildObject(): MapReference

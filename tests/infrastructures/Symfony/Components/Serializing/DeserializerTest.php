@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingSerializing;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -34,8 +35,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer
  */
+#[CoversClass(Deserializer::class)]
 class DeserializerTest extends TestCase
 {
     private ?SymfonySerializerInterface $serializer = null;
@@ -122,11 +123,11 @@ class DeserializerTest extends TestCase
     public function testDeserializeGood()
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
 
         $this->getSfSerializerMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('deserialize')
             ->willReturn(['foo' => 'bar']);
 
@@ -145,11 +146,11 @@ class DeserializerTest extends TestCase
     public function testDeserializeFail()
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $this->getSfSerializerMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('deserialize')
             ->willThrowException(new \Exception('foo'));
 

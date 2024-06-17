@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
@@ -34,8 +35,8 @@ use function iterator_to_array;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet
  */
+#[CoversClass(ResourceSet::class)]
 class ResourceSetTest extends TestCase
 {
     private function buildObject(): ResourceSet

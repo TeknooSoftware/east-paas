@@ -25,18 +25,22 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use stdClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
+use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
+use TypeError;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Object\ClusterCredentials
- * @covers \Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait
  */
+#[CoversClass(ExportConfigurationsTrait::class)]
+#[CoversClass(ClusterCredentials::class)]
 class ClusterCredentialsTest extends TestCase
 {
     use ObjectTestTrait;
@@ -115,23 +119,23 @@ class ClusterCredentialsTest extends TestCase
 
     public function testExportToMeDataBadNormalizer()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->exportToMeData(new \stdClass(), []);
+        $this->expectException(TypeError::class);
+        $this->buildObject()->exportToMeData(new stdClass(), []);
     }
 
     public function testExportToMeDataBadContext()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
             $this->createMock(EastNormalizerInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => ClusterCredentials::class,
@@ -156,7 +160,7 @@ class ClusterCredentialsTest extends TestCase
     public function testExportToMeApi()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => ClusterCredentials::class,

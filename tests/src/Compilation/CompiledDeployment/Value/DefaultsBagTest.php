@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\Value;
 
 use DomainException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
@@ -33,8 +34,8 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag
  */
+#[CoversClass(DefaultsBag::class)]
 class DefaultsBagTest extends TestCase
 {
     private function buildObject(): DefaultsBag

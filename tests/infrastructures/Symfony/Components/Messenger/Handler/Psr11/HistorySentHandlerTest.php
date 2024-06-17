@@ -25,18 +25,20 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\HistorySentHandler;
+use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\RequestTrait;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\HistorySentHandler
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11\RequestTrait
  */
+#[CoversClass(RequestTrait::class)]
+#[CoversClass(HistorySentHandler::class)]
 class HistorySentHandlerTest extends TestCase
 {
     use RequestTestTrait;
@@ -61,7 +63,7 @@ class HistorySentHandlerTest extends TestCase
     public function testInvokeWithEncryption()
     {
         $encryption = $this->createMock(EncryptionInterface::class);
-        $encryption->expects(self::any())
+        $encryption->expects($this->any())
             ->method('decrypt')
             ->willReturnCallback(
                 function ($data, PromiseInterface $promise) use ($encryption) {

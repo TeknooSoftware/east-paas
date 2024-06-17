@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use DomainException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
@@ -43,7 +45,9 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\PodsTranscriberTrait;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\Kubernetes\Repository\DeploymentRepository;
@@ -52,10 +56,10 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\PodsTranscriberTrait
  */
+#[CoversClass(PodsTranscriberTrait::class)]
+#[CoversClass(CommonTrait::class)]
+#[CoversClass(DeploymentTranscriber::class)]
 class DeploymentTranscriberTest extends TestCase
 {
     public function buildTranscriber(): DeploymentTranscriber
@@ -68,7 +72,7 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachPod')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
@@ -219,35 +223,35 @@ class DeploymentTranscriberTest extends TestCase
 
         $dRepo = $this->createMock(DeploymentRepository::class);
 
-        $kubeClient->expects(self::atLeastOnce())
+        $kubeClient->expects($this->atLeastOnce())
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['deployments', [], $dRepo],
             ]);
 
-        $dRepo->expects(self::any())
+        $dRepo->expects($this->any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
 
-        $dRepo->expects(self::exactly(3))
+        $dRepo->expects($this->exactly(3))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
                 new Deployment(['metadata' => ['name' => 'foo']]),
             );
 
-        $dRepo->expects(self::exactly(3))
+        $dRepo->expects($this->exactly(3))
             ->method('apply')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(3))->method('success')->with(['foo']);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->exactly(3))->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             DeploymentTranscriber::class,
@@ -268,7 +272,7 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachPod')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
@@ -378,34 +382,34 @@ class DeploymentTranscriberTest extends TestCase
 
         $dRepo = $this->createMock(DeploymentRepository::class);
 
-        $kubeClient->expects(self::atLeastOnce())
+        $kubeClient->expects($this->atLeastOnce())
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['deployments', [], $dRepo],
             ]);
 
-        $dRepo->expects(self::any())
+        $dRepo->expects($this->any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $dRepo->expects(self::exactly(2))
+        $dRepo->expects($this->exactly(2))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
                 new Deployment(['metadata' => ['name' => 'foo']]),
             );
 
-        $dRepo->expects(self::exactly(2))
+        $dRepo->expects($this->exactly(2))
             ->method('apply')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->exactly(2))->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             DeploymentTranscriber::class,
@@ -426,7 +430,7 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachPod')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
@@ -536,34 +540,34 @@ class DeploymentTranscriberTest extends TestCase
 
         $dRepo = $this->createMock(DeploymentRepository::class);
 
-        $kubeClient->expects(self::atLeastOnce())
+        $kubeClient->expects($this->atLeastOnce())
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['deployments', [], $dRepo],
             ]);
 
-        $dRepo->expects(self::any())
+        $dRepo->expects($this->any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $dRepo->expects(self::exactly(2))
+        $dRepo->expects($this->exactly(2))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
                 new Deployment(['metadata' => ['name' => 'foo']]),
             );
 
-        $dRepo->expects(self::exactly(2))
+        $dRepo->expects($this->exactly(2))
             ->method('apply')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->exactly(2))->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             DeploymentTranscriber::class,
@@ -583,7 +587,7 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachPod')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
@@ -664,35 +668,35 @@ class DeploymentTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(DeploymentRepository::class);
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->with('deployments')
             ->willReturn($repo);
 
-        $repo->expects(self::any())
+        $repo->expects($this->any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
         $call = 0;
-        $repo->expects(self::exactly(2))
+        $repo->expects($this->exactly(2))
             ->method('first')
             ->willReturnCallback(
                 function () use (&$call) {
                     if (0 < $call++) {
-                        throw new \DomainException('foo');
+                        throw new DomainException('foo');
                     }
 
                     return null;
                 },
             );
 
-        $repo->expects(self::once())
+        $repo->expects($this->once())
             ->method('apply')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with(['foo']);
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->once())->method('fail');
 
         self::assertInstanceOf(
             DeploymentTranscriber::class,
@@ -712,7 +716,7 @@ class DeploymentTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachPod')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
@@ -773,16 +777,16 @@ class DeploymentTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(DeploymentRepository::class);
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->with('deployments')
             ->willReturn($repo);
 
-        $repo->expects(self::any())
+        $repo->expects($this->any())
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $repo->expects(self::exactly(2))
+        $repo->expects($this->exactly(2))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
                 null,
@@ -790,12 +794,12 @@ class DeploymentTranscriberTest extends TestCase
             );
 
         $call = 0;
-        $repo->expects(self::exactly(2))
+        $repo->expects($this->exactly(2))
             ->method('apply')
             ->willReturnCallback(
                 function () use (&$call) {
                     if (0 < $call++) {
-                        throw new \DomainException('foo');
+                        throw new DomainException('foo');
                     }
 
                     return ['foo'];
@@ -803,8 +807,8 @@ class DeploymentTranscriberTest extends TestCase
             );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with(['foo']);
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->once())->method('fail');
 
         self::assertInstanceOf(
             DeploymentTranscriber::class,

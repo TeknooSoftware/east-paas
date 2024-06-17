@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingSerializing;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -36,6 +37,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  * @author      Richard Déloge <richard@teknoo.software>
  * @package Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingSerializing
  */
+#[CoversClass(Serializer::class)]
 class SerializerTest extends TestCase
 {
     private ?SymfonySerializerInterface $serializer = null;
@@ -52,9 +54,6 @@ class SerializerTest extends TestCase
         return $this->serializer;
     }
 
-    /**
-     * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer
-     */
     public function buildSerializer(): Serializer
     {
         return new Serializer(
@@ -98,11 +97,11 @@ class SerializerTest extends TestCase
     public function testSerializeGood()
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
 
         $this->getSfSerializerMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('serialize')
             ->willReturn('foo');
 
@@ -120,11 +119,11 @@ class SerializerTest extends TestCase
     public function testSerializeFail()
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $this->getSfSerializerMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('serialize')
             ->willThrowException(new \Exception('foo'));
 

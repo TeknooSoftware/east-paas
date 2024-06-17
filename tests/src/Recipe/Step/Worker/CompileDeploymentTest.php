@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\East\Paas\Recipe\Step\Worker\CompileDeployment;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\CompileDeployment
  */
+#[CoversClass(CompileDeployment::class)]
 class CompileDeploymentTest extends TestCase
 {
     public function buildStep(): CompileDeployment
@@ -72,11 +73,11 @@ class CompileDeploymentTest extends TestCase
         $conductor = $this->createMock(ConductorInterface::class);
         $compiled = $this->createMock(CompiledDeploymentInterface::class);
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with([CompiledDeploymentInterface::class => $compiled,]);
 
-        $conductor->expects(self::once())
+        $conductor->expects($this->once())
             ->method('compileDeployment')
             ->willReturnCallback(
                 function (PromiseInterface $promise) use ($conductor, $compiled) {
@@ -103,7 +104,7 @@ class CompileDeploymentTest extends TestCase
         $conductor = $this->createMock(ConductorInterface::class);
         $compiled = $this->createMock(CompiledDeploymentInterface::class);
 
-        $conductor->expects(self::once())
+        $conductor->expects($this->once())
             ->method('compileDeployment')
             ->willReturnCallback(
                 function (PromiseInterface $promise) use ($conductor, $compiled) {
@@ -113,10 +114,10 @@ class CompileDeploymentTest extends TestCase
                 }
             );
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

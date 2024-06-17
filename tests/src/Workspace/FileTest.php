@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\East\Paas\Workspace\File;
@@ -34,8 +35,8 @@ use Teknoo\Tests\East\Common\Object\Traits\PopulateObjectTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Workspace\File
  */
+#[CoversClass(File::class)]
 class FileTest extends TestCase
 {
     use PopulateObjectTrait;

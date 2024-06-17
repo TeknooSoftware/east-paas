@@ -25,12 +25,14 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Repository\PersistentVolumeClaimRepository;
@@ -39,9 +41,9 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
+#[CoversClass(CommonTrait::class)]
+#[CoversClass(VolumeTranscriber::class)]
 class VolumeTranscriberTest extends TestCase
 {
     public function buildTranscriber(): VolumeTranscriber
@@ -54,7 +56,7 @@ class VolumeTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', new Reference('storage-size')), 'a-prefix');
@@ -66,29 +68,29 @@ class VolumeTranscriberTest extends TestCase
 
         $seRepo = $this->createMock(PersistentVolumeClaimRepository::class);
 
-        $kubeClient->expects(self::atLeastOnce())
+        $kubeClient->expects($this->atLeastOnce())
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['persistentVolumeClaims', [], $seRepo],
             ]);
 
-        $seRepo->expects(self::exactly(3))
+        $seRepo->expects($this->exactly(3))
             ->method('exists')
             ->willReturnOnConsecutiveCalls(false, true, true);
 
-        $seRepo->expects(self::exactly(2))
+        $seRepo->expects($this->exactly(2))
             ->method('apply')
             ->willReturn(['foo']);
 
-        $seRepo->expects(self::once())
+        $seRepo->expects($this->once())
             ->method('delete');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(3))
+        $promise->expects($this->exactly(3))
             ->method('success')
             ->with(
                 $this->callback(
@@ -99,7 +101,7 @@ class VolumeTranscriberTest extends TestCase
                     }
                 )
             );
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             VolumeTranscriber::class,
@@ -119,7 +121,7 @@ class VolumeTranscriberTest extends TestCase
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachVolume')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'a-prefix');
@@ -127,18 +129,18 @@ class VolumeTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(PersistentVolumeClaimRepository::class);
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->with('persistentVolumeClaims')
             ->willReturn($repo);
 
-        $repo->expects(self::once())
+        $repo->expects($this->once())
             ->method('apply')
             ->willThrowException(new \Exception());
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success');
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         self::assertInstanceOf(
             VolumeTranscriber::class,

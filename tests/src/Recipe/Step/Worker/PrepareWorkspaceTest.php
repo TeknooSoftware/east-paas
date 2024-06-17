@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -35,8 +36,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace
  */
+#[CoversClass(PrepareWorkspace::class)]
 class PrepareWorkspaceTest extends TestCase
 {
     /**
@@ -84,12 +85,12 @@ class PrepareWorkspaceTest extends TestCase
         $job = $this->createMock(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $this->getWorkspaceMock()->expects(self::once())
+        $this->getWorkspaceMock()->expects($this->once())
             ->method('setJob')
             ->with($job)
             ->willReturnSelf();
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with([JobWorkspaceInterface::class => $this->getWorkspaceMock()]);
 

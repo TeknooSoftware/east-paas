@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration
  */
+#[CoversClass(ReadDeploymentConfiguration::class)]
 class ReadDeploymentConfigurationTest extends TestCase
 {
     public function buildStep(): ReadDeploymentConfiguration
@@ -52,7 +53,7 @@ class ReadDeploymentConfigurationTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(EastClient::class);
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('loadDeploymentIntoConductor')
             ->with($conductor);
 
@@ -74,7 +75,7 @@ class ReadDeploymentConfigurationTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(EastClient::class);
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('loadDeploymentIntoConductor')
             ->with($conductor)
             ->willReturnCallback(
@@ -85,10 +86,10 @@ class ReadDeploymentConfigurationTest extends TestCase
                 }
             );
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(
@@ -109,7 +110,7 @@ class ReadDeploymentConfigurationTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(EastClient::class);
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('loadDeploymentIntoConductor')
             ->with($conductor)
             ->willReturnCallback(
@@ -120,10 +121,10 @@ class ReadDeploymentConfigurationTest extends TestCase
                 }
             );
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

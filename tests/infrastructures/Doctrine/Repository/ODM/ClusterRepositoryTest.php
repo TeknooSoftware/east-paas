@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Doctrine\Repository\ODM;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Common\Contracts\DBSource\RepositoryInterface;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Repository\ODM\ClusterRepository;
@@ -33,8 +34,8 @@ use Teknoo\Tests\East\Common\Doctrine\DBSource\ODM\RepositoryTestTrait;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Doctrine\Repository\ODM\ClusterRepository
  */
+#[CoversClass(ClusterRepository::class)]
 class ClusterRepositoryTest extends TestCase
 {
     use RepositoryTestTrait;

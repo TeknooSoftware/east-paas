@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Command;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
@@ -43,8 +44,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayRe
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand
  */
+#[CoversClass(RunJobCommand::class)]
 class RunJobCommandTest extends TestCase
 {
     private ?Executor $Executor = null;
@@ -166,23 +167,23 @@ class RunJobCommandTest extends TestCase
         \file_put_contents($fileName, 'fooBar');
 
         $input = $this->createMock(InputInterface::class);
-        $input->expects(self::any())
+        $input->expects($this->any())
             ->method('getArgument')
             ->willReturn($fileName);
 
         $request = $this->createMock(MessageInterface::class);
-        $request->expects(self::any())
+        $request->expects($this->any())
             ->method('withBody')
             ->willReturnSelf();
 
         $this->getStreamFactoryMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('createStream')
             ->with('fooBar')
             ->willReturn($this->createMock(StreamInterface::class));
 
         $this->getMessageFactoryMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('createMessage')
             ->willReturn($request);
 
@@ -202,23 +203,23 @@ class RunJobCommandTest extends TestCase
     public function testExecutionFromInput()
     {
         $input = $this->createMock(InputInterface::class);
-        $input->expects(self::any())
+        $input->expects($this->any())
             ->method('getArgument')
             ->willReturn('fooBar');
 
         $request = $this->createMock(MessageInterface::class);
-        $request->expects(self::any())
+        $request->expects($this->any())
             ->method('withBody')
             ->willReturnSelf();
 
         $this->getStreamFactoryMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('createStream')
             ->with('fooBar')
             ->willReturn($this->createMock(StreamInterface::class));
 
         $this->getMessageFactoryMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('createMessage')
             ->willReturn($request);
 
@@ -236,7 +237,7 @@ class RunJobCommandTest extends TestCase
     public function testExecutionFromInputNotAString()
     {
         $input = $this->createMock(InputInterface::class);
-        $input->expects(self::any())
+        $input->expects($this->any())
             ->method('getArgument')
             ->willReturn(123);
 

@@ -25,34 +25,43 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use DateTime;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionMethod;
+use stdClass;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Contracts\Object\Account\AccountAwareInterface;
 use Teknoo\East\Paas\Object\Account;
+use Teknoo\East\Paas\Object\Account\Active;
+use Teknoo\East\Paas\Object\Account\Inactive;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Common\Object\User as BaseUser;
+use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\States\Proxy\Exception\StateNotFound;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
+use TypeError;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Object\Account
- * @covers \Teknoo\East\Paas\Object\Account\Active
- * @covers \Teknoo\East\Paas\Object\Account\Inactive
- * @covers \Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait
  */
+#[CoversClass(ExportConfigurationsTrait::class)]
+#[CoversClass(Inactive::class)]
+#[CoversClass(Active::class)]
+#[CoversClass(Account::class)]
 class AccountTest extends TestCase
 {
     use ObjectTestTrait;
 
     /**
      * @return Account
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function buildObject(): Account
     {
@@ -61,7 +70,7 @@ class AccountTest extends TestCase
 
     public function testStatesListDeclaration()
     {
-        $rf = new \ReflectionMethod(Account::class, 'statesListDeclaration');
+        $rf = new ReflectionMethod(Account::class, 'statesListDeclaration');
         $rf->setAccessible(true);
         self::assertIsArray($rf->getClosure()());
     }
@@ -71,7 +80,7 @@ class AccountTest extends TestCase
         $object = $this->generateObjectPopulated(['name' => 'fooBar']);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
@@ -90,7 +99,7 @@ class AccountTest extends TestCase
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetName()
     {
@@ -101,7 +110,7 @@ class AccountTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
@@ -113,8 +122,8 @@ class AccountTest extends TestCase
 
     public function testSetNameExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setName(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setName(new stdClass());
     }
 
     public function testSetNamespace()
@@ -126,7 +135,7 @@ class AccountTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
@@ -138,8 +147,8 @@ class AccountTest extends TestCase
 
     public function testSetNamespaceExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setNamespace(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setNamespace(new stdClass());
     }
 
     public function testSetQuotas()
@@ -151,7 +160,7 @@ class AccountTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($a);
 
@@ -163,12 +172,12 @@ class AccountTest extends TestCase
 
     public function testSetQuotasExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setQuotas(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setQuotas(new stdClass());
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetPrefixNamespace()
     {
@@ -179,7 +188,7 @@ class AccountTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
@@ -191,12 +200,12 @@ class AccountTest extends TestCase
 
     public function testSetPrefixNamespaceExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setPrefixNamespace(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setPrefixNamespace(new stdClass());
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testNamespaceIsItDefined()
     {
@@ -242,12 +251,12 @@ class AccountTest extends TestCase
 
     public function testNamespaceIsItDefinedOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->namespaceIsItDefined(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->namespaceIsItDefined(new stdClass());
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetProjects()
     {
@@ -260,12 +269,12 @@ class AccountTest extends TestCase
 
     public function testSetProjectsExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setProjects(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setProjects(new stdClass());
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testGetUsers()
     {
@@ -273,7 +282,7 @@ class AccountTest extends TestCase
         $object = $this->generateObjectPopulated(['users' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -284,7 +293,7 @@ class AccountTest extends TestCase
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetUsers()
     {
@@ -297,7 +306,7 @@ class AccountTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -309,8 +318,8 @@ class AccountTest extends TestCase
 
     public function testSetUsersExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setUsers(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setUsers(new stdClass());
     }
 
     public function testCanIPrepareNewJobInactive()
@@ -319,9 +328,9 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::never())->method('__call')->with('configure');
-        $project->expects(self::once())->method('refuseExecution')
-            ->with($job, 'teknoo.east.paas.error.account.inactive', $date = new \DateTime('2018-05-01'));
+        $project->expects($this->never())->method('__call')->with('configure');
+        $project->expects($this->once())->method('refuseExecution')
+            ->with($job, 'teknoo.east.paas.error.account.inactive', $date = new DateTime('2018-05-01'));
 
         self::assertInstanceOf(
             Account::class,
@@ -331,30 +340,30 @@ class AccountTest extends TestCase
 
     public function testCanIPrepareNewJobInactiveBadProject()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
 
-        $this->buildObject()->canIPrepareNewJob(new \stdClass(), $job, new \DateTime('2018-05-01'), $env);
+        $this->buildObject()->canIPrepareNewJob(new stdClass(), $job, new DateTime('2018-05-01'), $env);
     }
 
     public function testCanIPrepareNewJobInactiveBadJob()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
         $env = $this->createMock(Environment::class);
 
-        $this->buildObject()->canIPrepareNewJob($project, new \stdClass(), new \DateTime('2018-05-01'), $env);
+        $this->buildObject()->canIPrepareNewJob($project, new stdClass(), new DateTime('2018-05-01'), $env);
     }
 
     public function testCanIPrepareNewJobInactiveBadDate()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
 
-        $this->buildObject()->canIPrepareNewJob($project, $job, new \stdClass(), $env);
+        $this->buildObject()->canIPrepareNewJob($project, $job, new stdClass(), $env);
     }
 
     public function testCanIPrepareNewJobActive()
@@ -363,16 +372,16 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')->with(
+        $project->expects($this->once())->method('__call')->with(
             'configure',
             [
                 $job,
-                $date = new \DateTime('2018-05-01'),
+                $date = new DateTime('2018-05-01'),
                 $env,
                 null,
             ]
         );
-        $project->expects(self::never())->method('refuseExecution');
+        $project->expects($this->never())->method('refuseExecution');
 
         self::assertInstanceOf(
             Account::class,
@@ -390,17 +399,17 @@ class AccountTest extends TestCase
         $env = $this->createMock(Environment::class);
 
         $project = $this->createMock(Project::class);
-        $project->expects(self::once())->method('__call')
+        $project->expects($this->once())->method('__call')
             ->with(
                 'configure',
                 [
                     $job,
-                    $date = new \DateTime('2018-05-01'),
+                    $date = new DateTime('2018-05-01'),
                     $env,
                     ['compute' => ['cpu' => 5]],
                 ]
             );
-        $project->expects(self::never())->method('refuseExecution');
+        $project->expects($this->never())->method('refuseExecution');
 
         self::assertInstanceOf(
             Account::class,
@@ -414,55 +423,55 @@ class AccountTest extends TestCase
 
     public function testCanIPrepareNewJobActiveBadProject()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
 
         $this->buildObject()
             ->setName('foo')
-            ->canIPrepareNewJob(new \stdClass(), $job, new \DateTime('2018-05-01'), $env);
+            ->canIPrepareNewJob(new stdClass(), $job, new DateTime('2018-05-01'), $env);
     }
 
     public function testCanIPrepareNewJobActiveBadJob()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
         $env = $this->createMock(Environment::class);
 
         $this->buildObject()
             ->setName('foo')
-            ->canIPrepareNewJob($project, new \stdClass(), new \DateTime('2018-05-01'), $env);
+            ->canIPrepareNewJob($project, new stdClass(), new DateTime('2018-05-01'), $env);
     }
 
     public function testCanIPrepareNewJobActiveBadDate()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
 
         $this->buildObject()
             ->setName('foo')
-            ->canIPrepareNewJob($project, $job, new \stdClass(), $env);
+            ->canIPrepareNewJob($project, $job, new stdClass(), $env);
     }
 
     public function testCanIPrepareNewJobActiveBadEnv()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
         $job = $this->createMock(Job::class);
 
         $this->buildObject()
             ->setName('foo')
-            ->canIPrepareNewJob($project, $job, new \DateTime('2018-05-01'), new \stdClass());
+            ->canIPrepareNewJob($project, $job, new DateTime('2018-05-01'), new stdClass());
     }
     
     public function testVerifyAccessToUserInactive()
     {
         $user = $this->createMock(BaseUser::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('fail');
-        $promise->expects(self::never())->method('success');
+        $promise->expects($this->once())->method('fail');
+        $promise->expects($this->never())->method('success');
 
         self::assertInstanceOf(
             Account::class,
@@ -474,8 +483,8 @@ class AccountTest extends TestCase
     {
         $user = $this->createMock(BaseUser::class);
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('fail');
-        $promise->expects(self::never())->method('success');
+        $promise->expects($this->once())->method('fail');
+        $promise->expects($this->never())->method('success');
 
         self::assertInstanceOf(
             Account::class,
@@ -489,10 +498,10 @@ class AccountTest extends TestCase
     public function testVerifyAccessToUserActiveIn()
     {
         $user = $this->createMock(BaseUser::class);
-        $user->expects(self::any())->method('getId')->willReturn('foo');
+        $user->expects($this->any())->method('getId')->willReturn('foo');
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success');
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             Account::class,
@@ -529,23 +538,23 @@ class AccountTest extends TestCase
 
     public function testExportToMeDataBadNormalizer()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->exportToMeData(new \stdClass(), []);
+        $this->expectException(TypeError::class);
+        $this->buildObject()->exportToMeData(new stdClass(), []);
     }
 
     public function testExportToMeDataBadContext()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
             $this->createMock(EastNormalizerInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => Account::class,

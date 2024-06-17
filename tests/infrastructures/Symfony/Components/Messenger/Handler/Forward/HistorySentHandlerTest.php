@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Symfony\Contracts\Messenger\Handler\HistorySentHandlerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler;
@@ -33,8 +34,8 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler
  */
+#[CoversClass(HistorySentHandler::class)]
 class HistorySentHandlerTest extends TestCase
 {
     public function buildStep(): HistorySentHandler
@@ -54,7 +55,7 @@ class HistorySentHandlerTest extends TestCase
     {
         $handler = $this->createMock(HistorySentHandlerInterface::class);
 
-        $handler->expects(self::once())
+        $handler->expects($this->once())
             ->method('__invoke');
 
         self::assertInstanceOf(

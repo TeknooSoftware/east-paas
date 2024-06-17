@@ -176,7 +176,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveLimitSmallerThanRequire()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceWrongConfigurationException::class);
@@ -191,7 +191,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveLimitBiggerThanCapacity()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceCapacityExceededException::class);
@@ -206,7 +206,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveLimitBiggerThanCapacityWithSoftQuota()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceCapacityExceededException::class);
@@ -221,7 +221,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserve()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::once())
+        $set->expects($this->once())
             ->method('add');
 
         self::assertInstanceOf(
@@ -239,7 +239,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReservePourcent()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::once())
+        $set->expects($this->once())
             ->method('add');
 
         self::assertInstanceOf(
@@ -257,7 +257,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveExceedPourcent()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceCapacityExceededException::class);
@@ -273,7 +273,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveExceedPourcentWithSoftQuota()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceCapacityExceededException::class);
@@ -289,7 +289,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveExceptionPourcentBiggerThan100()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceWrongConfigurationException::class);
@@ -305,7 +305,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveExceed()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceCapacityExceededException::class);
@@ -321,7 +321,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveExceedForRequiresCapacity()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceCapacityExceededException::class);
@@ -337,7 +337,7 @@ abstract class AbstractTestAvailability extends TestCase
     public function testReserveExceedForRequiresCapacityWithSoftQuota()
     {
         $set = $this->createMock(ResourceSet::class);
-        $set->expects(self::never())
+        $set->expects($this->never())
             ->method('add');
 
         $this->expectException(ResourceCapacityExceededException::class);

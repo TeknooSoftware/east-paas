@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
@@ -35,8 +36,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler
  */
+#[CoversClass(DisplayResultHandler::class)]
 class DisplayResultHandlerTest extends TestCase
 {
     public function buildStep(?EncryptionInterface $encryption): DisplayResultHandler
@@ -48,7 +49,7 @@ class DisplayResultHandlerTest extends TestCase
     {
         $output = $this->createMock(OutputInterface::class);
 
-        $output->expects(self::once())
+        $output->expects($this->once())
             ->method('writeln');
 
         self::assertInstanceOf(
@@ -62,11 +63,11 @@ class DisplayResultHandlerTest extends TestCase
     {
         $output = $this->createMock(OutputInterface::class);
 
-        $output->expects(self::once())
+        $output->expects($this->once())
             ->method('writeln');
 
         $encryption = $this->createMock(EncryptionInterface::class);
-        $encryption->expects(self::any())
+        $encryption->expects($this->any())
             ->method('decrypt')
             ->willReturnCallback(
                 function ($data, PromiseInterface $promise) use ($encryption) {

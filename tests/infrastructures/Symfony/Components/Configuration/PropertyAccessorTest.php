@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingConfiguration;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -33,8 +34,8 @@ use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor
  */
+#[CoversClass(PropertyAccessor::class)]
 class PropertyAccessorTest extends TestCase
 {
     private ?SymfonyPropertyAccessor $propertyAccessor = null;
@@ -75,7 +76,7 @@ class PropertyAccessorTest extends TestCase
     public function testSetValue()
     {
         $this->getPropertyAccessor()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('setValue')
             ->with($array = ['foo' => 'bar'], $path = 'foo.bar', $value = 'foo');
 
@@ -114,13 +115,13 @@ class PropertyAccessorTest extends TestCase
         };
 
         $this->getPropertyAccessor()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('isReadable')
             ->with($array, $path)
             ->willReturn(true);
 
         $this->getPropertyAccessor()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('getValue')
             ->with($array, $path)
             ->willReturn('foo');
@@ -144,13 +145,13 @@ class PropertyAccessorTest extends TestCase
         };
 
         $this->getPropertyAccessor()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('isReadable')
             ->with($array, $path)
             ->willReturn(true);
 
         $this->getPropertyAccessor()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('getValue')
             ->with($array, $path)
             ->willReturn('foo');
@@ -172,13 +173,13 @@ class PropertyAccessorTest extends TestCase
         };
 
         $this->getPropertyAccessor()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('isReadable')
             ->with($array, $path)
             ->willReturn(false);
 
         $this->getPropertyAccessor()
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('getValue');
 
         self::assertInstanceOf(
@@ -198,13 +199,13 @@ class PropertyAccessorTest extends TestCase
         };
 
         $this->getPropertyAccessor()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('isReadable')
             ->with($array, $path)
             ->willReturn(false);
 
         $this->getPropertyAccessor()
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('getValue');
 
         self::assertInstanceOf(

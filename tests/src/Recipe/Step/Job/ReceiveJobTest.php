@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use Laminas\Diactoros\StreamFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -34,8 +35,8 @@ use Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Job\ReceiveJob
  */
+#[CoversClass(ReceiveJob::class)]
 class ReceiveJobTest extends TestCase
 {
     public function buildStep(): ReceiveJob
@@ -66,11 +67,11 @@ class ReceiveJobTest extends TestCase
         $message = $this->createMock(MessageInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $message->expects(self::once())
+        $message->expects($this->once())
             ->method('getBody')
             ->willReturn((new StreamFactory())->createStream('foo'));
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with(['serializedJob' => 'foo'])
             ->willReturnSelf();

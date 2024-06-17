@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
@@ -41,8 +42,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment
  */
+#[CoversClass(HookingDeployment::class)]
 class HookingDeploymentTest extends TestCase
 {
     private ?DispatchHistoryInterface $dispatchHistory = null;
@@ -75,8 +76,8 @@ class HookingDeploymentTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
 
         $hook1 = $this->createMock(HookInterface::class);
-        $hook1->expects(self::once())->method('setPath')->with('foo/bar');
-        $hook1->expects(self::once())->method('run')->willReturnCallback(
+        $hook1->expects($this->once())->method('setPath')->with('foo/bar');
+        $hook1->expects($this->once())->method('run')->willReturnCallback(
             function (PromiseInterface $promise) use ($hook1) {
                 $promise->success('foo');
 
@@ -101,7 +102,7 @@ class HookingDeploymentTest extends TestCase
             }
         };
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
                 function (callable $callback) use ($workspace) {
@@ -111,7 +112,7 @@ class HookingDeploymentTest extends TestCase
                 }
             );
 
-        $compiled->expects(self::once())
+        $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
                 function (callable $callback) use ($hook1, $hook2, $compiled) {
@@ -125,7 +126,7 @@ class HookingDeploymentTest extends TestCase
         $project = 'foo';
         $env = 'bar';
 
-        $this->getDispatchHistoryMock()->expects(self::exactly(2))
+        $this->getDispatchHistoryMock()->expects($this->exactly(2))
             ->method('__invoke')
             ->with($project, $env, $jobUnit->getId(), HookingDeployment::class . ':Result')
             ->willReturnSelf();
@@ -153,8 +154,8 @@ class HookingDeploymentTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
 
         $hook1 = $this->createMock(HookInterface::class);
-        $hook1->expects(self::once())->method('setPath')->with('foo/bar');
-        $hook1->expects(self::once())->method('run')->willReturnCallback(
+        $hook1->expects($this->once())->method('setPath')->with('foo/bar');
+        $hook1->expects($this->once())->method('run')->willReturnCallback(
             function (PromiseInterface $promise) use ($hook1) {
                 $promise->fail(new \RuntimeException('foo'));
 
@@ -162,10 +163,10 @@ class HookingDeploymentTest extends TestCase
             }
         );
         $hook2 = $this->createMock(HookInterface::class);
-        $hook2->expects(self::never())->method('setPath');
-        $hook2->expects(self::never())->method('run');
+        $hook2->expects($this->never())->method('setPath');
+        $hook2->expects($this->never())->method('run');
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
                 function (callable $callback) use ($workspace) {
@@ -175,7 +176,7 @@ class HookingDeploymentTest extends TestCase
                 }
             );
 
-        $compiled->expects(self::once())
+        $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
                 function (callable $callback) use ($hook1, $hook2, $compiled) {
@@ -186,13 +187,13 @@ class HookingDeploymentTest extends TestCase
                 }
             );
 
-        $this->getDispatchHistoryMock()->expects(self::never())
+        $this->getDispatchHistoryMock()->expects($this->never())
             ->method('__invoke');
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(
@@ -221,8 +222,8 @@ class HookingDeploymentTest extends TestCase
         $env = 'bar';
 
         $hook1 = $this->createMock(HookInterface::class);
-        $hook1->expects(self::once())->method('setPath')->with('foo/bar');
-        $hook1->expects(self::once())->method('run')->willReturnCallback(
+        $hook1->expects($this->once())->method('setPath')->with('foo/bar');
+        $hook1->expects($this->once())->method('run')->willReturnCallback(
             function (PromiseInterface $promise) use ($hook1) {
                 $promise->success('foo');
 
@@ -230,8 +231,8 @@ class HookingDeploymentTest extends TestCase
             }
         );
         $hook2 = $this->createMock(HookInterface::class);
-        $hook2->expects(self::once())->method('setPath')->with('foo/bar');
-        $hook2->expects(self::once())->method('run')->willReturnCallback(
+        $hook2->expects($this->once())->method('setPath')->with('foo/bar');
+        $hook2->expects($this->once())->method('run')->willReturnCallback(
             function (PromiseInterface $promise) use ($hook2) {
                 $promise->fail(new \RuntimeException('foo'));
 
@@ -239,7 +240,7 @@ class HookingDeploymentTest extends TestCase
             }
         );
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
                 function (callable $callback) use ($workspace) {
@@ -249,7 +250,7 @@ class HookingDeploymentTest extends TestCase
                 }
             );
 
-        $compiled->expects(self::once())
+        $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
                 function (callable $callback) use ($hook1, $hook2, $compiled) {
@@ -260,15 +261,15 @@ class HookingDeploymentTest extends TestCase
                 }
             );
 
-        $this->getDispatchHistoryMock()->expects(self::exactly(1))
+        $this->getDispatchHistoryMock()->expects($this->exactly(1))
             ->method('__invoke')
             ->with($project, $env, $jobUnit->getId(), HookingDeployment::class . ':Result')
             ->willReturnSelf();
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

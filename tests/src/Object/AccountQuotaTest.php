@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Object\AccountQuota;
 use function json_encode;
@@ -34,8 +35,8 @@ use const JSON_THROW_ON_ERROR;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers      \Teknoo\East\Paas\Object\AccountQuota
  */
+#[CoversClass(AccountQuota::class)]
 class AccountQuotaTest extends TestCase
 {
     public function testConstructor()

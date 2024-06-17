@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
@@ -36,8 +37,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\SecretCompiler
  */
+#[CoversClass(SecretCompiler::class)]
 class SecretCompilerTest extends TestCase
 {
     public function buildCompiler(): SecretCompiler
@@ -69,7 +70,7 @@ class SecretCompilerTest extends TestCase
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addSecret');
+        $compiledDeployment->expects($this->never())->method('addSecret');
 
         self::assertInstanceOf(
             SecretCompiler::class,
@@ -90,7 +91,7 @@ class SecretCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(2))->method('addSecret');
+        $compiledDeployment->expects($this->exactly(2))->method('addSecret');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);

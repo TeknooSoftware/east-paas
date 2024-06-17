@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Job\DeserializeJob
  */
+#[CoversClass(DeserializeJob::class)]
 class DeserializeJobTest extends TestCase
 {
     /**
@@ -90,7 +91,7 @@ class DeserializeJobTest extends TestCase
         $client = $this->createMock(ClientInterface::class);
 
         $this->getDeserializer()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('deserialize')
             ->with('fooBar', JobUnitInterface::class, 'json')
             ->willReturnCallback(
@@ -107,7 +108,7 @@ class DeserializeJobTest extends TestCase
                 }
             );
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with([JobUnitInterface::class => $job])
             ->willReturnSelf();
@@ -121,7 +122,7 @@ class DeserializeJobTest extends TestCase
     public function testInvokeWithExtra()
     {
         $job = $this->createMock(JobUnitInterface::class);
-        $job->expects(self::any())->method('runWithExtra')->willReturnCallback(
+        $job->expects($this->any())->method('runWithExtra')->willReturnCallback(
             function (callable $callback) use ($job) {
                 $callback(['foo' => 'bar']);
 
@@ -132,7 +133,7 @@ class DeserializeJobTest extends TestCase
         $client = $this->createMock(ClientInterface::class);
 
         $this->getDeserializer()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('deserialize')
             ->with('fooBar', JobUnitInterface::class, 'json')
             ->willReturnCallback(
@@ -149,7 +150,7 @@ class DeserializeJobTest extends TestCase
                 }
             );
 
-        $manager->expects(self::exactly(2))
+        $manager->expects($this->exactly(2))
             ->method('updateWorkPlan')
             ->with(
                 $this->callback(
@@ -175,7 +176,7 @@ class DeserializeJobTest extends TestCase
 
         $error = new \Exception('fooBar');
         $this->getDeserializer()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('deserialize')
             ->with('fooBar', JobUnitInterface::class, 'json')
 
@@ -193,10 +194,10 @@ class DeserializeJobTest extends TestCase
                 }
             );
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
@@ -36,8 +37,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\VolumeCompiler
  */
+#[CoversClass(VolumeCompiler::class)]
 class VolumeCompilerTest extends TestCase
 {
     public function buildCompiler(): VolumeCompiler
@@ -66,7 +67,7 @@ class VolumeCompilerTest extends TestCase
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addVolume');
+        $compiledDeployment->expects($this->never())->method('addVolume');
 
         self::assertInstanceOf(
             VolumeCompiler::class,
@@ -87,7 +88,7 @@ class VolumeCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::once())->method('addVolume');
+        $compiledDeployment->expects($this->once())->method('addVolume');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);

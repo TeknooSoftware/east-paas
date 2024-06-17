@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingNormalier;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer;
 use Teknoo\East\Paas\Object\History;
@@ -32,8 +33,8 @@ use Teknoo\East\Paas\Object\History;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer
  */
+#[CoversClass(HistoryDenormalizer::class)]
 class HistoryDenormalizerTest extends TestCase
 {
     public function buildNormalizer(): HistoryDenormalizer

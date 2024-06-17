@@ -60,7 +60,7 @@ trait FormTestTrait
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('addEventListener')
             ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $form = $this->createMock(FormInterface::class);
@@ -70,14 +70,14 @@ trait FormTestTrait
                 return $builder;
             });
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
-                    $mock->expects(self::any())->method('getData')->willReturn($value);
-                    $mock->expects(self::any())->method('getName')->willReturn($name);
+                    $mock->expects($this->any())->method('getData')->willReturn($value);
+                    $mock->expects($this->any())->method('getName')->willReturn($name);
 
                     $children[$name] = $mock;
                 }
@@ -101,24 +101,24 @@ trait FormTestTrait
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('add')
             ->willReturnCallback(
                 function ($child, $type, array $options = array()) use ($builder) {
                     if (DocumentType::class == $type && isset($options['query_builder'])) {
                         $qBuilder = $this->createMock(Builder::class);
-                        $qBuilder->expects(self::once())
+                        $qBuilder->expects($this->once())
                             ->method('field')
                             ->with('deletedAt')
                             ->willReturnSelf();
 
-                        $qBuilder->expects(self::once())
+                        $qBuilder->expects($this->once())
                             ->method('equals')
                             ->with(null)
                             ->willReturnSelf();
 
                         $repository = $this->createMock(DocumentRepository::class);
-                        $repository->expects(self::once())
+                        $repository->expects($this->once())
                             ->method('createQueryBuilder')
                             ->willReturn($qBuilder);
 
@@ -128,8 +128,8 @@ trait FormTestTrait
                     if (isset($options['entry_options']['empty_data'])
                         && \is_callable($options['entry_options']['empty_data'])) {
                         $form = $this->createMock(FormInterface::class);
-                        $form->expects(self::any())->method('getParent')->willReturn($form);
-                        $form->expects(self::any())->method('getNormData')->willReturn($this->getObject());
+                        $form->expects($this->any())->method('getParent')->willReturn($form);
+                        $form->expects($this->any())->method('getNormData')->willReturn($this->getObject());
 
                         $options['entry_options']['empty_data']($form, null);
                     }
@@ -138,7 +138,7 @@ trait FormTestTrait
                 }
             );
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('addEventListener')
             ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $form = $this->createMock(FormInterface::class);
@@ -148,14 +148,14 @@ trait FormTestTrait
                 return $builder;
             });
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
-                    $mock->expects(self::any())->method('getData')->willReturn($value);
-                    $mock->expects(self::any())->method('getName')->willReturn($name);
+                    $mock->expects($this->any())->method('getData')->willReturn($value);
+                    $mock->expects($this->any())->method('getName')->willReturn($name);
                     $children[$name] = $mock;
                 }
                 $form = new \ArrayIterator($children);
@@ -183,24 +183,24 @@ trait FormTestTrait
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('add')
             ->willReturnCallback(
                 function ($child, $type, array $options = array()) use ($builder) {
                     if (DocumentType::class == $type && isset($options['query_builder'])) {
                         $qBuilder = $this->createMock(Builder::class);
-                        $qBuilder->expects(self::once())
+                        $qBuilder->expects($this->once())
                             ->method('field')
                             ->with('deletedAt')
                             ->willReturnSelf();
 
-                        $qBuilder->expects(self::once())
+                        $qBuilder->expects($this->once())
                             ->method('equals')
                             ->with(null)
                             ->willReturnSelf();
 
                         $repository = $this->createMock(DocumentRepository::class);
-                        $repository->expects(self::once())
+                        $repository->expects($this->once())
                             ->method('createQueryBuilder')
                             ->willReturn($qBuilder);
 
@@ -211,7 +211,7 @@ trait FormTestTrait
                 }
             );
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('addEventListener')
             ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $form = $this->createMock(FormInterface::class);
@@ -221,14 +221,14 @@ trait FormTestTrait
                 return $builder;
             });
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
-                    $mock->expects(self::any())->method('getData')->willReturn($value);
-                    $mock->expects(self::any())->method('getName')->willReturn($name);
+                    $mock->expects($this->any())->method('getData')->willReturn($value);
+                    $mock->expects($this->any())->method('getName')->willReturn($name);
                     $children[$name] = $mock;
                 }
                 $form = new \ArrayIterator($children);

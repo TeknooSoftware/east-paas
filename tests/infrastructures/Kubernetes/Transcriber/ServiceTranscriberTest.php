@@ -25,11 +25,13 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Repository\ServiceRepository;
@@ -38,9 +40,9 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber
- * @covers \Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait
  */
+#[CoversClass(CommonTrait::class)]
+#[CoversClass(ServiceTranscriber::class)]
 class ServiceTranscriberTest extends TestCase
 {
     public function buildTranscriber(): ServiceTranscriber
@@ -54,7 +56,7 @@ class ServiceTranscriberTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
 
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachService')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(
@@ -71,31 +73,31 @@ class ServiceTranscriberTest extends TestCase
 
         $repoService = $this->createMock(ServiceRepository::class);
 
-        $repoService->expects(self::exactly(2))
+        $repoService->expects($this->exactly(2))
             ->method('exists')
             ->willReturnOnConsecutiveCalls(false, true);
 
-        $repoService->expects(self::exactly(2))
+        $repoService->expects($this->exactly(2))
             ->method('apply')
             ->willReturn(['foo']);
 
-        $repoService->expects(self::once())
+        $repoService->expects($this->once())
             ->method('delete')
             ->willReturn(['foo']);
 
-        $kubeClient->expects(self::atLeastOnce())
+        $kubeClient->expects($this->atLeastOnce())
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->willReturnMap([
                 ['services', [], $repoService],
             ]);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::exactly(2))->method('success')->with(['foo']);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->exactly(2))->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             ServiceTranscriber::class,
@@ -114,7 +116,7 @@ class ServiceTranscriberTest extends TestCase
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
-        $cd->expects(self::once())
+        $cd->expects($this->once())
             ->method('foreachService')
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback(
@@ -129,17 +131,17 @@ class ServiceTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(ServiceRepository::class);
-        $kubeClient->expects(self::any())
+        $kubeClient->expects($this->any())
             ->method('__call')
             ->with('services')
             ->willReturn($repo);
 
-        $repo->expects(self::exactly(2))
+        $repo->expects($this->exactly(2))
             ->method('exists')
             ->willReturnOnConsecutiveCalls(false, true);
 
         $counter = 0;
-        $repo->expects(self::exactly(2))
+        $repo->expects($this->exactly(2))
             ->method('apply')
             ->willReturnCallback(function () use (&$counter) {
                 if (0 === $counter) {
@@ -150,13 +152,13 @@ class ServiceTranscriberTest extends TestCase
                 throw new \Exception('foo');
             });
 
-        $repo->expects(self::once())
+        $repo->expects($this->once())
             ->method('delete')
             ->willReturn(['foo']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with(['foo']);
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->once())->method('fail');
 
         self::assertInstanceOf(
             ServiceTranscriber::class,

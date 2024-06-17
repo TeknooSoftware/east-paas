@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
@@ -36,8 +37,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\MapCompiler
  */
+#[CoversClass(MapCompiler::class)]
 class MapCompilerTest extends TestCase
 {
     public function buildCompiler(): MapCompiler
@@ -63,7 +64,7 @@ class MapCompilerTest extends TestCase
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::never())->method('addMap');
+        $compiledDeployment->expects($this->never())->method('addMap');
 
         self::assertInstanceOf(
             MapCompiler::class,
@@ -84,7 +85,7 @@ class MapCompilerTest extends TestCase
         $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
-        $compiledDeployment->expects(self::exactly(2))->method('addMap');
+        $compiledDeployment->expects($this->exactly(2))->method('addMap');
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);

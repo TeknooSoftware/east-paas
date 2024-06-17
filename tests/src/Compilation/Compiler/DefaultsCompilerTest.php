@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\DefaultsCompiler;
@@ -36,8 +37,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\DefaultsCompiler
  */
+#[CoversClass(DefaultsCompiler::class)]
 class DefaultsCompilerTest extends TestCase
 {
     public function buildCompiler(
@@ -58,7 +59,7 @@ class DefaultsCompilerTest extends TestCase
         $definitions = [];
 
         $bag = $this->createMock(DefaultsBag::class);
-        $bag->expects(self::once())
+        $bag->expects($this->once())
             ->method('set')
             ->with('oci-registry-config-name', null)
             ->willReturnSelf();
@@ -81,7 +82,7 @@ class DefaultsCompilerTest extends TestCase
         $definitions = [];
 
         $bag = $this->createMock(DefaultsBag::class);
-        $bag->expects(self::exactly(3))
+        $bag->expects($this->exactly(3))
             ->method('set')
             ->willReturnSelf();
 
@@ -107,7 +108,7 @@ class DefaultsCompilerTest extends TestCase
         ];
 
         $bag = $this->createMock(DefaultsBag::class);
-        $bag->expects(self::exactly(6))
+        $bag->expects($this->exactly(6))
             ->method('set')
             ->willReturnSelf();
 
@@ -138,11 +139,11 @@ class DefaultsCompilerTest extends TestCase
         ];
 
         $bag = $this->createMock(DefaultsBag::class);
-        $bag->expects(self::exactly(7))
+        $bag->expects($this->exactly(7))
             ->method('set')
             ->willReturnSelf();
 
-        $bag->expects(self::once())
+        $bag->expects($this->once())
             ->method('forCluster')
             ->with('bar')
             ->willReturnSelf();

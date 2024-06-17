@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
@@ -32,8 +33,8 @@ use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository
  */
+#[CoversClass(CloneRepository::class)]
 class CloneRepositoryTest extends TestCase
 {
     public function buildStep(): CloneRepository
@@ -50,7 +51,7 @@ class CloneRepositoryTest extends TestCase
     public function testInvoke()
     {
         $cloningAgent = $this->createMock(CloningAgentInterface::class);
-        $cloningAgent->expects(self::once())
+        $cloningAgent->expects($this->once())
             ->method('run')
             ->willReturnSelf();
 

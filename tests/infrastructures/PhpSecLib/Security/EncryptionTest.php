@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\PhpSecLib\Security;
 use phpseclib3\Crypt\Common\PrivateKey;
 use phpseclib3\Crypt\Common\PublicKey;
 use phpseclib3\Crypt\RSA;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
@@ -43,10 +44,10 @@ use function base64_encode;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\PhpSecLib\Security\Encryption
- * @covers \Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\UnsupportedAlgorithmException
- * @covers \Teknoo\East\Paas\Infrastructures\PhpSecLib\Exception\WrongLibraryAPIException
  */
+#[CoversClass(WrongLibraryAPIException::class)]
+#[CoversClass(UnsupportedAlgorithmException::class)]
+#[CoversClass(Encryption::class)]
 class EncryptionTest extends TestCase
 {
     public function testEncryptWithBadAPI()
@@ -61,14 +62,14 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('success');
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('fail')
             ->with($this->callback(fn ($error) => $error instanceof WrongLibraryAPIException));
 
@@ -92,10 +93,10 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
-        $content->expects(self::once())
+        $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
                 function ($content, $algo) {
@@ -106,10 +107,10 @@ class EncryptionTest extends TestCase
             );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('success')
             ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('fail');
 
         self::assertInstanceOf(
@@ -132,10 +133,10 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
-        $content->expects(self::once())
+        $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
                 function ($content, $algo) use ($privateKey) {
@@ -151,10 +152,10 @@ class EncryptionTest extends TestCase
             );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('success')
             ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('fail');
 
         self::assertInstanceOf(
@@ -187,10 +188,10 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
-        $content->expects(self::once())
+        $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
                 function ($content, $algo) {
@@ -201,10 +202,10 @@ class EncryptionTest extends TestCase
             );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('success')
             ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('fail');
 
         self::assertInstanceOf(
@@ -236,16 +237,16 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
-        $content->expects(self::never())
+        $content->expects($this->never())
             ->method('cloneWith');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('success');
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('fail');
 
         self::assertInstanceOf(
@@ -269,17 +270,17 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('rsa');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('success');
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('fail')
             ->with($this->callback(fn ($error) => $error instanceof WrongLibraryAPIException));
 
@@ -304,17 +305,17 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('foo');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('success');
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('fail')
             ->with($this->callback(fn ($error) => $error instanceof UnsupportedAlgorithmException));
 
@@ -339,17 +340,17 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getEncryptionAlgorithm')
             ->willReturn(null);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('success');
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('fail')
             ->with($this->callback(fn ($error) => $error instanceof UnsupportedAlgorithmException));
 
@@ -374,17 +375,17 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn('foo');
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('foo');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('success');
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('fail')
             ->with($this->callback(fn ($error) => $error instanceof UnsupportedAlgorithmException));
 
@@ -408,13 +409,13 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn($publicKey->encrypt('foo'));
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('rsa');
-        $content->expects(self::once())
+        $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
                 function ($content, $algo) {
@@ -425,10 +426,10 @@ class EncryptionTest extends TestCase
             );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('success')
             ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('fail');
 
         self::assertInstanceOf(
@@ -451,13 +452,13 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn(base64_encode($publicKey->encrypt('foo')));
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('rsa');
-        $content->expects(self::once())
+        $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
                 function ($content, $algo) {
@@ -468,10 +469,10 @@ class EncryptionTest extends TestCase
             );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('success')
             ->with($this->callback(fn ($content) => $content instanceof SensitiveContentInterface));
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('fail');
 
         self::assertInstanceOf(
@@ -506,19 +507,19 @@ class EncryptionTest extends TestCase
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getContent')
             ->willReturn($publicKey->encrypt('foo'));
-        $content->expects(self::any())
+        $content->expects($this->any())
             ->method('getEncryptionAlgorithm')
             ->willReturn('rsa');
-        $content->expects(self::never())
+        $content->expects($this->never())
             ->method('cloneWith');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())
+        $promise->expects($this->never())
             ->method('success');
-        $promise->expects(self::once())
+        $promise->expects($this->once())
             ->method('fail');
 
         self::assertInstanceOf(

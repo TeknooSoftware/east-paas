@@ -25,14 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Doctrine\Object\ODM;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account
  */
+#[CoversClass(Account::class)]
 class AccountTest extends TestCase
 {
     public function testStatesListDeclaration()

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -47,8 +48,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment
  */
+#[CoversClass(CompiledDeployment::class)]
 class CompiledDeploymentTest extends TestCase
 {
     private function buildObject(): CompiledDeployment
@@ -196,11 +197,11 @@ class CompiledDeploymentTest extends TestCase
     public function testImportVolume()
     {
         $volume = $this->createMock(Volume::class);
-        $volume->expects(self::once())->method('import')->with('/bar')->willReturnSelf();
+        $volume->expects($this->once())->method('import')->with('/bar')->willReturnSelf();
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('success')->with($volume);
-        $promise->expects(self::never())->method('fail');
+        $promise->expects($this->once())->method('success')->with($volume);
+        $promise->expects($this->never())->method('fail');
 
         $object = $this->buildObject();
         $object->addVolume('foo', $volume);
@@ -218,11 +219,11 @@ class CompiledDeploymentTest extends TestCase
     public function testImportVolumeNotFound()
     {
         $volume = $this->createMock(Volume::class);
-        $volume->expects(self::never())->method('import');
+        $volume->expects($this->never())->method('import');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success')->with($volume);
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success')->with($volume);
+        $promise->expects($this->once())->method('fail');
 
         $object = $this->buildObject();
         $object->addVolume('bar', $volume);
@@ -242,8 +243,8 @@ class CompiledDeploymentTest extends TestCase
         $volume = $this->createMock(VolumeInterface::class);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('success')->with($volume);
-        $promise->expects(self::once())->method('fail');
+        $promise->expects($this->never())->method('success')->with($volume);
+        $promise->expects($this->once())->method('fail');
 
         $object = $this->buildObject();
         $object->addVolume('foo', $volume);

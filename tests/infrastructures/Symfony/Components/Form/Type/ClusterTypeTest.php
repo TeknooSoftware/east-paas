@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use ArrayIterator;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
@@ -44,8 +45,8 @@ use Teknoo\East\Paas\Object\SshIdentity;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType
  */
+#[CoversClass(ClusterType::class)]
 class ClusterTypeTest extends TestCase
 {
     use FormTestTrait;
@@ -91,13 +92,13 @@ class ClusterTypeTest extends TestCase
         $object = $this->getObject();
         $object->setLocked(true);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
-                    $mock->expects(self::never())->method('getData');
+                    $mock->expects($this->never())->method('getData');
                     $children[$name] = $mock;
                 }
 
@@ -120,16 +121,16 @@ class ClusterTypeTest extends TestCase
         $object = $this->getObject();
         $object->setLocked(false);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
                     if ('locked' !== $name) {
-                        $mock->expects(self::once())->method('getData')->willReturn($value);
+                        $mock->expects($this->once())->method('getData')->willReturn($value);
                     } else {
-                        $mock->expects(self::never())->method('getData');
+                        $mock->expects($this->never())->method('getData');
                     }
                     $children[$name] = $mock;
                 }
@@ -153,13 +154,13 @@ class ClusterTypeTest extends TestCase
         $object = $this->getObject();
         $object->setLocked(false);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
-                    $mock->expects(self::once())->method('getData')->willReturn($value);
+                    $mock->expects($this->once())->method('getData')->willReturn($value);
                     $children[$name] = $mock;
                 }
 
@@ -181,35 +182,35 @@ class ClusterTypeTest extends TestCase
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('addEventListener')
             ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $config = $this->createMock(FormConfigInterface::class);
-                $config->expects(self::any())
+                $config->expects($this->any())
                     ->method('getType')
                     ->willReturn(
                         $this->createMock(ResolvedFormTypeInterface::class)
                     );
 
                 $form1 = $this->createMock(Form::class);
-                $form1->expects(self::any())
+                $form1->expects($this->any())
                     ->method('getConfig')
                     ->willReturn($config);
 
                 $form2 = $this->createMock(Form::class);
-                $form2->expects(self::any())
+                $form2->expects($this->any())
                     ->method('getConfig')
                     ->willReturn($config);
-                $form2->expects(self::any())
+                $form2->expects($this->any())
                     ->method('getData')
                     ->willReturn('foo');
 
                 $form = $this->createMock(Form::class);
 
-                $form->expects(self::exactly(2))
+                $form->expects($this->exactly(2))
                     ->method('add');
 
-                $form->expects(self::any())
+                $form->expects($this->any())
                     ->method('getIterator')
                     ->willReturn(
                         new \ArrayIterator([
@@ -239,25 +240,25 @@ class ClusterTypeTest extends TestCase
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('addEventListener')
             ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $config = $this->createMock(FormConfigInterface::class);
-                $config->expects(self::any())
+                $config->expects($this->any())
                     ->method('getType')
                     ->willReturn(
                         $this->createMock(ResolvedFormTypeInterface::class)
                     );
 
                 $form = $this->createMock(Form::class);
-                $form->expects(self::any())
+                $form->expects($this->any())
                     ->method('getConfig')
                     ->willReturn($config);
 
-                $form->expects(self::never())
+                $form->expects($this->never())
                     ->method('add');
 
-                $form->expects(self::any())
+                $form->expects($this->any())
                     ->method('getIterator')
                     ->willReturn(new \ArrayIterator([$form]));
 
@@ -282,25 +283,25 @@ class ClusterTypeTest extends TestCase
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('addEventListener')
             ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $config = $this->createMock(FormConfigInterface::class);
-                $config->expects(self::any())
+                $config->expects($this->any())
                     ->method('getType')
                     ->willReturn(
                         $this->createMock(ResolvedFormTypeInterface::class)
                     );
 
                 $form = $this->createMock(Form::class);
-                $form->expects(self::any())
+                $form->expects($this->any())
                     ->method('getConfig')
                     ->willReturn($config);
 
-                $form->expects(self::never())
+                $form->expects($this->never())
                     ->method('add');
 
-                $form->expects(self::any())
+                $form->expects($this->any())
                     ->method('getIterator')
                     ->willReturn(new \ArrayIterator([$form]));
 

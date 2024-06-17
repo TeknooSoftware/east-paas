@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
@@ -32,8 +33,8 @@ use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit
  */
+#[CoversClass(UnsetTimeLimit::class)]
 class UnsetTimeLimitTest extends TestCase
 {
     public function buildStep(): UnsetTimeLimit

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
@@ -38,15 +39,16 @@ use Teknoo\East\Common\Recipe\Step\LoadObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
 use Teknoo\East\Paas\Recipe\Step;
+use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\Recipe\RecipeInterface;
 use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint
- * @covers \Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait
  */
+#[CoversClass(AdditionalStepsTrait::class)]
+#[CoversClass(NewProjectEndPoint::class)]
 class NewProjectEndPointWithTemplateTest extends TestCase
 {
     use BaseCookbookTestTrait;

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Project;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Object\Environment;
@@ -33,8 +34,8 @@ use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment
  */
+#[CoversClass(GetEnvironment::class)]
 class GetEnvironmentTest extends TestCase
 {
     public function buildStep(): GetEnvironment
@@ -47,7 +48,7 @@ class GetEnvironmentTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
 
         $envName = 'dev';
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with([Environment::class => new Environment($envName)]);
 

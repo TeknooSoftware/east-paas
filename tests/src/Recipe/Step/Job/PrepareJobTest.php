@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -38,8 +39,8 @@ use Teknoo\Tests\East\Paas\ErrorFactory;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Job\PrepareJob
  */
+#[CoversClass(PrepareJob::class)]
 class PrepareJobTest extends TestCase
 {
     /**
@@ -74,7 +75,7 @@ class PrepareJobTest extends TestCase
         $job = $this->createMock(Job::class);
 
         $this->getDateTimeServiceMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('passMeTheDate')
             ->willReturnCallback(function (callable $callback) {
                 $callback(new \DateTime('2018-08-01'));
@@ -82,15 +83,15 @@ class PrepareJobTest extends TestCase
                 return $this->getDateTimeServiceMock();
             });
 
-        $project->expects(self::once())
+        $project->expects($this->once())
             ->method('__call')
             ->with('prepareJob', [$job, new \DateTime('2018-08-01'), $env]);
 
 
         $manager = $this->createMock(ManagerInterface::class);
-        $manager->expects(self::never())->method('stop');
+        $manager->expects($this->never())->method('stop');
         $client = $this->createMock(ClientInterface::class);
-        $client->expects(self::never())->method('acceptResponse');
+        $client->expects($this->never())->method('acceptResponse');
 
         self::assertInstanceOf(
             PrepareJob::class,
@@ -105,7 +106,7 @@ class PrepareJobTest extends TestCase
         $job = new Job();
 
         $this->getDateTimeServiceMock()
-            ->expects(self::any())
+            ->expects($this->any())
             ->method('passMeTheDate')
             ->willReturnCallback(function (callable $callback) {
                 $callback(new \DateTime('2018-08-01'));
@@ -113,15 +114,15 @@ class PrepareJobTest extends TestCase
                 return $this->getDateTimeServiceMock();
             });
 
-        $project->expects(self::once())
+        $project->expects($this->once())
             ->method('__call')
             ->with('prepareJob', [$job, new \DateTime('2018-08-01'), $env]);
 
 
         $manager = $this->createMock(ManagerInterface::class);
-        $manager->expects(self::once())->method('finish');
+        $manager->expects($this->once())->method('finish');
         $client = $this->createMock(ClientInterface::class);
-        $client->expects(self::once())->method('acceptResponse');
+        $client->expects($this->once())->method('acceptResponse');
 
         self::assertInstanceOf(
             PrepareJob::class,

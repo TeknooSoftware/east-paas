@@ -25,8 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use DateTime;
+use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionMethod;
+use ReflectionProperty;
+use RuntimeException;
+use stdClass;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\Account;
@@ -36,24 +43,30 @@ use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Cluster;
+use Teknoo\East\Paas\Object\Project\Draft;
+use Teknoo\East\Paas\Object\Project\Executable;
+use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\States\Exception\MethodNotImplemented;
+use Teknoo\States\Proxy\Exception\StateNotFound;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
+use Throwable;
+use TypeError;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Object\Project
- * @covers \Teknoo\East\Paas\Object\Project\Draft
- * @covers \Teknoo\East\Paas\Object\Project\Executable
- * @covers \Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait
  */
+#[CoversClass(ExportConfigurationsTrait::class)]
+#[CoversClass(Executable::class)]
+#[CoversClass(Draft::class)]
+#[CoversClass(Project::class)]
 class ProjectTest extends TestCase
 {
     use ObjectTestTrait;
 
     /**
      * @return Project
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function buildObject(): Project
     {
@@ -62,7 +75,7 @@ class ProjectTest extends TestCase
 
     public function testStatesListDeclaration()
     {
-        $rf = new \ReflectionMethod(Project::class, 'statesListDeclaration');
+        $rf = new ReflectionMethod(Project::class, 'statesListDeclaration');
         $rf->setAccessible(true);
         self::assertIsArray($rf->getClosure()());
     }
@@ -71,7 +84,7 @@ class ProjectTest extends TestCase
     {
         $object = $this->buildObject();
 
-        $rP = new \ReflectionProperty($object, 'account');
+        $rP = new ReflectionProperty($object, 'account');
         $rP->setAccessible(true);
 
         self::assertInstanceOf(
@@ -81,7 +94,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testGetAccount()
     {
@@ -94,7 +107,7 @@ class ProjectTest extends TestCase
 
     public function testGetAccountNoAccount()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         (new Project())->getAccount();
     }
 
@@ -104,7 +117,7 @@ class ProjectTest extends TestCase
         $object = $this->generateObjectPopulated(['name' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -123,7 +136,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetName()
     {
@@ -136,7 +149,7 @@ class ProjectTest extends TestCase
         $argument = 'fooBar';
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -148,12 +161,12 @@ class ProjectTest extends TestCase
 
     public function testSetNameExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setName(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setName(new stdClass());
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetPrefix()
     {
@@ -166,7 +179,7 @@ class ProjectTest extends TestCase
         $argument = 'fooBar';
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -178,8 +191,8 @@ class ProjectTest extends TestCase
 
     public function testSetPrefixExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setPrefix(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setPrefix(new stdClass());
     }
 
     public function testGetSourceRepository()
@@ -188,7 +201,7 @@ class ProjectTest extends TestCase
         $object = $this->generateObjectPopulated(['sourceRepository' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -199,7 +212,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetSourceRepository()
     {
@@ -212,7 +225,7 @@ class ProjectTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -224,8 +237,8 @@ class ProjectTest extends TestCase
 
     public function testSetSourceRepositoryExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setSourceRepository(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setSourceRepository(new stdClass());
     }
 
     public function testGetImagesRegistry()
@@ -234,7 +247,7 @@ class ProjectTest extends TestCase
         $object = $this->generateObjectPopulated(['imagesRegistry' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -245,7 +258,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetImagesRegistry()
     {
@@ -258,7 +271,7 @@ class ProjectTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -270,8 +283,8 @@ class ProjectTest extends TestCase
 
     public function testSetImagesRegistryExceptionOnBadArgument()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setImagesRegistry(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setImagesRegistry(new stdClass());
     }
 
     public function testGetClusters()
@@ -280,7 +293,7 @@ class ProjectTest extends TestCase
         $object = $this->generateObjectPopulated(['clusters' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -291,7 +304,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function testSetClusters()
     {
@@ -303,7 +316,7 @@ class ProjectTest extends TestCase
         );
 
         $form = $this->createMock(FormInterface::class);
-        $form->expects(self::once())
+        $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
@@ -315,8 +328,8 @@ class ProjectTest extends TestCase
 
     public function testSetClustersExceptionOnBadArgument()
     {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->setClusters(new \stdClass());
+        $this->expectException(Throwable::class);
+        $this->buildObject()->setClusters(new stdClass());
     }
 
     public function testUpdateClusters()
@@ -331,30 +344,30 @@ class ProjectTest extends TestCase
     public function testRefuseExecution()
     {
         $job = $this->createMock(Job::class);
-        $job->expects(self::once())->method('addToHistory')->with('foo', new \DateTimeImmutable('2018-05-01'), true);
+        $job->expects($this->once())->method('addToHistory')->with('foo', new DateTimeImmutable('2018-05-01'), true);
 
         self::assertInstanceOf(
             Project::class,
-            $this->buildObject()->refuseExecution($job, 'foo', new \DateTimeImmutable('2018-05-01'))
+            $this->buildObject()->refuseExecution($job, 'foo', new DateTimeImmutable('2018-05-01'))
         );
     }
 
     public function testRefuseExecutionBadJob()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->refuseExecution(new \stdClass(), 'foo', new \DateTimeImmutable('2018-05-01'));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->refuseExecution(new stdClass(), 'foo', new DateTimeImmutable('2018-05-01'));
     }
 
     public function testRefuseExecutionBadError()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->refuseExecution($this->createMock(Job::class), new \stdClass(), new \DateTimeImmutable('2018-05-01'));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->refuseExecution($this->createMock(Job::class), new stdClass(), new DateTimeImmutable('2018-05-01'));
     }
 
     public function testRefuseExecutionBadDate()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->refuseExecution($this->createMock(Job::class), 'foo', new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->refuseExecution($this->createMock(Job::class), 'foo', new stdClass());
     }
 
     public function testPrepareJobProjectIsDraft()
@@ -363,9 +376,9 @@ class ProjectTest extends TestCase
         $env = $this->createMock(Environment::class);
         $account = $this->createMock(Account::class);
 
-        $account->expects(self::never())->method('__call')->with('canIPrepareNewJob');
-        $job->expects(self::once())->method('addToHistory')
-            ->with('teknoo.east.paas.error.project.not_executable', $date = new \DateTime('2018-05-01'), true);
+        $account->expects($this->never())->method('__call')->with('canIPrepareNewJob');
+        $job->expects($this->once())->method('addToHistory')
+            ->with('teknoo.east.paas.error.project.not_executable', $date = new DateTime('2018-05-01'), true);
 
         self::assertInstanceOf(
             Project::class,
@@ -376,17 +389,17 @@ class ProjectTest extends TestCase
 
     public function testPrepareJobProjectIsDraftBadJob()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
-            ->prepareJob(new \stdClass(), $this->createMock(Environment::class));
+            ->prepareJob(new stdClass(), $this->createMock(Environment::class));
     }
 
 
     public function testPrepareJobProjectIsDraftBadDate()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
-            ->prepareJob($this->createMock(Job::class), $this->createMock(Environment::class), new \stdClass());
+            ->prepareJob($this->createMock(Job::class), $this->createMock(Environment::class), new stdClass());
     }
 
     public function testPrepareJobProjectIsExecutable()
@@ -397,8 +410,8 @@ class ProjectTest extends TestCase
 
         $project = (new Project($account));
 
-        $account->expects(self::once())->method('__call')->with('canIPrepareNewJob', [$project, $job, $date = new \DateTime('2018-05-01'), $env]);
-        $job->expects(self::never())->method('addToHistory');
+        $account->expects($this->once())->method('__call')->with('canIPrepareNewJob', [$project, $job, $date = new DateTime('2018-05-01'), $env]);
+        $job->expects($this->never())->method('addToHistory');
 
         self::assertInstanceOf(
             Project::class,
@@ -412,29 +425,29 @@ class ProjectTest extends TestCase
 
     public function testPrepareJobProjectIsExecutableBadJob()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
-            ->prepareJob(new \stdClass(), new \DateTime('2018-05-01'), $this->createMock(Environment::class));
+            ->prepareJob(new stdClass(), new DateTime('2018-05-01'), $this->createMock(Environment::class));
     }
 
     public function testPrepareJobProjectIsExecutableBadEnv()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
-            ->prepareJob($this->createMock(Job::class), new \DateTime('2018-05-01'), new \stdClass());
+            ->prepareJob($this->createMock(Job::class), new DateTime('2018-05-01'), new stdClass());
     }
 
     public function testPrepareJobProjectIsExecutableBadDate()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-            ->prepareJob($this->createMock(Job::class), new \stdClass(), $this->createMock(Environment::class));
+            ->prepareJob($this->createMock(Job::class), new stdClass(), $this->createMock(Environment::class));
     }
 
     public function testConfigureProjectIsDraft()
@@ -455,28 +468,28 @@ class ProjectTest extends TestCase
         $cluster1 = $this->createMock(Cluster::class);
         $cluster2 = $this->createMock(Cluster::class);
 
-        $cluster1->expects(self::once())->method('prepareJobForEnvironment')
+        $cluster1->expects($this->once())->method('prepareJobForEnvironment')
             ->with($job, $env);
-        $cluster2->expects(self::once())->method('prepareJobForEnvironment')
+        $cluster2->expects($this->once())->method('prepareJobForEnvironment')
             ->with($job, $env);
 
         $project = $this->buildObject();
-        $job->expects(self::atLeastOnce())
+        $job->expects($this->atLeastOnce())
             ->method('setProject')
             ->with($project)
             ->willReturnSelf();
 
-        $job->expects(self::atLeastOnce())
+        $job->expects($this->atLeastOnce())
             ->method('setEnvironment')
             ->with($env)
             ->willReturnSelf();
 
-        $job->expects(self::atLeastOnce())
+        $job->expects($this->atLeastOnce())
             ->method('setSourceRepository')
             ->with($sourceRepository)
             ->willReturnSelf();
 
-        $job->expects(self::atLeastOnce())
+        $job->expects($this->atLeastOnce())
             ->method('setImagesRegistry')
             ->with($imagesRegistry)
             ->willReturnSelf();
@@ -487,7 +500,7 @@ class ProjectTest extends TestCase
                 ->setSourceRepository($sourceRepository)
                 ->setImagesRegistry($imagesRegistry)
                 ->setClusters([$cluster1, $cluster2])
-                ->configure($job, new \DateTime('2018-05-01'), $env)
+                ->configure($job, new DateTime('2018-05-01'), $env)
         );
     }
 
@@ -501,33 +514,33 @@ class ProjectTest extends TestCase
         $cluster2 = $this->createMock(Cluster::class);
         $quotas = ['compute' => ['cpu' => 5]];
 
-        $cluster1->expects(self::once())->method('prepareJobForEnvironment')
+        $cluster1->expects($this->once())->method('prepareJobForEnvironment')
             ->with($job, $env);
-        $cluster2->expects(self::once())->method('prepareJobForEnvironment')
+        $cluster2->expects($this->once())->method('prepareJobForEnvironment')
             ->with($job, $env);
 
         $project = $this->buildObject();
-        $job->expects(self::atLeastOnce())
+        $job->expects($this->atLeastOnce())
             ->method('setProject')
             ->with($project)
             ->willReturnSelf();
 
-        $job->expects(self::atLeastOnce())
+        $job->expects($this->atLeastOnce())
             ->method('setEnvironment')
             ->with($env)
             ->willReturnSelf();
 
-        $job->expects(self::atLeastOnce())
+        $job->expects($this->atLeastOnce())
             ->method('setSourceRepository')
             ->with($sourceRepository)
             ->willReturnSelf();
 
-        $job->expects(self::atLeastOnce())
+        $job->expects($this->atLeastOnce())
             ->method('setImagesRegistry')
             ->with($imagesRegistry)
             ->willReturnSelf();
 
-        $job->expects(self::once())
+        $job->expects($this->once())
             ->method('setQuotas')
             ->with($quotas)
             ->willReturnSelf();
@@ -538,38 +551,38 @@ class ProjectTest extends TestCase
                 ->setSourceRepository($sourceRepository)
                 ->setImagesRegistry($imagesRegistry)
                 ->setClusters([$cluster1, $cluster2])
-                ->configure($job, new \DateTime('2018-05-01'), $env, $quotas)
+                ->configure($job, new DateTime('2018-05-01'), $env, $quotas)
         );
     }
 
     public function testConfigureProjectIsExecutableBadJob()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
-            ->configure(new \stdClass(), new \DateTime('2018-05-01'), $this->createMock(Environment::class));
+            ->configure(new stdClass(), new DateTime('2018-05-01'), $this->createMock(Environment::class));
     }
 
     public function testConfigureProjectIsExecutableBadEnv()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
-            ->configure($this->createMock(Job::class), new \DateTime('2018-05-01'), new \stdClass());
+            ->configure($this->createMock(Job::class), new DateTime('2018-05-01'), new stdClass());
     }
 
     public function testConfigureProjectIsExecutableBadDate()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
-            ->configure($this->createMock(Job::class), new \stdClass(), $this->createMock(Environment::class));
+            ->configure($this->createMock(Job::class), new stdClass(), $this->createMock(Environment::class));
     }
 
     public function testListMeYourEnvironments()
@@ -588,35 +601,35 @@ class ProjectTest extends TestCase
 
     public function testListMeYourEnvironmentsBadCallable()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()
             ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
             ->setClusters([$this->createMock(Cluster::class)])
             ->listMeYourEnvironments(
-            new \stdClass()
+            new stdClass()
         );
     }
 
     public function testExportToMeDataBadNormalizer()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->exportToMeData(new \stdClass(), []);
+        $this->expectException(TypeError::class);
+        $this->buildObject()->exportToMeData(new stdClass(), []);
     }
 
     public function testExportToMeDataBadContext()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
             $this->createMock(EastNormalizerInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => Project::class,
@@ -636,7 +649,7 @@ class ProjectTest extends TestCase
     public function testExportToMeCrud()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => Project::class,

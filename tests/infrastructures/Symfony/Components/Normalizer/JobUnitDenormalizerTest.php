@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Normalizer;
 
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -46,8 +47,8 @@ use function in_array;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer
  */
+#[CoversClass(JobUnitDenormalizer::class)]
 class JobUnitDenormalizerTest extends TestCase
 {
     public function buildNormalizer(): JobUnitDenormalizer
@@ -135,7 +136,7 @@ class JobUnitDenormalizerTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects(self::any())
+        $denormalizer->expects($this->any())
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 null,
@@ -179,7 +180,7 @@ class JobUnitDenormalizerTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects(self::any())
+        $denormalizer->expects($this->any())
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -223,7 +224,7 @@ class JobUnitDenormalizerTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects(self::any())
+        $denormalizer->expects($this->any())
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -267,7 +268,7 @@ class JobUnitDenormalizerTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects(self::any())
+        $denormalizer->expects($this->any())
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -311,7 +312,7 @@ class JobUnitDenormalizerTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects(self::any())
+        $denormalizer->expects($this->any())
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -355,7 +356,7 @@ class JobUnitDenormalizerTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects(self::any())
+        $denormalizer->expects($this->any())
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -397,7 +398,7 @@ class JobUnitDenormalizerTest extends TestCase
     public function testDenormalize()
     {
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects(self::exactly(5))
+        $denormalizer->expects($this->exactly(5))
             ->method('denormalize')
             ->willReturnCallback(
                 $this->buildParametersVerification(

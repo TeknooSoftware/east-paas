@@ -25,9 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
+use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
@@ -35,9 +37,9 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
  * @author      Richard Déloge <richard@teknoo.software>
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Object\XRegistryAuth
- * @covers \Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait
  */
+#[CoversClass(ExportConfigurationsTrait::class)]
+#[CoversClass(XRegistryAuth::class)]
 class XRegistryAuthTest extends TestCase
 {
     use ObjectTestTrait;
@@ -132,7 +134,7 @@ class XRegistryAuthTest extends TestCase
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => XRegistryAuth::class,
@@ -156,7 +158,7 @@ class XRegistryAuthTest extends TestCase
     public function testExportToMeApi()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => XRegistryAuth::class,

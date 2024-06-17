@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Liveness\TimeoutService;
 use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
@@ -35,8 +36,8 @@ use function set_time_limit;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit
  */
+#[CoversClass(SetTimeLimit::class)]
 class SetTimeLimitTest extends TestCase
 {
     public function buildStep(): SetTimeLimit

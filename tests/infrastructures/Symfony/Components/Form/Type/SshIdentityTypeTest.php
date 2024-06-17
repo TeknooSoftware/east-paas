@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use ArrayIterator;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
@@ -38,8 +39,8 @@ use Teknoo\East\Paas\Object\SshIdentity;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers      \Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\SshIdentityType
  */
+#[CoversClass(SshIdentityType::class)]
 class SshIdentityTypeTest extends TestCase
 {
     use FormTestTrait;
@@ -82,7 +83,7 @@ class SshIdentityTypeTest extends TestCase
             privateKey: 'barFoo',
         );
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
                 $children = [];
@@ -91,7 +92,7 @@ class SshIdentityTypeTest extends TestCase
                 $formArray['clear'] = false;
                 foreach ($formArray as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
-                    $mock->expects(self::once())->method('getData')->willReturn($value);
+                    $mock->expects($this->once())->method('getData')->willReturn($value);
                     $children[$name] = $mock;
                 }
 

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Doctrine\Form\Type;
 
 use Doctrine\Bundle\MongoDBBundle\Form\Type\DocumentType;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
@@ -45,8 +46,8 @@ use Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type\FormTestTrait;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers      \Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType
  */
+#[CoversClass(AccountType::class)]
 class AccountTypeTest extends TestCase
 {
     use FormTestTrait;
@@ -109,24 +110,24 @@ class AccountTypeTest extends TestCase
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('add')
             ->willReturnCallback(
                 function ($child, $type, array $options = array()) use ($builder) {
                     if (DocumentType::class == $type && isset($options['query_builder'])) {
                         $qBuilder = $this->createMock(Builder::class);
-                        $qBuilder->expects(self::once())
+                        $qBuilder->expects($this->once())
                             ->method('field')
                             ->with('deletedAt')
                             ->willReturnSelf();
 
-                        $qBuilder->expects(self::once())
+                        $qBuilder->expects($this->once())
                             ->method('equals')
                             ->with(null)
                             ->willReturnSelf();
 
                         $repository = $this->createMock(DocumentRepository::class);
-                        $repository->expects(self::once())
+                        $repository->expects($this->once())
                             ->method('createQueryBuilder')
                             ->willReturn($qBuilder);
 
@@ -137,7 +138,7 @@ class AccountTypeTest extends TestCase
                 }
             );
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('addEventListener')
             ->willReturnCallback(function ($name, $callable) use ($builder) {
                 $form = $this->createMock(FormInterface::class);
@@ -147,14 +148,14 @@ class AccountTypeTest extends TestCase
                 return $builder;
             });
 
-        $builder->expects(self::any())
+        $builder->expects($this->any())
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
                 foreach ($this->getFormArray() as $name=>$value) {
                     $mock = $this->createMock(FormInterface::class);
-                    $mock->expects(self::any())->method('getData')->willReturn($value);
-                    $mock->expects(self::any())->method('getName')->willReturn($name);
+                    $mock->expects($this->any())->method('getData')->willReturn($value);
+                    $mock->expects($this->any())->method('getName')->willReturn($name);
 
                     $children[$name] = $mock;
                 }

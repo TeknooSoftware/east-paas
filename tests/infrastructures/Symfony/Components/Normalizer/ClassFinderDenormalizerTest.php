@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingNormalier;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer;
@@ -33,8 +34,8 @@ use Teknoo\East\Paas\Object\Environment;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ClassFinderDenormalizer
  */
+#[CoversClass(ClassFinderDenormalizer::class)]
 class ClassFinderDenormalizerTest extends TestCase
 {
     public function buildNormalizer(): ClassFinderDenormalizer
@@ -102,7 +103,7 @@ class ClassFinderDenormalizerTest extends TestCase
         $env = new Environment();
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects(self::once())
+        $denormalizer->expects($this->once())
             ->method('denormalize')
             ->with(['name'=>'foo'], Environment::class)
             ->willReturn($env);

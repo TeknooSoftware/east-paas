@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
@@ -37,8 +38,8 @@ use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureImagesBuilder;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\ConfigureImagesBuilder
  */
+#[CoversClass(ConfigureImagesBuilder::class)]
 class ConfigureImagesBuilderTest extends TestCase
 {
     /**
@@ -101,11 +102,11 @@ class ConfigureImagesBuilderTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with([ImageBuilder::class => $this->getBuilderMock()]);
 
-        $job->expects(self::any())
+        $job->expects($this->any())
             ->method('configureImageBuilder')
             ->willReturnCallback(
                 function ($builder, PromiseInterface $promise) use ($job) {
@@ -127,7 +128,7 @@ class ConfigureImagesBuilderTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
-        $job->expects(self::any())
+        $job->expects($this->any())
             ->method('configureImageBuilder')
             ->willReturnCallback(
                 function ($builder, PromiseInterface $promise) use ($job) {
@@ -137,10 +138,10 @@ class ConfigureImagesBuilderTest extends TestCase
                 }
             );
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

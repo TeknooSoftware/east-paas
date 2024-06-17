@@ -25,23 +25,29 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionProperty;
+use stdClass;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
+use Teknoo\East\Paas\Infrastructures\Git\Hook\Generator;
+use Teknoo\East\Paas\Infrastructures\Git\Hook\Running;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Infrastructures\Git\Hook;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use TypeError;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Git\Hook
- * @covers \Teknoo\East\Paas\Infrastructures\Git\Hook\Generator
- * @covers \Teknoo\East\Paas\Infrastructures\Git\Hook\Running
  */
+#[CoversClass(Running::class)]
+#[CoversClass(Generator::class)]
+#[CoversClass(Hook::class)]
 class HookTest extends TestCase
 {
     /**
@@ -55,7 +61,7 @@ class HookTest extends TestCase
             $this->process = $this->createMock(Process::class);
 
             $this->process
-                ->expects(self::any())
+                ->expects($this->any())
                 ->method('isSuccessFul')
                 ->willReturn($isSuccessFull);
         }
@@ -76,19 +82,19 @@ class HookTest extends TestCase
 
     public function testSetContextBadJobUnit()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildHook()->setContext(
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(JobWorkspaceInterface::class)
         );
     }
 
     public function testSetContextBadWorkspace()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildHook()->setContext(
             $this->createMock(JobUnitInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
@@ -105,8 +111,8 @@ class HookTest extends TestCase
 
     public function testSetPathBadPath()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildHook()->setPath(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildHook()->setPath(new stdClass());
     }
 
     public function testSetPath()
@@ -119,14 +125,14 @@ class HookTest extends TestCase
 
     public function testSetOptionsBadOptions()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildHook()->setOptions(new \stdClass(), $this->createMock(PromiseInterface::class));
+        $this->expectException(TypeError::class);
+        $this->buildHook()->setOptions(new stdClass(), $this->createMock(PromiseInterface::class));
     }
 
     public function testSetOptionsBadPromise()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildHook()->setOptions([], new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildHook()->setOptions([], new stdClass());
     }
     
     public function testSetOptions()
@@ -141,8 +147,8 @@ class HookTest extends TestCase
 
     public function testRunBadPromise()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildHook()->run(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildHook()->run(new stdClass());
     }
 
     public function testRunWithSsh()
@@ -150,7 +156,7 @@ class HookTest extends TestCase
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('writeFile')
             ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace) {
                 self::assertEquals('private.key', $file->getName());
@@ -162,7 +168,7 @@ class HookTest extends TestCase
                 return $workspace;
             });
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(function (callable $callback) use ($workspace) {
                 $callback('foo', 'bar');
@@ -171,11 +177,11 @@ class HookTest extends TestCase
             });
 
         $this->getProcessMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('setWorkingDirectory');
 
         $this->getProcessMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('run');
 
         self::assertInstanceOf(
@@ -204,8 +210,8 @@ class HookTest extends TestCase
         );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('fail');
-        $promise->expects(self::once())->method('success');
+        $promise->expects($this->never())->method('fail');
+        $promise->expects($this->once())->method('success');
 
         self::assertInstanceOf(
             Hook::class,
@@ -218,18 +224,18 @@ class HookTest extends TestCase
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
-        $workspace->expects(self::never())
+        $workspace->expects($this->never())
             ->method('writeFile');
 
-        $workspace->expects(self::never())
+        $workspace->expects($this->never())
             ->method('runInRepositoryPath');
 
         $this->getProcessMock()
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('setWorkingDirectory');
 
         $this->getProcessMock()
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('run');
 
         self::assertInstanceOf(
@@ -257,8 +263,8 @@ class HookTest extends TestCase
         );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('fail');
-        $promise->expects(self::never())->method('success');
+        $promise->expects($this->once())->method('fail');
+        $promise->expects($this->never())->method('success');
 
         self::assertInstanceOf(
             Hook::class,
@@ -271,10 +277,10 @@ class HookTest extends TestCase
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
-        $workspace->expects(self::never())
+        $workspace->expects($this->never())
             ->method('writeFile');
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(function (callable $callback) use ($workspace) {
                 $callback('foo', 'bar');
@@ -283,11 +289,11 @@ class HookTest extends TestCase
             });
 
         $this->getProcessMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('setWorkingDirectory');
 
         $this->getProcessMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('run');
 
         self::assertInstanceOf(
@@ -315,8 +321,8 @@ class HookTest extends TestCase
         );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::never())->method('fail');
-        $promise->expects(self::once())->method('success');
+        $promise->expects($this->never())->method('fail');
+        $promise->expects($this->once())->method('success');
 
         self::assertInstanceOf(
             Hook::class,
@@ -330,7 +336,7 @@ class HookTest extends TestCase
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('writeFile')
             ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace) {
                 self::assertEquals('private.key', $file->getName());
@@ -342,7 +348,7 @@ class HookTest extends TestCase
                 return $workspace;
             });
 
-        $workspace->expects(self::once())
+        $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(function (callable $callback) use ($workspace) {
                 $callback('foo', 'bar');
@@ -351,11 +357,11 @@ class HookTest extends TestCase
             });
 
         $this->getProcessMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('setWorkingDirectory');
 
         $this->getProcessMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('run');
 
         self::assertInstanceOf(
@@ -384,8 +390,8 @@ class HookTest extends TestCase
         );
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects(self::once())->method('fail');
-        $promise->expects(self::never())->method('success');
+        $promise->expects($this->once())->method('fail');
+        $promise->expects($this->never())->method('success');
 
         self::assertInstanceOf(
             Hook::class,
@@ -398,7 +404,7 @@ class HookTest extends TestCase
         $hook = $this->buildHook();
         $hook2 = clone $hook;
 
-        $rp = new \ReflectionProperty(Hook::class, 'gitProcess');
+        $rp = new ReflectionProperty(Hook::class, 'gitProcess');
         $rp->setAccessible(true);
         self::assertNotSame($this->getProcessMock(), $rp->getValue($hook2));
         self::assertSame($this->getProcessMock(), $rp->getValue($hook));

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\History;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory
  */
+#[CoversClass(DeserializeHistory::class)]
 class DeserializeHistoryTest extends TestCase
 {
     /**
@@ -89,7 +90,7 @@ class DeserializeHistoryTest extends TestCase
         $client = $this->createMock(ClientInterface::class);
 
         $this->getDeserializer()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('deserialize')
             ->with('fooBar', History::class, 'json')
             ->willReturnCallback(
@@ -106,7 +107,7 @@ class DeserializeHistoryTest extends TestCase
                 }
             );
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with([History::class => $history])
             ->willReturnSelf();
@@ -124,7 +125,7 @@ class DeserializeHistoryTest extends TestCase
 
         $error = new \Exception('fooBar');
         $this->getDeserializer()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('deserialize')
             ->with('fooBar', History::class, 'json')
             ->willReturnCallback(
@@ -141,10 +142,10 @@ class DeserializeHistoryTest extends TestCase
                 }
             );
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('error');
 
         self::assertInstanceOf(

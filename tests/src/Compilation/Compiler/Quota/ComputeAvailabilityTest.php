@@ -25,15 +25,17 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler\Quota;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\AbstractAvailability;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\ComputeAvailability;
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\Compiler\Quota\ComputeAvailability
- * @covers \Teknoo\East\Paas\Compilation\Compiler\Quota\AbstractAvailability
  */
+#[CoversClass(AbstractAvailability::class)]
+#[CoversClass(ComputeAvailability::class)]
 class ComputeAvailabilityTest extends AbstractTestAvailability
 {
     protected function createAvailability(string $capacity, string $require, bool $isSoft): AvailabilityInterface

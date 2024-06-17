@@ -61,7 +61,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $objectManager = $this->createMock(ObjectManager::class);
-        $objectManager->expects(self::any())->method('getRepository')->with($objectClass)->willReturn(
+        $objectManager->expects($this->any())->method('getRepository')->with($objectClass)->willReturn(
             $this->createMock(DocumentRepository::class)
         );
 
@@ -78,7 +78,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $objectManager = $this->createMock(ObjectManager::class);
-        $objectManager->expects(self::any())->method('getRepository')->with($objectClass)->willReturn(
+        $objectManager->expects($this->any())->method('getRepository')->with($objectClass)->willReturn(
             $this->createMock(\DateTime::class)
         );
 

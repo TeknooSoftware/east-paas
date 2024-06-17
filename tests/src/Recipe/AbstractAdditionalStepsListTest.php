@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList;
 use Teknoo\Recipe\Bowl\BowlInterface;
@@ -32,8 +33,8 @@ use Teknoo\Recipe\Bowl\BowlInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList
  */
+#[CoversClass(AbstractAdditionalStepsList::class)]
 class AbstractAdditionalStepsListTest extends TestCase
 {
     public function testAddBadPriority()

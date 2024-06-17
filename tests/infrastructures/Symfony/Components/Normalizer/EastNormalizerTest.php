@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingNormalizer;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -34,8 +35,8 @@ use Teknoo\East\Paas\Object\Job;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer
  */
+#[CoversClass(EastNormalizer::class)]
 class EastNormalizerTest extends TestCase
 {
     public function buildNormalizer(): EastNormalizer
@@ -57,7 +58,7 @@ class EastNormalizerTest extends TestCase
         $returnValue = ['foo' => 'bar'];
         $context = ['context' => 'hello'];
 
-        $object->expects(self::once())
+        $object->expects($this->once())
             ->method('exportToMeData')
             ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue) {
                 self::assertInstanceOf(\Teknoo\East\FoundationBundle\Normalizer\EastNormalizer::class, $nrmlz);
@@ -86,7 +87,7 @@ class EastNormalizerTest extends TestCase
         ];
         $context = ['context' => 'hello', 'add' => ['bar' => 'foo']];
 
-        $object->expects(self::once())
+        $object->expects($this->once())
             ->method('exportToMeData')
             ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue) {
                 self::assertInstanceOf(\Teknoo\East\FoundationBundle\Normalizer\EastNormalizer::class, $nrmlz);
@@ -112,7 +113,7 @@ class EastNormalizerTest extends TestCase
         $returnValue = ['foo' => 'bar'];
         $context = ['context' => 'hello'];
 
-        $object->expects(self::once())
+        $object->expects($this->once())
             ->method('exportToMeData')
             ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue) {
                 self::assertInstanceOf(EastNormalizer::class, $nrmlz);
@@ -125,7 +126,7 @@ class EastNormalizerTest extends TestCase
             });
 
         $normalizer2 = $this->createMock(NormalizerInterface::class);
-        $normalizer2->expects(self::never())
+        $normalizer2->expects($this->never())
             ->method('normalize');
 
         $normalizer->setNormalizer($normalizer2);
@@ -145,7 +146,7 @@ class EastNormalizerTest extends TestCase
         $returnValue2 = ['foo' => 'bar', 'bar' => '2018-05-01 02:03:04'];
         $context = ['context' => 'hello'];
 
-        $object->expects(self::once())
+        $object->expects($this->once())
             ->method('exportToMeData')
             ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue) {
                 self::assertInstanceOf(EastNormalizer::class, $nrmlz);
@@ -158,7 +159,7 @@ class EastNormalizerTest extends TestCase
             });
 
         $normalizer2 = $this->createMock(NormalizerInterface::class);
-        $normalizer2->expects(self::once())
+        $normalizer2->expects($this->once())
             ->method('normalize')
             ->with($date, 'json', $context)
             ->willReturn('2018-05-01 02:03:04');

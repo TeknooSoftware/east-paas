@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment\Expose;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
@@ -32,8 +33,8 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress
  */
+#[CoversClass(Ingress::class)]
 class IngressTest extends TestCase
 {
     private function buildObject($internal = false): Ingress

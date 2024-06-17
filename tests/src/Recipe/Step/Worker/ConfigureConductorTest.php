@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Worker\ConfigureConductor
  */
+#[CoversClass(ConfigureConductor::class)]
 class ConfigureConductorTest extends TestCase
 {
     /**
@@ -98,12 +99,12 @@ class ConfigureConductorTest extends TestCase
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
-        $this->getConductorMock()->expects(self::once())
+        $this->getConductorMock()->expects($this->once())
             ->method('configure')
             ->with($job, $workspace)
             ->willReturnSelf();
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with([ConductorInterface::class => $this->getConductorMock()]);
 

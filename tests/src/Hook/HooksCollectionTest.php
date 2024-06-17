@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Hook;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Hook\HooksCollection;
@@ -32,8 +33,8 @@ use Teknoo\East\Paas\Hook\HooksCollection;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Hook\HooksCollection
  */
+#[CoversClass(HooksCollection::class)]
 class HooksCollectionTest extends TestCase
 {
     public function testGetIterator()

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -34,8 +35,8 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Object\Environment
  */
+#[CoversClass(Environment::class)]
 class EnvironmentTest extends TestCase
 {
     use ObjectTestTrait;
@@ -67,8 +68,8 @@ class EnvironmentTest extends TestCase
     public function testIsEqualToInvalidBadClass()
     {
         $promiseInvalid = $this->createMock(PromiseInterface::class);
-        $promiseInvalid->expects(self::never())->method('success');
-        $promiseInvalid->expects(self::once())->method('fail')
+        $promiseInvalid->expects($this->never())->method('success');
+        $promiseInvalid->expects($this->once())->method('fail')
             ->with(new \LogicException('teknoo.east.paas.error.environment.not_equal'));
 
         self::assertInstanceOf(
@@ -81,8 +82,8 @@ class EnvironmentTest extends TestCase
     public function testIsEqualToInvalid()
     {
         $promiseInvalid = $this->createMock(PromiseInterface::class);
-        $promiseInvalid->expects(self::never())->method('success');
-        $promiseInvalid->expects(self::once())->method('fail')
+        $promiseInvalid->expects($this->never())->method('success');
+        $promiseInvalid->expects($this->once())->method('fail')
             ->with(new \LogicException('teknoo.east.paas.error.environment.not_equal'));
 
         self::assertInstanceOf(
@@ -95,8 +96,8 @@ class EnvironmentTest extends TestCase
     {
         $env = new Environment('fooBar');
         $promiseInvalid = $this->createMock(PromiseInterface::class);
-        $promiseInvalid->expects(self::once())->method('success')->with($env);
-        $promiseInvalid->expects(self::never())->method('fail');
+        $promiseInvalid->expects($this->once())->method('success')->with($env);
+        $promiseInvalid->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             Environment::class,
@@ -128,7 +129,7 @@ class EnvironmentTest extends TestCase
     public function testExportToMe()
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
-        $normalizer->expects(self::once())
+        $normalizer->expects($this->once())
             ->method('injectData')
             ->with([
                 '@class' => Environment::class,

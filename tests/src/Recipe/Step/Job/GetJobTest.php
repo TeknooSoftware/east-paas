@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -36,8 +37,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @covers \Teknoo\East\Paas\Recipe\Step\Job\GetJob
  */
+#[CoversClass(GetJob::class)]
 class GetJobTest extends TestCase
 {
     /**
@@ -73,7 +74,7 @@ class GetJobTest extends TestCase
         $jobId = 'dev';
 
         $this->getJobLoaderMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('load')
             ->with($jobId)
             ->willReturnCallback(function ($criteria, PromiseInterface $promise) use ($job) {
@@ -82,7 +83,7 @@ class GetJobTest extends TestCase
                 return $this->getJobLoaderMock();
             });
 
-        $manager->expects(self::once())
+        $manager->expects($this->once())
             ->method('updateWorkPlan')
             ->with([Job::class => $job]);
 
@@ -101,7 +102,7 @@ class GetJobTest extends TestCase
         $exception = new \DomainException();
 
         $this->getJobLoaderMock()
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('load')
             ->with($jobId)
             ->willReturnCallback(function ($criteria, PromiseInterface $promise) use ($exception) {
@@ -110,7 +111,7 @@ class GetJobTest extends TestCase
                 return $this->getJobLoaderMock();
             });
 
-        $manager->expects(self::never())
+        $manager->expects($this->never())
             ->method('updateWorkPlan');
 
         $this->expectException(\DomainException::class);
