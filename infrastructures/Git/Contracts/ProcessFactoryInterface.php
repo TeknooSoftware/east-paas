@@ -23,14 +23,13 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts;
+namespace Teknoo\East\Paas\Infrastructures\Git\Contracts;
 
 use Symfony\Component\Process\Process;
 
 /**
- *
- *  Interface defining a factory in the DI to create, on demand, a new `Symfony Process` instance,
- *  needed to execute and manipulate ond wrap a builder command in a deployment
+ * Interface defining a factory in the DI to create, on demand, a new `Symfony Process` instance,
+ * needed to execute and manipulate git commandd
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -39,8 +38,5 @@ use Symfony\Component\Process\Process;
  */
 interface ProcessFactoryInterface
 {
-    /**
-     * @param string[] $command
-     */
-    public function __invoke(array $command, string $cwd, float $timeout): Process;
+    public function __invoke(string $commandLine): Process;
 }

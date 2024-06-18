@@ -77,9 +77,14 @@ class Running implements StateInterface
 
             $this->getWorkspace()->runInRepositoryPath(
                 function ($repositoryPath, $workspacePath) use ($options, $promise): void {
-                    $this->gitProcess->setWorkingDirectory($workspacePath);
+                    $gitProcess = ($this->gitProcessFactory)(
+                        'git clone -q --recurse-submodules '
+                            . '-b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
+                    );
 
-                    $this->gitProcess->setEnv([
+                    $gitProcess->setWorkingDirectory($workspacePath);
+
+                    $gitProcess->setEnv([
                         'GIT_SSH_COMMAND' => "ssh -i {$workspacePath}{$this->privateKeyFilename} "
                             . " -o IdentitiesOnly=yes -o StrictHostKeyChecking=no",
                         'JOB_CLONE_DESTINATION' => $repositoryPath . $options['path'],
@@ -87,12 +92,12 @@ class Running implements StateInterface
                         'JOB_BRANCH' => ($options['branch'] ?? 'main'),
                     ]);
 
-                    $this->gitProcess->run();
+                    $gitProcess->run();
 
-                    if (!$this->gitProcess->isSuccessFul()) {
+                    if (!$gitProcess->isSuccessFul()) {
                         $promise->fail(
                             new RuntimeException(
-                                "Error while initializing repository: {$this->gitProcess->getErrorOutput()}"
+                                "Error while initializing repository: {$gitProcess->getErrorOutput()}"
                             )
                         );
                     } else {

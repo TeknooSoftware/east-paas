@@ -28,8 +28,10 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 use DI\Container;
 use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent;
+use Teknoo\East\Paas\Infrastructures\Git\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Git\Hook;
 
 /**
@@ -46,18 +48,29 @@ class ContainerTest extends TestCase
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Git/di.php');
-        $containerDefinition->addDefinitions([
-            'teknoo.east.paas.worker.add_history_pattern' => 'foo',
-            'teknoo.east.paas.vendor.guzzle.verify_ssl' => true,
-        ]);
 
         return $containerDefinition->build();
+    }
+
+    public function testFactory()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.git.cloning.timeout', 1.0);
+
+        self::assertInstanceOf(
+            ProcessFactoryInterface::class,
+            $f = $container->get(ProcessFactoryInterface::class)
+        );
+
+        self::assertInstanceOf(
+            Process::class,
+            $f('foo'),
+        );
     }
 
     public function testCloningAgentInterface()
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             CloningAgentInterface::class,
@@ -68,7 +81,6 @@ class ContainerTest extends TestCase
     public function testGitCloningAgent()
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             CloningAgent::class,
@@ -79,7 +91,6 @@ class ContainerTest extends TestCase
     public function testGitCloningAgentWithTimeout()
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
         $container->set('teknoo.east.paas.git.cloning.timeout', 240);
 
         self::assertInstanceOf(
@@ -91,7 +102,6 @@ class ContainerTest extends TestCase
     public function testHook()
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         self::assertInstanceOf(
             Hook::class,
@@ -102,7 +112,6 @@ class ContainerTest extends TestCase
     public function testHookWithTimeout()
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
         $container->set('teknoo.east.paas.git.cloning.timeout', 240);
 
         self::assertInstanceOf(

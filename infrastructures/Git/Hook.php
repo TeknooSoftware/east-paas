@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Git;
 
 use SensitiveParameter;
 use Symfony\Component\Process\Process;
+use Teknoo\East\Paas\Infrastructures\Git\Contracts\ProcessFactoryInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
@@ -68,7 +69,7 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
     private ?JobWorkspaceInterface $workspace = null;
 
     public function __construct(
-        private Process $gitProcess,
+        private ProcessFactoryInterface $gitProcessFactory,
         private readonly string $privateKeyFilename,
     ) {
         $this->uniqueConstructorCheck();
@@ -123,8 +124,6 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
         $this->path = null;
         $this->jobUnit = null;
         $this->workspace = null;
-
-        $this->gitProcess = clone $this->gitProcess;
 
         $this->updateStates();
     }

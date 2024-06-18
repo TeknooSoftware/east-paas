@@ -28,47 +28,48 @@ namespace Teknoo\East\Paas\Infrastructures\Git;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
+use Teknoo\East\Paas\Infrastructures\Git\Contracts\ProcessFactoryInterface;
 
 use function DI\get;
 
 return [
-    CloningAgentInterface::class => get(CloningAgent::class),
-    CloningAgent::class => static function (ContainerInterface $container): CloningAgent {
-        $process = Process::fromShellCommandline(
-            'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
-        );
-
+    ProcessFactoryInterface::class => static function (ContainerInterface $container): ProcessFactoryInterface {
         $timeout = 0.0;
         if ($container->has('teknoo.east.paas.git.cloning.timeout')) {
             $timeout = (float) $container->get('teknoo.east.paas.git.cloning.timeout');
         }
 
-        $process->setTimeout(
-            $timeout,
-        );
+        return new class ($timeout) implements ProcessFactoryInterface {
+            public function __construct(
+                private float $timeout,
+            ) {
+            }
 
+            public function __invoke(string $commandLine): Process
+            {
+                $process = Process::fromShellCommandline(
+                    'git clone -q --recurse-submodules '
+                    . '-b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
+                );
+
+                $process->setTimeout($this->timeout);
+
+                return $process;
+            }
+        };
+    },
+
+    CloningAgentInterface::class => get(CloningAgent::class),
+    CloningAgent::class => static function (ContainerInterface $container): CloningAgent {
         return new CloningAgent(
-            $process,
+            $container->get(ProcessFactoryInterface::class),
             'private.key',
         );
     },
 
     Hook::class => static function (ContainerInterface $container): Hook {
-        $process = Process::fromShellCommandline(
-            'git clone -q --recurse-submodules -b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
-        );
-
-        $timeout = 0.0;
-        if ($container->has('teknoo.east.paas.git.cloning.timeout')) {
-            $timeout = (float) $container->get('teknoo.east.paas.git.cloning.timeout');
-        }
-
-        $process->setTimeout(
-            $timeout,
-        );
-
         return new Hook(
-            $process,
+            $container->get(ProcessFactoryInterface::class),
             'private.key',
         );
     },

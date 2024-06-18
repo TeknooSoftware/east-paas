@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding;
 
 use RuntimeException;
-use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\InvalidArgumentException;
 use Teknoo\Recipe\Promise\PromiseInterface;

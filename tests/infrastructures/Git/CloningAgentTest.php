@@ -40,6 +40,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running;
+use Teknoo\East\Paas\Infrastructures\Git\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\SshIdentity;
@@ -58,34 +59,37 @@ use TypeError;
 class CloningAgentTest extends TestCase
 {
     /**
+     * @var ProcessFactoryInterface
+     */
+    private $processFactory;
+
+    /**
      * @var Process
      */
     private $process;
 
-    public function getProcessMock(bool $isSuccessFull = true): MockObject&Process
+    public function getProcessFactoryMock(bool $isSuccessFull = true): MockObject&ProcessFactoryInterface
     {
-        if (!$this->process instanceof Process) {
-            $this->process = $this->createMock(Process::class);
-
-            $this->process
+        if (!$this->processFactory instanceof ProcessFactoryInterface) {
+            $this->processFactory = $this->createMock(ProcessFactoryInterface::class);
+            $this->processFactory
                 ->expects($this->any())
-                ->method('setWorkingDirectory')
-                ->willReturnSelf();
+                ->method('__invoke')
+                ->willReturn($this->getProcessMock());
 
-            $this->process
-                ->expects($this->any())
-                ->method('setEnv')
-                ->willReturnSelf();
-
-            $this->process
-                ->expects($this->any())
-                ->method('run')
-                ->willReturn(0);
-
-            $this->process
+            $this->getProcessMock()
                 ->expects($this->any())
                 ->method('isSuccessFul')
                 ->willReturn($isSuccessFull);
+        }
+
+        return $this->processFactory;
+    }
+
+    public function getProcessMock(): MockObject&Process
+    {
+        if (!$this->process instanceof Process) {
+            $this->process = $this->createMock(Process::class);
         }
 
         return $this->process;
@@ -97,7 +101,7 @@ class CloningAgentTest extends TestCase
     public function buildAgent(): CloningAgent
     {
         return new CloningAgent(
-            $this->getProcessMock(),
+            $this->getProcessFactoryMock(),
             'private.key',
         );
     }
@@ -430,7 +434,7 @@ class CloningAgentTest extends TestCase
             $url = 'git@foo:bar'
         );
 
-        $this->getProcessMock(false);
+        $this->getProcessFactoryMock(false);
 
         $agent = $this->buildAgent();
 
@@ -454,9 +458,6 @@ class CloningAgentTest extends TestCase
         $agent = $this->buildAgent();
         $agent2 = clone $agent;
 
-        $rp = new ReflectionProperty(CloningAgent::class, 'gitProcess');
-        $rp->setAccessible(true);
-        self::assertNotSame($this->getProcessMock(), $rp->getValue($agent2));
-        self::assertSame($this->getProcessMock(), $rp->getValue($agent));
+        self::assertNotSame($agent, $agent2);
     }
 }

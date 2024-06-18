@@ -31,6 +31,7 @@ use LogicException;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\CloningAgent\Running;
+use Teknoo\East\Paas\Infrastructures\Git\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Git\Exception\CloningErrorException;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Object\GitRepository;
@@ -73,6 +74,8 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
+    private ?Process $gitProcess = null;
+
     private ?GitRepository $sourceRepository = null;
 
     private ?SshIdentity $sshIdentity = null;
@@ -80,7 +83,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     private ?JobWorkspaceInterface $workspace = null;
 
     public function __construct(
-        private Process $gitProcess,
+        private ProcessFactoryInterface $gitProcessFactory,
         private readonly string $privateKeyFilename,
     ) {
         $this->uniqueConstructorCheck();
@@ -107,6 +110,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     {
         return [
             (new Property(Running::class))
+                ->with('gitProcess', new Property\IsNotEmpty())
                 ->with('sourceRepository', new Property\IsNotEmpty())
                 ->with('workspace', new Property\IsNotEmpty()),
 
@@ -121,8 +125,6 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     {
         $this->sourceRepository = null;
         $this->workspace = null;
-
-        $this->gitProcess = clone $this->gitProcess;
 
         $this->updateStates();
     }
@@ -152,6 +154,10 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         }
 
         $that = clone $this;
+        $that->gitProcess = ($this->gitProcessFactory)(
+            'git clone -q --recurse-submodules '
+                . '-b "${:JOB_BRANCH}" "${:JOB_REPOSITORY}" "${:JOB_CLONE_DESTINATION}"'
+        );
         $that->sourceRepository = $repository;
         if ($identity instanceof SshIdentity) {
             $that->sshIdentity = $identity;

@@ -31,6 +31,7 @@ use ReflectionProperty;
 use stdClass;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Workspace\Visibility;
+use Teknoo\East\Paas\Infrastructures\Git\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Git\Hook\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\Hook\Running;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -51,19 +52,37 @@ use TypeError;
 class HookTest extends TestCase
 {
     /**
+     * @var ProcessFactoryInterface
+     */
+    private $processFactory;
+
+    /**
      * @var Process
      */
     private $process;
 
-    public function getProcessMock(bool $isSuccessFull = true): MockObject&Process
+    public function getProcessFactoryMock(bool $isSuccessFull = true): MockObject&ProcessFactoryInterface
     {
-        if (!$this->process instanceof Process) {
-            $this->process = $this->createMock(Process::class);
+        if (!$this->processFactory instanceof ProcessFactoryInterface) {
+            $this->processFactory = $this->createMock(ProcessFactoryInterface::class);
+            $this->processFactory
+                ->expects($this->any())
+                ->method('__invoke')
+                ->willReturn($this->getProcessMock());
 
-            $this->process
+            $this->getProcessMock()
                 ->expects($this->any())
                 ->method('isSuccessFul')
                 ->willReturn($isSuccessFull);
+        }
+
+        return $this->processFactory;
+    }
+
+    public function getProcessMock(): MockObject&Process
+    {
+        if (!$this->process instanceof Process) {
+            $this->process = $this->createMock(Process::class);
         }
 
         return $this->process;
@@ -75,7 +94,7 @@ class HookTest extends TestCase
     public function buildHook(): Hook
     {
         return new Hook(
-            $this->getProcessMock(),
+            $this->getProcessFactoryMock(),
             'private.key',
         );
     }
@@ -332,7 +351,7 @@ class HookTest extends TestCase
 
     public function testRunWithError()
     {
-        $this->getProcessMock(false);
+        $this->getProcessFactoryMock(false);
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
@@ -404,9 +423,6 @@ class HookTest extends TestCase
         $hook = $this->buildHook();
         $hook2 = clone $hook;
 
-        $rp = new ReflectionProperty(Hook::class, 'gitProcess');
-        $rp->setAccessible(true);
-        self::assertNotSame($this->getProcessMock(), $rp->getValue($hook2));
-        self::assertSame($this->getProcessMock(), $rp->getValue($hook));
+        self::assertNotSame($hook, $hook2);
     }
 }
