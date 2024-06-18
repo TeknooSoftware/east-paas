@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.4.2] - 2024-06-18
+### Stable Release
+- Use ProcessFactoryInterface for Git process like for Image and Project's building tools to avoid clone process
+
 ## [3.4.1] - 2024-05-31
 ### Stable Release
 - Fix deprecated : replace `Symfony\Component\HttpKernel\DependencyInjection\Extension`
