@@ -130,7 +130,7 @@ class ContainerTest extends TestCase
             unset($_ENV[$privateKeyRSAPassphraaseEnvKey]);
         }
 
-        $_ENV[$publicKeyRSAEnvKey] = __DIR__ . '/../../var/keys/public.pem';
+        $_ENV[$publicKeyRSAEnvKey] = __DIR__ . '/../../var/keys/rsa.public.pem';
 
         $service = $container->get(EncryptionInterface::class);
         self::assertInstanceOf(EncryptionInterface::class, $service);
