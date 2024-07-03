@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler\Quota;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\AbstractAvailability;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\MemoryAvailability;
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
@@ -71,5 +72,27 @@ class MemoryAvailabilityTest extends AbstractTestAvailability
     protected function getReserveValueCapacity(): string
     {
         return '10000Ki';
+    }
+
+    public static function requiresProvider(): array
+    {
+        return [
+            ['10Ki', '4Ki'],
+            ['10Mi', '4Mi'],
+            ['10Gi', '4Gi'],
+            ['10Ti', '4Ti'],
+            ['10Pi', '4Pi'],
+        ];
+    }
+
+    #[DataProvider('requiresProvider')]
+    public function testOtherUpdates(string $capacity, string $result)
+    {
+        self::assertEquals(
+            $result,
+            $this->createAvailability($capacity, $capacity, false)->update(
+                $this->createAvailability('40%', '20%', true),
+            )->getCapacity()
+        );
     }
 }

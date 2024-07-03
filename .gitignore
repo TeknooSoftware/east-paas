@@ -19,3 +19,7 @@ composer.lock
 /.phpunit.cache/
 /tests/var/keys/private.pem
 /tests/var/keys/public.pem
+/tests/var/keys/dsa.private.pem
+/tests/var/keys/dsa.public.pem
+/tests/var/keys/rsa.private.pem
+/tests/var/keys/rsa.public.pem
