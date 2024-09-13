@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
@@ -45,7 +46,7 @@ use function func_get_args;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(MergeTrait::class)]
+#[CoversTrait(MergeTrait::class)]
 #[CoversClass(ServiceCompiler::class)]
 class ServiceCompilerTest extends TestCase
 {

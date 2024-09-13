@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
@@ -39,7 +40,7 @@ use TypeError;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(ExportConfigurationsTrait::class)]
+#[CoversTrait(ExportConfigurationsTrait::class)]
 #[CoversClass(ClusterCredentials::class)]
 class ClusterCredentialsTest extends TestCase
 {

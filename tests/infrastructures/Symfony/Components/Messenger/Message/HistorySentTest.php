@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageTrait;
@@ -34,7 +35,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(MessageTrait::class)]
+#[CoversTrait(MessageTrait::class)]
 #[CoversClass(HistorySent::class)]
 class HistorySentTest extends TestCase
 {

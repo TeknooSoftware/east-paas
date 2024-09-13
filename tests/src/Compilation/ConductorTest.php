@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -59,8 +60,8 @@ use TypeError;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(YamlTrait::class)]
-#[CoversClass(ArrayTrait::class)]
+#[CoversTrait(YamlTrait::class)]
+#[CoversTrait(ArrayTrait::class)]
 #[CoversClass(Running::class)]
 #[CoversClass(Generator::class)]
 #[CoversClass(Conductor::class)]

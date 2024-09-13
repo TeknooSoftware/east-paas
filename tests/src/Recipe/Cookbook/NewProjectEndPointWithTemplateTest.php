@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
@@ -47,7 +48,7 @@ use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(AdditionalStepsTrait::class)]
+#[CoversTrait(AdditionalStepsTrait::class)]
 #[CoversClass(NewProjectEndPoint::class)]
 class NewProjectEndPointWithTemplateTest extends TestCase
 {

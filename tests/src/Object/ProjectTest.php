@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Object;
 use DateTime;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
@@ -56,7 +57,7 @@ use TypeError;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(ExportConfigurationsTrait::class)]
+#[CoversTrait(ExportConfigurationsTrait::class)]
 #[CoversClass(Executable::class)]
 #[CoversClass(Draft::class)]
 #[CoversClass(Project::class)]

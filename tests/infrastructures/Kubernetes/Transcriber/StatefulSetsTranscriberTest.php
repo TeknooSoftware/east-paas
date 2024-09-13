@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
@@ -60,8 +61,8 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(PodsTranscriberTrait::class)]
-#[CoversClass(CommonTrait::class)]
+#[CoversTrait(PodsTranscriberTrait::class)]
+#[CoversTrait(CommonTrait::class)]
 #[CoversClass(StatefulSetsTranscriber::class)]
 class StatefulSetsTranscriberTest extends TestCase
 {
@@ -254,6 +255,7 @@ class StatefulSetsTranscriberTest extends TestCase
             ->willReturnOnConsecutiveCalls(
                 null,
                 new Deployment(['metadata' => ['name' => 'foo']]),
+                null,
             );
 
         $pRepo->expects($this->any(3))

@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.4.3] - 2024-09-13
+### Stable Release
+- Switch to PHPUnit 11
+- Fix coverage
+- Update PHPUnit Configuration
+- Update devs libraries
+
 ## [3.4.2] - 2024-06-18
 ### Stable Release
 - Use ProcessFactoryInterface for Git process like for Image and Project's building tools to avoid clone process
