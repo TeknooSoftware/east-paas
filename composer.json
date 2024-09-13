@@ -42,7 +42,7 @@
     "require-dev": {
         "roave/security-advisories": "dev-latest",
         "phpunit/phpunit": "^11.3.5",
-        "squizlabs/php_codesniffer": "^3.102",
+        "squizlabs/php_codesniffer": "^3.10.2",
         "phpstan/phpstan": "^1.12.3",
         "phpstan/extension-installer": "^1.4.3",
         "symfony/property-access": "^6.3||^7.0",
