@@ -46,7 +46,7 @@ interface JobWorkspaceInterface extends ImmutableInterface
 
     public function clean(): JobWorkspaceInterface;
 
-    public function writeFile(FileInterface $file, callable $return = null): JobWorkspaceInterface;
+    public function writeFile(FileInterface $file, ?callable $return = null): JobWorkspaceInterface;
 
     public function prepareRepository(CloningAgentInterface $cloningAgent): JobWorkspaceInterface;
 

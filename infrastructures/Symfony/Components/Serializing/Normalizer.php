@@ -48,7 +48,7 @@ class Normalizer implements NormalizerInterface
     public function normalize(
         mixed $object,
         PromiseInterface $promise,
-        string $format = null,
+        ?string $format = null,
         array $context = []
     ): NormalizerInterface {
         try {

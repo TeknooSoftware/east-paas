@@ -45,7 +45,7 @@ interface NormalizerInterface
     public function normalize(
         #[SensitiveParameter] mixed $object,
         PromiseInterface $promise,
-        string $format = null,
+        ?string $format = null,
         array $context = []
     ): NormalizerInterface;
 }

@@ -53,7 +53,7 @@ class ProjectWriter implements WriterInterface
 
     public function save(
         ObjectInterface $object,
-        PromiseInterface $promise = null,
+        ?PromiseInterface $promise = null,
         ?bool $preferRealDateOnUpdate = null,
     ): WriterInterface {
         $this->persist($object, $promise, $preferRealDateOnUpdate);

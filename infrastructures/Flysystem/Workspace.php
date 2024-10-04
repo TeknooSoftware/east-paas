@@ -157,7 +157,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
         return $this;
     }
 
-    public function writeFile(FileInterface $file, callable $return = null): JobWorkspaceInterface
+    public function writeFile(FileInterface $file, ?callable $return = null): JobWorkspaceInterface
     {
         $path = $this->getWorkspacePath();
         $name =  $file->getName();

@@ -56,7 +56,7 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
     public function denormalize(
         mixed $data,
         string $class,
-        string $format = null,
+        ?string $format = null,
         array $context = []
     ): array | object {
         if (
@@ -77,8 +77,12 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
     /**
      * @param array<string, mixed> $context
      */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
+    public function supportsDenormalization(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = []
+    ): bool {
         return $this->denormalizer instanceof DenormalizerInterface
             && is_array($data)
             && !empty($data['@class'])

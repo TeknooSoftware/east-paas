@@ -150,8 +150,12 @@ class JobUnitDenormalizer implements DenormalizerInterface
     /**
      * @param array<string, mixed> $context
      */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
+    public function supportsDenormalization(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = []
+    ): bool {
         return is_array($data) && JobUnitInterface::class === $type;
     }
 
