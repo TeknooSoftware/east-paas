@@ -26,13 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Repository\ServiceRepository;
@@ -42,7 +40,6 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(CommonTrait::class)]
 #[CoversClass(ServiceTranscriber::class)]
 class ServiceTranscriberTest extends TestCase
 {

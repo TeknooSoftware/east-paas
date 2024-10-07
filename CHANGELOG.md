@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.4.4] - 2024-10-07
+### Stable Release
+- Update dev lib requirements
+
 ## [3.4.3] - 2024-09-13
 ### Stable Release
 - Switch to PHPUnit 11

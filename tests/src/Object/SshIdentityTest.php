@@ -26,19 +26,16 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\SshIdentity;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(ExportConfigurationsTrait::class)]
 #[CoversClass(SshIdentity::class)]
 class SshIdentityTest extends TestCase
 {

@@ -27,7 +27,6 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use DateTime;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
@@ -42,7 +41,6 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Common\Object\User as BaseUser;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\Proxy\Exception\StateNotFound;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
@@ -52,7 +50,6 @@ use TypeError;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(ExportConfigurationsTrait::class)]
 #[CoversClass(Inactive::class)]
 #[CoversClass(Active::class)]
 #[CoversClass(Account::class)]

@@ -27,7 +27,6 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -50,8 +49,6 @@ use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Parser\ArrayTrait;
-use Teknoo\East\Paas\Parser\YamlTrait;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use TypeError;
@@ -60,8 +57,6 @@ use TypeError;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(YamlTrait::class)]
-#[CoversTrait(ArrayTrait::class)]
 #[CoversClass(Running::class)]
 #[CoversClass(Generator::class)]
 #[CoversClass(Conductor::class)]

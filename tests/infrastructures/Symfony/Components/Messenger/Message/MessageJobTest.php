@@ -26,16 +26,13 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageJob;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(MessageTrait::class)]
 #[CoversClass(MessageJob::class)]
 class MessageJobTest extends TestCase
 {

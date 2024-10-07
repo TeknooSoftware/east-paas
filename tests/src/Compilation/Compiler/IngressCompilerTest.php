@@ -28,12 +28,10 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
-use Teknoo\East\Paas\Compilation\Compiler\MergeTrait;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -43,7 +41,6 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(MergeTrait::class)]
 #[CoversClass(IngressCompiler::class)]
 class IngressCompilerTest extends TestCase
 {

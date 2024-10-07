@@ -29,7 +29,6 @@ use ArrayObject;
 use DateTime;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
@@ -49,7 +48,6 @@ use Teknoo\East\Paas\Object\Job\Validating;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Cluster;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\Proxy\Exception\MethodNotImplemented;
 use Teknoo\States\Proxy\Exception\StateNotFound;
@@ -63,7 +61,6 @@ use function iterator_to_array;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(ExportConfigurationsTrait::class)]
 #[CoversClass(Terminated::class)]
 #[CoversClass(Validating::class)]
 #[CoversClass(Pending::class)]

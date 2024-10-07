@@ -27,7 +27,6 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
@@ -46,9 +45,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CommonTrait;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\PodsTranscriberTrait;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\Kubernetes\Repository\DeploymentRepository;
@@ -58,8 +55,6 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(PodsTranscriberTrait::class)]
-#[CoversTrait(CommonTrait::class)]
 #[CoversClass(DeploymentTranscriber::class)]
 class DeploymentTranscriberTest extends TestCase
 {

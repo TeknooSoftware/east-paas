@@ -26,13 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 use TypeError;
 
@@ -40,7 +38,6 @@ use TypeError;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversTrait(ExportConfigurationsTrait::class)]
 #[CoversClass(ClusterCredentials::class)]
 class ClusterCredentialsTest extends TestCase
 {
