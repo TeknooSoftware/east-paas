@@ -33,11 +33,11 @@
         "ext-libxml": "*",
         "php-di/php-di": "^7.0.6",
         "psr/http-client": "^1.0.3",
-        "teknoo/immutable": "^3.0.17",
-        "teknoo/states": "^6.3",
-        "teknoo/recipe": "^5.1",
-        "teknoo/east-foundation": "^7.7",
-        "teknoo/east-common": "^2.11.3"
+        "teknoo/immutable": "^3.0.18",
+        "teknoo/states": "^6.4.1",
+        "teknoo/recipe": "^5.1.2",
+        "teknoo/east-foundation": "^7.8.1",
+        "teknoo/east-common": "^2.11.6"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -81,8 +81,8 @@
         "symfony/validator": "^6.3||^7",
         "symfony/var-exporter": "^6.3||^7",
         "symfony/yaml": "^6.3||^7",
-        "teknoo/bridge-phpdi-symfony": "^6.0.5",
-        "teknoo/kubernetes-client": "^1.5.1"
+        "teknoo/bridge-phpdi-symfony": "^6.1",
+        "teknoo/kubernetes-client": "^1.5.4"
     },
     "autoload": {
         "psr-4": {

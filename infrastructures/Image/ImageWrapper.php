@@ -49,10 +49,11 @@ use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
 
 use function array_pop;
+use function bin2hex;
 use function count;
 use function explode;
 use function rtrim;
-use function uniqid;
+use function random_bytes;
 
 /**
  * Service able to take a BuildableInterface instance and convert it / build them to OCI images and
@@ -252,7 +253,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                     [],
                     $workingPath,
                     $volumeUpdated->getUrl(),
-                    $volumeUpdated->getName() . $this->hash(uniqid() . $volumeUpdated->getName()),
+                    $volumeUpdated->getName() . $this->hash(bin2hex(random_bytes(23)) . $volumeUpdated->getName()),
                     'volume'
                 );
 

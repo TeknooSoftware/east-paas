@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [3.4.5] - 2024-10-14
+### Stable Release
+- Update requirement libraries
+- Use `random_bytes` instead of `uniqid`
+
 ## [3.4.4] - 2024-10-07
 ### Stable Release
 - Update dev lib requirements
