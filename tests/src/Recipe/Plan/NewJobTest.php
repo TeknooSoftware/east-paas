@@ -23,14 +23,14 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
+namespace Teknoo\Tests\East\Paas\Recipe\Plan;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
-use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
+use Teknoo\East\Paas\Recipe\Plan\NewJob;
 use Teknoo\East\Paas\Recipe\Step\Job\CreateNewJob;
 use Teknoo\East\Paas\Recipe\Step\Job\PrepareJob;
 use Teknoo\East\Paas\Recipe\Step\Job\SaveJob;
@@ -42,9 +42,9 @@ use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
-use Teknoo\Recipe\CookbookInterface;
+use Teknoo\Recipe\PlanInterface;
 use Teknoo\Recipe\RecipeInterface;
-use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
+use Teknoo\Tests\Recipe\Plan\BasePlanTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -53,9 +53,9 @@ use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 #[CoversClass(NewJob::class)]
 class NewJobTest extends TestCase
 {
-    use BaseCookbookTestTrait;
+    use BasePlanTestTrait;
 
-    public function buildCookbook(): CookbookInterface
+    public function buildPlan(): PlanInterface
     {
         return new NewJob(
             $this->createMock(RecipeInterface::class),
@@ -68,18 +68,10 @@ class NewJobTest extends TestCase
             $this->createMock(PrepareJob::class),
             $this->createMock(SaveJob::class),
             $this->createMock(SerializeJob::class),
-            [
-                24 => static function () {},
-                12 => static function () {},
-            ],
             $this->createMock(DispatchJobInterface::class),
             $this->createMock(SendJobInterface::class),
             $this->createMock(UnsetTimeLimit::class),
             $this->createMock(DispatchError::class),
-            [
-                24 => static function () {},
-                12 => static function () {},
-            ],
         );
     }
 }

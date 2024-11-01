@@ -23,10 +23,10 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Recipe\Cookbook;
+namespace Teknoo\East\Paas\Recipe\Plan;
 
 use Psr\Http\Message\MessageInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
@@ -48,15 +48,14 @@ use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
 use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
-use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\Recipe\Bowl\Bowl;
 use Teknoo\Recipe\Bowl\BowlInterface;
-use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
+use Teknoo\Recipe\Plan\EditablePlanTrait;
 use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
- * Cookbook to run a created job via the cookbook NewJob, aka a project deployment.
+ * Plan to run a created job via the plan NewJob, aka a project deployment.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -65,12 +64,8 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class RunJob implements RunJobInterface
 {
-    use BaseCookbookTrait;
-    use AdditionalStepsTrait;
+    use EditablePlanTrait;
 
-    /**
-     * @param iterable<int, callable> $additionalSteps
-     */
     public function __construct(
         RecipeInterface $recipe,
         private readonly DispatchHistoryInterface $stepDispatchHistory,
@@ -91,12 +86,10 @@ class RunJob implements RunJobInterface
         private readonly ConfigureClusterClient $stepConfigureClusterClient,
         private readonly Deploying $stepDeploying,
         private readonly Exposing $stepExposing,
-        iterable $additionalSteps,
         private readonly DispatchResultInterface $stepDispatchResult,
         private readonly UnsetTimeLimit $stepUnsetTimeLimit,
         private readonly SendHistoryInterface $stepSendHistoryInterface,
     ) {
-        $this->additionalSteps = $additionalSteps;
         $this->fill($recipe);
     }
 
@@ -310,8 +303,6 @@ class RunJob implements RunJobInterface
             RunJobInterface::STEP_EXPOSING,
         );
 
-        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
-
         //Final
         $recipe = $recipe->cook(
             $this->stepDispatchResult,
@@ -335,6 +326,7 @@ class RunJob implements RunJobInterface
         );
 
         $recipe = $recipe->onError(new Bowl($this->stepUnsetTimeLimit, []));
+
         return $recipe->onError(new Bowl($this->stepDispatchResult, ['result' => 'exception']));
     }
 }

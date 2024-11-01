@@ -23,19 +23,19 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Recipe\Cookbook;
+namespace Teknoo\East\Paas\Contracts\Recipe\Plan;
 
-use Teknoo\Recipe\CookbookInterface;
+use Teknoo\Recipe\EditablePlanInterface;
 
 /**
- * Cookbook to run a created job via the cookbook NewJob, aka a project deployment.
+ * Plan to run a created job via the plan NewJob, aka a project deployment.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface RunJobInterface extends CookbookInterface
+interface RunJobInterface extends EditablePlanInterface
 {
     //Startup Run
     final public const STEP_CONFIG_PING = 5;

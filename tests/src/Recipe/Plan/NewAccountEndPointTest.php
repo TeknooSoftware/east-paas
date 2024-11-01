@@ -23,43 +23,43 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
+namespace Teknoo\Tests\East\Paas\Recipe\Plan;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Recipe\Cookbook\AbstractEditObjectEndPoint;
+use Teknoo\East\Paas\Recipe\Plan\NewAccountEndPoint;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
-use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
+use Teknoo\East\Common\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\RenderFormInterface;
-use Teknoo\East\Common\Recipe\Step\LoadObject;
+use Teknoo\East\Common\Recipe\Step\CreateObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
 use Teknoo\East\Paas\Recipe\Step;
 use Teknoo\Recipe\RecipeInterface;
-use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
+use Teknoo\Tests\Recipe\Plan\BasePlanTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(AbstractEditObjectEndPoint::class)]
-class EditPaaSObjectEndPointWithMappingsTest extends TestCase
+#[CoversClass(NewAccountEndPoint::class)]
+class NewAccountEndPointTest extends TestCase
 {
-    use BaseCookbookTestTrait;
+    use BasePlanTestTrait;
 
     private ?RecipeInterface $recipe = null;
 
-    private ?LoadObject $loadObject = null;
-
-    private ?ObjectAccessControlInterface $objectAccessControl = null;
-
     private ?FormHandlingInterface $formHandling = null;
+
+    private ?CreateObject $createObject = null;
 
     private ?FormProcessingInterface $formProcessing = null;
 
     private ?SaveObject $saveObject = null;
+
+    private ?RedirectClientInterface $redirectClient = null;
 
     private ?RenderFormInterface $renderForm = null;
 
@@ -78,18 +78,6 @@ class EditPaaSObjectEndPointWithMappingsTest extends TestCase
     }
 
     /**
-     * @return LoadObject|MockObject
-     */
-    public function getLoadObject(): LoadObject
-    {
-        if (null === $this->loadObject) {
-            $this->loadObject = $this->createMock(LoadObject::class);
-        }
-
-        return $this->loadObject;
-    }
-
-    /**
      * @return FormHandlingInterface|MockObject
      */
     public function getFormHandling(): FormHandlingInterface
@@ -99,6 +87,18 @@ class EditPaaSObjectEndPointWithMappingsTest extends TestCase
         }
 
         return $this->formHandling;
+    }
+
+    /**
+     * @return CreateObject|MockObject
+     */
+    public function getCreateObject(): CreateObject
+    {
+        if (null === $this->createObject) {
+            $this->createObject = $this->createMock(CreateObject::class);
+        }
+
+        return $this->createObject;
     }
 
     /**
@@ -126,6 +126,18 @@ class EditPaaSObjectEndPointWithMappingsTest extends TestCase
     }
 
     /**
+     * @return RedirectClientInterface|MockObject
+     */
+    public function getRedirectClient(): RedirectClientInterface
+    {
+        if (null === $this->redirectClient) {
+            $this->redirectClient = $this->createMock(RedirectClientInterface::class);
+        }
+
+        return $this->redirectClient;
+    }
+
+    /**
      * @return RenderFormInterface|MockObject
      */
     public function getRenderForm(): RenderFormInterface
@@ -149,49 +161,17 @@ class EditPaaSObjectEndPointWithMappingsTest extends TestCase
         return $this->renderError;
     }
 
-    /**
-     * @return ObjectAccessControlInterface|MockObject
-     */
-    public function getObjectAccessControl(): ObjectAccessControlInterface
+    public function buildPlan(): NewAccountEndPoint
     {
-        if (null === $this->objectAccessControl) {
-            $this->objectAccessControl = $this->createMock(ObjectAccessControlInterface::class);
-        }
-
-        return $this->objectAccessControl;
-    }
-
-    public function buildCookbook(): AbstractEditObjectEndPoint
-    {
-        return new class(
+        return new NewAccountEndPoint(
             $this->getRecipe(),
-            $this->getLoadObject(),
+            $this->getCreateObject(),
             $this->getFormHandling(),
             $this->getFormProcessing(),
             $this->getSaveObject(),
+            $this->getRedirectClient(),
             $this->getRenderForm(),
             $this->getRenderError(),
-            $this->getObjectAccessControl(),
-            [
-                static function () {},
-                new class {
-                    public function __invoke() {}
-                },
-                [
-                    new class {
-                        public function foo() {}
-                    },
-                    'foo',
-                ],
-                new Step(
-                    static function () {},
-                    ['foo' => 'bar']
-                ),
-            ],
-            'foo.template',
-            ['foo' => 'bar']
-        ) extends AbstractEditObjectEndPoint {
-
-        };
+        );
     }
 }

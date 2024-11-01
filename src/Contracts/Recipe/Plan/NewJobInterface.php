@@ -23,18 +23,18 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Recipe\Step\Additional;
+namespace Teknoo\East\Paas\Contracts\Recipe\Plan;
 
-use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
+use Teknoo\Recipe\EditablePlanInterface;
 
 /**
- * To define additional steps in NewProjectEndPoint Cookbook.
+ * Plan to create a new job, aka a new deployment from a project, but not run it.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface NewProjectEndPointStepsInterface extends AdditionalStepsInterface
+interface NewJobInterface extends EditablePlanInterface
 {
 }

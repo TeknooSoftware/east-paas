@@ -23,13 +23,13 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
+namespace Teknoo\Tests\East\Paas\Recipe\Plan;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
-use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
+use Teknoo\East\Paas\Recipe\Plan\AddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
 use Teknoo\East\Paas\Recipe\Step\History\ReceiveHistory;
@@ -40,9 +40,9 @@ use Teknoo\East\Paas\Recipe\Step\Misc\Ping;
 use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
-use Teknoo\Recipe\CookbookInterface;
+use Teknoo\Recipe\PlanInterface;
 use Teknoo\Recipe\RecipeInterface;
-use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
+use Teknoo\Tests\Recipe\Plan\BasePlanTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
@@ -51,9 +51,9 @@ use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
 #[CoversClass(AddHistory::class)]
 class AddHistoryTest extends TestCase
 {
-    use BaseCookbookTestTrait;
+    use BasePlanTestTrait;
 
-    public function buildCookbook(): CookbookInterface
+    public function buildPlan(): PlanInterface
     {
         return new AddHistory(
             $this->createMock(RecipeInterface::class),
@@ -65,10 +65,6 @@ class AddHistoryTest extends TestCase
             $this->createMock(GetJob::class),
             $this->createMock(StepAddHistory::class),
             $this->createMock(SaveJob::class),
-            [
-                24 => static function () {},
-                12 => static function () {},
-            ],
             $this->createMock(SendHistoryInterface::class),
             $this->createMock(UnsetTimeLimit::class),
             $this->createMock(DispatchError::class),

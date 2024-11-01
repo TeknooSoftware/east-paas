@@ -23,21 +23,20 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Recipe\Cookbook;
+namespace Teknoo\East\Paas\Recipe\Plan;
 
-use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\RenderFormInterface;
-use Teknoo\East\Common\Recipe\Cookbook\EditObjectEndPoint;
+use Teknoo\East\Common\Recipe\Plan\EditObjectEndPoint;
 use Teknoo\East\Common\Recipe\Step\LoadObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
- * Abstract cookbook to implement HTTP Endpoint
+ * Abstract plan to implement HTTP Endpoint
  * Used directly in the DI to create `EditAccountEndPointInterface` and `EditProjectEndPointInterface`
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -47,11 +46,6 @@ use Teknoo\Recipe\RecipeInterface;
  */
 abstract class AbstractEditObjectEndPoint extends EditObjectEndPoint
 {
-    use AdditionalStepsTrait;
-
-    /**
-     * @param iterable<int, callable> $additionalSteps
-     */
     public function __construct(
         RecipeInterface $recipe,
         LoadObject $loadObject,
@@ -61,7 +55,6 @@ abstract class AbstractEditObjectEndPoint extends EditObjectEndPoint
         RenderFormInterface $renderForm,
         RenderError $renderError,
         ?ObjectAccessControlInterface $objectAccessControl = null,
-        iterable $additionalSteps = [],
         ?string $defaultErrorTemplate = null,
         array $loadObjectWiths = [],
     ) {
@@ -78,7 +71,5 @@ abstract class AbstractEditObjectEndPoint extends EditObjectEndPoint
             defaultErrorTemplate: $defaultErrorTemplate,
             loadObjectWiths: $loadObjectWiths,
         );
-
-        $this->additionalSteps = $additionalSteps;
     }
 }

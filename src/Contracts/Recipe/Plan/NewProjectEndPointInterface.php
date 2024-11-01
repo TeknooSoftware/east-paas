@@ -23,18 +23,18 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Recipe\Step\Additional;
+namespace Teknoo\East\Paas\Contracts\Recipe\Plan;
 
-use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
+use Teknoo\Recipe\EditablePlanInterface;
 
 /**
- * To define additional error handlers steps in NewJob Cookbook.
+ * Plan to create an new project on the platform via an HTTP Endpoint.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface NewJobErrorsHandlersInterface extends AdditionalStepsInterface
+interface NewProjectEndPointInterface extends EditablePlanInterface
 {
 }

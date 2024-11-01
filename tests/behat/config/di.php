@@ -17,6 +17,7 @@ use Psr\Http\Client\ClientInterface as PsrClient;
 use Teknoo\East\Diactoros\ResponseMessageFactory;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
 
+use Teknoo\East\Paas\Contracts\Recipe\Plan\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\Tests\East\Paas\Behat\FeatureContext;
 use function DI\create;
@@ -64,9 +65,9 @@ return [
 
     MessageFactoryInterface::class => get(ResponseMessageFactory::class),
 
-    RunJobStepsInterface::class => decorate(
-        static function (RunJobStepsInterface $previous, ContainerInterface $container): RunJobStepsInterface {
-            $previous->add(89, FeatureContext::compareCD(...));
+    RunJobInterface::class => decorate(
+        static function (RunJobInterface $previous): RunJobInterface {
+            $previous->add(FeatureContext::compareCD(...), 89);
 
             return $previous;
         }

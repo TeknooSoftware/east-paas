@@ -23,12 +23,12 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
+namespace Teknoo\Tests\East\Paas\Recipe\Plan;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
+use Teknoo\East\Paas\Recipe\Plan\NewProjectEndPoint;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
@@ -40,16 +40,16 @@ use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
 use Teknoo\East\Paas\Recipe\Step;
 use Teknoo\Recipe\RecipeInterface;
-use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
+use Teknoo\Tests\Recipe\Plan\BasePlanTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(NewProjectEndPoint::class)]
-class NewProjectEndPointTest extends TestCase
+class NewProjectEndPointWithTemplateTest extends TestCase
 {
-    use BaseCookbookTestTrait;
+    use BasePlanTestTrait;
 
     private ?RecipeInterface $recipe = null;
 
@@ -191,7 +191,7 @@ class NewProjectEndPointTest extends TestCase
         return $this->renderError;
     }
 
-    public function buildCookbook(): NewProjectEndPoint
+    public function buildPlan(): NewProjectEndPoint
     {
         return new NewProjectEndPoint(
             $this->getRecipe(),
@@ -204,22 +204,8 @@ class NewProjectEndPointTest extends TestCase
             $this->getRedirectClient(),
             $this->getRenderForm(),
             $this->getRenderError(),
-            [
-                static function () {},
-                new class {
-                    public function __invoke() {}
-                },
-                [
-                    new class {
-                        public function foo() {}
-                    },
-                    'foo',
-                ],
-                new Step(
-                    static function () {},
-                    ['foo' => 'bar']
-                ),
-            ]
+            'foo.template',
+            ['foo' => 'bar'],
         );
     }
 }
