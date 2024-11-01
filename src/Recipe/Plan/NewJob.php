@@ -23,9 +23,9 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Recipe\Cookbook;
+namespace Teknoo\East\Paas\Recipe\Plan;
 
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\NewJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Recipe\Step\Job\CreateNewJob;
@@ -39,14 +39,13 @@ use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Project\GetEnvironment;
 use Teknoo\East\Paas\Recipe\Step\Project\GetProject;
-use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
 use Teknoo\Recipe\Bowl\Bowl;
-use Teknoo\Recipe\Cookbook\BaseCookbookTrait;
+use Teknoo\Recipe\Plan\EditablePlanTrait;
 use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
- * Cookbook to create a new job, aka a new deployment from a project, but not run it.
+ * Plan to create a new job, aka a new deployment from a project, but not run it.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -55,13 +54,8 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class NewJob implements NewJobInterface
 {
-    use BaseCookbookTrait;
-    use AdditionalStepsTrait;
+    use EditablePlanTrait;
 
-    /**
-     * @param iterable<int, callable> $additionalSteps
-     * @param iterable<callable> $additionalErrorHandlers
-     */
     public function __construct(
         RecipeInterface $recipe,
         private readonly Ping $stepPing,
@@ -73,15 +67,11 @@ class NewJob implements NewJobInterface
         private readonly PrepareJob $stepPrepareJob,
         private readonly SaveJob $stepSaveJob,
         private readonly SerializeJob $stepSerializeJob,
-        iterable $additionalSteps,
         private readonly DispatchJobInterface $stepDispatchJob,
         private readonly SendJobInterface $stepSendJob,
         private readonly UnsetTimeLimit $stepUnsetTimeLimit,
         private readonly DispatchError $stepDispatchError,
-        iterable $additionalErrorHandlers,
     ) {
-        $this->additionalSteps = $additionalSteps;
-        $this->additionalErrorHandlers = $additionalErrorHandlers;
         $this->fill($recipe);
     }
 
@@ -100,8 +90,6 @@ class NewJob implements NewJobInterface
         $recipe = $recipe->cook($this->stepSaveJob, SaveJob::class, [], 60);
         $recipe = $recipe->cook($this->stepSerializeJob, SerializeJob::class, [], 70);
 
-        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
-
         $recipe = $recipe->cook(
             $this->stepDispatchJob,
             DispatchJobInterface::class,
@@ -111,8 +99,6 @@ class NewJob implements NewJobInterface
 
         $recipe = $recipe->cook($this->stepSendJob, SendJobInterface::class, [], 100);
         $recipe = $recipe->cook($this->stepUnsetTimeLimit, UnsetTimeLimit::class, [], 110);
-
-        $recipe = $this->registerAdditionalErrorHandler($recipe, $this->additionalErrorHandlers);
 
         $recipe = $recipe->onError(new Bowl($this->stepUnsetTimeLimit, []));
         return $recipe->onError(new Bowl($this->stepDispatchError, ['result' => 'exception']));

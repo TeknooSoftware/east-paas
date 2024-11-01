@@ -14,14 +14,14 @@ services:
         class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
         public: true
         arguments:
-            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface'
+            - '@Teknoo\East\Paas\Contracts\Recipe\Plan\NewAccountEndPointInterface'
             - '@service_container'
 
     teknoo.east.paas.endpoint.admin.new.project:
         class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
         public: true
         arguments:
-            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface'
+            - '@Teknoo\East\Paas\Contracts\Recipe\Plan\NewProjectEndPointInterface'
             - '@service_container'
 
 
@@ -29,12 +29,12 @@ services:
         class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
         public: true
         arguments:
-            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditAccountEndPointInterface'
+            - '@Teknoo\East\Paas\Contracts\Recipe\Plan\EditAccountEndPointInterface'
             - '@service_container'
 
     teknoo.east.paas.endpoint.admin.edit.project:
         class: 'Teknoo\East\Foundation\EndPoint\RecipeEndPoint'
         public: true
         arguments:
-            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditProjectEndPointInterface'
+            - '@Teknoo\East\Paas\Contracts\Recipe\Plan\EditProjectEndPointInterface'
             - '@service_container'

@@ -23,39 +23,34 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Recipe\Cookbook;
+namespace Teknoo\Tests\East\Paas\Recipe\Plan;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
+use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
+use Teknoo\East\Paas\Recipe\Plan\NewAccountEndPoint;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
-use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\RenderFormInterface;
 use Teknoo\East\Common\Recipe\Step\CreateObject;
-use Teknoo\East\Common\Recipe\Step\LoadObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
 use Teknoo\East\Common\Recipe\Step\SaveObject;
 use Teknoo\East\Paas\Recipe\Step;
 use Teknoo\Recipe\RecipeInterface;
-use Teknoo\Tests\Recipe\Cookbook\BaseCookbookTestTrait;
+use Teknoo\Tests\Recipe\Plan\BasePlanTestTrait;
 
 /**
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(NewProjectEndPoint::class)]
-class NewProjectEndPointWithTemplateTest extends TestCase
+#[CoversClass(NewAccountEndPoint::class)]
+class NewAccountEndPointWithOptionalsTest extends TestCase
 {
-    use BaseCookbookTestTrait;
+    use BasePlanTestTrait;
 
     private ?RecipeInterface $recipe = null;
-
-    private ?LoadObject $loadObject = null;
-
-    private ?ObjectAccessControlInterface $objectAccessControl = null;
 
     private ?FormHandlingInterface $formHandling = null;
 
@@ -81,30 +76,6 @@ class NewProjectEndPointWithTemplateTest extends TestCase
         }
 
         return $this->recipe;
-    }
-
-    /**
-     * @return LoadObject|MockObject
-     */
-    public function getLoadObject(): LoadObject
-    {
-        if (null === $this->loadObject) {
-            $this->loadObject = $this->createMock(LoadObject::class);
-        }
-
-        return $this->loadObject;
-    }
-
-    /**
-     * @return ObjectAccessControlInterface|MockObject
-     */
-    public function getObjectAccessControl(): ObjectAccessControlInterface
-    {
-        if (null === $this->objectAccessControl) {
-            $this->objectAccessControl = $this->createMock(ObjectAccessControlInterface::class);
-        }
-
-        return $this->objectAccessControl;
     }
 
     /**
@@ -191,12 +162,10 @@ class NewProjectEndPointWithTemplateTest extends TestCase
         return $this->renderError;
     }
 
-    public function buildCookbook(): NewProjectEndPoint
+    public function buildPlan(): NewAccountEndPoint
     {
-        return new NewProjectEndPoint(
+        return new NewAccountEndPoint(
             $this->getRecipe(),
-            $this->getLoadObject(),
-            $this->getObjectAccessControl(),
             $this->getCreateObject(),
             $this->getFormHandling(),
             $this->getFormProcessing(),
@@ -204,22 +173,7 @@ class NewProjectEndPointWithTemplateTest extends TestCase
             $this->getRedirectClient(),
             $this->getRenderForm(),
             $this->getRenderError(),
-            [
-                static function () {},
-                new class {
-                    public function __invoke() {}
-                },
-                [
-                    new class {
-                        public function foo() {}
-                    },
-                    'foo',
-                ],
-                new Step(
-                    static function () {},
-                    ['foo' => 'bar']
-                ),
-            ],
+            $this->createMock(ObjectAccessControlInterface::class),
             'foo.template',
             ['foo' => 'bar'],
         );

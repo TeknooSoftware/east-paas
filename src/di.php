@@ -51,21 +51,13 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentFactoryInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerCollectionInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditAccountEndPointInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditProjectEndPointInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewAccountEndPointInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\AddHistoryStepsInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditAccountEndPointStepsInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditProjectEndPointStepsInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewAccountEndPointStepsInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobErrorsHandlersInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewJobStepsInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\NewProjectEndPointStepsInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\AddHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\EditAccountEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\EditProjectEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\NewAccountEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\NewJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\NewProjectEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface as DHI;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
@@ -74,13 +66,12 @@ use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Parser\YamlValidator;
-use Teknoo\East\Paas\Recipe\AbstractAdditionalStepsList;
-use Teknoo\East\Paas\Recipe\Cookbook\AbstractEditObjectEndPoint;
-use Teknoo\East\Paas\Recipe\Cookbook\AddHistory;
-use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
-use Teknoo\East\Paas\Recipe\Cookbook\NewJob;
-use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
-use Teknoo\East\Paas\Recipe\Cookbook\RunJob;
+use Teknoo\East\Paas\Recipe\Plan\AbstractEditObjectEndPoint;
+use Teknoo\East\Paas\Recipe\Plan\AddHistory;
+use Teknoo\East\Paas\Recipe\Plan\NewAccountEndPoint;
+use Teknoo\East\Paas\Recipe\Plan\NewJob;
+use Teknoo\East\Paas\Recipe\Plan\NewProjectEndPoint;
+use Teknoo\East\Paas\Recipe\Plan\RunJob;
 use Teknoo\East\Paas\Recipe\Step\History\AddHistory as StepAddHistory;
 use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
@@ -144,8 +135,11 @@ use Teknoo\East\Paas\Writer\ClusterWriter;
 use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\East\Paas\Writer\ProjectWriter;
 use Teknoo\Recipe\BaseRecipeInterface;
+use Teknoo\Recipe\Bowl\BowlInterface;
 use Teknoo\Recipe\ChefInterface;
-use Teknoo\Recipe\CookbookInterface;
+use Teknoo\Recipe\EditablePlanInterface;
+use Teknoo\Recipe\Plan\Step;
+use Teknoo\Recipe\PlanInterface;
 use Teknoo\Recipe\Recipe;
 use Teknoo\Recipe\RecipeInterface as OriginalRecipeInterface;
 use Traversable;
@@ -497,40 +491,7 @@ return [
     OriginalRecipeInterface::class => DIGet(Recipe::class),
     Recipe::class => create(),
 
-    //Cookbooks
-    NewAccountEndPointStepsInterface::class => static function (): NewAccountEndPointStepsInterface {
-        return new class extends AbstractAdditionalStepsList implements NewAccountEndPointStepsInterface {
-        };
-    },
-    NewProjectEndPointStepsInterface::class => static function (): NewProjectEndPointStepsInterface {
-        return new class extends AbstractAdditionalStepsList implements NewProjectEndPointStepsInterface {
-        };
-    },
-    EditAccountEndPointStepsInterface::class => static function (): EditAccountEndPointStepsInterface {
-        return new class extends AbstractAdditionalStepsList implements EditAccountEndPointStepsInterface {
-        };
-    },
-    EditProjectEndPointStepsInterface::class => static function (): EditProjectEndPointStepsInterface {
-        return new class extends AbstractAdditionalStepsList implements EditProjectEndPointStepsInterface {
-        };
-    },
-    AddHistoryStepsInterface::class => static function (): AddHistoryStepsInterface {
-        return new class extends AbstractAdditionalStepsList implements AddHistoryStepsInterface {
-        };
-    },
-    NewJobStepsInterface::class => static function (): NewJobStepsInterface {
-        return new class extends AbstractAdditionalStepsList implements NewJobStepsInterface {
-        };
-    },
-    NewJobErrorsHandlersInterface::class => static function (): NewJobErrorsHandlersInterface {
-        return new class extends AbstractAdditionalStepsList implements NewJobErrorsHandlersInterface {
-        };
-    },
-    RunJobStepsInterface::class => static function (): RunJobStepsInterface {
-        return new class extends AbstractAdditionalStepsList implements RunJobStepsInterface {
-        };
-    },
-
+    //Plans
     NewAccountEndPointInterface::class => DIGet(NewAccountEndPoint::class),
     NewAccountEndPoint::class => static function (
         ContainerInterface $container
@@ -540,10 +501,7 @@ return [
             $accessControl = $container->get(ObjectAccessControlInterface::class);
         }
 
-        $defaultErrorMapping = null;
-        if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
-            $defaultErrorMapping = $container->get('teknoo.east.common.cookbook.default_error_template');
-        }
+        $defaultErrorTemplate = $container->get('teknoo.east.common.get_default_error_template');
 
         return new NewAccountEndPoint(
             $container->get(OriginalRecipeInterface::class),
@@ -554,9 +512,8 @@ return [
             $container->get(RedirectClientInterface::class),
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
-            $container->get(NewAccountEndPointStepsInterface::class),
             $accessControl,
-            $defaultErrorMapping,
+            $defaultErrorTemplate,
         );
     },
 
@@ -568,10 +525,7 @@ return [
             $accessControl = $container->get(ObjectAccessControlInterface::class);
         }
 
-        $defaultErrorTemplate = null;
-        if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
-            $defaultErrorTemplate = $container->get('teknoo.east.common.cookbook.default_error_template');
-        }
+        $defaultErrorTemplate = $container->get('teknoo.east.common.get_default_error_template');
 
         return new class (
             $container->get(OriginalRecipeInterface::class),
@@ -582,7 +536,6 @@ return [
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
             $accessControl,
-            $container->get(EditAccountEndPointStepsInterface::class),
             $defaultErrorTemplate,
         ) extends AbstractEditObjectEndPoint implements EditAccountEndPointInterface {
         };
@@ -596,10 +549,7 @@ return [
             $accessControl = $container->get(ObjectAccessControlInterface::class);
         }
 
-        $defaultErrorMapping = null;
-        if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
-            $defaultErrorMapping = $container->get('teknoo.east.common.cookbook.default_error_template');
-        }
+        $defaultErrorTemplate = $container->get('teknoo.east.common.get_default_error_template');
 
         return new class (
             $container->get(OriginalRecipeInterface::class),
@@ -610,8 +560,7 @@ return [
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
             $accessControl,
-            $container->get(EditProjectEndPointStepsInterface::class),
-            $defaultErrorMapping
+            $defaultErrorTemplate,
         ) extends AbstractEditObjectEndPoint implements EditProjectEndPointInterface {
         };
     },
@@ -623,10 +572,7 @@ return [
             $accessControl = $container->get(ObjectAccessControlInterface::class);
         }
 
-        $defaultErrorMapping = null;
-        if ($container->has('teknoo.east.common.cookbook.default_error_template')) {
-            $defaultErrorMapping = $container->get('teknoo.east.common.cookbook.default_error_template');
-        }
+        $defaultErrorTemplate = $container->get('teknoo.east.common.get_default_error_template');
 
         return new NewProjectEndPoint(
             $container->get(OriginalRecipeInterface::class),
@@ -639,8 +585,7 @@ return [
             $container->get(RedirectClientInterface::class),
             $container->get(RenderFormInterface::class),
             $container->get(RenderError::class),
-            $container->get(NewProjectEndPointStepsInterface::class),
-            $defaultErrorMapping,
+            $defaultErrorTemplate,
         );
     },
 
@@ -657,12 +602,10 @@ return [
             DIGet(PrepareJob::class),
             DIGet(SaveJob::class),
             DIGet(SerializeJob::class),
-            DIGet(NewJobStepsInterface::class),
             DIGet(DispatchJobInterface::class),
             DIGet(SendJobInterface::class),
             DIGet(UnsetTimeLimit::class),
             DIGet(DispatchError::class),
-            DIGet(NewJobErrorsHandlersInterface::class),
         ),
 
     AddHistoryInterface::class => DIGet(AddHistory::class),
@@ -677,7 +620,6 @@ return [
             DIGet(GetJob::class),
             DIGet(StepAddHistory::class),
             DIGet(SaveJob::class),
-            DIGet(AddHistoryStepsInterface::class),
             DIGet(SendHistoryInterface::class),
             DIGet(UnsetTimeLimit::class),
             DIGet(DispatchError::class),
@@ -705,7 +647,6 @@ return [
             DIGet(ConfigureClusterClient::class),
             DIGet(Deploying::class),
             DIGet(Exposing::class),
-            DIGet(RunJobStepsInterface::class),
             DIGet(DRI::class),
             DIGet(UnsetTimeLimit::class),
             DIGet(SendHistoryInterface::class),
@@ -746,9 +687,23 @@ return [
                 return $this;
             }
 
-            public function fill(OriginalRecipeInterface $recipe): CookbookInterface
+            public function fill(OriginalRecipeInterface $recipe): PlanInterface
             {
                 $this->getRunJob()->fill($recipe);
+
+                return $this;
+            }
+
+            public function add(callable|Step|BowlInterface $action, int $position): EditablePlanInterface
+            {
+                $this->getRunJob()->add($action, $position);
+
+                return $this;
+            }
+
+            public function addErrorHandler(callable $handler): EditablePlanInterface
+            {
+                $this->getRunJob()->addErrorHandler($handler);
 
                 return $this;
             }

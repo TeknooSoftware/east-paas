@@ -13,7 +13,7 @@ services:
     teknoo.east.paas.symfony.end_point.new_job.bowl:
         class: '%teknoo.east.paas.symfony.end_point.new_job.bowl.class%'
         arguments:
-            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface'
+            - '@Teknoo\East\Paas\Contracts\Recipe\Plan\NewJobInterface'
             - 0
 
     teknoo.east.paas.symfony.end_point.new_job:
@@ -26,7 +26,7 @@ services:
     teknoo.east.paas.symfony.end_point.job_add_history.bowl:
         class: '%teknoo.east.paas.symfony.end_point.job_add_history.bowl.class%'
         arguments:
-            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface'
+            - '@Teknoo\East\Paas\Contracts\Recipe\Plan\AddHistoryInterface'
             - 0
 
     teknoo.east.paas.symfony.end_point.job_add_history:
@@ -39,7 +39,7 @@ services:
     teknoo.east.paas.symfony.end_point.job_run.bowl:
         class: '%teknoo.east.paas.symfony.end_point.job_run.bowl.class%'
         arguments:
-            - '@Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface'
+            - '@Teknoo\East\Paas\Contracts\Recipe\Plan\RunJobInterface'
             - 0
 
     teknoo.east.paas.symfony.end_point.job_run:

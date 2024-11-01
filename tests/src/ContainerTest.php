@@ -51,11 +51,11 @@ use Teknoo\East\Paas\Compilation\CompiledDeploymentFactory;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentFactoryInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerCollectionInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\AddHistoryInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditAccountEndPointInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\EditProjectEndPointInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\RunJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\AddHistoryInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\EditAccountEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\EditProjectEndPointInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\NewJobInterface;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\RunJobInterface;
 use Teknoo\East\Paas\Contracts\Recipe\AdditionalStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\AddHistoryStepsInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\EditAccountEndPointStepsInterface;
@@ -72,8 +72,8 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
-use Teknoo\East\Paas\Recipe\Cookbook\NewAccountEndPoint;
-use Teknoo\East\Paas\Recipe\Cookbook\NewProjectEndPoint;
+use Teknoo\East\Paas\Recipe\Plan\NewAccountEndPoint;
+use Teknoo\East\Paas\Recipe\Plan\NewProjectEndPoint;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
@@ -137,8 +137,9 @@ use Teknoo\East\Paas\Writer\AccountWriter;
 use Teknoo\East\Paas\Writer\ClusterWriter;
 use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\East\Paas\Writer\ProjectWriter;
+use Teknoo\Recipe\Bowl\BowlInterface;
 use Teknoo\Recipe\ChefInterface;
-use Teknoo\Recipe\CookbookInterface;
+use Teknoo\Recipe\PlanInterface;
 use Teknoo\Recipe\RecipeInterface as OriginalRecipeInterface;
 
 /**
@@ -640,20 +641,16 @@ class ContainerTest extends TestCase
         $container->set(RenderError::class, $this->createMock(RenderError::class));
         $container->set(ErrorFactoryInterface::class, $this->createMock(ErrorFactoryInterface::class));
         $container->set(
-            NewAccountEndPointStepsInterface::class,
-            $this->createMock(AdditionalStepsInterface::class)
-        );
-        $container->set(
             ObjectAccessControlInterface::class,
             $this->createMock(ObjectAccessControlInterface::class)
         );
         $container->set(
-            'teknoo.east.common.cookbook.default_error_template',
+            'teknoo.east.common.get_default_error_template',
             'foo.template',
         );
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(NewAccountEndPoint::class)
         );
     }
@@ -671,16 +668,12 @@ class ContainerTest extends TestCase
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
         $container->set(RenderError::class, $this->createMock(RenderError::class));
         $container->set(
-            NewProjectEndPointStepsInterface::class,
-            $this->createMock(AdditionalStepsInterface::class)
-        );
-        $container->set(
-            'teknoo.east.common.cookbook.default_error_template',
+            'teknoo.east.common.get_default_error_template',
             'foo.template',
         );
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(NewProjectEndPoint::class)
         );
     }
@@ -698,13 +691,14 @@ class ContainerTest extends TestCase
         $container->set(RedirectClientInterface::class, $this->createMock(RedirectClientInterface::class));
         $container->set(RenderFormInterface::class, $this->createMock(RenderFormInterface::class));
         $container->set(RenderError::class, $this->createMock(RenderError::class));
+
         $container->set(
-            NewProjectEndPointStepsInterface::class,
-            $this->createMock(AdditionalStepsInterface::class)
+            'teknoo.east.common.get_default_error_template',
+            'foo.template',
         );
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(NewProjectEndPoint::class)
         );
     }
@@ -722,16 +716,12 @@ class ContainerTest extends TestCase
         $container->set(RenderError::class, $this->createMock(RenderError::class));
 
         $container->set(
-            EditAccountEndPointStepsInterface::class,
-            $this->createMock(AdditionalStepsInterface::class)
-        );
-        $container->set(
-            'teknoo.east.common.cookbook.default_error_template',
+            'teknoo.east.common.get_default_error_template',
             'foo.template',
         );
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(EditAccountEndPointInterface::class)
         );
     }
@@ -749,13 +739,14 @@ class ContainerTest extends TestCase
         $container->set(RenderError::class, $this->createMock(RenderError::class));
 
         $container->set(ObjectAccessControlInterface::class, $this->createMock(ObjectAccessControlInterface::class));
+
         $container->set(
-            EditAccountEndPointStepsInterface::class,
-            $this->createMock(AdditionalStepsInterface::class)
+            'teknoo.east.common.get_default_error_template',
+            'foo.template',
         );
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(EditAccountEndPointInterface::class)
         );
     }
@@ -773,16 +764,12 @@ class ContainerTest extends TestCase
         $container->set(RenderError::class, $this->createMock(RenderError::class));
 
         $container->set(
-            EditProjectEndPointStepsInterface::class,
-            $this->createMock(AdditionalStepsInterface::class)
-        );
-        $container->set(
-            'teknoo.east.common.cookbook.default_error_template',
+            'teknoo.east.common.get_default_error_template',
             'foo.template',
         );
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(EditProjectEndPointInterface::class)
         );
     }
@@ -800,13 +787,14 @@ class ContainerTest extends TestCase
         $container->set(RenderError::class, $this->createMock(RenderError::class));
 
         $container->set(ObjectAccessControlInterface::class, $this->createMock(ObjectAccessControlInterface::class));
+
         $container->set(
-            EditProjectEndPointStepsInterface::class,
-            $this->createMock(AdditionalStepsInterface::class)
+            'teknoo.east.common.get_default_error_template',
+            'foo.template',
         );
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(EditProjectEndPointInterface::class)
         );
     }
@@ -833,12 +821,12 @@ class ContainerTest extends TestCase
         $container->set(TimeoutServiceInterface::class, $this->createMock(TimeoutServiceInterface::class));
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(NewJobInterface::class)
         );
     }
 
-    public function testAddHistoryCookbook()
+    public function testAddHistoryPlan()
     {
         $container = $this->buildContainer();
 
@@ -860,7 +848,7 @@ class ContainerTest extends TestCase
         $container->set(TimeoutServiceInterface::class, $this->createMock(TimeoutServiceInterface::class));
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(AddHistoryInterface::class)
         );
     }
@@ -895,7 +883,7 @@ class ContainerTest extends TestCase
         $container->set(TimeoutServiceInterface::class, $this->createMock(TimeoutServiceInterface::class));
 
         self::assertInstanceOf(
-            CookbookInterface::class,
+            PlanInterface::class,
             $container->get(RunJobInterface::class)
         );
     }
@@ -931,6 +919,16 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             RunJobInterface::class,
             $proxy->fill($this->createMock(RecipeInterface::class))
+        );
+
+        self::assertInstanceOf(
+            RunJobInterface::class,
+            $proxy->add($this->createMock(BowlInterface::class), 2)
+        );
+
+        self::assertInstanceOf(
+            RunJobInterface::class,
+            $proxy->addErrorHandler(fn () => true)
         );
     }
 
@@ -1478,166 +1476,6 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             Conductor::class,
             $container->get(ConductorInterface::class)
-        );
-    }
-
-    public function testAdditionalStepsInterfaceForNewAccountEndPoint()
-    {
-        $container = $this->buildContainer();
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps = $container->get(NewAccountEndPointStepsInterface::class)
-        );
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps->add(1, function () {})
-        );
-
-        self::assertInstanceOf(
-            \Traversable::class,
-            $steps->getIterator()
-        );
-    }
-
-    public function testAdditionalStepsInterfaceForNewProjectEndPoint()
-    {
-        $container = $this->buildContainer();
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps = $container->get(NewProjectEndPointStepsInterface::class)
-        );
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps->add(1, function () {})
-        );
-
-        self::assertInstanceOf(
-            \Traversable::class,
-            $steps->getIterator()
-        );
-    }
-
-    public function testEditAccountEndPointStepsInterface()
-    {
-        $container = $this->buildContainer();
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps = $container->get(EditAccountEndPointStepsInterface::class)
-        );
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps->add(1, function () {})
-        );
-
-        self::assertInstanceOf(
-            \Traversable::class,
-            $steps->getIterator()
-        );
-    }
-
-    public function testEditProjectEndPointStepsInterface()
-    {
-        $container = $this->buildContainer();
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps = $container->get(EditProjectEndPointStepsInterface::class)
-        );
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps->add(1, function () {})
-        );
-
-        self::assertInstanceOf(
-            \Traversable::class,
-            $steps->getIterator()
-        );
-    }
-
-    public function testAddHistoryStepsInterface()
-    {
-        $container = $this->buildContainer();
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps = $container->get(AddHistoryStepsInterface::class)
-        );
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps->add(1, function () {})
-        );
-
-        self::assertInstanceOf(
-            \Traversable::class,
-            $steps->getIterator()
-        );
-    }
-
-    public function testNewJobStepsInterface()
-    {
-        $container = $this->buildContainer();
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps = $container->get(NewJobStepsInterface::class)
-        );
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps->add(1, function () {})
-        );
-
-        self::assertInstanceOf(
-            \Traversable::class,
-            $steps->getIterator()
-        );
-    }
-
-    public function testNewJobErrorsHandlersInterface()
-    {
-        $container = $this->buildContainer();
-
-        self::assertInstanceOf(
-            NewJobErrorsHandlersInterface::class,
-            $steps = $container->get(NewJobErrorsHandlersInterface::class)
-        );
-
-        self::assertInstanceOf(
-            NewJobErrorsHandlersInterface::class,
-            $steps->add(1, function () {})
-        );
-
-        self::assertInstanceOf(
-            \Traversable::class,
-            $steps->getIterator()
-        );
-    }
-
-    public function testRunJobStepsInterface()
-    {
-        $container = $this->buildContainer();
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps = $container->get(RunJobStepsInterface::class)
-        );
-
-        self::assertInstanceOf(
-            AdditionalStepsInterface::class,
-            $steps->add(1, function () {})
-        );
-
-        self::assertInstanceOf(
-            \Traversable::class,
-            $steps->getIterator()
         );
     }
 

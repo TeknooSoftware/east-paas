@@ -23,16 +23,15 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Recipe\Cookbook;
+namespace Teknoo\East\Paas\Recipe\Plan;
 
-use Teknoo\East\Paas\Contracts\Recipe\Cookbook\NewProjectEndPointInterface;
-use Teknoo\East\Paas\Recipe\Traits\AdditionalStepsTrait;
+use Teknoo\East\Paas\Contracts\Recipe\Plan\NewProjectEndPointInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\RedirectClientInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\RenderFormInterface;
-use Teknoo\East\Common\Recipe\Cookbook\CreateObjectEndPoint;
+use Teknoo\East\Common\Recipe\Plan\CreateObjectEndPoint;
 use Teknoo\East\Common\Recipe\Step\CreateObject;
 use Teknoo\East\Common\Recipe\Step\LoadObject;
 use Teknoo\East\Common\Recipe\Step\RenderError;
@@ -41,7 +40,7 @@ use Teknoo\Recipe\Ingredient\Ingredient;
 use Teknoo\Recipe\RecipeInterface;
 
 /**
- * Cookbook to create a new account on the platform via an HTTP Endpoint.
+ * Plan to create a new account on the platform via an HTTP Endpoint.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -50,11 +49,6 @@ use Teknoo\Recipe\RecipeInterface;
  */
 class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPointInterface
 {
-    use AdditionalStepsTrait;
-
-    /**
-     * @param iterable<int, callable> $additionalSteps
-     */
     public function __construct(
         RecipeInterface $recipe,
         private readonly LoadObject $loadObject,
@@ -66,7 +60,6 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPo
         RedirectClientInterface $redirectClient,
         RenderFormInterface $renderForm,
         RenderError $renderError,
-        iterable $additionalSteps,
         ?string $defaultErrorTemplate = null,
         array $createObjectWiths = [],
     ) {
@@ -84,8 +77,6 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPo
             defaultErrorTemplate: $defaultErrorTemplate,
             createObjectWiths: $createObjectWiths,
         );
-
-        $this->additionalSteps = $additionalSteps;
     }
 
     protected function populateRecipe(RecipeInterface $recipe): RecipeInterface
@@ -102,8 +93,6 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPo
             ],
             05
         );
-
-        $recipe = $this->registerAdditionalSteps($recipe, $this->additionalSteps);
 
         return parent::populateRecipe($recipe);
     }

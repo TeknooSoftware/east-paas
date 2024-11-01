@@ -1,5 +1,14 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.0.0] - 2024-11-01
+### Stable Release
+- Migrate to `Teknoo Recipe` 6.
+- Rename `Cookbook` to `Plan`.
+    - Old classes and interfaces are removed.
+- Migrate to `EditablePlan` all previous `Cookbook` / `Plan`.
+    - All `AdditionalStep` behavior are removed, replaced by `EditablePan`
+    - `Step` is migrated into `Recipe`
+
 ## [3.4.5] - 2024-10-14
 ### Stable Release
 - Update requirement libraries
