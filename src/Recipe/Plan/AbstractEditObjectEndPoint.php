@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Plan;
 
+use Stringable;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
@@ -55,7 +56,7 @@ abstract class AbstractEditObjectEndPoint extends EditObjectEndPoint
         RenderFormInterface $renderForm,
         RenderError $renderError,
         ?ObjectAccessControlInterface $objectAccessControl = null,
-        ?string $defaultErrorTemplate = null,
+        string|Stringable|null $defaultErrorTemplate = null,
         array $loadObjectWiths = [],
     ) {
         parent::__construct(

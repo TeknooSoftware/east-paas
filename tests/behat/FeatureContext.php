@@ -217,6 +217,8 @@ class FeatureContext implements Context
 
     public static array $messageByTypeIsEncrypted = [];
 
+    private static bool $CDCompared = false;
+
     public function __construct()
     {
         include_once __DIR__ . '/../../tests/fakeQuery.php';
@@ -368,6 +370,7 @@ class FeatureContext implements Context
         ];
         self::$quotasDefined = '';
         self::$defaultsDefined = '';
+        self::$CDCompared = false;
 
         if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
             unset($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM']);
@@ -1157,6 +1160,8 @@ class FeatureContext implements Context
         $content = json_decode($this->response->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         Assert::assertEquals($history, $content);
+
+        Assert::assertTrue(self::$CDCompared, 'CD Is not compared');
     }
 
     /**
@@ -1738,6 +1743,8 @@ class FeatureContext implements Context
                 var_export($ecd, true),
                 var_export($tcd, true)
             );
+
+            self::$CDCompared = true;
         } catch (Throwable $e) {
             throw $e;
         }

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Plan;
 
+use Stringable;
 use Teknoo\East\Paas\Contracts\Recipe\Plan\NewProjectEndPointInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormProcessingInterface;
@@ -60,7 +61,7 @@ class NewProjectEndPoint extends CreateObjectEndPoint implements NewProjectEndPo
         RedirectClientInterface $redirectClient,
         RenderFormInterface $renderForm,
         RenderError $renderError,
-        ?string $defaultErrorTemplate = null,
+        string|Stringable|null $defaultErrorTemplate = null,
         array $createObjectWiths = [],
     ) {
         parent::__construct(

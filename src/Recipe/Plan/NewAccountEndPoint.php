@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Recipe\Plan;
 
+use Stringable;
 use Teknoo\East\Common\Contracts\Recipe\Step\ObjectAccessControlInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Plan\NewAccountEndPointInterface;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
@@ -57,7 +58,7 @@ class NewAccountEndPoint extends CreateObjectEndPoint implements NewAccountEndPo
         RenderFormInterface $renderForm,
         RenderError $renderError,
         ?ObjectAccessControlInterface $objectAccessControl = null,
-        ?string $defaultErrorTemplate = null,
+        string|Stringable|null $defaultErrorTemplate = null,
         array $createObjectWiths = [],
     ) {
         parent::__construct(
