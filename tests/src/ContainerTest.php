@@ -39,11 +39,14 @@ use Teknoo\East\Foundation\Liveness\PingServiceInterface;
 use Teknoo\East\Foundation\Liveness\TimeoutServiceInterface;
 use Teknoo\East\Foundation\Recipe\RecipeInterface;
 use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
+use Teknoo\East\Paas\Compilation\Compiler\QuotaCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\SecretCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\VolumeCompiler;
@@ -63,6 +66,7 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
+use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\East\Paas\Recipe\Plan\NewAccountEndPoint;
 use Teknoo\East\Paas\Recipe\Plan\NewProjectEndPoint;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
@@ -923,6 +927,27 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testYamlValidator()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.yaml_validation.xsd_url', 'foo');
+
+        self::assertInstanceOf(
+            YamlValidator::class,
+            $container->get(YamlValidator::class)
+        );
+    }
+
+    public function testQuotaFactory()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            QuotaFactory::class,
+            $container->get(QuotaFactory::class)
+        );
+    }
+
     public function testHookCompiler()
     {
         $container = $this->buildContainer();
@@ -1251,6 +1276,27 @@ class ContainerTest extends TestCase
         );
     }
 
+    public function testFeaturesRequirementCompiler()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.features_requirement.list', []);
+
+        self::assertInstanceOf(
+            FeaturesRequirementCompiler::class,
+            $container->get(FeaturesRequirementCompiler::class)
+        );
+    }
+
+    public function testQuotaCompiler()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            QuotaCompiler::class,
+            $container->get(QuotaCompiler::class)
+        );
+    }
+
     public function testMapCompiler()
     {
         $container = $this->buildContainer();
@@ -1349,6 +1395,18 @@ class ContainerTest extends TestCase
             $container->get(CompiledDeploymentFactoryInterface::class)
         );
 
+        self::assertInstanceOf(
+            CompiledDeploymentFactory::class,
+            $container->get(CompiledDeploymentFactory::class)
+        );
+    }
+
+    public function testCompiledDeploymentFactoryWithInvalidXSD()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.yaml_validation.xsd_file', 'fooooooo/bar');
+
+        $this->expectException(InvalidArgumentException::class);
         self::assertInstanceOf(
             CompiledDeploymentFactory::class,
             $container->get(CompiledDeploymentFactory::class)

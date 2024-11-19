@@ -50,6 +50,9 @@ class YamlValidatorTest extends TestCase
         $conf = <<<'EOF'
 paas: #Dedicated to compiler
   version: v1
+  requires:
+    - set1
+    - set2
   quotas:
     - category: compute
       type: cpu

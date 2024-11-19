@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!-- src/Contracts/Configuration/paas_validation.xsd -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="http://xml.teknoo.it/schemas/east/paas-validation"
-           xmlns:epv="http://xml.teknoo.it/schemas/east/paas-validation"
+           targetNamespace="http://xml.teknoo.software/schemas/east/paas-validation"
+           xmlns:epv="http://xml.teknoo.software/schemas/east/paas-validation"
            elementFormDefault="qualified">
 
   <xs:element name="root">
@@ -49,6 +49,13 @@
   <xs:complexType name="paas">
     <xs:all>
       <xs:element name="version" type="xs:string" minOccurs="0" />
+      <xs:element name="requires" minOccurs="0">
+        <xs:complexType>
+          <xs:choice>
+            <xs:element name="row" type="epv:paas_token" maxOccurs="unbounded" />
+          </xs:choice>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="quotas" minOccurs="0">
         <xs:complexType>
           <xs:choice>

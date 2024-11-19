@@ -741,3 +741,83 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer with a paas file without validated requirements
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a paas file with requirements
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "404"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":404,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","These requirements `set1`, `set2` are not validated"]}'
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer with a paas file with validated requirements
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a paas file with requirements
+    And validator for requirements
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And all messages must be not encrypted
+
+  Scenario: Return a valid JSON answer with encrypted message with a paas file without validated requirements
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a paas file with requirements
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "404"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":404,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","These requirements `set1`, `set2` are not validated"]}'
+    And all messages must be encrypted
+
+  Scenario: Return a valid JSON answer with encrypted message with a paas file with validated requirements
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a paas file with requirements
+    And validator for requirements
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And all messages must be encrypted
