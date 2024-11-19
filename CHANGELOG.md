@@ -1,5 +1,17 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.1.0] - 2024-11-19
+### Stable Release
+- Add `requires` section into `paas` section in `*.paas.yaml` file to define some requirements needed to compile the 
+  file and run the deployment.
+- Add `FeaturesRequirementCompiler` to manage this new section.
+- Add contract `Teknoo\East\Paas\Contracts\Compilation\FeaturesRequirement\ValidatorInterface` to define validator to
+  check requirements. They can be injected to the `FeaturesRequirementCompiler` by decorating it and use its method
+  `addValidator` or by populating the DI entry `teknoo.east.paas.compilation.features_requirement.list`.
+- Allow change the `xsd` file used to validate `*.paas.yaml` file by defining the DI entry
+  `teknoo.east.paas.compilation.yaml_validation.xsd_file` and `teknoo.east.paas.compilation.yaml_validation.xsd_url`.
+- Replace occurence `xml.teknoo.it` to `xml.teknoo.software`.
+
 ## [4.0.0] - 2024-11-01
 ### Stable Release
 - Migrate to `Teknoo Recipe` 6.

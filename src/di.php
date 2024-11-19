@@ -32,6 +32,7 @@ use Teknoo\East\Foundation\Time\DatesService;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\DefaultsCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\Exception\MissingAttributeException;
+use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
@@ -146,10 +147,12 @@ use Traversable;
 
 use function DI\get as DIGet;
 use function DI\create;
+use function file_exists;
 use function file_get_contents;
 use function is_array;
 use function is_dir;
 use function is_iterable;
+use function is_readable;
 use function iterator_to_array;
 
 return [
@@ -216,8 +219,18 @@ return [
         ->constructor(DIGet(ClusterWriter::class), DIGet(DatesService::class)),
 
     //YamlValidator
-    YamlValidator::class => create(YamlValidator::class)
-        ->constructor('root'),
+    YamlValidator::class => static function (ContainerInterface $container): YamlValidator {
+        $xsdUrl = null;
+
+        if ($container->has('teknoo.east.paas.compilation.yaml_validation.xsd_url')) {
+            $xsdUrl = $container->get('teknoo.east.paas.compilation.yaml_validation.xsd_url');
+        }
+
+        return new YamlValidator(
+            'root',
+            $xsdUrl,
+        );
+    },
 
     //Availability Resources Factory
     QuotaFactory::class => create(QuotaFactory::class)
@@ -295,6 +308,15 @@ return [
         );
     },
 
+    FeaturesRequirementCompiler::class => static function (ContainerInterface $container): FeaturesRequirementCompiler {
+        $checkers = [];
+        if ($container->has('teknoo.east.paas.compilation.features_requirement.list')) {
+            $checkers = $container->get('teknoo.east.paas.compilation.features_requirement.list');
+        }
+
+        return new FeaturesRequirementCompiler($checkers);
+    },
+
     QuotaCompiler::class => create()
         ->constructor(DIGet(QuotaFactory::class)),
 
@@ -328,6 +350,7 @@ return [
             }
         };
 
+        $collection->add('[paas][requires]', $container->get(FeaturesRequirementCompiler::class));
         $collection->add('[paas][quotas]', $container->get(QuotaCompiler::class));
         $collection->add('[defaults]', $container->get(DefaultsCompiler::class));
         $collection->add('[maps]', $container->get(MapCompiler::class));
@@ -344,11 +367,26 @@ return [
 
     //Conductor
     CompiledDeploymentFactoryInterface::class => DIGet(CompiledDeploymentFactory::class),
-    CompiledDeploymentFactory::class => create()
-        ->constructor(
+    CompiledDeploymentFactory::class => static function (ContainerInterface $container): CompiledDeploymentFactory {
+        $xsdFilePath = __DIR__ . '/Contracts/Configuration/paas_validation.xsd';
+
+        if ($container->has('teknoo.east.paas.compilation.yaml_validation.xsd_file')) {
+            $xsdFilePath = $container->get('teknoo.east.paas.compilation.yaml_validation.xsd_file');
+        }
+
+        if (!file_exists($xsdFilePath) || !is_readable($xsdFilePath)) {
+            throw new InvalidArgumentException(
+                "The XSD validation file '$xsdFilePath' does not exist or is not readable."
+            );
+        }
+
+        $xsdFileContent = (string) file_get_contents($xsdFilePath);
+
+        return new CompiledDeploymentFactory(
             CompiledDeployment::class,
-            (string) file_get_contents(__DIR__ . '/Contracts/Configuration/paas_validation.xsd'),
-        ),
+            $xsdFileContent
+        );
+    },
 
     ConductorInterface::class => DIGet(Conductor::class),
     Conductor::class => static function (ContainerInterface $container): Conductor {

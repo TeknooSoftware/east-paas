@@ -56,7 +56,7 @@ use const E_WARNING;
  */
 class YamlValidator
 {
-    private static string $xsdUrl = 'http://xml.teknoo.it/schemas/east/paas-validation';
+    private static string $defaultXsdUrl = 'http://xml.teknoo.software/schemas/east/paas-validation';
 
     /**
      * @var string[]
@@ -146,9 +146,17 @@ class YamlValidator
         'writables',
     ];
 
+    private string $xsdUrl;
+
     public function __construct(
-        private readonly string $rootName
+        private readonly string $rootName,
+        ?string $xsdUrl = null,
     ) {
+        if (empty($xsdUrl)) {
+            $this->xsdUrl = self::$defaultXsdUrl;
+        } else {
+            $this->xsdUrl = $xsdUrl;
+        }
     }
 
     /**
@@ -187,12 +195,12 @@ class YamlValidator
 
             if (!is_array($mixedElement) && is_scalar($mixedElement)) {
                 $newNode = $document->createElementNS(
-                    self::$xsdUrl,
+                    $this->xsdUrl,
                     $nodeName,
                     str_replace('%', 'pc', (string) $mixedElement)
                 );
             } else {
-                $newNode = $document->createElementNS(self::$xsdUrl, $nodeName);
+                $newNode = $document->createElementNS($this->xsdUrl, $nodeName);
                 $this->parse(
                     $mixedElement,
                     $document,
@@ -216,11 +224,11 @@ class YamlValidator
     private function convert(array $values): DOMDocument
     {
         $document = new DOMDocument('1.0', 'UTF-8');
-        $root = $document->createElementNS(self::$xsdUrl, $this->rootName);
+        $root = $document->createElementNS($this->xsdUrl, $this->rootName);
         $root->setAttributeNS(
             'http://www.w3.org/2001/XMLSchema-instance',
             'xsi:schemaLocation',
-            self::$xsdUrl . ' ' . self::$xsdUrl . '.xsd'
+            $this->xsdUrl . ' ' . $this->xsdUrl . '.xsd'
         );
 
         $document->appendChild($root);

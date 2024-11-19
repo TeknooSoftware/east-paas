@@ -63,10 +63,13 @@ use Teknoo\East\FoundationBundle\EastFoundationBundle;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirement\Set;
+use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
+use Teknoo\East\Paas\Contracts\Compilation\FeaturesRequirement\ValidatorInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -1200,6 +1203,15 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given a project with a paas file with requirements
+     */
+    public function aProjectWithAPaasFileWithRequirements(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-requires.yaml';
+        self::$quotasDefined = '';
+    }
+
+    /**
      * @Given a project with a complete paas file with defaults
      */
     public function aProjectWithAPaasFileWithDefaults(): void
@@ -1339,6 +1351,22 @@ class FeatureContext implements Context
                 ],
             ],
         ];
+    }
+
+    /**
+     * @Given validator for requirements
+     */
+    public function aValidatorForRequirements()
+    {
+        $this->sfContainer->get(FeaturesRequirementCompiler::class)->addValidator(
+            new class implements ValidatorInterface {
+                public function __invoke(Set $requirements): void
+                {
+                    $requirements->validate('set1');
+                    $requirements->validate('set2');
+                }
+            }
+        );
     }
 
     /**
