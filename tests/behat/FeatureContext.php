@@ -1212,6 +1212,15 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given a project with a paas file with requirements and enhancements
+     */
+    public function aProjectWithAPaasFileWithRequirementsAndEnhancements(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-requires-and-enhancements.yaml';
+        self::$quotasDefined = '';
+    }
+
+    /**
      * @Given a project with a complete paas file with defaults
      */
     public function aProjectWithAPaasFileWithDefaults(): void

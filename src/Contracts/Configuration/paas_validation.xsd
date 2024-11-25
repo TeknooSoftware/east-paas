@@ -15,28 +15,29 @@
         <xs:element name="images" type="epv:images" minOccurs="0" />
         <xs:element name="builds" type="epv:builds" minOccurs="0" />
         <xs:element name="volumes" type="epv:volumes" minOccurs="0" />
-        <xs:element name="pods" type="epv:pods" minOccurs="1"/>
+        <xs:element name="pods" type="epv:pods" />
         <xs:element name="services" type="epv:services" minOccurs="0" />
         <xs:element name="ingresses" type="epv:ingresses" minOccurs="0" />
+        <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
       </xs:all>
     </xs:complexType>
   </xs:element>
 
   <xs:simpleType name="paas_token">
     <xs:restriction base="xs:NMTOKEN">
-      <xs:pattern value="[a-zA-Z][a-zA-Z0-9\-]{1,}"/>
+      <xs:pattern value="[a-zA-Z][a-zA-Z0-9\-]+"/>
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="paas_token_with_space">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[a-zA-Z][a-zA-Z0-9 \-]{1,}"/>
+      <xs:pattern value="[a-zA-Z][a-zA-Z0-9 \-]+"/>
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="resource_value">
     <xs:restriction base="xs:NMTOKEN">
-      <xs:pattern value="[0-9][\.0-9]*(pc|m|K|M|G|T|P|E|Ki|Mi|Gi|Ti|Pi|Ei)?"/>
+      <xs:pattern value="[0-9][.0-9]*(pc|m|K|M|G|T|P|E|Ki|Mi|Gi|Ti|Pi|Ei)?"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -45,6 +46,12 @@
       <xs:pattern value="(compute|memory)"/>
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:complexType name="third_party_enhancements">
+    <xs:sequence>
+      <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
 
   <xs:complexType name="paas">
     <xs:all>
@@ -63,23 +70,26 @@
           </xs:choice>
         </xs:complexType>
       </xs:element>
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 
   <xs:complexType name="resource_quota">
     <xs:all>
-      <xs:element name="category" type="epv:resource_type" minOccurs="1"/>
-      <xs:element name="type" type="epv:paas_token" minOccurs="1"/>
-      <xs:element name="capacity" type="epv:resource_value" minOccurs="1"/>
+      <xs:element name="category" type="epv:resource_type" />
+      <xs:element name="type" type="epv:paas_token" />
+      <xs:element name="capacity" type="epv:resource_value" />
       <xs:element name="requires" type="epv:resource_value" minOccurs="0"/>
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 
   <xs:complexType name="resource_request">
     <xs:all>
-      <xs:element name="type" type="epv:paas_token" minOccurs="1"/>
-      <xs:element name="require" type="epv:resource_value" minOccurs="1"/>
+      <xs:element name="type" type="epv:paas_token" />
+      <xs:element name="require" type="epv:resource_value" />
       <xs:element name="limit" type="epv:resource_value" minOccurs="0"/>
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 
@@ -89,6 +99,7 @@
       <xs:element name="storage-size" type="xs:string" minOccurs="0"/>
       <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
       <xs:element name="clusters" type="epv:clusters" minOccurs="0" />
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 
@@ -97,6 +108,7 @@
       <xs:element name="storage-provider" type="xs:string" minOccurs="0"/>
       <xs:element name="storage-size" type="xs:string" minOccurs="0"/>
       <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token_with_space" />
   </xs:complexType>
@@ -122,7 +134,7 @@
 
   <xs:complexType name="secret_node">
     <xs:all>
-      <xs:element name="provider" type="xs:string" minOccurs="1" />
+      <xs:element name="provider" type="xs:string" />
       <xs:element name="type" type="xs:string" minOccurs="0" />
       <xs:element name="options" type="xs:anyType" />
     </xs:all>
@@ -147,6 +159,7 @@
       <xs:element name="tag" type="xs:string" />
       <xs:element name="path" type="xs:string" />
       <xs:element name="variables" type="epv:variables" minOccurs="0" />
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
@@ -187,6 +200,7 @@
       <xs:element name="local-path" type="xs:string" minOccurs="0" />
       <xs:element name="mount-path" type="xs:string" minOccurs="0" />
       <xs:element name="add" type="epv:rows_list_string" />
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
@@ -260,7 +274,7 @@
   <xs:complexType name="health_check_prob_http">
     <xs:all>
       <xs:element name="port" type="xs:int" minOccurs="0" />
-      <xs:element name="path" type="xs:string" minOccurs="1" />
+      <xs:element name="path" type="xs:string" />
       <xs:element name="is-secure" type="xs:boolean" minOccurs="0" />
     </xs:all>
   </xs:complexType>
@@ -279,7 +293,7 @@
   </xs:complexType>
 
   <xs:complexType name="health_check_prob">
-    <xs:choice minOccurs="0" maxOccurs="1">
+    <xs:choice minOccurs="0">
       <xs:element name="command" type="epv:health_check_prob_command" />
       <xs:element name="http" type="epv:health_check_prob_http" />
       <xs:element name="tcp" type="epv:health_check_prob_tcp" />
@@ -288,10 +302,11 @@
 
   <xs:complexType name="health_check">
     <xs:all>
-      <xs:element name="initial-delay-seconds" type="xs:int" minOccurs="1" />
-      <xs:element name="period-seconds" type="xs:int" minOccurs="1" />
-      <xs:element name="probe" type="epv:health_check_prob" minOccurs="1" />
+      <xs:element name="initial-delay-seconds" type="xs:int" />
+      <xs:element name="period-seconds" type="xs:int" />
+      <xs:element name="probe" type="epv:health_check_prob" />
       <xs:element name="threshold" type="epv:health_check_threshold" minOccurs="0" />
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 
@@ -311,6 +326,7 @@
           </xs:choice>
         </xs:complexType>
       </xs:element>
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
@@ -352,6 +368,7 @@
           </xs:choice>
         </xs:complexType>
       </xs:element>
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
@@ -382,6 +399,7 @@
           </xs:choice>
         </xs:complexType>
       </xs:element>
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>
@@ -428,6 +446,7 @@
       <xs:element name="service" type="epv:ingress_service" minOccurs="0" />
       <xs:element name="paths" type="epv:ingress_paths" minOccurs="0" />
       <xs:element name="meta" type="xs:anyType" minOccurs="0" />
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />
   </xs:complexType>

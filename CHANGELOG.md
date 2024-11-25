@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.2.0] - 2024-11-25
+### Stable Release
+- Add `enhancements` nod into Yaml configuration to allow third part extensions to add features and availabilities to
+  your PaaS. `enhancements` keyword was chosen because `extentions` is too close of `extends` already used.
+
 ## [4.1.0] - 2024-11-19
 ### Stable Release
 - Add `requires` section into `paas` section in `*.paas.yaml` file to define some requirements needed to compile the 
