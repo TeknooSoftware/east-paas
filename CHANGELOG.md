@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.2.1] - 2024-11-25
+### Stable Release
+- Fix into `infrastructures/Kubernetes/di.php` to prevent a bug into PHP-DI with PHP8.4.
+
 ## [4.2.0] - 2024-11-25
 ### Stable Release
 - Add `enhancements` nod into Yaml configuration to allow third part extensions to add features and availabilities to

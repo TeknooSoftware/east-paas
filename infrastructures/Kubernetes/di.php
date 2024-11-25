@@ -31,10 +31,11 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Factory as KubernetesFactory; //To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\NamespaceTranscriber;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber;
@@ -71,7 +72,7 @@ return [
             $timeout = (int) $container->get('teknoo.east.paas.kubernetes.timeout');
         }
 
-        return new Factory($tempDir, $client, $sslVerify, $timeout);
+        return new KubernetesFactory($tempDir, $client, $sslVerify, $timeout);
     },
 
     IngressTranscriber::class . ':class' => IngressTranscriber::class,
