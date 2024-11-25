@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Factory as FactoryAlias; //To prevent a bug into PHP-DI
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver as DriverAlias; //To prevent a bug into PHP-DI
-use Teknoo\East\Paas\Infrastructures\Kubernetes\TranscriberCollection as TranscriberCollectionAlias; //To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\Kubernetes\TranscriberCollection as TranscriberCollectionAlias; //To prevent ...
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;

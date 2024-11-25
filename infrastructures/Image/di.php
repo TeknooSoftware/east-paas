@@ -29,7 +29,8 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
-use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper as ImageWrapperAlias; //To prevent a bug into PHP-DI
+//To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper as ImageWrapperAlias;
 
 use function DI\get;
 use function file_get_contents;
