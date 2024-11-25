@@ -25,10 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Image;
 
-use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
+use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper as ImageWrapperAlias; //To prevent a bug into PHP-DI
 
 use function DI\get;
 use function file_get_contents;
@@ -47,8 +48,8 @@ return [
         }
     },
 
-    BuilderInterface::class => get(ImageWrapper::class),
-    ImageWrapper::class => static function (ContainerInterface $container): ImageWrapper {
+    BuilderInterface::class => get(ImageWrapperAlias::class),
+    ImageWrapperAlias::class => static function (ContainerInterface $container): ImageWrapperAlias {
         $timeout = (float) (3 * 60); //3 minutes;
         if ($container->has('teknoo.east.paas.img_builder.build.timeout')) {
             $timeout = (float) $container->get('teknoo.east.paas.img_builder.build.timeout');
@@ -59,7 +60,7 @@ return [
             $binary = (string) $container->get('teknoo.east.paas.img_builder.cmd');
         }
 
-        return new ImageWrapper(
+        return new ImageWrapperAlias(
             $binary,
             [
                 'image' => (string) file_get_contents(__DIR__ . '/templates/generic/image.template'),

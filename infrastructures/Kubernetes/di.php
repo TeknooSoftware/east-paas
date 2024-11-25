@@ -31,7 +31,9 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
-use Teknoo\East\Paas\Infrastructures\Kubernetes\Factory as KubernetesFactory; //To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Factory as FactoryAlias; //To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver as DriverAlias; //To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\Kubernetes\TranscriberCollection as TranscriberCollectionAlias; //To prevent a bug into PHP-DI
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
@@ -72,7 +74,7 @@ return [
             $timeout = (int) $container->get('teknoo.east.paas.kubernetes.timeout');
         }
 
-        return new KubernetesFactory($tempDir, $client, $sslVerify, $timeout);
+        return new FactoryAlias($tempDir, $client, $sslVerify, $timeout);
     },
 
     IngressTranscriber::class . ':class' => IngressTranscriber::class,
@@ -210,10 +212,10 @@ return [
         return new $className();
     },
 
-    TranscriberCollectionInterface::class => get(TranscriberCollection::class),
+    TranscriberCollectionInterface::class => get(TranscriberCollectionAlias::class),
 
-    TranscriberCollection::class => static function (ContainerInterface $container): TranscriberCollection {
-        $collection = new TranscriberCollection();
+    TranscriberCollectionAlias::class => static function (ContainerInterface $container): TranscriberCollectionAlias {
+        $collection = new TranscriberCollectionAlias();
         $collection->add(5, $container->get(NamespaceTranscriber::class));
         $collection->add(10, $container->get(SecretTranscriber::class));
         $collection->add(10, $container->get(ConfigMapTranscriber::class));
@@ -226,14 +228,14 @@ return [
         return $collection;
     },
 
-    Driver::class => create()
+    DriverAlias::class => create()
         ->constructor(
             get(ClientFactoryInterface::class),
             get(TranscriberCollectionInterface::class)
         ),
 
     Directory::class => decorate(static function (Directory $previous, ContainerInterface $container) {
-        $previous->register('kubernetes', $container->get(Driver::class));
+        $previous->register('kubernetes', $container->get(DriverAlias::class));
 
         return $previous;
     }),
