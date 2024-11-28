@@ -7,24 +7,25 @@ Teknoo Software - PaaS library
 [![License](https://poser.pugx.org/teknoo/east-paas/license)](https://packagist.org/packages/teknoo/east-paas)
 [![PHPStan](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/phpstan/phpstan)
 
-`East PaaS` is an universal package, following the #East programming philosophy, build on
+`East PaaS` is a universal package, following the #East programming philosophy, build on
 [Teknoo East Foundation](https://github.com/TeknooSoftware/east-foundation) and
 [Recipe](https://github.com/TeknooSoftware/recipe) to implement a custom
 [PaaS](https://en.wikipedia.org/wiki/Platform_as_a_service) manager like [Platform.sh](https://platform.sh/).
 
-This library is able to fetch a project on a source repository (like `Git`) in a temporary folder, read a deployment
-file (by default, called `.paas.yaml`) run some hooks to install vendors (with `composer`, `npm`, `pip`, etc..), compile 
-or other  (`make`, `symfony console`), warmup cache, create OCI image (with `buildah` or `docker build`) and deploy the
-project them in a cluster (`kubernetes`).
+This library is able to fetch a project on a source repository (like `Git`) in a temporary folder, reads a deployment
+file (by default, called `.paas.yaml`) run some hooks to install vendors (with `composer`, `npm`, `pip`, etc..), 
+compiles (`make`, `symfony console`), warmup cache, creates OCI image (with `buildah` or `docker build`) and deploy the
+project them in a cluster (`kubernetes`, but with non bundled driver, `Docker Swarm`).
 
 The deployment on `Kubernetes` includes :
 - `Namespace`
 - `ReplicaSets` or `Deployments` (with `Pods`)
 - `ConfigMap` and `Secrets`
 - `Service` and `Ingress`
+- `Quota`
 
 `Teknoo East PaaS` is compatible with `Docker` or any `OCI implementation` (like `BuildAh`) and `Kubernetes`.
-An implementation with `Docker Swarm` can be added.
+Implementation of other cluster orchestration like `Docker Swarm` can be added.
 
 `Teknoo East PaaS` is bundled with a default implementation with `Symfony` 6.4 or newer and `Doctrine ODM MongoDB` to
 persist data.
