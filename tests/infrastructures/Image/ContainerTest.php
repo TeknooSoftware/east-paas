@@ -17,9 +17,9 @@ declare(strict_types=1);
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  *
- * @link        http://teknoo.software/east/paas Project website
+ * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     http://teknoo.software/license/mit         MIT License
+ * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -34,7 +34,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 
 /**
- * @license     http://teknoo.software/license/mit         MIT License
+ * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @package Teknoo\Tests\East\Paas\Infrastructures\Image
  */

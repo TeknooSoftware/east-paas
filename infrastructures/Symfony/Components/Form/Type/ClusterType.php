@@ -15,9 +15,9 @@
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  *
- * @link        http://teknoo.software/east/paas Project website
+ * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     http://teknoo.software/license/mit         MIT License
+ * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -50,7 +50,7 @@ use function iterator_to_array;
 /**
  * Symfony form to edit East PaaS Cluster
  *
- * @license     http://teknoo.software/license/mit         MIT License
+ * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ClusterType extends AbstractType
