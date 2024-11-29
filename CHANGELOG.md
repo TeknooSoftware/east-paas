@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.2.2] - 2024-11-29
+### Stable Release
+- Complete `YamlParserInterface` with flags value (same than `Symfony`)
+- Support to Symfony 7.2
+
 ## [4.2.1] - 2024-11-25
 ### Stable Release
 - Fix into `infrastructures/Kubernetes/di.php` to prevent a bug into PHP-DI with PHP8.4.

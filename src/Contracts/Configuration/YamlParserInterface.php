@@ -39,8 +39,16 @@ use Teknoo\Recipe\Promise\PromiseInterface;
  */
 interface YamlParserInterface
 {
+    public const PARSE_EXCEPTION_ON_INVALID_TYPE = 2;
+    public const PARSE_OBJECT = 4;
+    public const PARSE_OBJECT_FOR_MAP = 8;
+    public const PARSE_DATETIME = 32;
+    public const PARSE_CONSTANT = 256;
+    public const PARSE_CUSTOM_TAGS = 512;
+
     /**
      * @param PromiseInterface<array<string, mixed>, mixed> $promise
+     * @param int-mask-of<YamlParserInterface::PARSE_*> $flags A bit field of self::PARSE_* constants
      */
     public function parse(
         #[SensitiveParameter] string $value,

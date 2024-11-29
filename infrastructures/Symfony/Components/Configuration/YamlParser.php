@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Symfony\Configuration;
 
 use SensitiveParameter;
 use Symfony\Component\Yaml\Parser;
+use Symfony\Component\Yaml\Yaml;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
