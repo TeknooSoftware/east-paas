@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.2.3] - 2024-12-18
+### Stable Release
+- Update `AccountType` to set `doctrine_type` as required instead of as an option.
+
 ## [4.2.2] - 2024-11-29
 ### Stable Release
 - Complete `YamlParserInterface` with flags value (same than `Symfony`)

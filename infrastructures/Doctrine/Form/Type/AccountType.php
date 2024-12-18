@@ -155,9 +155,11 @@ class AccountType extends AbstractType
 
         $resolver->setDefaults([
             'data_class' => Account::class,
-            'doctrine_type' => '',
             'namespace_in_readonly' => false,
         ]);
+
+        $resolver->setRequired(['doctrine_type']);
+        $resolver->setAllowedTypes('doctrine_type', 'string');
 
         return $this;
     }
