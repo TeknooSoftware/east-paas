@@ -56,4 +56,11 @@ class Draft implements StateInterface
             return $this;
         };
     }
+
+    public function isRunnable(): Closure
+    {
+        return function (): bool {
+            return false;
+        };
+    }
 }

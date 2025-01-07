@@ -679,4 +679,19 @@ class ProjectTest extends TestCase
             $rc->getStaticPropertyValue('exportConfigurations'),
         );
     }
+
+    public function testIsRunnable()
+    {
+        self::assertFalse(
+            (new Project())->isRunnable(),
+        );
+
+        self::assertTrue(
+            $this->buildObject()
+                ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
+                ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
+                ->setClusters([$this->createMock(Cluster::class)])
+                ->isRunnable(),
+        );
+    }
 }

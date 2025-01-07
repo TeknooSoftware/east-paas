@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.2.4] - 2025-01-07
+### Stable Release
+- Add `isRunnable` to `Project` to know easily if a project is runnable
+
 ## [4.2.3] - 2024-12-18
 ### Stable Release
 - Update `AccountType` to set `doctrine_type` as required instead of as an option.
