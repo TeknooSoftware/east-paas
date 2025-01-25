@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.2.5] - 2025-01-25
+### Stable Release
+- Update to support Doctrine ODM 2.10 and ODM Bundle 5.1
+
 ## [4.2.4] - 2025-01-07
 ### Stable Release
 - Add `isRunnable` to `Project` to know easily if a project is runnable
