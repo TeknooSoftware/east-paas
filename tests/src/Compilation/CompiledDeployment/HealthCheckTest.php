@@ -34,7 +34,6 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(HealthCheckType::class)]
 #[CoversClass(HealthCheck::class)]
 class HealthCheckTest extends TestCase
 {

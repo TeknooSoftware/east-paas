@@ -1,5 +1,14 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.2.6] - 2025-02-07
+### Stable Release
+- Update dev lib requirements
+    - Require Symfony libraries 6.4 or 7.2
+    - Update to PHPUnit 12
+- Drop support of PHP 8.2
+    - The library stay usable with PHP 8.2, without any waranties and tests
+    - In the next major release, Support of PHP 8.2 will be dropped
+
 ## [4.2.5] - 2025-01-25
 ### Stable Release
 - Update to support Doctrine ODM 2.10 and ODM Bundle 5.1

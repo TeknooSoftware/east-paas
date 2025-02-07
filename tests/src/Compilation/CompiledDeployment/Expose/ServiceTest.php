@@ -34,7 +34,6 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-#[CoversClass(Transport::class)]
 #[CoversClass(Service::class)]
 class ServiceTest extends TestCase
 {

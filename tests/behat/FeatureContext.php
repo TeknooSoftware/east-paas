@@ -1628,10 +1628,8 @@ class FeatureContext implements Context
         $mock = $generator->testDouble(
             type: Process::class,
             mockObject: true,
-            markAsMockObject: false,
             callOriginalConstructor: false,
             callOriginalClone: false,
-            callOriginalMethods: false,
         );
 
         $mock->expects(new AnyInvokedCountMatcher())
@@ -1679,19 +1677,15 @@ class FeatureContext implements Context
         $mock = $generator->testDouble(
             type: Client::class,
             mockObject: true,
-            markAsMockObject: false,
             callOriginalConstructor: false,
             callOriginalClone: false,
-            callOriginalMethods: false,
         );
 
         $repoMock = $generator->testDouble(
             type: Repository::class,
             mockObject: true,
-            markAsMockObject: false,
             callOriginalConstructor: false,
             callOriginalClone: false,
-            callOriginalMethods: false,
         );
 
         $mock->expects(new AnyInvokedCountMatcher())
