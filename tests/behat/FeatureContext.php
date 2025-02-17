@@ -818,6 +818,8 @@ class FeatureContext implements Context
             value: $this->getNormalizedJob(
                 variables: [
                     'FOO' => 'foo',
+                    'ENV' => 'prod',
+                    'PVP_VERSION' => 7.4
                 ],
                 hnc: self::$useHnc,
                 jobId: 'jobid',
@@ -1181,6 +1183,15 @@ class FeatureContext implements Context
     public function aProjectWithACompletePaasFile(): void
     {
         $this->paasFile = __DIR__ . '/paas.yaml';
+        self::$quotasDefined = '';
+    }
+
+    /**
+     * @Given a project with a complete paas file with conditions
+     */
+    public function aProjectWithACompletePaasFileWithConditions(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-conditions.yaml';
         self::$quotasDefined = '';
     }
 
