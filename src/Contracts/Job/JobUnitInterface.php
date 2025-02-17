@@ -92,6 +92,15 @@ interface JobUnitInterface extends NormalizableInterface
         PromiseInterface $promise,
     ): JobUnitInterface;
 
+    /**
+     * @param array<string, mixed> $values
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
+     */
+    public function filteringConditions(
+        #[SensitiveParameter] array $values,
+        PromiseInterface $promise,
+    ): JobUnitInterface;
+
     public function runWithExtra(callable $callback): JobUnitInterface;
 
     /**

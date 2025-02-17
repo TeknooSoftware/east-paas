@@ -52,10 +52,9 @@ use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
-use function array_merge;
-use function implode;
 use function is_array;
 use function is_string;
+use function preg_match;
 use function preg_replace;
 use function preg_replace_callback;
 use function strlen;
@@ -220,25 +219,31 @@ class JobUnit implements JobUnitInterface
     }
 
     /**
+     * @param array<string, mixed> $array1
+     * @param array<string, mixed> $array2
+     * @return array<string, mixed>
+     */
+    private static function recursiveMerge(callable $recursiveMerge, array $array1, array $array2): array
+    {
+        $final = $array1;
+        foreach ($array2 as $key => &$value) {
+            if (is_array($value) && isset($final[$key]) && is_array($final[$key])) {
+                $final[$key] = $recursiveMerge($recursiveMerge, $final[$key], $value);
+            } else {
+                $final[$key] = $value;
+            }
+        }
+
+        return $final;
+    }
+
+    /**
      * @param array{paas: array<string, mixed>} $values
      */
     private function updateDefaults(#[SensitiveParameter] array &$values): void
     {
-        $recursiveMerge = function (callable $recursiveMerge, array $array1, array $array2): array {
-            $final = $array1;
-            foreach ($array2 as $key => &$value) {
-                if (is_array($value) && isset($final[$key]) && is_array($final[$key])) {
-                    $final[$key] = $recursiveMerge($recursiveMerge, $final[$key], $value);
-                } else {
-                    $final[$key] = $value;
-                }
-            }
-
-            return $final;
-        };
-
-        $values['defaults'] = $recursiveMerge(
-            $recursiveMerge,
+        $values['defaults'] = self::recursiveMerge(
+            self::recursiveMerge(...),
             $this->defaults,
             $values['defaults'] ?? [],
         );
@@ -336,6 +341,87 @@ class JobUnit implements JobUnitInterface
         $this->updateDefaults($values);
 
         $this->updateVariables($values, $promise);
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
+     */
+    public function filteringConditions(
+        #[SensitiveParameter] array $values,
+        PromiseInterface $promise,
+    ): JobUnitInterface {
+        $pattern = '/^if\{([a-zA-Z][a-zA-Z0-9\-_]+)(=|<=|>=|<|>|!=|!=| ?isnot ?| ?is ?)"?(.*?)"?\}$/iS';
+
+        $findAndReplace = function (callable $findAndReplace, array &$values) use ($pattern): array {
+            $final = [];
+            foreach ($values as $key => &$value) {
+                if (!is_array($value) || !is_string($key)) {
+                    $final[$key] = $value;
+
+                    continue;
+                }
+
+                $matches = [];
+                if (!preg_match($pattern, $key, $matches)) {
+                    $final[$key] = $findAndReplace($findAndReplace, $value);
+
+                    continue;
+                }
+
+                $variableValue = $this->variables[$matches[1]] ?? null;
+                $operator = trim($matches[2]);
+                $expectedValue = $matches[3];
+
+                $conditionSuccess = match ($operator) {
+                    '=' => $variableValue == $expectedValue,
+                    '<' => $variableValue < $expectedValue,
+                    '>' => $variableValue > $expectedValue,
+                    '<=' => $variableValue <= $expectedValue,
+                    '>=' => $variableValue >= $expectedValue,
+                    '!=' => $variableValue != $expectedValue,
+                    'is' => match ($expectedValue) { // @codeCoverageIgnore
+                        'null' => null === $variableValue,
+                        'empty' => empty($variableValue),
+                        default => throw new DomainException(
+                            "Criteria `{$expectedValue}` is not supported for `is` condition",
+                        ),
+                    }, // @codeCoverageIgnore
+                    'isnot' => match ($expectedValue) { // @codeCoverageIgnore
+                        'null' => null !== $variableValue,
+                        'empty' => !empty($variableValue),
+                        default => throw new DomainException(
+                            "Criteria `{$expectedValue}` is not supported for `isnot` condition",
+                        ),
+                    // @codeCoverageIgnoreStart
+                    },
+                    default => throw new DomainException(
+                        "Operator `{$operator}` is not supported as condition",
+                    ),
+                    // @codeCoverageIgnoreEnd
+                };
+
+                if (!$conditionSuccess) {
+                    continue;
+                }
+
+                $final = self::recursiveMerge(
+                    self::recursiveMerge(...),
+                    $final,
+                    $findAndReplace($findAndReplace, $value),
+                );
+            }
+
+            return $final;
+        };
+
+        try {
+            $promise->success($findAndReplace($findAndReplace, $values));
+        } catch (Throwable $error) {
+            $promise->fail($error);
+        }
 
         return $this;
     }
