@@ -1,5 +1,51 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.3.0] - XXXX-XX-XX
+### Stable Release
+- PaaS version update to `1.1`
+- Support conditions in `*.paas.yaml`. Conditions can be used in anywhere in the file, expected scalar value.
+  - The pattern is `if{<VARIABLE_NAME><OPERAND><EXPECTED VALUE>}`
+    - With `<VARIABLE_NAME>` is a name of a variable passed to the job at its creation
+    - `<OPERAND>` must be one of these :
+      - `=`
+      - `!=`
+      - `<`
+      - `>`
+      - `<=`
+      - `>=`
+      - `is empty`
+      - `isnot empty`
+      - `is null`
+      - `isnot null`
+    - `<EXPECTED VALUE>` any value, can be wrapped by `"` but is not mandatory
+  - If the condition is validated, all nodes under the condition will be merged with the parent node, else nodes will
+    be dropped.
+  - Nested conditions are allowed
+    - Example:
+
+
+      paas: #Dedicated to compiler
+        version: v1
+        requires:
+          - set1
+    
+      #Defaults
+      defaults:
+        storage-provider: foo
+    
+      if{ENV=prod}:
+        paas: #Dedicated to compiler
+          version: v1.22
+          quotas:
+            -   category: compute
+                type: cpu
+                capacity: 3
+                requires: 4
+                if{PROVIDER=AWS}:
+                  capacity: 2
+                  requires: 1
+
+  
 ## [4.2.6] - 2025-02-07
 ### Stable Release
 - Update dev lib requirements
