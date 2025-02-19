@@ -49,6 +49,7 @@ use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
 use Throwable;
 
+use function in_array;
 use function str_replace;
 
 /**
@@ -248,11 +249,14 @@ class Conductor implements ConductorInterface, AutomatedInterface
             $this->configuration,
             self::CONFIG_PAAS,
             [
-                self::CONFIG_KEY_VERSION => 'v1',
+                self::CONFIG_KEY_VERSION => 'v1.1',
                 self::CONFIG_KEY_PREFIX => null,
             ],
             function ($paas) use ($promise): void {
-                if (!isset($paas[self::CONFIG_KEY_VERSION]) || 'v1' !== $paas[self::CONFIG_KEY_VERSION]) {
+                if (
+                    !isset($paas[self::CONFIG_KEY_VERSION])
+                    || !in_array($paas[self::CONFIG_KEY_VERSION], ['v1', 'v1.1'], true)
+                ) {
                     $promise->fail(new RuntimeException('Paas config file version not supported', 400));
 
                     return;

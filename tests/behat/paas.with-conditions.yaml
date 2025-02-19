@@ -1,5 +1,5 @@
 paas: #Dedicated to compiler
-    version: v1
+    version: v1.1
 
 #Config
 maps:
