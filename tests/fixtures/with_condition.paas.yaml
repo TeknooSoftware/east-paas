@@ -1,0 +1,196 @@
+paas: #Dedicated to compiler
+  version: v1
+  requires:
+    - set1
+    - set2
+
+#Defaults
+defaults:
+  storage-provider: foo
+  storage-size: 1Gi
+  clusters:
+    cluster-west:
+      storage-provider: bar
+
+if{ENV=prod}:
+  paas: #Dedicated to compiler
+    version: v1
+    requires:
+      - set1
+      - set2
+    quotas:
+      -   category: compute
+          type: cpu
+          capacity: 2
+          requires: 1
+      -   category: memory
+          type: memory
+          capacity: 512Mi
+
+  #Defaults
+  defaults:
+    storage-provider: foo
+    storage-size: 1Gi
+    oci-registry-config-name: 'paas-config'
+    clusters:
+      cluster-east:
+        storage-provider: foo
+        storage-size: 2Gi
+        oci-registry-config-name: 'paas-config'
+      cluster-west:
+        storage-provider: bar
+
+#Config
+maps:
+  map1:
+    key1: value1
+    key2: ${FOO}
+  if{ENV=prod}:
+    map2:
+      key1: value1
+      key2: ${FOO}
+    map3:
+      key1: value1
+      key2: ${FOO}
+
+#Secrets provider
+secrets:
+  map-vault:
+    provider: map #Internal secrets, must be passed in this file
+    options:
+      key1: value1
+      key2: ${FOO}
+  if{ENV=prod}:
+    map-vault-a:
+      provider: map #Internal secrets, must be passed in this file
+      options:
+        key1: value1
+        key2: ${FOO}
+    map-vault-b:
+      provider: map #Internal secrets, must be passed in this file
+      options:
+        key1: value1
+        key2: ${FOO}
+
+#Custom image, not available in the library
+images:
+  img1:
+    build-name: foo
+    tag: latest
+    path: '/images/${FOO}'
+  if{ENV=prod}:
+    foo:
+      build-name: foo
+      tag: latest
+      path: '/images/${FOO}'
+    bar:
+      build-name: foo
+      tag: latest
+      path: '/images/${FOO}'
+
+#Hook to build the project before container, Called in this order
+builds:
+  composer-build: #Name of the step
+    composer:
+      action: install #Hook to call
+      arguments:
+        - 'no-dev'
+        - 'optimize-autoloader'
+        - 'classmap-authoritative'
+  if{ENV=prod}:
+    custom-hook-a:
+      hook-id: foo bar
+    custom-hook-b:
+      hook-id: foo bar
+
+#Volume to build to use with container
+volumes:
+  extra: #Name of the volume
+    local-path: "/foo/bar" #optional local path where store data in the volume
+    add: #folder or file, from .paas.yaml where is located to add to the volume
+      - 'extra'
+  if{ENV=prod}:
+    prod-a:
+      add:
+        - 'vendor'
+    prod-b:
+      add:
+        - 'vendor'
+
+#Pods (set of container)
+pods:
+  php-pods: #podset name
+    replicas: 2 #instance of pods
+    upgrade:
+        max-upgrading-pods: 2
+        max-unavailable-pods: 1
+    containers:
+      if{ENV=dev}:
+        php-debug-1: #Container name
+          image: registry.teknoo.software/php-debug #Container image to use
+          version: 7.4
+          listen: #Port listen by the container
+            - 8080
+        php-debug-2: #Container name
+          image: registry.teknoo.software/php-debug #Container image to use
+          version: 7.4
+          listen: #Port listen by the container
+            - 8080
+      php-run: #Container name
+        image: registry.teknoo.software/php-run #Container image to use
+        version: 7.4
+        listen: #Port listen by the container
+          - 8080
+  if{ENV=prod}:
+    php-pods-1: #podset name
+      replicas: 3 #instance of pods
+      upgrade:
+        max-upgrading-pods: 2
+        max-unavailable-pods: 1
+    php-pods-2: #podset name
+      replicas: 3 #instance of pods
+      upgrade:
+        max-upgrading-pods: 2
+        max-unavailable-pods: 1
+
+#Pods expositions
+services:
+  php-service: #Service name
+    pod: "php-pods" #Pod name, use service name by default
+    internal: false #If false, a load balancer is use to access it from outside
+    protocol: 'TCP' #Or UDP
+    ports:
+      - listen: 9876 #Port listened
+        target: 8080 #Pod's port targeted
+  if{ENV=prod}:
+    demo1: #Service name
+      ports:
+        - listen: 8080 #Port listened
+          target: 8080 #Pod's port targeted
+        - listen: 8181 #Port listened
+          target: 8181 #Pod's port targeted
+    demo2: #Service name
+      ports:
+        - listen: 8080 #Port listened
+          target: 8080 #Pod's port targeted
+        - listen: 8181 #Port listened
+          target: 8181 #Pod's port targeted
+
+#Ingresses configuration
+ingresses:
+  demo: #rule name
+    host: demo-paas.teknoo.software
+    tls:
+      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
+  if{ENV="prod"}:
+    demo-secure-1: #rule name
+      host: demo1-secure.teknoo.software
+      https-backend: true
+    demo-secure-2: #rule name
+      host: demo2-secure.teknoo.software
+      https-backend: true
+      tls:
+        secret: "demo-vault" #Configure the orchestrator to fetch value from vault
+      service: #default service
+        name: demo
+        port: 8181

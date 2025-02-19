@@ -142,6 +142,9 @@ class Conductor implements ConductorInterface, AutomatedInterface
     public function prepare(string $configuration, PromiseInterface $promise): ConductorInterface
     {
         try {
+            /** @var JobUnitInterface $job */
+            $job = $this->getJob();
+
             /** @var Promise<array<string, mixed>, mixed, array<string, mixed>> $configuredPromise */
             $configuredPromise = new Promise(
                 onSuccess: function ($result, PromiseInterface $next): void {
@@ -153,7 +156,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
             /** @var Promise<array<int|string, mixed>, mixed, array<string, mixed>> $validatedPromise */
             $validatedPromise = new Promise(
-                onSuccess: fn ($result, PromiseInterface $next) => $this->getJob()->updateVariablesIn(
+                onSuccess: fn ($result, PromiseInterface $next) => $job->updateVariablesIn(
                     $result,
                     $next
                 ),
@@ -196,6 +199,21 @@ class Conductor implements ConductorInterface, AutomatedInterface
              * > $extendedPromise
              */
             $extendedPromise = new Promise(
+                onSuccess: fn ($result, PromiseInterface $next): JobUnitInterface => $job->filteringConditions(
+                    $result,
+                    $next
+                ),
+                allowNext: true
+            );
+
+            /**
+             * @var Promise<
+             *     array<mixed, mixed>,
+             *     mixed,
+             *     PromiseInterface<array<int|string, mixed>, mixed>
+             * > $extendedPromise
+             */
+            $conditionsFiltered = new Promise(
                 onSuccess: fn ($result, PromiseInterface $next): YamlValidator => $this->validator->validate(
                     $result,
                     $this->factory->getSchema(),
@@ -208,6 +226,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                 $configuration,
                 $parsedPromise
                     ->next($extendedPromise, autoCall: true)
+                    ->next($conditionsFiltered, autoCall: true)
                     ->next($validatedPromise, autoCall: true)
                     ->next($configuredPromise, autoCall: true)
                     ->next($promise, autoCall: true)

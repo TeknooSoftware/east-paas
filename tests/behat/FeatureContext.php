@@ -747,7 +747,7 @@ class FeatureContext implements Context
     {
         $this->calledUrl = $url;
 
-        $request = Request::create('https://'.$this->sfContainer->getParameter('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $this->requestBody);
+        $request = Request::create('https://'.$this->sfContainer->getParameter('api_hostname').$this->calledUrl, 'PUT', [], [], [], [], $this->requestBody);
         $this->response = $this->kernel->handle($request);
     }
 
@@ -764,7 +764,7 @@ class FeatureContext implements Context
         $this->requestBody = $body;
 
         $request = Request::create(
-            uri: 'https://' . $this->sfContainer->getParameter('teknoo_website_hostname') . $this->calledUrl,
+            uri: 'https://' . $this->sfContainer->getParameter('api_hostname') . $this->calledUrl,
             method: 'PUT',
             server: ['CONTENT_TYPE' => $contentType],
             content: $this->requestBody,
@@ -792,7 +792,7 @@ class FeatureContext implements Context
         );
 
         $request = Request::create(
-            uri: 'https://' . $this->sfContainer->getParameter('teknoo_website_hostname') . $this->calledUrl,
+            uri: 'https://' . $this->sfContainer->getParameter('api_hostname') . $this->calledUrl,
             method: 'PUT',
             content: $body,
         );
@@ -818,6 +818,8 @@ class FeatureContext implements Context
             value: $this->getNormalizedJob(
                 variables: [
                     'FOO' => 'foo',
+                    'ENV' => 'prod',
+                    'PVP_VERSION' => 7.4
                 ],
                 hnc: self::$useHnc,
                 jobId: 'jobid',
@@ -831,7 +833,7 @@ class FeatureContext implements Context
         );
 
         $request = Request::create(
-            uri: 'https://' . $this->sfContainer->getParameter('teknoo_website_hostname') . $this->calledUrl,
+            uri: 'https://' . $this->sfContainer->getParameter('api_hostname') . $this->calledUrl,
             method: 'PUT',
             content: $body,
         );
@@ -1181,6 +1183,15 @@ class FeatureContext implements Context
     public function aProjectWithACompletePaasFile(): void
     {
         $this->paasFile = __DIR__ . '/paas.yaml';
+        self::$quotasDefined = '';
+    }
+
+    /**
+     * @Given a project with a complete paas file with conditions
+     */
+    public function aProjectWithACompletePaasFileWithConditions(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-conditions.yaml';
         self::$quotasDefined = '';
     }
 

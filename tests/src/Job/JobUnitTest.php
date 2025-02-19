@@ -51,13 +51,14 @@ use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Throwable;
 
 /**
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(JobUnit::class)]
-class JobUnitTest extends TestCase
+class   JobUnitTest extends TestCase
 {
     /**
      * @var SourceRepositoryInterface
@@ -122,6 +123,10 @@ class JobUnitTest extends TestCase
         string $prefix = 'bar',
         array $defaults = [],
         array $quotas = [],
+        array $variables =  [
+            'foo' => 'bar',
+            'bar' => 'FOO',
+        ],
     ) {
         return new JobUnit(
             id: $id,
@@ -131,10 +136,7 @@ class JobUnitTest extends TestCase
             sourceRepository: $this->getSourceRepositoryMock(),
             imagesRegistry: $imageRegistry ?? $this->getImagesRegistryMock(),
             clusters: [$this->getClusterMock()],
-            variables: [
-                'foo' => 'bar',
-                'bar' => 'FOO',
-            ],
+            variables: $variables,
             history: new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),
             extra: $extra,
             defaults: $defaults,
@@ -435,7 +437,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error): never {
+                    function (Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -497,7 +499,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error): never {
+                    function (Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -554,7 +556,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error): never {
+                    function (Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -620,7 +622,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error): never {
+                    function (Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -702,7 +704,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error): never {
+                    function (Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -759,7 +761,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error): never {
+                    function (Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -809,7 +811,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error): never {
+                    function (Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -837,7 +839,7 @@ class JobUnitTest extends TestCase
                             $result
                         );
                     },
-                    function (\Throwable  $error): never {
+                    function (Throwable  $error): never {
                         throw $error;
                     }
                 )
@@ -862,7 +864,7 @@ class JobUnitTest extends TestCase
                     function (array $result) {
                         self::fail();
                     },
-                    function (\Throwable $error) {
+                    function (Throwable $error) {
                         self::assertInstanceOf(\DomainException::class, $error);
                     }
                 )
@@ -912,7 +914,6 @@ class JobUnitTest extends TestCase
 
     public function testPrepareQuotasWithQuotas()
     {
-
         $factory = $this->createMock(QuotaFactory::class);
         $factory->expects($this->exactly(2))
             ->method('create')
@@ -937,5 +938,242 @@ class JobUnitTest extends TestCase
                 ]
             )->prepareQuotas($factory, $promise)
         );
+    }
+
+    public function testFilteringConditionsWithoutAnyCondition()
+    {
+        $values = [
+            'paas' => [
+                'version' => 1,
+                'foo' => 'bar',
+            ],
+            'pods' => [
+                'pod-a' => [
+                    'replicas' => '2',
+                    'containers' => [
+                        'container-a' => [
+                            'image' => 'foo',
+                        ],
+                        'container-b' => [
+                            'image' => 'bar',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())
+            ->method('success')
+            ->with($values);
+
+        $promise->expects($this->any())
+            ->method('fail')
+            ->willReturnCallback(fn (Throwable $e) => throw $e);
+
+        $this->buildObject()->filteringConditions($values, $promise);
+    }
+
+    public function testFilteringConditionsWithErrorOnIs()
+    {
+        $values = [
+            'paas' => [
+                'version' => 1,
+                'foo' => 'bar',
+            ],
+            'if{ENV is foo}' => [
+                'paas' => [
+                    'version' => 3,
+                ]
+            ],
+        ];
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())
+            ->method('success')
+            ->with($values);
+
+        $promise->expects($this->once())
+            ->method('fail')
+            ->willReturnCallback(fn (Throwable $e) => throw $e);
+
+        $this->expectExceptionMessage('Criteria `foo` is not supported for `is` condition');
+
+        $this->buildObject()->filteringConditions($values, $promise);
+    }
+
+    public function testFilteringConditionsWithErrorIsNot()
+    {
+        $values = [
+            'paas' => [
+                'version' => 1,
+                'foo' => 'bar',
+            ],
+            'if{ENV isnot foo}' => [
+                'paas' => [
+                    'version' => 3,
+                ]
+            ],
+        ];
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())
+            ->method('success')
+            ->with($values);
+
+        $promise->expects($this->once())
+            ->method('fail')
+            ->willReturnCallback(fn (Throwable $e) => throw $e);
+
+        $this->expectExceptionMessage('Criteria `foo` is not supported for `isnot` condition');
+
+        $this->buildObject()->filteringConditions($values, $promise);
+    }
+
+    public function testFilteringConditionsWithAllConditions()
+    {
+        $values = [
+            'paas' => [
+                'version' => 1,
+            ],
+            'if{ENV isnot empty}' => [
+                'paas' => [
+                    'version' => 2,
+                ],
+            ],
+            'if{ENV isnot null}' => [
+                'bar' => 'foo',
+            ],
+            'if{ENV is null}' => [
+                'hello' => 'world',
+            ],
+            'if{STAGE is empty}' => [
+                'paas' => [
+                    'version' => 3,
+                ],
+            ],
+            'if{VAL_A<=3}' => [
+                'paas' => [
+                    'version' => 5,
+                ]
+            ],
+            'if{VAL_A<3}' => [
+                'paas' => [
+                    'foo' => 'bar',
+                ]
+            ],
+            'if{VAL_A>3}' => [
+                'paas' => [
+                    'version' => 4,
+                ]
+            ],
+            'if{VAL_A>=3}' => [
+                'paas' => [
+                    'foo2' => 'bar2',
+                ]
+            ],
+        ];
+
+        $expected = [
+            'paas' => [
+                'version' => 5,
+                'foo2' => 'bar2',
+            ],
+            'bar' => 'foo',
+        ];
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())
+            ->method('success')
+            ->with($expected);
+
+        $promise->expects($this->any())
+            ->method('fail')
+            ->willReturnCallback(fn (Throwable $e) => throw $e);
+
+        $this->buildObject(variables: [
+            'ENV' => 'prod',
+            'STAGE' => 'on',
+            'VAL_A' => 3,
+        ])->filteringConditions($values, $promise);
+    }
+
+    public function testFilteringConditionsWithNestedCondition()
+    {
+        $values = [
+            'paas' => [
+                'version' => 1,
+                'foo' => 'bar',
+            ],
+            'if{ENV=prod}' => [
+                'paas' => [
+                    'version' => 2,
+                ],
+                'ingresses' => [
+                    'foo' => [
+                        'host' => 'bar',
+                    ]
+                ]
+            ],
+            'if{ENV=dev}' => [
+                'paas' => [
+                    'version' => 3,
+                ]
+            ],
+            'pods' => [
+                'pod-a' => [
+                    'replicas' => '2',
+                    'containers' => [
+                        'container-a' => [
+                            'image' => 'foo',
+                        ],
+                        'container-b' => [
+                            'image' => 'bar',
+                        ],
+                    ],
+                ],
+                'if{ENV!=dev}' => [
+                    'pod-a' => [
+                        'replicas' => '3',
+                    ]
+                ]
+            ],
+        ];
+
+        $expected = [
+            'paas' => [
+                'version' => 2,
+                'foo' => 'bar',
+            ],
+            'ingresses' => [
+                'foo' => [
+                    'host' => 'bar',
+                ]
+            ],
+            'pods' => [
+                'pod-a' => [
+                    'replicas' => '3',
+                    'containers' => [
+                        'container-a' => [
+                            'image' => 'foo',
+                        ],
+                        'container-b' => [
+                            'image' => 'bar',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())
+            ->method('success')
+            ->with($expected);
+
+        $promise->expects($this->any())
+            ->method('fail')
+            ->willReturnCallback(fn (Throwable $e) => throw $e);
+
+        $this->buildObject(variables: ['ENV' => 'prod'])->filteringConditions($values, $promise);
     }
 }

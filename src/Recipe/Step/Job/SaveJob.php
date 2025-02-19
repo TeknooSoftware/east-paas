@@ -35,6 +35,8 @@ use Teknoo\East\Paas\Writer\JobWriter;
 use Teknoo\Recipe\ChefInterface;
 use Throwable;
 
+use function str_contains;
+
 /**
  * Step to persist a job object into the database.
  *
@@ -60,7 +62,7 @@ class SaveJob
             onFail: static fn (#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     message: 'teknoo.east.paas.job.save_error',
-                    code: 500,
+                    code: str_contains($error->getMessage(), 'time limit exceeded') ? 504 : 500,
                     previous: $error,
                 )
             ),
