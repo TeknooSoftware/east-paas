@@ -1,8 +1,11 @@
-Feature: Export a job
-  As a developer, I need to export a job. The job exported as json can me fully descripted, or only a short digest or
-  without all credentials and keys data
+Feature: Export a job deployment about a project
+  In order to deploy a project
+  As an developer
+  I want to export a job
 
-  Scenario: Return a full JSON export job
+  The job exported as json can me fully descripted, or only a short digest or without all credentials and keys data.
+
+  Scenario: From the API, get a full JSON export job
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted
@@ -20,7 +23,7 @@ Feature: Export a job
     When I export the job "jobid" with "default" data
     Then I must obtain a "full described" job
 
-  Scenario: Return a full JSON export job with quotas limits
+  Scenario: From the API, get a full JSON export job with quotas limits
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted
@@ -38,7 +41,7 @@ Feature: Export a job
     When I export the job "jobid" with "default" data
     Then I must obtain a "full described with quotas" job
 
-  Scenario: Return a desensitized JSON export job
+  Scenario: From the API, get a desensitized JSON export job
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted
@@ -56,7 +59,7 @@ Feature: Export a job
     When I export the job "jobid" with "api" data
     Then I must obtain a "desensitized described" job
 
-  Scenario: Return a digest JSON export job
+  Scenario: From the API, a digest JSON export job
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted

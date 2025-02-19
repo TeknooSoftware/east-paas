@@ -1,8 +1,13 @@
-Feature: Start a job, by running a new deployment on a worker for kubernetes
-  As a developer, I need to start a new deployment, executed by a worker when it receive a normalized job
-  via an http request.
+Feature: Execute a job to deploy a project on a Kubernetes cluster
+  In order to deploy a project
+  As an developer running a worker
+  I want to deploy a project in a Kubernetes cluster
 
-  Scenario: Return an error 400 when the body is not a json
+  The PaaS library must normalize and serialize the job with all required informations to allow the worker to fetch a
+  project on a repository, get vendors and dependencies, compile and prepare it, build images, push them on registries
+  and deploy the project on a Kubernetes cluster.
+
+  Scenario: From the API, for a Kubernetes cluster, push an non json request ang get a 400 error
     Given I have a configured platform
     And the platform is booted
     And a project with a complete paas file
@@ -16,7 +21,639 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     Then I must obtain an HTTP answer with this status code equals to "400"
     And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.job.mal_formed","status":400,"detail":["teknoo.east.paas.error.recipe.job.mal_formed","Syntax error"]}'
 
-  Scenario: Return a valid JSON answer when the job exists and paas file with extends not available
+  Scenario: From the API, for a Kubernetes cluster, run a too long job on a project with a PaaS file and a 500 error
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    And simulate a too long image building
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "500"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"Error, time limit exceeded","status":500,"detail":["Error, time limit exceeded"]}'
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file and get a normalized job's
+  history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file, on encrypted messages
+  between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file using conditions and get a
+  normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with conditions
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file using conditions, on
+  encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with conditions
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file without defined resources
+  on a cluster with quota and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file without resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file without defined resources
+  on a cluster with quota, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file without resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with partial defined
+  resources on a cluster with quota and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with partial resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with partial defined
+  resources on a cluster with quota, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with partial resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with full defined resources
+  on a cluster with quota and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with full defined resources
+  on a cluster with quota, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with full defined resources
+  via relative quota on a cluster with quota and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with resources and relative quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And larges quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with full defined resources
+  via relative quota on a cluster with quota, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with resources and relative quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And larges quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with full defined resources
+  on a cluster with quota, but required resources exceed quota and get a 404 error
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with limited quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "400"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Error, remaining available capacity for `memory` is `6Mi` (soft defined limit), but limit required is `32Mi`"]}'
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with full defined resources
+  on a cluster with quota, on encrypted messages between workers but required resources exceed quota and get a 404 error
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with limited quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "400"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Error, remaining available capacity for `memory` is `6Mi` (soft defined limit), but limit required is `32Mi`"]}'
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server and in PaaS file and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file with defaults
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server and in PaaS file, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with defaults
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server and another defaults dedicated to the cluster in PaaS file and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file with defaults for the cluster
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server and another defaults dedicated to the cluster in PaaS file, on encrypted messages between workers and get
+  a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with defaults for the cluster
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server, overwritten in the job and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have generic defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server, overwritten in the job, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have generic defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server and some defaults dedicated to the cluster are overwritten in the job and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have cluster's defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server and some defaults dedicated to the cluster are overwritten in the job, on encrypted messages between
+  workers and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have cluster's defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server, another defaults dedicated to the cluster in PaaS file and some defaults dedicated to the cluster are
+  overwritten in the job, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And the platform is booted
+    And a project with a complete paas file with defaults for the cluster
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have cluster's defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with defaults values in the
+  PaaS server, another defaults dedicated to the cluster in PaaS file and some defaults dedicated to the cluster are
+  overwritten in the job, on encrypted messages between workers, on encrypted messages between workers and get a
+  normalized job's history
+    Given I have a configured platform
+    And some defaults to compile jobs
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with defaults for the cluster
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And the next job will have cluster's defaults set in job unit
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project using prefix with a PaaS file and get a
+  normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with unavailable extends and
+  get a 400 error
     Given I have a configured platform
     And the platform is booted
     And a project with a paas file using extends
@@ -35,566 +672,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.job.extends-not-available:pods:php-pods-extends","status":400,"detail":["teknoo.east.paas.error.recipe.job.extends-not-available:pods:php-pods-extends"]}'
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the job exists and paas file is valid
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job exists and paas file is valid with encrypted message
-    Given I have a configured platform
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job exists and paas file is valid  with conditions
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file with conditions
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job exists and paas file is validwith conditions with encrypted message
-    Given I have a configured platform
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file with conditions
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid without resources defined
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file without resources
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job with encrypted message and quota exists and paas file is valid without resources defined
-    Given I have a configured platform
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file without resources
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with partial resources defined
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file with partial resources
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job with encrypted message and quota exists and paas file is valid with partial resources defined
-    Given I have a configured platform
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file with partial resources
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with resources defined
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file with resources
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job with encrypted message and quota exists and paas file is valid with resources defined
-    Given I have a configured platform
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file with resources
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with resources defined and relative quota
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file with resources and relative quota
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And larges quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job with encrypted message and quota exists and paas file is valid with resources defined and relative quota
-    Given I have a configured platform
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file with resources and relative quota
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And larges quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job with quota exists and paas file is valid with quota exceeded
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file with limited quota
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "400"
-    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Error, remaining available capacity for `memory` is `6Mi` (soft defined limit), but limit required is `32Mi`"]}'
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job with encrypted message and quota exists and paas file is valid with quota exceeded
-    Given I have a configured platform
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file with limited quota
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And quotas defined for this account
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "400"
-    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Error, remaining available capacity for `memory` is `6Mi` (soft defined limit), but limit required is `32Mi`"]}'
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid with encrypted message
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid and have defaults
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And the platform is booted
-    And a project with a complete paas file with defaults
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid and have defaults with encrypted message
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file with defaults
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid and have defaults for the cluster
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And the platform is booted
-    And a project with a complete paas file with defaults for the cluster
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job, with server's defaults, exists and paas file is valid and have defaults for the cluster, with encrypted message
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file with defaults for the cluster
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And the next job will have generic defaults set in job unit
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid with encrypted message
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And the next job will have generic defaults set in job unit
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And the next job will have cluster's defaults set in job unit
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid, with encrypted message
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And the next job will have cluster's defaults set in job unit
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid and have defaults for the cluster
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And the platform is booted
-    And a project with a complete paas file with defaults for the cluster
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And the next job will have cluster's defaults set in job unit
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job with defaults set in job unit, with server's defaults, exists and paas file is valid and have defaults for the cluster, with encrypted message
-    Given I have a configured platform
-    And some defaults to compile jobs
-    And encryption capacities between servers and agents
-    And the platform is booted
-    And a project with a complete paas file with defaults for the cluster
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And the next job will have cluster's defaults set in job unit
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be encrypted
-
-  Scenario: Return a valid JSON answer when the job exists and paas file with extends is valid
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file using extends and get a
+  normalized job's history
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted
@@ -615,27 +694,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
-  Scenario: Return an error 500 when the job takes too long
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    And simulate a too long image building
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "500"
-    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"Error, time limit exceeded","status":500,"detail":["Error, time limit exceeded"]}'
-    And all messages must be not encrypted
-
-  Scenario: Return an error 500 when the job takes too long with a paas file extends
+  Scenario: From the API, for a Kubernetes cluster, run a too long job on a project with a PaaS file using extends and
+  a 500 error
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted
@@ -656,27 +716,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"Error, time limit exceeded","status":500,"detail":["Error, time limit exceeded"]}'
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the job exists with prefix and paas file is valid
-    Given I have a configured platform
-    And the platform is booted
-    And a project with a complete paas file
-    And a job workspace agent
-    And a git cloning agent
-    And a composer hook as hook builder
-    And an OCI builder
-    And a kubernetes client
-    And A consumer Account "fooBar"
-    And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
-    And a cluster "behat-cluster" dedicated to the environment "prod"
-    And a repository on the url "https://github.com/foo/bar"
-    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
-    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
-    Then I must obtain an HTTP answer with this status code equals to "200"
-    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
-    And all messages must be not encrypted
-
-  Scenario: Return a valid JSON answer when the job exists with prefix and paas file with extends is valid
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project using prefix with a PaaS file using extends
+  and get a normalized job's history
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted
@@ -697,7 +738,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the job exists with hierarchical namespace and paas file is valid
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file, on cluster supporting
+  hierarchical namespace and get a normalized job's history
     Given I have a configured platform
     And the platform is booted
     And a project with a complete paas file
@@ -718,7 +760,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the job exists with hierarchical namespace and paas file with extends is valid
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file using extends, on cluster
+  supporting hierarchical namespace and get a normalized job's history
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted
@@ -740,7 +783,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the job exists with hierarchical namespace and prefix and paas file is valid
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project using prefix with a PaaS file, on cluster
+  supporting hierarchical namespace and get a normalized job's history
     Given I have a configured platform
     And the platform is booted
     And a project with a complete paas file
@@ -761,7 +805,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer when the job exists with hierarchical namespace and prefix and paas file with extends is valid
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project using prefix with a PaaS file using extends,
+  on cluster supporting hierarchical namespace and get a normalized job's history
     Given I have a configured platform
     And extensions libraries provided by administrators
     And the platform is booted
@@ -783,7 +828,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And some Kubernetes manifests have been created
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer with a paas file without validated requirements
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file without validated
+  requirements and get a 404 error
     Given I have a configured platform
     And the platform is booted
     And a project with a paas file with requirements
@@ -802,7 +848,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":404,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","These requirements `set1`, `set2` are not validated"]}'
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer with a paas file with validated requirements
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with validated requirements
+  and get a normalized job's history
     Given I have a configured platform
     And the platform is booted
     And a project with a paas file with requirements
@@ -822,7 +869,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And all messages must be not encrypted
 
-  Scenario: Return a valid JSON answer with encrypted message with a paas file without validated requirements
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file without validated
+  requirements, on encrypted messages between workers and get a 404 error
     Given I have a configured platform
     And encryption capacities between servers and agents
     And the platform is booted
@@ -842,7 +890,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":404,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","These requirements `set1`, `set2` are not validated"]}'
     And all messages must be encrypted
 
-  Scenario: Return a valid JSON answer with encrypted message with a paas file with validated requirements
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with validated requirements,
+  on encrypted messages between workers and get a normalized job's history
     Given I have a configured platform
     And encryption capacities between servers and agents
     And the platform is booted
@@ -863,7 +912,8 @@ Feature: Start a job, by running a new deployment on a worker for kubernetes
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And all messages must be encrypted
 
-  Scenario: Return a valid JSON answer with encrypted message with a paas file with validated reqs and enhancements
+  Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file with enhancements and
+  validated requirements, on encrypted messages between workers and get a normalized job's history
     Given I have a configured platform
     And encryption capacities between servers and agents
     And the platform is booted

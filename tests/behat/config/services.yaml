@@ -16,7 +16,7 @@ parameters:
 
   teknoo.east.paas.symfony.view.job.list.file: '@@TeknooEastPaas/AdminJob/list.html.twig'
 
-  teknoo_website_hostname: 'localhost'
+  api_hostname: 'localhost'
 
   teknoo.east.paas.symfony.history.prefer-real-date: false
   teknoo.east.paas.symfony.prepare-job.prefer-real-date: false

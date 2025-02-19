@@ -747,7 +747,7 @@ class FeatureContext implements Context
     {
         $this->calledUrl = $url;
 
-        $request = Request::create('https://'.$this->sfContainer->getParameter('teknoo_website_hostname').$this->calledUrl, 'PUT', [], [], [], [], $this->requestBody);
+        $request = Request::create('https://'.$this->sfContainer->getParameter('api_hostname').$this->calledUrl, 'PUT', [], [], [], [], $this->requestBody);
         $this->response = $this->kernel->handle($request);
     }
 
@@ -764,7 +764,7 @@ class FeatureContext implements Context
         $this->requestBody = $body;
 
         $request = Request::create(
-            uri: 'https://' . $this->sfContainer->getParameter('teknoo_website_hostname') . $this->calledUrl,
+            uri: 'https://' . $this->sfContainer->getParameter('api_hostname') . $this->calledUrl,
             method: 'PUT',
             server: ['CONTENT_TYPE' => $contentType],
             content: $this->requestBody,
@@ -792,7 +792,7 @@ class FeatureContext implements Context
         );
 
         $request = Request::create(
-            uri: 'https://' . $this->sfContainer->getParameter('teknoo_website_hostname') . $this->calledUrl,
+            uri: 'https://' . $this->sfContainer->getParameter('api_hostname') . $this->calledUrl,
             method: 'PUT',
             content: $body,
         );
@@ -833,7 +833,7 @@ class FeatureContext implements Context
         );
 
         $request = Request::create(
-            uri: 'https://' . $this->sfContainer->getParameter('teknoo_website_hostname') . $this->calledUrl,
+            uri: 'https://' . $this->sfContainer->getParameter('api_hostname') . $this->calledUrl,
             method: 'PUT',
             content: $body,
         );
