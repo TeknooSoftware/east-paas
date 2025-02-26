@@ -39,8 +39,15 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PopulatedVolumeInterface;
+use Teknoo\Kubernetes\Model\CronJob;
+use Teknoo\Kubernetes\Model\Deployment;
+use Teknoo\Kubernetes\Model\Job;
+use Teknoo\Kubernetes\Model\Model;
+use Teknoo\Kubernetes\Model\StatefulSet;
+use Teknoo\Kubernetes\Repository\Repository;
 
 use function array_map;
+use function substr;
 
 /**
  * Trait to factorise pods' features transcribing
@@ -209,7 +216,7 @@ trait PodsTranscriberTrait
                 $spec['resources'] = $resourcesReqs;
             }
 
-            $specs['spec']['template']['spec']['containers'][] = $spec;
+            $specs['containers'][] = $spec;
         }
     }
 
@@ -221,7 +228,7 @@ trait PodsTranscriberTrait
     {
         foreach ($volumes as $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
-                $specs['spec']['template']['spec']['volumes'][] = [
+                $specs['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'persistentVolumeClaim' => [
                         'claimName' => $prefixer($volume->getName()),
@@ -232,7 +239,7 @@ trait PodsTranscriberTrait
             }
 
             if ($volume instanceof SecretVolume) {
-                $specs['spec']['template']['spec']['volumes'][] = [
+                $specs['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'secret' => [
                         'secretName' => $prefixer($volume->getSecretIdentifier() . self::SECRET_SUFFIX),
@@ -243,7 +250,7 @@ trait PodsTranscriberTrait
             }
 
             if ($volume instanceof MapVolume) {
-                $specs['spec']['template']['spec']['volumes'][] = [
+                $specs['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'configMap' => [
                         'name' => $prefixer($volume->getMapIdentifier() . self::MAP_SUFFIX),
@@ -289,13 +296,84 @@ trait PodsTranscriberTrait
                 $initContainerSpec['resources'] = $resourcesReqs;
             }
 
-            $specs['spec']['template']['spec']['initContainers'][] = $initContainerSpec;
+            $specs['initContainers'][] = $initContainerSpec;
 
-            $specs['spec']['template']['spec']['volumes'][] = [
+            $specs['volumes'][] = [
                 'name' => $volume->getName() . self::VOLUME_SUFFIX,
                 'emptyDir' => []
             ];
         }
+    }
+
+    /**
+     * @param array<string, array<string, Image>>|Image[][] $images
+     * @param array<string, Volume>|Volume[] $volumes
+     * @return array<string, mixed>
+     */
+    protected static function podTemplateSpecWriting(
+        Pod $pod,
+        array $images,
+        array $volumes,
+        callable $prefixer,
+        string $requireLabel,
+        DefaultsBag $defaultsBag,
+    ): array {
+        $hostAlias = [
+            'hostnames' => [],
+            'ip' => '127.0.0.1',
+        ];
+        foreach ($pod as $container) {
+            $hostAlias['hostnames'][] = $container->getName();
+        }
+
+        $hostAliases = [$hostAlias];
+
+        $spec = [
+            'hostAliases' => $hostAliases,
+            'containers' => [],
+        ];
+
+        $imagePullSecretsName = $pod->getOciRegistryConfigName();
+        if ($imagePullSecretsName instanceof Reference) {
+            $imagePullSecretsName = $defaultsBag->resolve($imagePullSecretsName);
+        }
+
+        if (!empty($imagePullSecretsName)) {
+            $spec['imagePullSecrets'] = [
+                [
+                    'name' => $imagePullSecretsName,
+                ],
+            ];
+        }
+
+        if (null !== ($fsGroup = $pod->getFsGroup())) {
+            $spec['securityContext']['fsGroup'] = $fsGroup;
+        }
+
+        if (!empty($requires = $pod->getRequires())) {
+            $exprs = [];
+            foreach ($requires as $require) {
+                $exprs[] = [
+                    'key' => "$requireLabel/$require",
+                    'operator' => 'Exists',
+                ];
+            }
+
+            $spec['affinity']['nodeAffinity'] = [
+                'requiredDuringSchedulingIgnoredDuringExecution' => [
+                    'nodeSelectorTerms' => [
+                        [
+                            'matchExpressions' => $exprs,
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        self::convertToVolumes($spec, $pod, $volumes, $prefixer);
+        self::convertToContainer($spec, $pod, $images, $prefixer);
+
+        return $spec;
     }
 
     /**
@@ -316,16 +394,6 @@ trait PodsTranscriberTrait
         bool $addServiceName,
         DefaultsBag $defaultsBag,
     ): array {
-        $hostAlias = [
-            'hostnames' => [],
-            'ip' => '127.0.0.1',
-        ];
-        foreach ($pod as $container) {
-            $hostAlias['hostnames'][] = $container->getName();
-        }
-
-        $hostAliases = [$hostAlias];
-
         $specs = [
             'metadata' => [
                 'name' => $name . self::NAME_SUFFIX,
@@ -355,10 +423,14 @@ trait PodsTranscriberTrait
                             'vname' => $name . '-v' . $version,
                         ],
                     ],
-                    'spec' => [
-                        'hostAliases' => $hostAliases,
-                        'containers' => [],
-                    ],
+                    'spec' => self::podTemplateSpecWriting(
+                        pod: $pod,
+                        images: $images,
+                        volumes: $volumes,
+                        prefixer: $prefixer,
+                        requireLabel: $requireLabel,
+                        defaultsBag: $defaultsBag,
+                    ),
                 ],
             ],
         ];
@@ -369,46 +441,32 @@ trait PodsTranscriberTrait
 
         $specs['spec']['strategy'] = $updateStrategy();
 
-        $imagePullSecretsName = $pod->getOciRegistryConfigName();
-        if ($imagePullSecretsName instanceof Reference) {
-            $imagePullSecretsName = $defaultsBag->resolve($imagePullSecretsName);
-        }
-
-        if (!empty($imagePullSecretsName)) {
-            $specs['spec']['template']['spec']['imagePullSecrets'] = [
-                [
-                    'name' => $imagePullSecretsName,
-                ],
-            ];
-        }
-
-        if (null !== ($fsGroup = $pod->getFsGroup())) {
-            $specs['spec']['template']['spec']['securityContext']['fsGroup'] = $fsGroup;
-        }
-
-        if (!empty($requires = $pod->getRequires())) {
-            $exprs = [];
-            foreach ($requires as $require) {
-                $exprs[] = [
-                    'key' => "$requireLabel/$require",
-                    'operator' => 'Exists',
-                ];
-            }
-
-            $specs['spec']['template']['spec']['affinity']['nodeAffinity'] = [
-                'requiredDuringSchedulingIgnoredDuringExecution' => [
-                    'nodeSelectorTerms' => [
-                        [
-                            'matchExpressions' => $exprs,
-                        ],
-                    ],
-                ],
-            ];
-        }
-
-        self::convertToVolumes($specs, $pod, $volumes, $prefixer);
-        self::convertToContainer($specs, $pod, $images, $prefixer);
-
         return $specs;
+    }
+
+    /**
+     * @param Repository<Deployment|StatefulSet|Job|CronJob> $repository
+     */
+    private static function getVersion(
+        string $name,
+        Repository $repository,
+        ?int &$oldVersion,
+        ?Model &$previousManifest
+    ): int {
+        $previousManifest = $repository->setLabelSelector(['name' => $name])->first();
+
+        $version = 1;
+        if (null !== $previousManifest) {
+            $annotations = $previousManifest->toArray();
+            $oldVersion = (
+                (int) substr(
+                    string: ($annotations['metadata']['annotations']['teknoo.east.paas.version'] ?? 'v1'),
+                    offset: 1,
+                )
+            );
+            $version = $oldVersion + 1;
+        }
+
+        return $version;
     }
 }

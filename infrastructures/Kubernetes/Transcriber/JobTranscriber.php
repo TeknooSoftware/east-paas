@@ -26,50 +26,39 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
-use Teknoo\Kubernetes\Model\StatefulSet;
+use Teknoo\Kubernetes\Model\Job as JobModel;
 use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
-use function substr;
-
 /**
- * "Stateful Sets transcriber" to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsSet
- * manifest.
- *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class StatefulSetsTranscriber implements DeploymentInterface
+class JobTranscriber implements DeploymentInterface
 {
-    use CommonTrait;
-    use PodsTranscriberTrait;
+    use JobTranscriberTrait;
 
-    private const NAME_SUFFIX = '-sfset';
-    private const POD_SUFFIX = '-pod';
-    private const VOLUME_SUFFIX = '-volume';
-    private const SECRET_SUFFIX = '-secret';
-    private const MAP_SUFFIX = '-map';
-
+    private const NAME_SUFFIX = '-job';
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param array<string, Volume>|Volume[] $volumes
-     * @return array<string, mixed>
+     * @return iterable<JobModel>
      */
-    protected static function writeSpec(
+    private static function convertToJob(
         string $name,
-        Pod $pod,
+        Job $job,
         array $images,
         array $volumes,
         string $namespace,
@@ -77,54 +66,12 @@ class StatefulSetsTranscriber implements DeploymentInterface
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
-    ): array {
-        return static::commonSpecWriting(
-            name: $name,
-            pod: $pod,
-            images: $images,
-            volumes: $volumes,
-            namespace: $namespace,
-            version: $version,
-            prefixer: $prefixer,
-            requireLabel: $requireLabel,
-            updateStrategy: fn () => match ($pod->getUpgradeStrategy()) {
-                UpgradeStrategy::RollingUpgrade => [
-                    'type' => 'RollingUpdate',
-                    'rollingUpdate' => [
-                        'maxSurge' => $pod->getMaxUpgradingPods(),
-                        'maxUnavailable' => $pod->getMaxUnavailablePods(),
-                    ],
-                ],
-                UpgradeStrategy::Recreate => [
-                    'type' => 'OnDelete',
-                ],
-                UpgradeStrategy::OnDelete => [
-                    'type' => 'OnDelete',
-                ],
-            },
-            addServiceName: true,
-            defaultsBag: $defaultsBag,
-        );
-    }
+    ): iterable {
+        $final = [];
 
-    /**
-     * @param array<string, array<string, Image>>|Image[][] $images
-     * @param array<string, Volume>|Volume[] $volumes
-     */
-    private static function convertToStatefullSets(
-        string $name,
-        Pod $pod,
-        array $images,
-        array $volumes,
-        string $namespace,
-        int $version,
-        callable $prefixer,
-        string $requireLabel,
-        defaultsBag $defaultsBag,
-    ): StatefulSet {
-        return new StatefulSet(
-            static::writeSpec(
-                name: $name,
+        foreach ($job->getPods() as $pod) {
+            $spec = self::writeJobSpec(
+                job: $job,
                 pod: $pod,
                 images: $images,
                 volumes: $volumes,
@@ -133,22 +80,37 @@ class StatefulSetsTranscriber implements DeploymentInterface
                 prefixer: $prefixer,
                 requireLabel: $requireLabel,
                 defaultsBag: $defaultsBag,
-            )
-        );
+            );
+
+            $spec['metadata'] = [
+                'name' => $name . self::NAME_SUFFIX,
+                'namespace' => $namespace,
+                'labels' => [
+                    'name' => $prefixer($job->getName()),
+                ],
+                'annotations' => [
+                    'teknoo.east.paas.version' => 'v' . $version,
+                ],
+            ];
+
+            $final[] = new JobModel($spec);
+        }
+
+        return $final;
     }
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
         PromiseInterface $promise,
-        defaultsBag $defaultsBag,
+        DefaultsBag $defaultsBag,
         string $namespace,
         bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $requireLabel = $this->requireLabel;
-        $compiledDeployment->foreachPod(
+        $compiledDeployment->foreachJob(
             static function (
-                Pod $pod,
+                Job $job,
                 array $images,
                 array $volumes,
                 string $prefix,
@@ -159,7 +121,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                 $requireLabel,
                 $defaultsBag,
             ): void {
-                if ($pod->isStateless()) {
+                if ($job->getPlanning() !== Planning::DuringDeployment) {
                     return;
                 }
 
@@ -169,21 +131,22 @@ class StatefulSetsTranscriber implements DeploymentInterface
                         $client->setNamespace($namespace);
                     }
 
-                    $name = $prefixer($pod->getName());
-                    $sfsRepository = $client->statefulsets();
+                    $name = $prefixer($job->getName());
+                    /** @var Repository<JobModel> $dRepository */
+                    $dRepository = $client->jobs();
 
-                    $previousStatefulSet = null;
+                    $previousJob = null;
                     $oldVersion = 0;
-                    $version = self::getVersion($name, $sfsRepository, $oldVersion, $previousStatefulSet);
+                    $version = self::getVersion($name, $dRepository, $oldVersion, $previousJob);
                 } catch (Throwable $error) {
                     $promise->fail($error);
 
                     return;
                 }
 
-                $kubeSet = self::convertToStatefullSets(
+                $kubeSets = self::convertToJob(
                     name: $name,
-                    pod: $pod,
+                    job: $job,
                     images: $images,
                     volumes: $volumes,
                     namespace: $namespace,
@@ -194,25 +157,14 @@ class StatefulSetsTranscriber implements DeploymentInterface
                 );
 
                 try {
-                    $result = $sfsRepository->apply($kubeSet);
+                    $resultsSet = [];
+                    foreach ($kubeSets as $kubeSet) {
+                        $result = $dRepository->apply($kubeSet);
 
-                    $result = self::cleanResult($result);
-
-                    if (
-                        null !== $previousStatefulSet
-                        && UpgradeStrategy::Recreate === $pod->getUpgradeStrategy()
-                    ) {
-                        //If upgrade strategy is recreate, not natively available in kubernetes, we will delete current
-                        //pods
-                        /** @var Repository<StatefulSet> $pods */
-                        $pods = $client->pods();
-                        $labelSelector = ['vname' => $name . '-v' . $oldVersion];
-                        foreach ($pods->setLabelSelector($labelSelector)->find() as $podModel) {
-                            $pods->delete($podModel);
-                        }
+                        $resultsSet[] = self::cleanResult($result);
                     }
 
-                    $promise->success($result);
+                    $promise->success($resultsSet);
                 } catch (Throwable $throwable) {
                     $promise->fail($throwable);
                 }

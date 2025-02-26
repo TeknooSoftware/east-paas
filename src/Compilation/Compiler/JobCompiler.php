@@ -167,7 +167,7 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
 
     public function extends(array &$definitions): ExtenderInterface
     {
-         foreach ($definitions as &$config) {
+        foreach ($definitions as &$config) {
             if (isset($config[self::KEY_EXTENDS])) {
                 $libName = $config[self::KEY_EXTENDS];
                 if (!is_string($libName)) {

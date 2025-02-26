@@ -50,6 +50,9 @@ parameters:
             message: '#SecretTranscriber::encode#'
             path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
         -
+            message: '#::getVersion\(\) expects#'
+            path: infrastructures/Kubernetes/Transcriber/
+        -
             message: '#mixed given#'
             path: infrastructures/Doctrine/Form/Type/AccountType.php
         -
