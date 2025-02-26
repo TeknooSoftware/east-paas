@@ -38,6 +38,7 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 use function is_string;
+use function strtoupper;
 
 /**
  * Compilation module able to convert `services` sections in paas.yaml file as Service instance.
@@ -88,7 +89,7 @@ class ServiceCompiler implements CompilerInterface, ExtenderInterface
                     $name,
                     $config[self::KEY_POD_NAME] ?? $name,
                     $ports,
-                    Transport::from($config[self::KEY_PROTOCOL] ?? Transport::Tcp->value),
+                    Transport::from(strtoupper($config[self::KEY_PROTOCOL] ?? Transport::Tcp->value)),
                     !isset($config[self::KEY_INTERNAL]) || !empty($config[self::KEY_INTERNAL])
                 )
             );

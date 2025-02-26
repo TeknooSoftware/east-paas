@@ -25,6 +25,9 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -39,16 +42,68 @@ class Job implements ImmutableInterface
 {
     use ImmutableTrait;
 
+    /**
+     * @param array<string, Pod> $pods
+     */
     public function __construct(
-        string $name,
-        array $pods,
-        int $completionsCount,
-        bool $isParallel,
-        CompletionMode $mode,
-        CompletionSuccess $successCondition,
-        ?int $timeLimit = null,
-        RunMode $mode,
-        string $runWhen,
+        private readonly string $name,
+        private readonly array $pods,
+        private readonly int $completionsCount,
+        private readonly bool $isParallel,
+        private readonly CompletionMode $completion,
+        private readonly ?SuccessCondition $successCondition,
+        private readonly ?int $timeLimit,
+        private readonly Planning $planning,
+        private readonly ?string $planningScheduled,
     ) {
+        $this->uniqueConstructorCheck();
+    }
+
+    public function getCompletion(): CompletionMode
+    {
+        return $this->completion;
+    }
+
+    public function getCompletionsCount(): int
+    {
+        return $this->completionsCount;
+    }
+
+    public function isParallel(): bool
+    {
+        return $this->isParallel;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getPlanning(): Planning
+    {
+        return $this->planning;
+    }
+
+    public function getPlanningScheduled(): ?string
+    {
+        return $this->planningScheduled;
+    }
+
+    /**
+     * @return array<string, Pod>
+     */
+    public function getPods(): array
+    {
+        return $this->pods;
+    }
+
+    public function getSuccessCondition(): SuccessCondition
+    {
+        return $this->successCondition;
+    }
+
+    public function getTimeLimit(): ?int
+    {
+        return $this->timeLimit;
     }
 }

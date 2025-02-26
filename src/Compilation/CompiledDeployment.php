@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Compilation;
 use DomainException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
@@ -82,6 +83,11 @@ class CompiledDeployment implements CompiledDeploymentInterface
      * @var array<string, Pod>|Pod[]
      */
     private array $pods = [];
+
+    /**
+     * @var array<string, Job>|Job[]
+     */
+    private array $jobs = [];
 
     /**
      * @var array<string, Service>
@@ -197,6 +203,13 @@ class CompiledDeployment implements CompiledDeploymentInterface
         return $this;
     }
 
+    public function addJob(string $name, Job $jod): CompiledDeploymentInterface
+    {
+        $this->jobs[$name] = $jod;
+
+        return $this;
+    }
+
     public function addSecret(string $name, Secret $secret): CompiledDeploymentInterface
     {
         $this->secrets[$name] = $secret;
@@ -234,13 +247,25 @@ class CompiledDeployment implements CompiledDeploymentInterface
         return $this;
     }
 
+    /**
+     * @return iterable<Pod>
+     */
+    private function listAllPods(): iterable
+    {
+        yield from $this->pods;
+
+        foreach ($this->jobs as $job) {
+            yield from $job->getPods();
+        }
+    }
+
     public function foreachVolume(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->volumes as $name => $volume) {
             $callback($name, $volume, $this->prefix);
         }
 
-        foreach ($this->pods as $pod) {
+        foreach ($this->listAllPods() as $pod) {
             foreach ($pod as $container) {
                 foreach ($container->getVolumes() as $name => $volume) {
                     $callback($name, $volume, $this->prefix);
@@ -254,7 +279,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
     public function foreachBuildable(callable $callback): CompiledDeploymentInterface
     {
         $processedBuildables = [];
-        foreach ($this->pods as $pod) {
+        foreach ($this->listAllPods() as $pod) {
             foreach ($pod as $container) {
                 $buildable = $container->getImage();
                 $version = $container->getVersion();
@@ -295,28 +320,44 @@ class CompiledDeployment implements CompiledDeploymentInterface
         return $this;
     }
 
-    public function foreachPod(callable $callback): CompiledDeploymentInterface
+    private function callbackAboutPod(Pod $pod, callable $callback): void
     {
-        foreach ($this->pods as $pod) {
-            $buildables = [];
-            $volumes = [];
-            foreach ($pod as $container) {
-                $imgName = $container->getImage();
-                $imgVersion = $container->getVersion();
+        $buildables = [];
+        $volumes = [];
+        foreach ($pod as $container) {
+            $imgName = $container->getImage();
+            $imgVersion = $container->getVersion();
 
-                if ($this->hasBuildable($imgName, $imgVersion)) {
-                    $buildables[$imgName][$imgVersion] = $this->getBuildable($imgName, $imgVersion);
-                    foreach ($container->getVolumes() as $name => $volume) {
-                        if ($volume instanceof PopulatedVolumeInterface) {
-                            $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
-                        } else {
-                            $volumes[$container->getName() . '_' . $name] = $volume;
-                        }
+            if ($this->hasBuildable($imgName, $imgVersion)) {
+                $buildables[$imgName][$imgVersion] = $this->getBuildable($imgName, $imgVersion);
+                foreach ($container->getVolumes() as $name => $volume) {
+                    if ($volume instanceof PopulatedVolumeInterface) {
+                        $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
+                    } else {
+                        $volumes[$container->getName() . '_' . $name] = $volume;
                     }
                 }
             }
+        }
 
-            $callback($pod, $buildables, $volumes, $this->prefix);
+        $callback($pod, $buildables, $volumes, $this->prefix);
+    }
+
+    public function foreachPod(callable $callback): CompiledDeploymentInterface
+    {
+        foreach ($this->pods as $pod) {
+            $this->callbackAboutPod($pod, $callback);
+        }
+
+        return $this;
+    }
+
+    public function foreachJob(callable $callback): CompiledDeploymentInterface
+    {
+        foreach ($this->jobs as $job) {
+            foreach ($job->getPods() as $pod) {
+                $this->callbackAboutPod($pod, $callback);
+            }
         }
 
         return $this;

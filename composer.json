@@ -82,7 +82,7 @@
         "symfony/var-exporter": "^6.4||^7.2",
         "symfony/yaml": "^6.4||^7.2",
         "teknoo/bridge-phpdi-symfony": "^6.1.1",
-        "teknoo/kubernetes-client": "^1.7.2"
+        "teknoo/kubernetes-client": "^1.7.3"
     },
     "autoload": {
         "psr-4": {
