@@ -122,15 +122,25 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
                 );
             }
 
-            $planning = Planning::from($config[self::KEY_PLANNING] ?? Planning::DuringDeployment->value);
+            $planning = null;
+            if (isset($config[self::KEY_PLANNING])) {
+                $planning = Planning::from($config[self::KEY_PLANNING]);
+            }
+
             $planningScheduled = null;
             if (isset($config[self::KEY_PLANNING_SCHEDULE])) {
-                $planning = Planning::Scheduled;
+                $planning ??= Planning::Scheduled;
                 $planningScheduled = $config[self::KEY_PLANNING_SCHEDULE];
             }
 
+            $planning ??= Planning::DuringDeployment;
+
             if (empty($planningScheduled) && $planning === Planning::Scheduled) {
                 throw new DomainException("teknoo.east.paas.error.recipe.job.scheduling-not-configured", 400);
+            }
+
+            if (!empty($planningScheduled) && $planning === Planning::DuringDeployment) {
+                throw new DomainException("teknoo.east.paas.error.recipe.job.scheduling-is-configured", 400);
             }
 
             $completion = $config[self::KEY_COMPLETIONS] ?? [];
@@ -157,7 +167,7 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
 
     public function extends(array &$definitions): ExtenderInterface
     {
-        foreach ($definitions as &$config) {
+         foreach ($definitions as &$config) {
             if (isset($config[self::KEY_EXTENDS])) {
                 $libName = $config[self::KEY_EXTENDS];
                 if (!is_string($libName)) {

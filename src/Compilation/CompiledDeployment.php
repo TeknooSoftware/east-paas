@@ -320,7 +320,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
         return $this;
     }
 
-    private function callbackAboutPod(Pod $pod, callable $callback): void
+    private function callbackAboutPods(Pod|Job $object, Pod $pod, callable $callback): void
     {
         $buildables = [];
         $volumes = [];
@@ -340,13 +340,13 @@ class CompiledDeployment implements CompiledDeploymentInterface
             }
         }
 
-        $callback($pod, $buildables, $volumes, $this->prefix);
+        $callback($object, $buildables, $volumes, $this->prefix);
     }
 
     public function foreachPod(callable $callback): CompiledDeploymentInterface
     {
         foreach ($this->pods as $pod) {
-            $this->callbackAboutPod($pod, $callback);
+            $this->callbackAboutPods($pod, $pod, $callback);
         }
 
         return $this;
@@ -356,7 +356,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
     {
         foreach ($this->jobs as $job) {
             foreach ($job->getPods() as $pod) {
-                $this->callbackAboutPod($pod, $callback);
+                $this->callbackAboutPods($job, $pod, $callback);
             }
         }
 
