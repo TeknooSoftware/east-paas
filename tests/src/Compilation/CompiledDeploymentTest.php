@@ -27,13 +27,16 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
@@ -44,6 +47,11 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
+
+use TypeError;
+
+use function current;
+use function strpos;
 
 /**
  * @license     https://teknoo.software/license/mit         MIT License
@@ -59,8 +67,8 @@ class CompiledDeploymentTest extends TestCase
 
     public function testSetDefaultBagsWrongBuildable()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setDefaultBags(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setDefaultBags(new stdClass());
     }
 
     public function testSetDefaultBags()
@@ -75,8 +83,8 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddBuildableWrongBuildable()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addBuildable(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addBuildable(new stdClass());
     }
 
     public function testAddBuildable()
@@ -91,19 +99,19 @@ class CompiledDeploymentTest extends TestCase
 
     public function testupdateBuildableWrongOldBuildable()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->updateBuildable(
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(BuildableInterface::class)
         );
     }
 
     public function testupdateBuildableWrongNewBuildable()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->updateBuildable(
             $this->createMock(BuildableInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
@@ -120,14 +128,14 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddHookWrongHook()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addHook('foo', new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addHook('foo', new stdClass());
     }
 
     public function testAddHookWrongHookName()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addHook(new \stdClass(), $this->createMock(HookInterface::class));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addHook(new stdClass(), $this->createMock(HookInterface::class));
     }
 
     public function testAddHook()
@@ -143,14 +151,14 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddVolumeWrongVolume()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addVolume('foo', new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addVolume('foo', new stdClass());
     }
 
     public function testAddVolumeWrongVolumeName()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addVolume(new \stdClass(), $this->createMock(Volume::class));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addVolume(new stdClass(), $this->createMock(Volume::class));
     }
 
     public function testAddVolume()
@@ -166,9 +174,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testImportVolumeWrongVolumeFrom()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->importVolume(
-            new \stdClass(),
+            new stdClass(),
             'foo',
             $this->createMock(PromiseInterface::class)
         );
@@ -176,21 +184,21 @@ class CompiledDeploymentTest extends TestCase
 
     public function testImportVolumeWrongMountPath()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->importVolume(
             'foo',
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(PromiseInterface::class)
         );
     }
 
     public function testImportVolumeWrongProise()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->importVolume(
             'foo',
             'bar',
-            new \stdClass()
+            new stdClass()
         );
     }
 
@@ -261,14 +269,14 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddServiceWrongService()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addService('foo', new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addService('foo', new stdClass());
     }
 
     public function testAddServiceWrongServiceName()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addService(new \stdClass(), $this->createMock(Service::class));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addService(new stdClass(), $this->createMock(Service::class));
     }
 
     public function testAddService()
@@ -284,14 +292,14 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddSecretWrongSecret()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addSecret('foo', new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addSecret('foo', new stdClass());
     }
 
     public function testAddSecretWrongSecretName()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addSecret(new \stdClass(), $this->createMock(Secret::class));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addSecret(new stdClass(), $this->createMock(Secret::class));
     }
 
     public function testAddSecret()
@@ -307,14 +315,14 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddMapWrongMap()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addMap('foo', new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addMap('foo', new stdClass());
     }
 
     public function testAddMapWrongMapName()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addMap(new \stdClass(), $this->createMock(Map::class));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addMap(new stdClass(), $this->createMock(Map::class));
     }
 
     public function testAddMap()
@@ -330,14 +338,14 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddIngressWrongIngress()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addIngress('foo', new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addIngress('foo', new stdClass());
     }
 
     public function testAddIngressWrongIngressName()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addIngress(new \stdClass(), $this->createMock(Ingress::class));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addIngress(new stdClass(), $this->createMock(Ingress::class));
     }
 
     public function testAddIngress()
@@ -353,14 +361,14 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddPodWrongContainer()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addPod('foo', new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addPod('foo', new stdClass());
     }
 
     public function testAddPodWrongContainerName()
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->addPod(new \stdClass(), $this->createMock(Pod::class));
+        $this->expectException(TypeError::class);
+        $this->buildObject()->addPod(new stdClass(), $this->createMock(Pod::class));
     }
 
     public function testAddPod()
@@ -392,9 +400,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testForeachHookBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->foreachHook(new \stdClass());
+        $this->buildObject()->foreachHook(new stdClass());
     }
 
     public function testForeachHook()
@@ -426,12 +434,12 @@ class CompiledDeploymentTest extends TestCase
 
     public function testForeachVolumeBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->foreachVolume(new \stdClass());
+        $this->buildObject()->foreachVolume(new stdClass());
     }
 
-    public function testForeachVolume()
+    public function testForeachVolumeOnlyWithPod()
     {
         $cd = $this->buildObject();
 
@@ -475,7 +483,161 @@ class CompiledDeploymentTest extends TestCase
         self::assertInstanceOf(
             CompiledDeployment::class,
             $cd->foreachVolume(function ($name, $volume) use (&$count) {
-                self::assertEquals(0, \strpos($name, 'foo'));
+                self::assertEquals(0, strpos($name, 'foo'));
+                self::assertInstanceOf(Volume::class, $volume);
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(3, $count);
+    }
+
+    public function testForeachVolumeOnlyWithJob()
+    {
+        $cd = $this->buildObject();
+
+        $cd->addVolume(
+            'foo1',
+            new Volume('foo1', [], 'bar', '/mount')
+        );
+
+        $cd->addVolume(
+            'foo2',
+            new Volume('foo2', [], 'bar', '/mount')
+        );
+
+        $cd->addBuildable(
+            $img = (new Image('foo', 'bar', false, '1.2', ['foo' => 'bar']))
+        );
+
+        $cd->addJob(
+            'foo1',
+            new Job(
+                name: 'foo1',
+                pods: [
+                    'foo1' => new Pod(
+                        'foo1',
+                        1,
+                        [
+                            new Container(
+                                'foo1',
+                                'foo',
+                                '1.2',
+                                [80],
+                                [
+                                    'foo3' => new Volume('foo3', [], 'bar', '/mount')
+                                ],
+                                [],
+                                $this->createMock(CompiledDeployment\HealthCheck::class),
+                                $this->createMock(CompiledDeployment\ResourceSet::class),
+                            )
+                        ]
+                    )
+                ],
+                completionsCount: 1,
+                isParallel: false,
+                completion: Job\CompletionMode::Common,
+                successCondition: null,
+                timeLimit: 10,
+                planning: Planning::DuringDeployment,
+                planningSchedule: null,
+            )
+        );
+
+        $cd->addPod(
+            'foo2',
+            new Pod(
+                'foo2',
+                1,
+                [
+                    new Container(
+                        'foo2',
+                        'foo',
+                        '1.2',
+                        [80],
+                        [
+                            'foo4' => new Volume('foo4', [], 'bar', '/mount')
+                        ],
+                        [],
+                        $this->createMock(CompiledDeployment\HealthCheck::class),
+                        $this->createMock(CompiledDeployment\ResourceSet::class),
+                    )
+                ]
+            )
+        );
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachVolume(function ($name, $volume) use (&$count) {
+                self::assertEquals(0, strpos($name, 'foo'));
+                self::assertInstanceOf(Volume::class, $volume);
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(4, $count);
+    }
+
+    public function testForeachVolumeWithPodAndJob()
+    {
+        $cd = $this->buildObject();
+
+        $cd->addVolume(
+            'foo1',
+            new Volume('foo1', [], 'bar', '/mount')
+        );
+
+        $cd->addVolume(
+            'foo2',
+            new Volume('foo2', [], 'bar', '/mount')
+        );
+
+        $cd->addBuildable(
+            $img = (new Image('foo', 'bar', false, '1.2', ['foo' => 'bar']))
+        );
+
+        $cd->addJob(
+            'foo1',
+            new Job(
+                name: 'foo1',
+                pods: [
+                    'foo1' => new Pod(
+                        'foo1',
+                        1,
+                        [
+                            new Container(
+                                'foo1',
+                                'foo',
+                                '1.2',
+                                [80],
+                                [
+                                    'foo3' => new Volume('foo3', [], 'bar', '/mount')
+                                ],
+                                [],
+                                $this->createMock(CompiledDeployment\HealthCheck::class),
+                                $this->createMock(CompiledDeployment\ResourceSet::class),
+                            )
+                        ]
+                    )
+                ],
+                completionsCount: 1,
+                isParallel: false,
+                completion: Job\CompletionMode::Common,
+                successCondition: null,
+                timeLimit: 10,
+                planning: Planning::DuringDeployment,
+                planningSchedule: null,
+            )
+        );
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachVolume(function ($name, $volume) use (&$count) {
+                self::assertEquals(0, strpos($name, 'foo'));
                 self::assertInstanceOf(Volume::class, $volume);
 
                 $count++;
@@ -487,9 +649,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testForeachBuildableBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->foreachBuildable(new \stdClass());
+        $this->buildObject()->foreachBuildable(new stdClass());
     }
 
     public function testForeachBuildable()
@@ -562,9 +724,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testForeachPodBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->foreachPod(new \stdClass());
+        $this->buildObject()->foreachPod(new stdClass());
     }
 
     public function testForeachPod()
@@ -688,7 +850,7 @@ class CompiledDeploymentTest extends TestCase
                 self::assertNotEmpty($buildables);
                 self::assertInstanceOf(
                     BuildableInterface::class,
-                    \current(\current($buildables))
+                    current(current($buildables))
                 );
 
                 if ('bar1' === $pod->getName()) {
@@ -700,7 +862,7 @@ class CompiledDeploymentTest extends TestCase
 
                     self::assertInstanceOf(
                         Volume::class,
-                        \current($volumes)
+                        current($volumes)
                     );
                 }
 
@@ -711,11 +873,161 @@ class CompiledDeploymentTest extends TestCase
         self::assertEquals(3, $count);
     }
 
+    public function testForeachJobBadCallback()
+    {
+        $this->expectException(TypeError::class);
+
+        $this->buildObject()->foreachJob(new stdClass());
+    }
+
+    public function testForeachJob()
+    {
+        $cd = $this->buildObject();
+
+        $cd->addBuildable(
+            $img = (new Image('foo', 'bar', false, '1.2', ['foo' => 'bar']))
+        );
+
+        $cd->addBuildable(
+            (new Image('bar', 'foo', false, 'latest', ['foo' => 'bar']))
+        );
+
+        $cd->addBuildable(
+            (new Image('hello', 'world', false, '1.2', ['foo' => 'bar']))
+        );
+
+        $cd->addVolume(
+            'foo',
+            $foo = (new Volume('foo1', [], '/foo', '/mount'))
+        );
+
+        $cd->addVolume(
+            'bar',
+            $bar = (new Volume('bar1', [], '/bar', '/mount'))
+        );
+
+        $cd->addJob(
+            'foo1',
+            new Job(
+                name: 'foo1',
+                pods: [
+                    'foo1' => new Pod(
+                        'foo1',
+                        1,
+                        [
+                            new Container(
+                                'foo1',
+                                'foo',
+                                '1.2',
+                                [
+                                    80
+                                ],
+                                [
+                                    'foo' => $foo
+                                ],
+                                [],
+                                $this->createMock(HealthCheck::class),
+                                $this->createMock(ResourceSet::class),
+                            ),
+                            new Container(
+                                'foo2',
+                                'alpine',
+                                '3.16',
+                                [
+                                    80
+                                ],
+                                [
+                                    'foo' => $foo
+                                ],
+                                [],
+                                $this->createMock(HealthCheck::class),
+                                $this->createMock(ResourceSet::class),
+                            )
+                        ]
+                    )
+                ],
+                completionsCount: 1,
+                isParallel: false,
+                completion: Job\CompletionMode::Common,
+                successCondition: null,
+                timeLimit: 10,
+                planning: Planning::DuringDeployment,
+                planningSchedule: null,
+            )
+        );
+
+        $cd->updateBuildable($img, $img->withRegistry('registry.io'));
+
+        $cd->addJob(
+            'foo2',
+            new Job(
+                name: 'foo2',
+                pods: [
+                    'bar1' => new Pod(
+                        'bar1',
+                        1,
+                        [
+                            new Container(
+                                'bar1',
+                                'bar',
+                                null,
+                                [
+                                    80
+                                ],
+                                [],
+                                [],
+                                $this->createMock(HealthCheck::class),
+                                $this->createMock(ResourceSet::class),
+                            )
+                        ]
+                    ),
+                ],
+                completionsCount: 1,
+                isParallel: false,
+                completion: Job\CompletionMode::Common,
+                successCondition: null,
+                timeLimit: 10,
+                planning: Planning::DuringDeployment,
+                planningSchedule: null,
+            )
+        );
+
+        $count = 0;
+        self::assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachJob(function ($job, $buildables, $volumes) use (&$count) {
+                self::assertInstanceOf(Job::class, $job);
+                self::assertNotEmpty($buildables);
+                self::assertInstanceOf(
+                    BuildableInterface::class,
+                    current(current($buildables))
+                );
+
+                if ('foo2' === $job->getName()) {
+                    self::assertEmpty($volumes);
+                } else {
+                    self::assertNotEmpty(
+                        $volumes
+                    );
+
+                    self::assertInstanceOf(
+                        Volume::class,
+                        current($volumes)
+                    );
+                }
+
+                $count++;
+            })
+        );
+
+        self::assertEquals(2, $count);
+    }
+
     public function testForeachServiceBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->foreachService(new \stdClass());
+        $this->buildObject()->foreachService(new stdClass());
     }
 
     public function testForeachService()
@@ -747,9 +1059,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testForeachSecretBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->foreachSecret(new \stdClass());
+        $this->buildObject()->foreachSecret(new stdClass());
     }
 
     public function testForeachSecret()
@@ -781,9 +1093,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testForeachMapBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->foreachMap(new \stdClass());
+        $this->buildObject()->foreachMap(new stdClass());
     }
 
     public function testForeachMap()
@@ -815,9 +1127,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testForeachIngressBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->foreachIngress(new \stdClass());
+        $this->buildObject()->foreachIngress(new stdClass());
     }
 
     public function testForeachIngress()
@@ -849,9 +1161,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testCompileDefaultsBagsBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->compileDefaultsBags(new \stdClass());
+        $this->buildObject()->compileDefaultsBags(new stdClass());
     }
 
     public function testCompileDefaultsBags()
@@ -877,9 +1189,9 @@ class CompiledDeploymentTest extends TestCase
 
     public function testWithJobSettingsBadCallback()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
-        $this->buildObject()->withJobSettings(new \stdClass());
+        $this->buildObject()->withJobSettings(new stdClass());
     }
 
     public function testWithJobSettings()

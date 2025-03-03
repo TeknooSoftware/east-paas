@@ -47,7 +47,7 @@ use const E_WARNING;
 /**
  * Object able to validate a Yaml structure. As there is no standardized validation system in yaml,
  * but it is included in the XML Standard, this validator will convert the decoded Yaml array to a Xml stream
- * thanks to DOMDocument and validate it with the xsd `src/Contracts/Configuration/paas_validation.xsd`.
+ * thanks to DOMDocument and validate it with the xsd `src/Contracts/Compilation/paas_validation.xsd`.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -70,10 +70,13 @@ class YamlValidator
         'category',
         'clusters',
         'command',
+        'completions',
         'containers',
+        'count',
         'defaults',
         'enhancements',
         'extends',
+        'fail-on',
         'failure',
         'from',
         'from-map',
@@ -92,25 +95,29 @@ class YamlValidator
         'ingresses',
         'initial-delay-seconds',
         'internal',
+        'is-parallel',
         'is-secure',
+        'jobs',
         'latest',
         'limit',
+        'limit-on',
         'listen',
         'local-path',
         'maps',
         'max-unavailable-pods',
         'max-upgrading-pods',
         'meta',
+        'mode',
         'mount-path',
         'name',
         'oci-registry-config-name',
         'options',
         'paas',
         'path',
-        'path',
         'paths',
         'period-seconds',
         'persistent',
+        'planning',
         'pod',
         'pods',
         'port',
@@ -125,6 +132,7 @@ class YamlValidator
         'reset-on-deployment',
         'resources',
         'row',
+        'schedule',
         'secret',
         'secrets',
         'security',
@@ -134,10 +142,12 @@ class YamlValidator
         'storage-size',
         'strategy',
         'success',
+        'success-on',
         'tag',
         'target',
         'tcp',
         'threshold',
+        'time-limit',
         'tls',
         'type',
         'upgrade',
@@ -145,6 +155,7 @@ class YamlValidator
         'version',
         'volumes',
         'writables',
+        'write-many',
     ];
 
     private string $xsdUrl;

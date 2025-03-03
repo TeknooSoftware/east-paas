@@ -1,8 +1,33 @@
 # Teknoo Software - PaaS - Change Log
 
-## [4.3.0] - XXXX-XX-XX
-### Stable Release
+## [4.3.0-beta1] - 2025-03-03
+### Beta Release
 - PaaS version update to `1.1`
+- Fix issues when different pods use same volumes' names
+- For persisted volumes, add `name` option to allow pods to share persistent volume
+- Always for persisted volumes, add `write-many` to allow concurrent writting (else only concurrent reading is allowed)
+- Add support of `Job` and cronjob:
+
+
+    #Job
+    jobs:
+          <job-name>:
+              pods: #mandatory, one or several pods. Keep the same syntax like pods
+                  <pod name>: 
+                       <pod definition>
+              extends: <name> #optional to extends a job from the library
+              completions: #optional
+                  mode: common or indexed #similar to indexed completion in kubernetes
+                  count: 3 #to launch 3 jobs
+                  time-limit: 10 #time limit in second to set timeout the job (not a pod, but all pods)
+                  success-on: [0, 4] #list of exit int status for a successful job
+                  fail-on: [0, 4] #list of exit int status for a failed job
+                  limit-on: nameof container to listen
+              is-parallel: true #To launch 3*2 pods in parallel or sequential
+              planning: during-deployment or scheduled
+              schedule: 'crontab syntax' only if planning is set to 'scheduled'
+
+
 - Support conditions in `*.paas.yaml`. Conditions can be used in anywhere in the file, expected scalar value.
   - The pattern is `if{<VARIABLE_NAME><OPERAND><EXPECTED VALUE>}`
     - With `<VARIABLE_NAME>` is a name of a variable passed to the job at its creation

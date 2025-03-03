@@ -50,11 +50,13 @@ use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\Promise;
+use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
 use function array_map;
 use function array_pop;
 use function explode;
+use function implode;
 use function is_string;
 use function trim;
 
@@ -98,6 +100,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     private const KEY_MAX_UNAVAILABLE_PODS = 'max-unavailable-pods';
     private const KEY_MAX_UPGRADING_PODS = 'max-upgrading-pods';
     private const KEY_MOUNT_PATH = 'mount-path';
+    private const KEY_VOLUME_NAME = 'name';
     private const KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
     private const KEY_PATH = 'path';
     private const KEY_PERIOD_SCDS = 'period-seconds';
@@ -122,6 +125,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     private const KEY_VERSION = 'version';
     private const KEY_VOLUMES = 'volumes';
     private const KEY_WRITABLES = 'writables';
+    private const KEY_WRITE_MANY = 'write-many';
     private const VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
     private const VALUE_LATEST = 'latest';
 
@@ -158,7 +162,8 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             $mountPath,
             $identifier,
             $storageSize,
-            $resetOnDeployment
+            $resetOnDeployment,
+            !empty($vDefinition[self::KEY_WRITE_MANY]),
         );
     }
 
@@ -222,6 +227,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         CompiledDeploymentInterface $compiledDeployment,
         DefaultsBag $defaultsBag,
         bool &$isStateless,
+        string $hashName,
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
             if (empty($volumeDefinition[self::KEY_MOUNT_PATH])) {
@@ -233,7 +239,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             if (isset($volumeDefinition[self::KEY_PERSISTENT])) {
                 $isStateless = false;
                 $containerVolumes[(string) $volumeName] = $this->buildPersistentVolume(
-                    $volumeName,
+                    $volumeDefinition[self::KEY_VOLUME_NAME] ?? $volumeName . '-' . $hashName,
                     $mountPath,
                     $volumeDefinition,
                     $defaultsBag,
@@ -265,7 +271,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 
             if (!isset($volumeDefinition[self::KEY_FROM])) {
                 $embeddedVolumes[(string) $volumeName] = $this->buildVolume(
-                    $volumeName,
+                    $volumeName . '-' . $hashName,
                     $mountPath,
                     $volumeDefinition
                 );
@@ -295,7 +301,6 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         string $version,
         string $originalVersion,
         CompiledDeploymentInterface $compiledDeployment,
-        JobUnitInterface $job
     ): string {
         $originalImage = $image;
 
@@ -359,6 +364,175 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         return $variables;
     }
 
+    /**
+     * @param array<string, mixed> $definitions
+     * @param PromiseInterface<Pod, Pod> $promise
+     */
+    public function processSetOfPods(
+        #[SensitiveParameter] array &$definitions,
+        CompiledDeploymentInterface $compiledDeployment,
+        #[SensitiveParameter] JobUnitInterface $job,
+        ResourceManager $resourceManager,
+        DefaultsBag $defaultsBag,
+        PromiseInterface $promise,
+        string $parentHashName = '',
+    ): void {
+        try {
+            $ociKey = self::KEY_OCI_REGISTRY_CONFIG_NAME;
+
+            foreach ($definitions as $nameSet => &$podsList) {
+                $containers = [];
+                $isStateless = true;
+                $numberOfReplicas = (int)($podsList[self::KEY_REPLICAS] ?? 1);
+
+                $podHashName = substr(hash('sha256', $nameSet), 0, 5);
+
+                foreach ($podsList[self::KEY_CONTAINERS] as $name => &$config) {
+                    $containerVolumes = [];
+                    $embeddedVolumes = [];
+
+                    $containerHashName = substr(hash('sha256', $name), 0, 5);
+
+                    $hashName = trim(implode('-', [$parentHashName, $podHashName, $containerHashName]), '-');
+
+                    $this->processVolumes(
+                        $config[self::KEY_VOLUMES] ?? [],
+                        $embeddedVolumes,
+                        $containerVolumes,
+                        $compiledDeployment,
+                        $defaultsBag,
+                        $isStateless,
+                        $hashName,
+                    );
+
+                    $image = $config[self::KEY_IMAGE];
+                    $version = (string)($config[self::KEY_VERSION] ?? '');
+                    $buildedVersion = trim(
+                        implode(
+                            '-',
+                            [
+                                str_replace(self::VALUE_LATEST, '', $version),
+                                $hashName,
+                                $job->getEnvironmentTag(),
+                            ],
+                        ),
+                        '-',
+                    );
+
+                    if (!empty($embeddedVolumes)) {
+                        $image = $this->processEmbeddedVolumes(
+                            embeddedVolumes: $embeddedVolumes,
+                            image: $image,
+                            version: $buildedVersion,
+                            originalVersion: $version,
+                            compiledDeployment: $compiledDeployment,
+                        );
+
+                        $version = $buildedVersion;
+                    }
+
+                    $variables = $this->processVariables($config[self::KEY_VARIABLES] ?? []);
+
+                    $healthCheck = null;
+                    if (!empty($config[self::KEY_HEALTHCHECK])) {
+                        $hcc = $config[self::KEY_HEALTHCHECK];
+                        $probe = $hcc[self::KEY_PROBE];
+                        if (!empty($probe[self::KEY_COMMAND])) {
+                            $hcType = HealthCheckType::Command;
+                        } elseif (!empty($probe[self::KEY_TCP])) {
+                            $hcType = HealthCheckType::Tcp;
+                        } else {
+                            $hcType = HealthCheckType::Http;
+                        }
+
+                        $port = null;
+                        if (!empty($probe[self::KEY_TCP][self::KEY_PORT])) {
+                            $port = (int)$probe[self::KEY_TCP][self::KEY_PORT];
+                        }
+                        if (!empty($probe[self::KEY_HTTP][self::KEY_PORT])) {
+                            $port = (int)$probe[self::KEY_HTTP][self::KEY_PORT];
+                        }
+
+                        $healthCheck = new HealthCheck(
+                            initialDelay: (int)($hcc[self::KEY_INITIAL_DELAY_SCDS]),
+                            period: (int)($hcc[self::KEY_PERIOD_SCDS]),
+                            type: $hcType,
+                            command: $probe[self::KEY_COMMAND] ?? null,
+                            port: $port,
+                            path: $probe[self::KEY_HTTP][self::KEY_PATH] ?? null,
+                            isSecure: !empty($probe[self::KEY_HTTP][self::KEY_IS_SECURE]),
+                            successThreshold: (int)($hcc[self::KEY_THRESHOLD][self::KEY_SUCCESS] ?? 1),
+                            failureThreshold: (int)($hcc[self::KEY_THRESHOLD][self::KEY_FAILURE] ?? 1),
+                        );
+                    }
+
+                    $resourceSet = new ResourceSet();
+                    $resourcesRequired = [];
+                    if (!empty($config[self::KEY_RESOURCES])) {
+                        foreach ($config[self::KEY_RESOURCES] as $resource) {
+                            $resourcesRequired[(string)$resource[self::KEY_TYPE]] = true;
+                            $resourceManager->reserve(
+                                resourceType: $resource[self::KEY_TYPE],
+                                require: $resource[self::KEY_REQUIRE],
+                                limit: $resource[self::KEY_LIMIT] ?? $resource[self::KEY_REQUIRE],
+                                numberOfReplicas: $numberOfReplicas,
+                                resourceSet: $resourceSet,
+                            );
+                        }
+                    }
+
+                    $resourceManager->prepareAutomaticsReservations(
+                        resourceSet: $resourceSet,
+                        numberOfReplicas: $numberOfReplicas,
+                        resourceTypeToExclude: array_keys($resourcesRequired),
+                    );
+
+                    $containers[] = new Container(
+                        name: $name,
+                        image: $image,
+                        version: $version,
+                        listen: (array)array_map(intval(...), (array)($config[self::KEY_LISTEN] ?? [])),
+                        volumes: $containerVolumes,
+                        variables: $variables,
+                        healthCheck: $healthCheck,
+                        resources: $resourceSet,
+                    );
+                }
+                unset($config);
+
+                $fsGroup = null;
+                if (isset($podsList[self::KEY_SECURITY][self::KEY_FS_GROUP])) {
+                    $fsGroup = (int)$podsList[self::KEY_SECURITY][self::KEY_FS_GROUP];
+                }
+
+                $upgradeStrategy = UpgradeStrategy::RollingUpgrade;
+                if (isset($podsList[self::KEY_UPGRADE][self::KEY_STRATEGY])) {
+                    $upgradeStrategy = UpgradeStrategy::from($podsList[self::KEY_UPGRADE][self::KEY_STRATEGY]);
+                }
+
+                $ociRegistryConfig = $podsList[$ociKey] ?? $defaultsBag->getReference($ociKey);
+                $promise->success(
+                    new Pod(
+                        name: $nameSet,
+                        replicas: $numberOfReplicas,
+                        containers: $containers,
+                        ociRegistryConfigName: $ociRegistryConfig,
+                        maxUpgradingPods: (int)($podsList[self::KEY_UPGRADE][self::KEY_MAX_UPGRADING_PODS] ?? 1),
+                        maxUnavailablePods: (int)($podsList[self::KEY_UPGRADE][self::KEY_MAX_UNAVAILABLE_PODS] ?? 0),
+                        upgradeStrategy: $upgradeStrategy,
+                        fsGroup: $fsGroup,
+                        requires: (array)($podsList[self::KEY_REQUIRES] ?? []),
+                        isStateless: $isStateless,
+                    )
+                );
+            }
+
+            unset($podsList);
+        } catch (Throwable $e) {
+            $promise->fail($e);
+        }
+    }
+
     public function compile(
         #[SensitiveParameter] array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
@@ -367,143 +541,17 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         ResourceManager $resourceManager,
         DefaultsBag $defaultsBag,
     ): CompilerInterface {
-        $ociKey = self::KEY_OCI_REGISTRY_CONFIG_NAME;
-
-        foreach ($definitions as $nameSet => &$podsList) {
-            $containers = [];
-            $isStateless = true;
-            $numberOfReplicas = (int) ($podsList[self::KEY_REPLICAS] ?? 1);
-
-            foreach ($podsList[self::KEY_CONTAINERS] as $name => &$config) {
-                $containerVolumes = [];
-                $embeddedVolumes = [];
-
-                $this->processVolumes(
-                    $config[self::KEY_VOLUMES] ?? [],
-                    $embeddedVolumes,
-                    $containerVolumes,
-                    $compiledDeployment,
-                    $defaultsBag,
-                    $isStateless,
-                );
-
-                $image = $config[self::KEY_IMAGE];
-                $version = (string) ($config[self::KEY_VERSION] ?? '');
-                $buildedVersion = trim(
-                    str_replace(self::VALUE_LATEST, '', $version) . '-' . $job->getEnvironmentTag(),
-                    '-',
-                );
-
-                if (!empty($embeddedVolumes)) {
-                    $image = $this->processEmbeddedVolumes(
-                        embeddedVolumes: $embeddedVolumes,
-                        image: $image,
-                        version: $buildedVersion,
-                        originalVersion: $version,
-                        compiledDeployment: $compiledDeployment,
-                        job: $job
-                    );
-
-                    $version = $buildedVersion;
-                }
-
-                $variables = $this->processVariables($config[self::KEY_VARIABLES] ?? []);
-
-                $healthCheck = null;
-                if (!empty($config[self::KEY_HEALTHCHECK])) {
-                    $hcc = $config[self::KEY_HEALTHCHECK];
-                    $probe = $hcc[self::KEY_PROBE];
-                    if (!empty($probe[self::KEY_COMMAND])) {
-                        $hcType = HealthCheckType::Command;
-                    } elseif (!empty($probe[self::KEY_TCP])) {
-                        $hcType = HealthCheckType::Tcp;
-                    } else {
-                        $hcType = HealthCheckType::Http;
-                    }
-
-                    $port = null;
-                    if (!empty($probe[self::KEY_TCP][self::KEY_PORT])) {
-                        $port = (int) $probe[self::KEY_TCP][self::KEY_PORT];
-                    }
-                    if (!empty($probe[self::KEY_HTTP][self::KEY_PORT])) {
-                        $port = (int) $probe[self::KEY_HTTP][self::KEY_PORT];
-                    }
-
-                    $healthCheck = new HealthCheck(
-                        initialDelay: (int) ($hcc[self::KEY_INITIAL_DELAY_SCDS]),
-                        period: (int) ($hcc[self::KEY_PERIOD_SCDS]),
-                        type: $hcType,
-                        command: $probe[self::KEY_COMMAND] ?? null,
-                        port: $port,
-                        path: $probe[self::KEY_HTTP][self::KEY_PATH] ?? null,
-                        isSecure: !empty($probe[self::KEY_HTTP][self::KEY_IS_SECURE]),
-                        successThreshold: (int) ($hcc[self::KEY_THRESHOLD][self::KEY_SUCCESS] ?? 1),
-                        failureThreshold: (int) ($hcc[self::KEY_THRESHOLD][self::KEY_FAILURE] ?? 1),
-                    );
-                }
-
-                $resourceSet = new ResourceSet();
-                $resourcesRequired = [];
-                if (!empty($config[self::KEY_RESOURCES])) {
-                    foreach ($config[self::KEY_RESOURCES] as $resource) {
-                        $resourcesRequired[(string) $resource[self::KEY_TYPE]] = true;
-                        $resourceManager->reserve(
-                            resourceType: $resource[self::KEY_TYPE],
-                            require: $resource[self::KEY_REQUIRE],
-                            limit: $resource[self::KEY_LIMIT] ?? $resource[self::KEY_REQUIRE],
-                            numberOfReplicas: $numberOfReplicas,
-                            resourceSet: $resourceSet,
-                        );
-                    }
-                }
-
-                $resourceManager->prepareAutomaticsReservations(
-                    resourceSet: $resourceSet,
-                    numberOfReplicas: $numberOfReplicas,
-                    resourceTypeToExclude: array_keys($resourcesRequired),
-                );
-
-                $containers[] = new Container(
-                    name: $name,
-                    image: $image,
-                    version: $version,
-                    listen: (array) array_map(intval(...), (array) ($config[self::KEY_LISTEN] ?? [])),
-                    volumes: $containerVolumes,
-                    variables: $variables,
-                    healthCheck: $healthCheck,
-                    resources: $resourceSet,
-                );
-            }
-
-            $fsGroup = null;
-            if (isset($podsList[self::KEY_SECURITY][self::KEY_FS_GROUP])) {
-                $fsGroup = (int) $podsList[self::KEY_SECURITY][self::KEY_FS_GROUP];
-            }
-
-            $upgradeStrategy = UpgradeStrategy::RollingUpgrade;
-            if (isset($podsList[self::KEY_UPGRADE][self::KEY_STRATEGY])) {
-                $upgradeStrategy = UpgradeStrategy::from($podsList[self::KEY_UPGRADE][self::KEY_STRATEGY]);
-            }
-
-            $ociRegistryConfig = $podsList[$ociKey] ?? $defaultsBag->getReference($ociKey);
-            $compiledDeployment->addPod(
-                $nameSet,
-                new Pod(
-                    name: $nameSet,
-                    replicas: $numberOfReplicas,
-                    containers: $containers,
-                    ociRegistryConfigName: $ociRegistryConfig,
-                    maxUpgradingPods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UPGRADING_PODS] ?? 1),
-                    maxUnavailablePods: (int) ($podsList[self::KEY_UPGRADE][self::KEY_MAX_UNAVAILABLE_PODS] ?? 0),
-                    upgradeStrategy: $upgradeStrategy,
-                    fsGroup: $fsGroup,
-                    requires: (array) ($podsList[self::KEY_REQUIRES] ?? []),
-                    isStateless: $isStateless,
-                )
-            );
-        }
-
-        $resourceManager->computeAutomaticReservations();
+        $this->processSetOfPods(
+            definitions: $definitions,
+            compiledDeployment: $compiledDeployment,
+            job: $job,
+            resourceManager: $resourceManager,
+            defaultsBag: $defaultsBag,
+            promise: new Promise(
+                fn (Pod $pod) => $compiledDeployment->addPod($pod->getName(), $pod),
+                fn (#[SensitiveParameter] Throwable $error): never => throw $error,
+            ),
+        );
 
         return $this;
     }

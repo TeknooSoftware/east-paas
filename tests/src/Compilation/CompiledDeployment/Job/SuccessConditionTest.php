@@ -23,24 +23,34 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
+namespace Teknoo\Tests\East\Paas\Compilation\CompiledDeployment\Job;
 
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 
 /**
- * Extension of VolumeInterface to define persistend volume, able to keep data between pods execution.
- *
- * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
- * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface PersistentVolumeInterface extends VolumeInterface
+#[CoversClass(SuccessCondition::class)]
+class SuccessConditionTest extends TestCase
 {
-    public function getStorageIdentifier(): string|Reference|null;
+    public function testAccess()
+    {
+        $condition = new SuccessCondition(
+            [0, 101],
+            [1, 2],
+        );
 
-    public function getStorageSize(): string|Reference|null;
+        self::assertEquals(
+            [0, 101],
+            $condition->successExitCode,
+        );
 
-    public function isResetOnDeployment(): bool;
-    public function allowedForWriteMany(): bool;
+        self::assertEquals(
+            [1, 2],
+            $condition->failureExistCode,
+        );
+    }
 }

@@ -79,7 +79,10 @@ class VolumeTranscriber implements DeploymentInterface
             ],
             'spec' => [
                 'accessModes' => [
-                    'ReadWriteOnce'
+                    match ($volume->allowedForWriteMany()) {
+                        true => 'ReadWriteMany',
+                        false => 'ReadWriteOnce',
+                    },
                 ],
                 'storageClassName' => (string) $storageIdentifier,
                 'resources' => [

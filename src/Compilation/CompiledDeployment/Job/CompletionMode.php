@@ -23,24 +23,20 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
-
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
+namespace Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 
 /**
- * Extension of VolumeInterface to define persistend volume, able to keep data between pods execution.
+ * Enum to define all availables completions modes about job.
+ * Common represent the default mode, jobs are not differencied, indexed represent indexed jobs in cluster like
+ * Kubernetes to allow developpers to split batch
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface PersistentVolumeInterface extends VolumeInterface
+enum CompletionMode: string
 {
-    public function getStorageIdentifier(): string|Reference|null;
-
-    public function getStorageSize(): string|Reference|null;
-
-    public function isResetOnDeployment(): bool;
-    public function allowedForWriteMany(): bool;
+    case Common = 'common';
+    case Indexed = 'indexed';
 }

@@ -23,24 +23,27 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
-
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
+namespace Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 
 /**
- * Extension of VolumeInterface to define persistend volume, able to keep data between pods execution.
+ * To define exit code (by default, follow posix code: 0 for success and 1 for a failure) to determine if a job has
+ * failed or not. The test can be restricted on a container
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface PersistentVolumeInterface extends VolumeInterface
+readonly class SuccessCondition
 {
-    public function getStorageIdentifier(): string|Reference|null;
-
-    public function getStorageSize(): string|Reference|null;
-
-    public function isResetOnDeployment(): bool;
-    public function allowedForWriteMany(): bool;
+    /**
+     * @param int[] $successExitCode
+     * @param int[] $failureExistCode
+     */
+    public function __construct(
+        public array $successExitCode = [],
+        public array $failureExistCode = [],
+        public ?string $containerName = null,
+    ) {
+    }
 }

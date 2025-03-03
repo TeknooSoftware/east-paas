@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- src/Contracts/Configuration/paas_validation.xsd -->
+<!-- src/Contracts/Compilation/paas_validation.xsd -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="http://xml.teknoo.software/schemas/east/paas-validation"
            xmlns:epv="http://xml.teknoo.software/schemas/east/paas-validation"
@@ -15,6 +15,7 @@
         <xs:element name="images" type="epv:images" minOccurs="0" />
         <xs:element name="builds" type="epv:builds" minOccurs="0" />
         <xs:element name="volumes" type="epv:volumes" minOccurs="0" />
+        <xs:element name="jobs" type="epv:jobs" minOccurs="0" />
         <xs:element name="pods" type="epv:pods" />
         <xs:element name="services" type="epv:services" minOccurs="0" />
         <xs:element name="ingresses" type="epv:ingresses" minOccurs="0" />
@@ -128,7 +129,7 @@
 
   <xs:complexType name="maps">
     <xs:choice>
-      <xs:element name="node" type="epv:map_node" maxOccurs="unbounded" />
+      <xs:element name="node" type="epv:map_node" minOccurs="0" maxOccurs="unbounded" />
     </xs:choice>
   </xs:complexType>
 
@@ -143,7 +144,7 @@
 
   <xs:complexType name="secrets">
     <xs:choice>
-      <xs:element name="node" type="epv:secret_node" maxOccurs="unbounded" />
+      <xs:element name="node" type="epv:secret_node" minOccurs="0" maxOccurs="unbounded" />
     </xs:choice>
   </xs:complexType>
 
@@ -166,7 +167,7 @@
 
   <xs:complexType name="images">
     <xs:choice>
-      <xs:element name="node" type="epv:image_node" maxOccurs="unbounded" />
+      <xs:element name="node" type="epv:image_node" minOccurs="0" maxOccurs="unbounded" />
     </xs:choice>
   </xs:complexType>
 
@@ -179,7 +180,51 @@
 
   <xs:complexType name="builds">
     <xs:choice>
-      <xs:element name="node" type="epv:build_node" maxOccurs="unbounded" />
+      <xs:element name="node" type="epv:build_node" minOccurs="0"  maxOccurs="unbounded" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:simpleType name="completion_mode" final="restriction" >
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="common" />
+      <xs:enumeration value="indexed" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="planning" final="restriction" >
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="during-deployment" />
+      <xs:enumeration value="scheduled" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="job_completions">
+    <xs:all>
+      <xs:element name="count" type="xs:int" minOccurs="0" />
+      <xs:element name="mode" type="xs:string" minOccurs="0" />
+      <xs:element name="time-limit" type="xs:int" minOccurs="0" />
+      <xs:element name="success-on" type="epv:rows_list_int" minOccurs="0" />
+      <xs:element name="fail-on" type="epv:rows_list_int" minOccurs="0" />
+      <xs:element name="limit-on" type="xs:string" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="job_node">
+    <xs:all>
+      <xs:element name="extends" type="xs:string" minOccurs="0" />
+      <xs:element name="pods" type="epv:pods" />
+      <xs:element name="completions" type="epv:job_completions" minOccurs="0" />
+      <xs:element name="is-parallel" type="xs:boolean" default="false" minOccurs="0" />
+      <xs:element name="planning" type="epv:planning" minOccurs="0" />
+      <xs:element name="schedule" type="xs:string" minOccurs="0" />
+      <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
+    </xs:all>
+    <xs:attribute name="name" type="epv:paas_token" />
+  </xs:complexType>
+
+  <xs:complexType name="jobs">
+    <xs:choice>
+      <xs:element name="node" type="epv:job_node" minOccurs="0" maxOccurs="unbounded" />
     </xs:choice>
   </xs:complexType>
 
@@ -207,7 +252,7 @@
 
   <xs:complexType name="volumes">
     <xs:choice>
-      <xs:element name="node" type="epv:volume_node" maxOccurs="unbounded"/>
+      <xs:element name="node" type="epv:volume_node" minOccurs="0" maxOccurs="unbounded"/>
     </xs:choice>
   </xs:complexType>
 
@@ -221,8 +266,10 @@
 
   <xs:complexType name="container_volume_persistent_node">
     <xs:all>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
       <xs:element name="mount-path" type="xs:string" />
       <xs:element name="persistent" type="xs:boolean" />
+      <xs:element name="write-many" type="xs:boolean" minOccurs="0"/>
       <xs:element name="reset-on-deployment" type="xs:boolean" minOccurs="0"/>
       <xs:element name="storage-provider" type="xs:string" minOccurs="0"/>
       <xs:element name="storage-size" type="xs:string" minOccurs="0"/>
@@ -386,12 +433,21 @@
     </xs:all>
   </xs:complexType>
 
+  <xs:simpleType name="protocol" final="restriction" >
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UDP" />
+      <xs:enumeration value="udp" />
+      <xs:enumeration value="TCP" />
+      <xs:enumeration value="tcp" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="service_node">
     <xs:all>
       <xs:element name="extends" type="xs:string" minOccurs="0" />
       <xs:element name="pod" type="epv:paas_token" minOccurs="0"/>
       <xs:element name="internal" type="xs:boolean" default="false" minOccurs="0"/>
-      <xs:element name="protocol" type="xs:string" minOccurs="0"/>
+      <xs:element name="protocol" type="epv:protocol" minOccurs="0"/>
       <xs:element name="ports">
         <xs:complexType>
           <xs:choice>
@@ -406,7 +462,7 @@
 
   <xs:complexType name="services">
     <xs:choice>
-      <xs:element name="node" type="epv:service_node" maxOccurs="unbounded" />
+      <xs:element name="node" type="epv:service_node" minOccurs="0" maxOccurs="unbounded" />
     </xs:choice>
   </xs:complexType>
 
@@ -453,7 +509,7 @@
 
   <xs:complexType name="ingresses">
     <xs:choice>
-      <xs:element name="node" type="epv:ingress_node" maxOccurs="unbounded" />
+      <xs:element name="node" type="epv:ingress_node" minOccurs="0" maxOccurs="unbounded" />
     </xs:choice>
   </xs:complexType>
 </xs:schema>
