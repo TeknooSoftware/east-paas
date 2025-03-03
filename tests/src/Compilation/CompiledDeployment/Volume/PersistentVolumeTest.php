@@ -38,7 +38,7 @@ class PersistentVolumeTest extends TestCase
 {
     private function buildObject(): PersistentVolume
     {
-        return new PersistentVolume('foo', 'bar', 'foobar', 'barfoo', false);
+        return new PersistentVolume('foo', 'bar', 'foobar', 'barfoo', false, true);
     }
 
     public function testGetName()
@@ -81,6 +81,17 @@ class PersistentVolumeTest extends TestCase
 
         self::assertTrue(
             (new PersistentVolume('foo', 'bar', 'foobar', 'barfoo', true))->isResetOnDeployment()
+        );
+    }
+
+    public function testAllowedForWriteMany()
+    {
+        self::assertTrue(
+            $this->buildObject()->allowedForWriteMany()
+        );
+
+        self::assertFalse(
+            (new PersistentVolume('foo', 'bar', 'foobar', 'barfoo', true, false))->allowedForWriteMany()
         );
     }
 }

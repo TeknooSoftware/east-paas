@@ -43,6 +43,7 @@ use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\JobCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
@@ -1154,6 +1155,24 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             PodCompiler::class,
             $container->get(PodCompiler::class)
+        );
+    }
+
+    public function testJobCompiler()
+    {
+        $container = $this->buildContainer();
+
+        self::assertInstanceOf(
+            JobCompiler::class,
+            $container->get(JobCompiler::class)
+        );
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.compilation.jods_extends.library', ['foo' => []]);
+
+        self::assertInstanceOf(
+            JobCompiler::class,
+            $container->get(JobCompiler::class)
         );
     }
 

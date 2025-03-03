@@ -59,7 +59,7 @@ class VolumeTranscriberTest extends TestCase
             ->willReturnCallback(function (callable $callback) use ($cd) {
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', new Reference('storage-size')), 'a-prefix');
                 $callback('foo', new PersistentVolume('foo', 'foo', new Reference('storage-provider'), 'bar'), 'a-prefix');
-                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar', true), 'a-prefix');
+                $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar', true, true), 'a-prefix');
                 $callback('bar', new Volume('foo2', ['foo1' => 'bar'], 'bar', 'bar'), 'a-prefix');
                 return $cd;
             });

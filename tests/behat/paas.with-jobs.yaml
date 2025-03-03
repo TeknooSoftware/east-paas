@@ -1,13 +1,5 @@
 paas: #Dedicated to compiler
-    version: v1
-    quotas:
-        - category: compute
-          type: cpu
-          capacity: 2
-          requires: 1.5
-        - category: memory
-          type: memory
-          capacity: '512Mi'
+    version: v1.1
 
 #Config
 maps:
@@ -129,24 +121,12 @@ pods:
                     period-seconds: 30
                     probe:
                         command: ['ps', 'aux', 'php']
-                resources:
-                    - type: cpu
-                      require: 200m
-                      limit: 500m
-                    - type: memory
-                      require: '64Mi'
-                      limit: '96Mi'
     shell:
         replicas: 1
         containers:
             sleep:
                 image: registry.hub.docker.com/bash
                 version: alpine
-                resources:
-                    - type: cpu
-                      require: 100m
-                    - type: memory
-                      require: '32Mi'
     demo:
         replicas: 1
         upgrade:
@@ -180,11 +160,6 @@ pods:
                     threshold:
                         success: 3
                         failure: 2
-                resources:
-                    - type: cpu
-                      require: '10%'
-                    - type: memory
-                      require: '64Mi'
             waf:
                 image: registry.hub.docker.com/library/waf
                 version: alpine
@@ -196,11 +171,6 @@ pods:
                     probe:
                         tcp:
                             port: 8181
-                resources:
-                    - type: cpu
-                      require: 100m
-                    - type: memory
-                      require: '64Mi'
             blackfire:
                 image: 'blackfire/blackfire'
                 version: '2-${JOB_ENV_TAG}'
@@ -209,11 +179,84 @@ pods:
                 variables:
                     BLACKFIRE_SERVER_ID: 'foo'
                     BLACKFIRE_SERVER_TOKEN: 'bar'
-                resources:
-                    - type: cpu
-                      require: 100m
-                    - type: memory
-                      require: '128Mi'
+
+jobs:
+    job-init:
+        completions:
+            mode: indexed
+            count: 3
+            time-limit: 10
+        is-parallel: true
+        pods:
+            init-var:
+                replicas: 1
+                containers:
+                    init-var:
+                        image: registry.hub.docker.com/bash
+                        version: alpine
+            update:
+                containers:
+                    update:
+                        image: registry.hub.docker.com/bash
+                        version: alpine
+    job-translation:
+        planning: during-deployment
+        completions:
+            success-on: [0, 5]
+            fail-on: [1]
+            limit-on: "php-translation"
+        pods:
+            php-translation:
+                containers:
+                    php-translation:
+                        image: registry.teknoo.software/php-run #Container image to use
+                        version: 7.4
+                        volumes: #Volumes to link
+                            extra:
+                                from: 'extra'
+                                mount-path: '/opt/extra' #Path where volume will be mount
+                            app:
+                                mount-path: '/opt/app' #Path where data will be stored
+                                add: #folder or file, from .paas.yaml where is located to add to the volume
+                                    - 'src'
+                                    - 'vendor'
+                                    - 'composer.json'
+                                    - 'composer.lock'
+                                    - 'composer.phar'
+                                writables:
+                                    - 'var/*'
+                            data: #Persistent volume, can not be pre-populated
+                                mount-path: '/opt/data'
+                                persistent: true
+                                storage-size: 3Gi
+                            data-replicated: #Persistent volume, can not be pre-populated
+                                name: data-replicated #to share this volume between
+                                write-many: true
+                                mount-path: '/opt/data-replicated'
+                                persistent: true
+                                storage-provider: 'replicated-provider'
+                                storage-size: 3Gi
+                            map:
+                                mount-path: '/map'
+                                from-map: 'map2'
+                            vault:
+                                mount-path: '/vault'
+                                from-secret: 'volume-vault'
+                        variables: #To define some environment variables
+                            SERVER_SCRIPT: '${SERVER_SCRIPT}'
+                            from-maps:
+                                KEY0: 'map1.key0'
+                            import-maps:
+                                - 'map2'
+    job-backup:
+        planning: scheduled
+        schedule: '0 0 /3 * * *'
+        pods:
+            backup:
+                containers:
+                    backup:
+                        image: registry.hub.docker.com/backup
+                        version: alpine
 
 #Pods expositions
 services:

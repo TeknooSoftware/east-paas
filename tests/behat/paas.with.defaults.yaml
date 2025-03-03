@@ -98,6 +98,8 @@ pods:
                         persistent: true
                         storage-size: 3Gi
                     data-replicated: #Persistent volume, can not be pre-populated
+                        name: data-replicated #to share this volume between
+                        write-many: true
                         mount-path: '/opt/data-replicated'
                         persistent: true
                         storage-provider: 'replicated-provider'

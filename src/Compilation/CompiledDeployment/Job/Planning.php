@@ -23,24 +23,20 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment;
-
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
+namespace Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 
 /**
- * Extension of VolumeInterface to define persistend volume, able to keep data between pods execution.
+ * Enum to represent context of execution of a job, if the job is planned during the deployment, it will be directly
+ * executed by the orchestrator juste after the deployment, else it will be planned like a cronjob
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface PersistentVolumeInterface extends VolumeInterface
+enum Planning: string
 {
-    public function getStorageIdentifier(): string|Reference|null;
+    case DuringDeployment = 'during-deployment';
 
-    public function getStorageSize(): string|Reference|null;
-
-    public function isResetOnDeployment(): bool;
-    public function allowedForWriteMany(): bool;
+    case Scheduled = 'scheduled';
 }

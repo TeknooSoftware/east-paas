@@ -50,6 +50,7 @@ class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
         private readonly string|Reference|null $storageIdentifier = null,
         private readonly string|Reference|null $storageSize = null,
         private readonly bool $resetOnDeployment = false,
+        private readonly bool $allowWriteMany = false,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -77,5 +78,10 @@ class PersistentVolume implements ImmutableInterface, PersistentVolumeInterface
     public function isResetOnDeployment(): bool
     {
         return $this->resetOnDeployment;
+    }
+
+    public function allowedForWriteMany(): bool
+    {
+        return $this->allowWriteMany;
     }
 }

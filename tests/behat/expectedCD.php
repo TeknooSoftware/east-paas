@@ -26,6 +26,12 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Behat;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 
@@ -34,6 +40,7 @@ return static function (
     string $withQuota,
     string $withDefaults,
     string $projectName,
+    bool $withJob,
 ): CompiledDeployment {
     $cd = new CompiledDeployment(
         version: 1,
@@ -115,15 +122,44 @@ return static function (
         )
     );
 
+    if ($withJob) {
+        $cd->addBuildable(
+            new CompiledDeployment\Image\EmbeddedVolumeImage(
+                name: 'php-run',
+                tag: '7.4-b424d-43879-43879-prod',
+                originalName: 'registry.teknoo.software/php-run',
+                originalTag: '7.4',
+                volumes: [
+                    'app' => new CompiledDeployment\Volume\Volume(
+                        name: 'app-b424d-43879-43879',
+                        paths: [
+                            'src',
+                            'vendor',
+                            'composer.json',
+                            'composer.lock',
+                            'composer.phar',
+                        ],
+                        localPath: '/volume',
+                        mountPath: '/opt/app',
+                        writables: [
+                            'var/*',
+                        ],
+                        isEmbedded: true,
+                    ),
+                ],
+            ),
+        );
+    }
+
     $cd->addBuildable(
         new CompiledDeployment\Image\EmbeddedVolumeImage(
             name: 'php-run',
-            tag: '7.4-prod',
+            tag: '7.4-09597-1e225-prod',
             originalName: 'registry.teknoo.software/php-run',
             originalTag: '7.4',
             volumes: [
                 'app' => new CompiledDeployment\Volume\Volume(
-                    name: 'app',
+                    name: 'app-09597-1e225',
                     paths: [
                         'src',
                         'var',
@@ -146,12 +182,12 @@ return static function (
     $cd->addBuildable(
         new CompiledDeployment\Image\EmbeddedVolumeImage(
             name: 'nginx',
-            tag: 'alpine-prod',
+            tag: 'alpine-2a975-5be1e-prod',
             originalName: 'registry.hub.docker.com/library/nginx',
             originalTag: 'alpine',
             volumes: [
                 'www' => new CompiledDeployment\Volume\Volume(
-                    name: 'www',
+                    name: 'www-2a975-5be1e',
                     paths: [
                         'nginx/www',
                     ],
@@ -160,7 +196,7 @@ return static function (
                     isEmbedded: true,
                 ),
                 'config' => new CompiledDeployment\Volume\Volume(
-                    name: 'config',
+                    name: 'config-2a975-5be1e',
                     paths: [
                         'nginx/conf.d/default.conf',
                     ],
@@ -281,14 +317,14 @@ return static function (
 
     $cd->addPod(
         name: 'php-pods',
-        pod: new CompiledDeployment\Pod(
+        pod: new Pod(
             name: 'php-pods',
             replicas: 2,
             containers: [
-                new CompiledDeployment\Container(
+                new Container(
                     name: 'php-run',
                     image: 'php-run',
-                    version: '7.4-prod',
+                    version: '7.4-09597-1e225-prod',
                     listen: [
                         8080,
                     ],
@@ -303,7 +339,7 @@ return static function (
                             isEmbedded: false,
                         ),
                         'data' => new CompiledDeployment\Volume\PersistentVolume(
-                            name: 'data',
+                            name: 'data-09597-1e225',
                             mountPath: '/opt/data',
                             storageIdentifier: new Reference('storage-provider'),
                             storageSize: '3Gi',
@@ -315,6 +351,7 @@ return static function (
                             storageIdentifier: 'replicated-provider',
                             storageSize: '3Gi',
                             resetOnDeployment: false,
+                            allowWriteMany: true
                         ),
                         'map' => new CompiledDeployment\Volume\MapVolume(
                             name: 'map',
@@ -383,11 +420,11 @@ return static function (
 
     $cd->addPod(
         name: 'shell',
-        pod: new CompiledDeployment\Pod(
+        pod: new Pod(
             name: 'shell',
             replicas: 1,
             containers: [
-                new CompiledDeployment\Container(
+                new Container(
                     name: 'sleep',
                     image: 'registry.hub.docker.com/bash',
                     version: 'alpine',
@@ -404,14 +441,14 @@ return static function (
 
     $cd->addPod(
         name: 'demo',
-        pod: new CompiledDeployment\Pod(
+        pod: new Pod(
             name: 'demo',
             replicas: 1,
             containers: [
-                new CompiledDeployment\Container(
+                new Container(
                     name: 'nginx',
                     image: 'nginx',
-                    version: 'alpine-prod',
+                    version: 'alpine-2a975-5be1e-prod',
                     listen: [
                         8080,
                         8181,
@@ -431,7 +468,7 @@ return static function (
                     ),
                     resources: new CompiledDeployment\ResourceSet($nginxResources),
                 ),
-                new CompiledDeployment\Container(
+                new Container(
                     name: 'waf',
                     image: 'registry.hub.docker.com/library/waf',
                     version: 'alpine',
@@ -453,7 +490,7 @@ return static function (
                     ),
                     resources: new CompiledDeployment\ResourceSet($wafResources),
                 ),
-                new CompiledDeployment\Container(
+                new Container(
                     name: 'blackfire',
                     image: 'blackfire/blackfire',
                     version: '2-prod',
@@ -604,6 +641,146 @@ return static function (
             ),
         },
     );
+
+    if ($withJob) {
+        $cd->addJob(
+            'job-init',
+            new Job(
+                name: 'job-init',
+                completion: CompletionMode::Indexed,
+                completionsCount: 3,
+                timeLimit: 10,
+                isParallel: true,
+                pods: [
+                    'init-var' => new Pod(
+                        name: 'init-var',
+                        replicas: 1,
+                        ociRegistryConfigName: new Reference('oci-registry-config-name'),
+                        containers: [
+                            new Container(
+                                name: 'init-var',
+                                image: 'registry.hub.docker.com/bash',
+                                version: 'alpine',
+                            ),
+                        ],
+                    ),
+                    'update' => new Pod(
+                        name: 'update',
+                        replicas: 1,
+                        ociRegistryConfigName: new Reference('oci-registry-config-name'),
+                        containers: [
+                            new Container(
+                                name: 'update',
+                                image: 'registry.hub.docker.com/bash',
+                                version: 'alpine',
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        );
+
+        $cd->addJob(
+            'job-translation',
+            new Job(
+                name: 'job-translation',
+                successCondition: new SuccessCondition(
+                    successExitCode: [0, 5],
+                    failureExistCode: [1],
+                    containerName: 'php-translation',
+                ),
+                pods: [
+                    'php-translation' => new Pod(
+                        name: 'php-translation',
+                        replicas: 1,
+                        isStateless: false,
+                        ociRegistryConfigName: new Reference('oci-registry-config-name'),
+                        containers: [
+                            new Container(
+                                name: 'php-translation',
+                                image: 'php-run',
+                                version: '7.4-b424d-43879-43879-prod',
+                                volumes: [
+                                    'extra' => new CompiledDeployment\Volume\Volume(
+                                        name: 'extra-foobarproject',
+                                        paths: [
+                                            'extra',
+                                        ],
+                                        localPath: '/foo/bar',
+                                        mountPath: '/opt/extra',
+                                        isEmbedded: false,
+                                    ),
+                                    'data' => new CompiledDeployment\Volume\PersistentVolume(
+                                        name: 'data-b424d-43879-43879',
+                                        mountPath: '/opt/data',
+                                        storageIdentifier: new Reference('storage-provider'),
+                                        storageSize: '3Gi',
+                                        resetOnDeployment: false,
+                                    ),
+                                    'data-replicated' => new CompiledDeployment\Volume\PersistentVolume(
+                                        name: 'data-replicated',
+                                        mountPath: '/opt/data-replicated',
+                                        storageIdentifier: 'replicated-provider',
+                                        storageSize: '3Gi',
+                                        resetOnDeployment: false,
+                                        allowWriteMany: true
+                                    ),
+                                    'map' => new CompiledDeployment\Volume\MapVolume(
+                                        name: 'map',
+                                        mountPath: '/map',
+                                        mapIdentifier: 'map2',
+                                    ),
+                                    'vault' => new CompiledDeployment\Volume\SecretVolume(
+                                        name: 'vault',
+                                        mountPath: '/vault',
+                                        secretIdentifier: 'volume-vault',
+                                    ),
+                                ],
+                                variables: [
+                                    'SERVER_SCRIPT' => '/opt/app/src/server.php',
+                                    'import-maps-0' => new CompiledDeployment\MapReference(
+                                        name: 'map2',
+                                        key: null,
+                                        importAll: true,
+                                    ),
+                                    'KEY0' => new CompiledDeployment\MapReference(
+                                        name: 'map1',
+                                        key: 'key0',
+                                        importAll: false,
+                                    ),
+                                ],
+                                healthCheck: null,
+                                resources: new CompiledDeployment\ResourceSet($phpRunResources),
+                            ),
+                        ],
+                    )
+                ],
+            ),
+        );
+
+        $cd->addJob(
+            'job-backup',
+            new Job(
+                name: 'job-backup',
+                planning: Planning::Scheduled,
+                planningSchedule: '0 0 /3 * * *',
+                pods: [
+                    'backup' => new Pod(
+                        name: 'backup',
+                        replicas: 1,
+                        ociRegistryConfigName: new Reference('oci-registry-config-name'),
+                        containers: [
+                            new Container(
+                                name: 'backup',
+                                image: 'registry.hub.docker.com/backup',
+                                version: 'alpine',
+                            )
+                        ]
+                    ),
+                ],
+            ),
+        );
+    }
 
     return $cd;
 };

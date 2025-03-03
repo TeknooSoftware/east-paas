@@ -29,6 +29,8 @@ use ArrayObject;
 use DI\Container;
 use DI\ContainerBuilder;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CronJobTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\JobTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber;
 use Teknoo\Kubernetes\Client as KubClient;
 use Psr\Http\Client\ClientInterface;
@@ -253,6 +255,42 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(
             DeploymentTranscriber::class,
             $container->get(DeploymentTranscriber::class)
+        );
+    }
+
+    public function testCronJobTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(CronJobTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(CronJobTranscriber::class);
+    }
+
+    public function testCronJobTranscriber()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.cronjob.require_label', 'foo');
+        self::assertInstanceOf(
+            CronJobTranscriber::class,
+            $container->get(CronJobTranscriber::class)
+        );
+    }
+
+    public function testJobTranscriberBadClass()
+    {
+        $container = $this->buildContainer();
+        $container->set(JobTranscriber::class . ':class', \stdClass::class);
+        $this->expectException(\DomainException::class);
+        $container->get(JobTranscriber::class);
+    }
+
+    public function testJobTranscriber()
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.job.require_label', 'foo');
+        self::assertInstanceOf(
+            JobTranscriber::class,
+            $container->get(JobTranscriber::class)
         );
     }
 

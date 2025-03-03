@@ -117,6 +117,8 @@ class Running implements StateInterface
                     }
                 );
             }
+
+            $resourceManager->computeAutomaticReservations();
         };
     }
 }

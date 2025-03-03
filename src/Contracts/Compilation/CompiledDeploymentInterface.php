@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Contracts\Compilation;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
@@ -74,6 +75,8 @@ interface CompiledDeploymentInterface
 
     public function addPod(string $name, Pod $pod): CompiledDeploymentInterface;
 
+    public function addJob(string $name, Job $job): CompiledDeploymentInterface;
+
     public function addSecret(string $name, Secret $secret): CompiledDeploymentInterface;
 
     public function addMap(string $name, Map $map): CompiledDeploymentInterface;
@@ -93,6 +96,8 @@ interface CompiledDeploymentInterface
     public function foreachMap(callable $callback): CompiledDeploymentInterface;
 
     public function foreachPod(callable $callback): CompiledDeploymentInterface;
+
+    public function foreachJob(callable $callback): CompiledDeploymentInterface;
 
     public function foreachService(callable $callback): CompiledDeploymentInterface;
 

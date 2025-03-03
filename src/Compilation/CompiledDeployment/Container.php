@@ -53,11 +53,11 @@ class Container implements ImmutableInterface
         private readonly string $name,
         private readonly string $image,
         private readonly ?string $version,
-        private readonly array $listen,
-        private readonly array $volumes,
-        private readonly array $variables,
-        private readonly ?HealthCheck $healthCheck,
-        private readonly ResourceSet $resources,
+        private readonly array $listen = [],
+        private readonly array $volumes = [],
+        private readonly array $variables = [],
+        private readonly ?HealthCheck $healthCheck = null,
+        private readonly ResourceSet $resources = new ResourceSet([]),
     ) {
         $this->uniqueConstructorCheck();
     }

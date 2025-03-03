@@ -1,4 +1,5 @@
-<?php /** @noinspection ALL */
+<?php
+/** @noinspection ALL */
 
 declare(strict_types=1);
 
@@ -163,6 +164,8 @@ class FeatureContext implements Context
 
     private static string $quotasDefined = '';
 
+    private static bool $jobsDefined = false;
+
     private static string $defaultsDefined = '';
 
     private ?string $calledUrl = null;
@@ -255,13 +258,14 @@ class FeatureContext implements Context
         $counter = 0;
         $this->sfContainer
             ->get(SerialGenerator::class)
-            ->setGenerator(function () use (&$counter) { return ++$counter;});
+            ->setGenerator(function () use (&$counter) {
+                return ++$counter;
+            });
     }
 
     private function initiateSymfonyKernel(): void
     {
-        $this->kernel = new class($this, 'test') extends BaseKernel
-        {
+        $this->kernel = new class($this, 'test') extends BaseKernel {
             use MicroKernelTrait;
 
             private FeatureContext $context;
@@ -304,7 +308,7 @@ class FeatureContext implements Context
                 $configExts = '.{php,xml,yaml,yml}';
                 $loader->load($confDir . '/{packages}/*' . $configExts, 'glob');
                 $loader->load($confDir . '/{services}' . $configExts, 'glob');
-                $loader->load(__DIR__.'/config/services.yaml');
+                $loader->load(__DIR__ . '/config/services.yaml');
                 $container->setParameter('container.autowiring.strict_mode', true);
                 $container->setParameter('container.dumper.inline_class_loader', true);
 
@@ -373,6 +377,7 @@ class FeatureContext implements Context
         ];
         self::$quotasDefined = '';
         self::$defaultsDefined = '';
+        self::$jobsDefined = false;
         self::$CDCompared = false;
 
         if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
@@ -421,12 +426,16 @@ class FeatureContext implements Context
             public function __construct(
                 callable $repositories,
                 private FeatureContext $context,
-            ){
+            ) {
                 $this->repositories = $repositories;
             }
 
-            public function find(string $className, mixed $id) {}
-            public function persist($object): void {
+            public function find(string $className, mixed $id)
+            {
+            }
+
+            public function persist($object): void
+            {
                 if ($this->context->slowDb) {
                     $expectedTime = time() + 25;
                     while (time() < $expectedTime) {
@@ -434,19 +443,50 @@ class FeatureContext implements Context
                     }
                 }
             }
-            public function remove($object): void {}
-            public function merge($object): void {}
-            public function clear($objectName = null): void {}
-            public function detach($object): void {}
-            public function refresh($object): void {}
-            public function flush(): void {}
-            public function getRepository($className): DocumentRepository {
+
+            public function remove($object): void
+            {
+            }
+
+            public function merge($object): void
+            {
+            }
+
+            public function clear($objectName = null): void
+            {
+            }
+
+            public function detach($object): void
+            {
+            }
+
+            public function refresh($object): void
+            {
+            }
+
+            public function flush(): void
+            {
+            }
+
+            public function getRepository($className): DocumentRepository
+            {
                 return ($this->repositories)($className);
             }
-            public function getClassMetadata($className): void {}
-            public function getMetadataFactory(): void {}
-            public function initializeObject($obj): void {}
-            public function contains($object): bool {
+
+            public function getClassMetadata($className): void
+            {
+            }
+
+            public function getMetadataFactory(): void
+            {
+            }
+
+            public function initializeObject($obj): void
+            {
+            }
+
+            public function contains($object): bool
+            {
                 return true;
             }
         };
@@ -471,18 +511,21 @@ class FeatureContext implements Context
                 $this->setter = $setter;
             }
 
-            public function register(string $id, $object): self {
+            public function register(string $id, $object): self
+            {
                 ($this->setter)($this->className, $id, $object);
 
                 return $this;
             }
 
-            public function findOneBy(array $criteria, ?array $sort = null): ?object {
+            public function findOneBy(array $criteria, ?array $sort = null): ?object
+            {
                 $id = $criteria['id'];
                 return ($this->getter)($this->className, $id);
             }
 
-            public function getClassName(): string {
+            public function getClassName(): string
+            {
                 return $this->className;
             }
 
@@ -656,7 +699,7 @@ class FeatureContext implements Context
      * @Given a project on this account :name with the id :id
      * @Given a project on this account :name with the id :id and a prefix :prefix
      */
-    public function aProjectOnThisAccountWithTheId($name, $id, $prefix=''): void
+    public function aProjectOnThisAccountWithTheId($name, $id, $prefix = ''): void
     {
         self::$projectName = $name;
         $this->projectId = $id;
@@ -694,12 +737,12 @@ class FeatureContext implements Context
                 ->setAddress('https://foo-bar')
                 ->setIdentity(
                     (
-                        new ClusterCredentials(
-                            caCertificate: 'caCertValue',
-                            clientCertificate:  'fooBar',
-                            clientKey: 'barKey',
-                            token:  'fooBar',
-                        )
+                    new ClusterCredentials(
+                        caCertificate: 'caCertValue',
+                        clientCertificate: 'fooBar',
+                        clientKey: 'barKey',
+                        token: 'fooBar',
+                    )
                     )->setId('cluster-auth-id')
                 )
         ]);
@@ -726,13 +769,13 @@ class FeatureContext implements Context
             new ImageRegistry(
                 apiUrl: 'https://foo.bar',
                 identity: (
-                    new XRegistryAuth(
-                        username:  'fooBar',
-                        password:  'fooBar',
-                        email:  'fooBar',
-                        auth: '',
-                        serverAddress: 'fooBar',
-                    )
+                new XRegistryAuth(
+                    username: 'fooBar',
+                    password: 'fooBar',
+                    email: 'fooBar',
+                    auth: '',
+                    serverAddress: 'fooBar',
+                )
                 )->setId('xauth-id')
                 ,
             )
@@ -747,7 +790,15 @@ class FeatureContext implements Context
     {
         $this->calledUrl = $url;
 
-        $request = Request::create('https://'.$this->sfContainer->getParameter('api_hostname').$this->calledUrl, 'PUT', [], [], [], [], $this->requestBody);
+        $request = Request::create(
+            'https://' . $this->sfContainer->getParameter('api_hostname') . $this->calledUrl,
+            'PUT',
+            [],
+            [],
+            [],
+            [],
+            $this->requestBody
+        );
         $this->response = $this->kernel->handle($request);
     }
 
@@ -807,7 +858,7 @@ class FeatureContext implements Context
      */
     public function iRunANewJobFromProjectAtTo(string $jobId, string $projectId, $url): void
     {
-        $defaults = match(self::$defaultsDefined) {
+        $defaults = match (self::$defaultsDefined) {
             'system', 'generic', 'cluster' => [],
             'job-generic', 'job-cluster' => $this->nextJobDefault,
             default => ['storage-provider' => 'nfs'],
@@ -959,7 +1010,7 @@ class FeatureContext implements Context
                 $content
             );
         } catch (ExpectationFailedException $error) {
-            throw new RuntimeException((string) $error, $error->getCode(), $error);
+            throw new RuntimeException((string)$error, $error->getCode(), $error);
         }
     }
 
@@ -983,7 +1034,7 @@ class FeatureContext implements Context
         try {
             Assert::assertEquals(json_decode(json_encode($job), true), $content);
         } catch (ExpectationFailedException $error) {
-            throw new RuntimeException((string) $error, $error->getCode(), $error);
+            throw new RuntimeException((string)$error, $error->getCode(), $error);
         }
     }
 
@@ -1002,7 +1053,7 @@ class FeatureContext implements Context
                 $content
             );
         } catch (ExpectationFailedException $error) {
-            throw new RuntimeException((string) $error, $error->getCode(), $error);
+            throw new RuntimeException((string)$error, $error->getCode(), $error);
         }
     }
 
@@ -1023,7 +1074,7 @@ class FeatureContext implements Context
         try {
             Assert::assertEquals(json_decode(json_encode($job), true), $content);
         } catch (ExpectationFailedException $error) {
-            throw new RuntimeException((string) $error, $error->getCode(), $error);
+            throw new RuntimeException((string)$error, $error->getCode(), $error);
         }
     }
 
@@ -1090,8 +1141,8 @@ class FeatureContext implements Context
             $quotas[] = new AccountQuota(
                 category: 'compute',
                 type: 'cpu',
-                capacity: (string) $countVCore,
-                requires: (string) round($countVCore*0.75, 1)
+                capacity: (string)$countVCore,
+                requires: (string)round($countVCore * 0.75, 1)
             );
         }
 
@@ -1114,8 +1165,12 @@ class FeatureContext implements Context
      * @Given a job with the id :id at date :date and with :countVCore vcore and :countMemory memory quotas
      * @throws Exception
      */
-    public function aJobWithTheIdAtDate(mixed $id, string $date, ?int $countVCore = null, ?string $countMemory = null): void
-    {
+    public function aJobWithTheIdAtDate(
+        mixed $id,
+        string $date,
+        ?int $countVCore = null,
+        ?string $countMemory = null
+    ): void {
         $this->setAJobWithTheIdAtDate($id, $date, $countVCore, $countMemory);
     }
 
@@ -1135,7 +1190,7 @@ class FeatureContext implements Context
                 null, 'teknoo.east.paas.jobs.configured',
                 new DateTime($this->jobDate)
             ),
-           'serial_number' => 0,
+            'serial_number' => 0,
         ];
         Assert::assertEquals(
             json_encode($history, JSON_THROW_ON_ERROR),
@@ -1193,6 +1248,15 @@ class FeatureContext implements Context
     {
         $this->paasFile = __DIR__ . '/paas.with-conditions.yaml';
         self::$quotasDefined = '';
+    }
+
+    /**
+     * @Given a project with a complete paas file with jobs
+     */
+    public function aProjectWithACompletePaasFileWithJobs(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-jobs.yaml';
+        self::$jobsDefined = true;
     }
 
     /**
@@ -1326,10 +1390,12 @@ class FeatureContext implements Context
                                 'storage-size' => '3Gi',
                             ],
                             'data-replicated' => [
+                                'name' => 'data-replicated',
                                 'mount-path' => '/opt/data-replicated',
                                 'persistent' => true,
                                 'storage-provider' => 'replicated-provider',
                                 'storage-size' => '3Gi',
+                                'write-many' => true,
                             ],
                             'map' => [
                                 'mount-path' => '/map',
@@ -1351,7 +1417,7 @@ class FeatureContext implements Context
             ],
         ];
 
-        $this->additionalsParameters['teknoo.east.paas.compilation.containers_extends.library'] =  [
+        $this->additionalsParameters['teknoo.east.paas.compilation.containers_extends.library'] = [
             'bash-extends' => [
                 'image' => 'registry.hub.docker.com/bash',
                 'version' => 'alpine',
@@ -1613,15 +1679,19 @@ class FeatureContext implements Context
                 return clone $this;
             }
 
-            public function deploy(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): DriverInterface
-            {
+            public function deploy(
+                CompiledDeploymentInterface $compiledDeployment,
+                PromiseInterface $promise
+            ): DriverInterface {
                 $promise->success(['foo' => 'bar']);
 
                 return $this;
             }
 
-            public function expose(CompiledDeploymentInterface $compiledDeployment, PromiseInterface $promise): DriverInterface
-            {
+            public function expose(
+                CompiledDeploymentInterface $compiledDeployment,
+                PromiseInterface $promise
+            ): DriverInterface {
                 $promise->success(['foo' => 'bar']);
                 return $this;
             }
@@ -1750,7 +1820,8 @@ class FeatureContext implements Context
                 self::$projectPrefix,
                 self::$quotasDefined,
                 self::$defaultsDefined,
-                strtolower(trim((string) preg_replace('#[^A-Za-z0-9-]+#', '', self::$projectName))),
+                strtolower(trim((string)preg_replace('#[^A-Za-z0-9-]+#', '', self::$projectName))),
+                self::$jobsDefined,
             );
 
             //TO avoid circural references in var_export
@@ -1828,18 +1899,18 @@ EOF;
 
         $prefixResource = ', "resources": ';
         $automaticResources = $prefixResource . json_encode(
-            [
-                'requests' => [
-                    'cpu' => '200m',
-                    'memory' => '20.480Mi',
+                [
+                    'requests' => [
+                        'cpu' => '200m',
+                        'memory' => '20.480Mi',
+                    ],
+                    'limits' => [
+                        'cpu' => '1.600',
+                        'memory' => '163.840Mi',
+                    ],
                 ],
-                'limits' => [
-                    'cpu' => '1.600',
-                    'memory' => '163.840Mi',
-                ],
-            ],
-            JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT,
-        );
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT,
+            );
 
         $storageClass = match (self::$defaultsDefined) {
             'system' => 'system-defaults-storage-identifiers',
@@ -1860,131 +1931,524 @@ EOF;
         $phpRunResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial' => $prefixResource . json_encode(
-                [
-                    'requests' => [
-                        'cpu' => '68m',
-                        'memory' => '9.600Mi',
+                    [
+                        'requests' => [
+                            'cpu' => '68m',
+                            'memory' => '9.600Mi',
+                        ],
+                        'limits' => [
+                            'cpu' => '561m',
+                            'memory' => '80Mi',
+                        ],
                     ],
-                    'limits' => [
-                        'cpu' => '561m',
-                        'memory' => '80Mi',
-                    ],
-                ],
-                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
-            ),
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
             'full' => $prefixResource . json_encode(
-                [
-                    'requests' => [
-                        'cpu' => '200m',
-                        'memory' => '64Mi',
+                    [
+                        'requests' => [
+                            'cpu' => '200m',
+                            'memory' => '64Mi',
+                        ],
+                        'limits' => [
+                            'cpu' => '500m',
+                            'memory' => '96Mi',
+                        ],
                     ],
-                    'limits' => [
-                        'cpu' => '500m',
-                        'memory' => '96Mi',
-                    ],
-                ],
-                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
-            ),
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
             default => ''
         };
 
         $shellResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial' => $prefixResource . json_encode(
-                [
-                    'requests' => [
-                        'cpu' => '100m',
-                        'memory' => '9.600Mi',
+                    [
+                        'requests' => [
+                            'cpu' => '100m',
+                            'memory' => '9.600Mi',
+                        ],
+                        'limits' => [
+                            'cpu' => '100m',
+                            'memory' => '80Mi',
+                        ],
                     ],
-                    'limits' => [
-                        'cpu' => '100m',
-                        'memory' => '80Mi',
-                    ],
-                ],
-                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
-            ),
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
             'full' => $prefixResource . json_encode(
-                [
-                    'requests' => [
-                        'cpu' => '100m',
-                        'memory' => '32Mi',
+                    [
+                        'requests' => [
+                            'cpu' => '100m',
+                            'memory' => '32Mi',
+                        ],
+                        'limits' => [
+                            'cpu' => '100m',
+                            'memory' => '32Mi',
+                        ],
                     ],
-                    'limits' => [
-                        'cpu' => '100m',
-                        'memory' => '32Mi',
-                    ],
-                ],
-                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
-            ),
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
             default => ''
         };
 
         $nginxResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial' => $prefixResource . json_encode(
-                [
-                    'requests' => [
-                        'cpu' => '68m',
-                        'memory' => '9.600Mi',
+                    [
+                        'requests' => [
+                            'cpu' => '68m',
+                            'memory' => '9.600Mi',
+                        ],
+                        'limits' => [
+                            'cpu' => '561m',
+                            'memory' => '80Mi',
+                        ],
                     ],
-                    'limits' => [
-                        'cpu' => '561m',
-                        'memory' => '80Mi',
-                    ],
-                ],
-                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
-            ),
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
             'full' => $prefixResource . json_encode(
-                [
-                    'requests' => [
-                        'cpu' => '200m',
-                        'memory' => '64Mi',
+                    [
+                        'requests' => [
+                            'cpu' => '200m',
+                            'memory' => '64Mi',
+                        ],
+                        'limits' => [
+                            'cpu' => '200m',
+                            'memory' => '64Mi',
+                        ],
                     ],
-                    'limits' => [
-                        'cpu' => '200m',
-                        'memory' => '64Mi',
-                    ],
-                ],
-                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
-            ),
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
             default => ''
         };
 
         $wafResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial', 'full' => $prefixResource . json_encode(
-                [
-                    'requests' => [
-                        'cpu' => '100m',
-                        'memory' => '64Mi',
+                    [
+                        'requests' => [
+                            'cpu' => '100m',
+                            'memory' => '64Mi',
+                        ],
+                        'limits' => [
+                            'cpu' => '100m',
+                            'memory' => '64Mi',
+                        ],
                     ],
-                    'limits' => [
-                        'cpu' => '100m',
-                        'memory' => '64Mi',
-                    ],
-                ],
-                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
-            ),
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
             default => ''
         };
 
         $blackfireResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial', 'full' => $prefixResource . json_encode(
-                [
-                    'requests' => [
-                        'cpu' => '100m',
-                        'memory' => '128Mi',
+                    [
+                        'requests' => [
+                            'cpu' => '100m',
+                            'memory' => '128Mi',
+                        ],
+                        'limits' => [
+                            'cpu' => '100m',
+                            'memory' => '128Mi',
+                        ],
                     ],
-                    'limits' => [
-                        'cpu' => '100m',
-                        'memory' => '128Mi',
-                    ],
-                ],
-                JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT
-            ),
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
             default => ''
         };
+
+        $jobPersistentVolumeClaim = match (self::$jobsDefined) {
+            true => ',' . PHP_EOL
+                . json_encode(
+                    [
+                        "metadata" => [
+                            "name" => "{$prefix}data-b424d-43879-43879",
+                            "namespace" => "behat-test",
+                            "labels" => [
+                                "name" => "{$prefix}data-b424d-43879-43879"
+                            ]
+                        ],
+                        "spec" => [
+                            "accessModes" => [
+                                "ReadWriteOnce"
+                            ],
+                            "storageClassName" => "nfs",
+                            "resources" => [
+                                "requests" => [
+                                    "storage" => "3Gi"
+                                ]
+                            ]
+                        ]
+                    ],
+                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+                ),
+            false => '',
+        };
+
+        $jobsManifest = '';
+        if (self::$jobsDefined) {
+            $jobsManifest = <<<"EOF"
+    "Teknoo\\Kubernetes\\Model\\Job": [
+        {
+            "metadata": {
+                "name": "{$prefix}job-init-init-var-job",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}job-init"
+                },
+                "annotations": {
+                    "teknoo.east.paas.version": "v1"
+                }
+            },
+            "spec": {
+                "completions": 3,
+                "completionMode": "Indexed",
+                "parallelism": 3,
+                "template": {
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "init-var"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "{$prefix}init-var",
+                                "image": "registry.hub.docker.com/bash:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": []
+                            }
+                        ]
+                    }
+                },
+                "activeDeadlineSeconds": 10
+            }
+        },
+        {
+            "metadata": {
+                "name": "{$prefix}job-init-update-job",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}job-init"
+                },
+                "annotations": {
+                    "teknoo.east.paas.version": "v1"
+                }
+            },
+            "spec": {
+                "completions": 3,
+                "completionMode": "Indexed",
+                "parallelism": 3,
+                "template": {
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "update"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "{$prefix}update",
+                                "image": "registry.hub.docker.com/bash:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": []
+                            }
+                        ]
+                    }
+                },
+                "activeDeadlineSeconds": 10
+            }
+        },
+        {
+            "metadata": {
+                "name": "{$prefix}job-init-init-var-job",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}job-init"
+                },
+                "annotations": {
+                    "teknoo.east.paas.version": "v1"
+                }
+            },
+            "spec": {
+                "completions": 3,
+                "completionMode": "Indexed",
+                "parallelism": 3,
+                "template": {
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "init-var"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "{$prefix}init-var",
+                                "image": "registry.hub.docker.com/bash:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": []
+                            }
+                        ]
+                    }
+                },
+                "activeDeadlineSeconds": 10
+            }
+        },
+        {
+            "metadata": {
+                "name": "{$prefix}job-init-update-job",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}job-init"
+                },
+                "annotations": {
+                    "teknoo.east.paas.version": "v1"
+                }
+            },
+            "spec": {
+                "completions": 3,
+                "completionMode": "Indexed",
+                "parallelism": 3,
+                "template": {
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "update"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "{$prefix}update",
+                                "image": "registry.hub.docker.com/bash:alpine",
+                                "imagePullPolicy": "Always",
+                                "ports": []
+                            }
+                        ]
+                    }
+                },
+                "activeDeadlineSeconds": 10
+            }
+        },
+        {
+            "metadata": {
+                "name": "{$prefix}job-translation-php-translation-job",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}job-translation"
+                },
+                "annotations": {
+                    "teknoo.east.paas.version": "v1"
+                }
+            },
+            "spec": {
+                "completions": 1,
+                "completionMode": "NonIndexed",
+                "parallelism": 1,
+                "template": {
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "php-translation"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "{$prefix}php-translation",
+                                "image": "https://foo.bar/php-run:7.4-b424d-43879-43879-prod",
+                                "imagePullPolicy": "Always",
+                                "ports": [],
+                                "envFrom": [
+                                    {
+                                        "configMapRef": {
+                                            "name": "map2-map"
+                                        }
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "SERVER_SCRIPT",
+                                        "value": "/opt/app/src/server.php"
+                                    },
+                                    {
+                                        "name": "KEY0",
+                                        "valueFrom": {
+                                            "configMapKeyRef": {
+                                                "name": "map1-map",
+                                                "key": "key0"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "volumeMounts": [
+                                    {
+                                        "name": "extra-foobarproject-volume",
+                                        "mountPath": "/opt/extra",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "name": "data-b424d-43879-43879-volume",
+                                        "mountPath": "/opt/data",
+                                        "readOnly": false
+                                    },
+                                    {
+                                        "name": "data-replicated-volume",
+                                        "mountPath": "/opt/data-replicated",
+                                        "readOnly": false
+                                    },
+                                    {
+                                        "name": "map-volume",
+                                        "mountPath": "/map",
+                                        "readOnly": false
+                                    },
+                                    {
+                                        "name": "vault-volume",
+                                        "mountPath": "/vault",
+                                        "readOnly": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "initContainers": [
+                            {
+                                "name": "extra-foobarproject",
+                                "image": "https://foo.bar/extra-foobarproject",
+                                "imagePullPolicy": "Always",
+                                "volumeMounts": [
+                                    {
+                                        "name": "extra-foobarproject-volume",
+                                        "mountPath": "/opt/extra",
+                                        "readOnly": false
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "MOUNT_PATH",
+                                        "value": "/opt/extra"
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "extra-foobarproject-volume",
+                                "emptyDir": []
+                            },
+                            {
+                                "name": "data-b424d-43879-43879-volume",
+                                "persistentVolumeClaim": {
+                                    "claimName": "data-b424d-43879-43879"
+                                }
+                            },
+                            {
+                                "name": "data-replicated-volume",
+                                "persistentVolumeClaim": {
+                                    "claimName": "data-replicated"
+                                }
+                            },
+                            {
+                                "name": "map-volume",
+                                "configMap": {
+                                    "name": "map2-map"
+                                }
+                            },
+                            {
+                                "name": "vault-volume",
+                                "secret": {
+                                    "secretName": "volume-vault-secret"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "podFailurePolicy": {
+                    "rules": [
+                        {
+                            "action": "Ignore",
+                            "onExitCodes": {
+                                "operator": "In",
+                                "values": [
+                                    0,
+                                    5
+                                ],
+                                "containerName": "php-translation"
+                            }
+                        },
+                        {
+                            "action": "FailJob",
+                            "onExitCodes": {
+                                "operator": "In",
+                                "values": [
+                                    1
+                                ],
+                                "containerName": "php-translation"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "Teknoo\\Kubernetes\\Model\\CronJob": [
+        {
+            "metadata": {
+                "name": "{$prefix}job-backup-backup-cronjob",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}job-backup"
+                },
+                "annotations": {
+                    "teknoo.east.paas.version": "v1"
+                }
+            },
+            "spec": {
+                "schedule": "0 0 /3 * * *",
+                "jobTemplate": {
+                    "spec": {
+                        "completions": 1,
+                        "completionMode": "NonIndexed",
+                        "parallelism": 1,
+                        "template": {
+                            "spec": {
+                                "hostAliases": [
+                                    {
+                                        "hostnames": [
+                                            "backup"
+                                        ],
+                                        "ip": "127.0.0.1"
+                                    }
+                                ],
+                                "containers": [
+                                    {
+                                        "name": "{$prefix}backup",
+                                        "image": "registry.hub.docker.com/backup:alpine",
+                                        "imagePullPolicy": "Always",
+                                        "ports": []
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ],
+EOF;
+        }
 
         $excepted = <<<"EOF"
 {
@@ -2062,10 +2526,10 @@ EOF;
     "Teknoo\\Kubernetes\\Model\\PersistentVolumeClaim": [
         {
             "metadata": {
-                "name": "{$prefix}data",
+                "name": "{$prefix}data-09597-1e225",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "{$prefix}data"
+                    "name": "{$prefix}data-09597-1e225"
                 }
             },
             "spec": {
@@ -2090,7 +2554,7 @@ EOF;
             },
             "spec": {
                 "accessModes": [
-                    "ReadWriteOnce"
+                    "ReadWriteMany"
                 ],
                 "storageClassName": "replicated-provider",
                 "resources": {
@@ -2099,7 +2563,7 @@ EOF;
                     }
                 }
             }
-        }
+        }$jobPersistentVolumeClaim
     ],
     "Teknoo\\Kubernetes\\Model\\Deployment": [
         {
@@ -2201,7 +2665,7 @@ EOF;
                         "containers": [
                             {
                                 "name": "nginx",
-                                "image": "https://foo.bar/nginx:alpine-prod",
+                                "image": "https://foo.bar/nginx:alpine-2a975-5be1e-prod",
                                 "imagePullPolicy": "Always",
                                 "ports": [
                                     {
@@ -2319,7 +2783,7 @@ EOF;
                         "containers": [
                             {
                                 "name": "php-run",
-                                "image": "https://foo.bar/php-run:7.4-prod",
+                                "image": "https://foo.bar/php-run:7.4-09597-1e225-prod",
                                 "imagePullPolicy": "Always",
                                 "ports": [
                                     {
@@ -2378,7 +2842,7 @@ EOF;
                                         "readOnly": true
                                     },
                                     {
-                                        "name": "data-volume",
+                                        "name": "data-09597-1e225-volume",
                                         "mountPath": "/opt/data",
                                         "readOnly": false
                                     },
@@ -2459,9 +2923,9 @@ EOF;
                                 "emptyDir": []
                             },
                             {
-                                "name": "data-volume",
+                                "name": "data-09597-1e225-volume",
                                 "persistentVolumeClaim": {
-                                    "claimName": "{$prefix}data"
+                                    "claimName": "{$prefix}data-09597-1e225"
                                 }
                             },
                             {
@@ -2487,7 +2951,7 @@ EOF;
                 }
             }
         }
-    ],
+    ],$jobsManifest
     "Teknoo\\Kubernetes\\Model\\Service": [
         {
             "metadata": {
@@ -2712,9 +3176,9 @@ EOF;
 EOF;
 
         $expectedArray = json_decode(str_replace('\\', '\\\\', $excepted), true);
-        $expectedPretty = json_encode($expectedArray, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
+        $expectedPretty = json_encode($expectedArray, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
 
-        $json = json_encode($this->manifests, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
+        $json = json_encode($this->manifests, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
 
         try {
             Assert::assertEquals(
@@ -2733,7 +3197,7 @@ EOF;
     {
         $sr = $this->sfContainer->get('external_serializer');
         $job = $this->repositories[Job::class]->findOneBy(['id' => $jobId]);
-        
+
         $this->jobJsonExported = $sr->serialize($job, 'json', ['groups' => [$group]]);
     }
 

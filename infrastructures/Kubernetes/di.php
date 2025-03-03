@@ -33,6 +33,8 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Factory as FactoryAlias; //To prevent a bug into PHP-DI
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver as DriverAlias; //To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CronJobTranscriber;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\JobTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\TranscriberCollection as TranscriberCollectionAlias; //To prevent ...
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\DeploymentTranscriber;
@@ -138,6 +140,40 @@ return [
         return new $className();
     },
 
+    JobTranscriber::class . ':class' => JobTranscriber::class,
+    JobTranscriber::class => static function (
+        ContainerInterface $container
+    ): JobTranscriber {
+        $className = $container->get(JobTranscriber::class . ':class');
+        if (!is_a($className, JobTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a deployment transcriber");
+        }
+
+        $requireLabel = 'paas.east.teknoo.net';
+        if ($container->has('teknoo.east.paas.kubernetes.job.require_label')) {
+            $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.job.require_label');
+        }
+
+        return new $className($requireLabel);
+    },
+
+    CronJobTranscriber::class . ':class' => CronJobTranscriber::class,
+    CronJobTranscriber::class => static function (
+        ContainerInterface $container
+    ): CronJobTranscriber {
+        $className = $container->get(CronJobTranscriber::class . ':class');
+        if (!is_a($className, CronJobTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a deployment transcriber");
+        }
+
+        $requireLabel = 'paas.east.teknoo.net';
+        if ($container->has('teknoo.east.paas.kubernetes.cronjob.require_label')) {
+            $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.cronjob.require_label');
+        }
+
+        return new $className($requireLabel);
+    },
+
     DeploymentTranscriber::class . ':class' => DeploymentTranscriber::class,
     DeploymentTranscriber::class => static function (
         ContainerInterface $container
@@ -222,6 +258,8 @@ return [
         $collection->add(10, $container->get(VolumeTranscriber::class));
         $collection->add(30, $container->get(DeploymentTranscriber::class));
         $collection->add(31, $container->get(StatefulSetsTranscriber::class));
+        $collection->add(32, $container->get(JobTranscriber::class));
+        $collection->add(33, $container->get(CronJobTranscriber::class));
         $collection->add(40, $container->get(ServiceTranscriber::class));
         $collection->add(50, $container->get(IngressTranscriber::class));
 

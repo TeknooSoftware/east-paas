@@ -33,6 +33,7 @@ use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\DefaultsCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\Exception\MissingAttributeException;
 use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\JobCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\MapCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
@@ -269,6 +270,18 @@ return [
             )
         );
     },
+    JobCompiler::class => static function (ContainerInterface $container): JobCompiler {
+        $jobslibrary = ($container->get('teknoo.east.paas.di.get_array.values'))(
+            $container,
+            'teknoo.east.paas.compilation.jobs_extends.library',
+            [],
+        );
+
+        return new JobCompiler(
+            $container->get(PodCompiler::class),
+            $jobslibrary
+        );
+    },
     MapCompiler::class => create(),
     PodCompiler::class => static function (ContainerInterface $container): PodCompiler {
         $podslibrary = ($container->get('teknoo.east.paas.di.get_array.values'))(
@@ -358,6 +371,7 @@ return [
         $collection->add('[volumes]', $container->get(VolumeCompiler::class));
         $collection->add('[images]', $container->get(ImageCompiler::class));
         $collection->add('[builds]', $container->get(HookCompiler::class));
+        $collection->add('[jobs]', $container->get(JobCompiler::class));
         $collection->add('[pods]', $container->get(PodCompiler::class));
         $collection->add('[services]', $container->get(ServiceCompiler::class));
         $collection->add('[ingresses]', $container->get(IngressCompiler::class));
@@ -368,7 +382,7 @@ return [
     //Conductor
     CompiledDeploymentFactoryInterface::class => DIGet(CompiledDeploymentFactory::class),
     CompiledDeploymentFactory::class => static function (ContainerInterface $container): CompiledDeploymentFactory {
-        $xsdFilePath = __DIR__ . '/Contracts/Configuration/paas_validation.xsd';
+        $xsdFilePath = __DIR__ . '/Contracts/Compilation/paas_validation.xsd';
 
         if ($container->has('teknoo.east.paas.compilation.yaml_validation.xsd_file')) {
             $xsdFilePath = $container->get('teknoo.east.paas.compilation.yaml_validation.xsd_file');

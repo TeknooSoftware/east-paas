@@ -40,7 +40,8 @@ An example of integration with `Symfony` file is available [here](documentation/
 
 Example of **.paas.yaml** configuration file present into git repository to deploy
 ---------------------------------------------------------------------------------
-An example of the `.paas.yaml` file is available [here](documentation/example.paas.md)
+An example of the `.paas.yaml` file in v1.1 is available [here](documentation/example.paas.1.1.md)
+An example of the `.paas.yaml` file in v1.0 is available [here](documentation/example.paas.1.0.md)
 
 Support this project
 ---------------------
@@ -73,13 +74,13 @@ To install this library with composer, run this command :
 
 This library requires :
 
-    * PHP 8.1+
+    * PHP 8.2+
     * A PHP autoloader (Composer is recommended)
     * Teknoo/Immutable.
     * Teknoo/States.
     * Teknoo/Recipe.
     * Teknoo/East-Foundation.
-    * Optional: Symfony 6.3+ (for administration)
+    * Optional: Symfony 6.4+ (for administration)
 
 Contribute :)
 -------------

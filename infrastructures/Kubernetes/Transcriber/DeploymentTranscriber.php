@@ -36,10 +36,9 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\Transcribe
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\InvalidArgumentException;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Kubernetes\Model\Deployment;
+use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
-
-use function substr;
 
 /**
  * "Deployment transcriber" to translate CompiledDeployment's pods and containers to Kubernetes ReplicationsSet
@@ -87,7 +86,7 @@ class DeploymentTranscriber implements DeploymentInterface
             version: $version,
             prefixer: $prefixer,
             requireLabel: $requireLabel,
-            updateStrategy: fn () => match ($pod->getUpgradeStrategy()) {
+            updateStrategy: static fn () => match ($pod->getUpgradeStrategy()) {
                 UpgradeStrategy::RollingUpgrade => [
                     'type' => 'RollingUpdate',
                     'rollingUpdate' => [
@@ -170,20 +169,12 @@ class DeploymentTranscriber implements DeploymentInterface
                     }
 
                     $name = $prefixer($pod->getName());
+                    /** @var Repository<Deployment> $dRepository */
                     $dRepository = $client->deployments();
 
-                    $previousDeployment = $dRepository->setLabelSelector(['name' => $name])->first();
-                    $version = 1;
-                    if (null !== $previousDeployment) {
-                        $annotations = $previousDeployment->toArray();
-                        $oldVersion = (
-                            (int) substr(
-                                string: ($annotations['metadata']['annotations']['teknoo.east.paas.version'] ?? 'v1'),
-                                offset: 1,
-                            )
-                        );
-                        $version = $oldVersion + 1;
-                    }
+                    $previousDeployment = null;
+                    $oldVersion = 0;
+                    $version = self::getVersion($name, $dRepository, $oldVersion, $previousDeployment);
                 } catch (Throwable $error) {
                     $promise->fail($error);
 

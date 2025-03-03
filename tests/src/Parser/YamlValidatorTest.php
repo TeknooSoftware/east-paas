@@ -54,7 +54,7 @@ class YamlValidatorTest extends TestCase
 
     private function getXsdFile(): string
     {
-        $fileName = \dirname(__DIR__, 3) . '/src/Contracts/Configuration/paas_validation.xsd';
+        $fileName = \dirname(__DIR__, 3) . '/src/Contracts/Compilation/paas_validation.xsd';
 
         return \file_get_contents($fileName);
     }
