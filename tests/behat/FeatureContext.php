@@ -2116,7 +2116,7 @@ EOF;
                         ],
                         "containers": [
                             {
-                                "name": "{$prefix}init-var",
+                                "name": "init-var",
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always",
                                 "ports": []
@@ -2154,7 +2154,7 @@ EOF;
                         ],
                         "containers": [
                             {
-                                "name": "{$prefix}update",
+                                "name": "update",
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always",
                                 "ports": []
@@ -2192,7 +2192,7 @@ EOF;
                         ],
                         "containers": [
                             {
-                                "name": "{$prefix}init-var",
+                                "name": "init-var",
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always",
                                 "ports": []
@@ -2230,7 +2230,7 @@ EOF;
                         ],
                         "containers": [
                             {
-                                "name": "{$prefix}update",
+                                "name": "update",
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always",
                                 "ports": []
@@ -2268,7 +2268,7 @@ EOF;
                         ],
                         "containers": [
                             {
-                                "name": "{$prefix}php-translation",
+                                "name": "php-translation",
                                 "image": "https://foo.bar/php-run:7.4-b424d-43879-43879-prod",
                                 "imagePullPolicy": "Always",
                                 "ports": [],
@@ -2434,7 +2434,7 @@ EOF;
                                 ],
                                 "containers": [
                                     {
-                                        "name": "{$prefix}backup",
+                                        "name": "backup",
                                         "image": "registry.hub.docker.com/backup:alpine",
                                         "imagePullPolicy": "Always",
                                         "ports": []
