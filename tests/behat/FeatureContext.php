@@ -870,7 +870,7 @@ class FeatureContext implements Context
                 variables: [
                     'FOO' => 'foo',
                     'ENV' => 'prod',
-                    'PVP_VERSION' => 7.4
+                    'PHP_VERSION' => 7.4
                 ],
                 hnc: self::$useHnc,
                 jobId: 'jobid',

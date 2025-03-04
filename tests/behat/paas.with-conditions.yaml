@@ -79,7 +79,7 @@ pods:
             php-run: #Container name
                 image: registry.teknoo.software/php-run #Container image to use
                 version: 7.4
-                if{PVP_VERSION>8}:
+                if{PHP_VERSION>8}:
                     image: registry.teknoo.software/php-runner #Container image to use
                     version: 8.4
                 listen: #Port listen by the container
