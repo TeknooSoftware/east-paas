@@ -2275,7 +2275,7 @@ EOF;
                                 "envFrom": [
                                     {
                                         "configMapRef": {
-                                            "name": "map2-map"
+                                            "name": "{$prefix}map2-map"
                                         }
                                     }
                                 ],
@@ -2288,7 +2288,7 @@ EOF;
                                         "name": "KEY0",
                                         "valueFrom": {
                                             "configMapKeyRef": {
-                                                "name": "map1-map",
+                                                "name": "{$prefix}map1-map",
                                                 "key": "key0"
                                             }
                                         }
@@ -2351,25 +2351,25 @@ EOF;
                             {
                                 "name": "data-b424d-43879-43879-volume",
                                 "persistentVolumeClaim": {
-                                    "claimName": "data-b424d-43879-43879"
+                                    "claimName": "{$prefix}data-b424d-43879-43879"
                                 }
                             },
                             {
                                 "name": "data-replicated-volume",
                                 "persistentVolumeClaim": {
-                                    "claimName": "data-replicated"
+                                    "claimName": "{$prefix}data-replicated"
                                 }
                             },
                             {
                                 "name": "map-volume",
                                 "configMap": {
-                                    "name": "map2-map"
+                                    "name": "{$prefix}map2-map"
                                 }
                             },
                             {
                                 "name": "vault-volume",
                                 "secret": {
-                                    "secretName": "volume-vault-secret"
+                                    "secretName": "{$prefix}volume-vault-secret"
                                 }
                             }
                         ]
