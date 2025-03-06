@@ -2118,8 +2118,7 @@ EOF;
                             {
                                 "name": "init-var",
                                 "image": "registry.hub.docker.com/bash:alpine",
-                                "imagePullPolicy": "Always",
-                                "ports": []
+                                "imagePullPolicy": "Always"
                             }
                         ]
                     }
@@ -2156,8 +2155,7 @@ EOF;
                             {
                                 "name": "update",
                                 "image": "registry.hub.docker.com/bash:alpine",
-                                "imagePullPolicy": "Always",
-                                "ports": []
+                                "imagePullPolicy": "Always"
                             }
                         ]
                     }
@@ -2194,8 +2192,7 @@ EOF;
                             {
                                 "name": "init-var",
                                 "image": "registry.hub.docker.com/bash:alpine",
-                                "imagePullPolicy": "Always",
-                                "ports": []
+                                "imagePullPolicy": "Always"
                             }
                         ]
                     }
@@ -2232,8 +2229,7 @@ EOF;
                             {
                                 "name": "update",
                                 "image": "registry.hub.docker.com/bash:alpine",
-                                "imagePullPolicy": "Always",
-                                "ports": []
+                                "imagePullPolicy": "Always"
                             }
                         ]
                     }
@@ -2271,7 +2267,6 @@ EOF;
                                 "name": "php-translation",
                                 "image": "https://foo.bar/php-run:7.4-b424d-43879-43879-prod",
                                 "imagePullPolicy": "Always",
-                                "ports": [],
                                 "envFrom": [
                                     {
                                         "configMapRef": {
@@ -2436,8 +2431,7 @@ EOF;
                                     {
                                         "name": "backup",
                                         "image": "registry.hub.docker.com/backup:alpine",
-                                        "imagePullPolicy": "Always",
-                                        "ports": []
+                                        "imagePullPolicy": "Always"
                                     }
                                 ]
                             }
@@ -2613,8 +2607,7 @@ EOF;
                             {
                                 "name": "sleep",
                                 "image": "registry.hub.docker.com/bash:alpine",
-                                "imagePullPolicy": "Always",
-                                "ports": []$shellResources
+                                "imagePullPolicy": "Always"$shellResources
                             }
                         ]$imagePullSecrets
                     }

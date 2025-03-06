@@ -150,11 +150,14 @@ trait PodsTranscriberTrait
                 'name'  => $container->getName(),
                 'image' => $imgUrl,
                 'imagePullPolicy' => 'Always',
-                'ports' => array_map(
-                    static fn($port): array => ['containerPort' => $port,],
-                    $container->getListen()
-                )
             ];
+
+            if (!empty($portsListened = $container->getListen())) {
+                $spec['ports'] = array_map(
+                    static fn($port): array => ['containerPort' => $port,],
+                    $portsListened,
+                );
+            }
 
             self::convertVariables($spec, $container->getVariables(), $prefixer);
 

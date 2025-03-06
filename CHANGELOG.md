@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.3.0-beta2] - 2025-03-06
+### Beta Release
+- Fix issues in Kubernetes Pods Transcriber to not define ports when it is empty
+
 ## [4.3.0-beta1] - 2025-03-03
 ### Beta Release
 - PaaS version update to `1.1`
