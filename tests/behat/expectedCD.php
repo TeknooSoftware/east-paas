@@ -32,6 +32,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 
@@ -769,6 +770,7 @@ return static function (
                         name: 'backup',
                         replicas: 1,
                         ociRegistryConfigName: new Reference('oci-registry-config-name'),
+                        restartPolicy: RestartPolicy::OnFailure,
                         containers: [
                             new Container(
                                 name: 'backup',

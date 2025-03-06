@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
 
 use IteratorAggregate;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
@@ -63,6 +64,7 @@ class Pod implements ImmutableInterface, IteratorAggregate
         private readonly ?int $fsGroup = null,
         private readonly array $requires = [],
         private readonly bool $isStateless = true,
+        private readonly ?RestartPolicy $restartPolicy = null,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -121,5 +123,10 @@ class Pod implements ImmutableInterface, IteratorAggregate
     public function isStateless(): bool
     {
         return $this->isStateless;
+    }
+
+    public function getRestartPolicy(): ?RestartPolicy
+    {
+        return $this->restartPolicy;
     }
 }

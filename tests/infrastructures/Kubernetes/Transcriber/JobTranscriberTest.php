@@ -36,6 +36,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Job as CDJob;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
@@ -176,6 +177,7 @@ class JobTranscriberTest extends TestCase
                     fsGroup: 1000,
                     requires: ['x86_64', 'avx'],
                     isStateless: true,
+                    restartPolicy: RestartPolicy::OnFailure
                 );
                 $pod3 = new Pod(
                     'p2',

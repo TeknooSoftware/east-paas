@@ -394,6 +394,14 @@
     </xs:all>
   </xs:complexType>
 
+  <xs:simpleType name="pod_restart_policy" final="restriction" >
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="always" />
+      <xs:enumeration value="on-failure" />
+      <xs:enumeration value="never" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="pod_security">
     <xs:all>
       <xs:element name="fs-group" type="xs:int" minOccurs="0" />
@@ -406,6 +414,7 @@
       <xs:element name="replicas" type="xs:int" minOccurs="0" />
       <xs:element name="oci-registry-config-name" type="xs:string" minOccurs="0" />
       <xs:element name="upgrade" type="epv:pod_upgrade" minOccurs="0" />
+      <xs:element name="restart-policy" type="epv:pod_restart_policy" minOccurs="0" />
       <xs:element name="security" type="epv:pod_security" minOccurs="0" />
       <xs:element name="requires" type="epv:rows_list_string" minOccurs="0" />
       <xs:element name="containers">

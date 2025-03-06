@@ -2120,7 +2120,8 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"
                             }
-                        ]
+                        ],
+                        "restartPolicy": "Never"
                     }
                 },
                 "activeDeadlineSeconds": 10
@@ -2157,7 +2158,8 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"
                             }
-                        ]
+                        ],
+                        "restartPolicy": "Never"
                     }
                 },
                 "activeDeadlineSeconds": 10
@@ -2194,7 +2196,8 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"
                             }
-                        ]
+                        ],
+                        "restartPolicy": "Never"
                     }
                 },
                 "activeDeadlineSeconds": 10
@@ -2231,7 +2234,8 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"
                             }
-                        ]
+                        ],
+                        "restartPolicy": "Never"
                     }
                 },
                 "activeDeadlineSeconds": 10
@@ -2318,6 +2322,7 @@ EOF;
                                 ]
                             }
                         ],
+                        "restartPolicy": "Never",
                         "initContainers": [
                             {
                                 "name": "extra-foobarproject",
@@ -2433,7 +2438,8 @@ EOF;
                                         "image": "registry.hub.docker.com/backup:alpine",
                                         "imagePullPolicy": "Always"
                                     }
-                                ]
+                                ],
+                                "restartPolicy": "OnFailure"
                             }
                         }
                     }

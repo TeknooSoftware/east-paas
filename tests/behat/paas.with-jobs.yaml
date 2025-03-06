@@ -253,6 +253,7 @@ jobs:
         schedule: '0 0 /3 * * *'
         pods:
             backup:
+                restart-policy: on-failure
                 containers:
                     backup:
                         image: registry.hub.docker.com/backup

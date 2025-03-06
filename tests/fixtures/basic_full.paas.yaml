@@ -144,6 +144,7 @@ pods:
               limit: 125Mi
   demo:
     replicas: 1
+    restart-policy: always
     containers:
       nginx:
         image: registry.hub.docker.com/library/nginx
@@ -225,6 +226,7 @@ jobs:
       limit-on: "php-translation"
     pods:
       php-translation:
+        restart-policy: on-failure
         containers:
           php-translation:
             image: registry.teknoo.software/php-cli #Container image to use

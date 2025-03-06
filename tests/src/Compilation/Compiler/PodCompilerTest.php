@@ -77,6 +77,7 @@ class PodCompilerTest extends TestCase
                     'max-upgrading-pods' => 2,
                     'max-unavailable-pods' => 1,
                 ],
+                'restart-policy' => 'always',
                 'containers' => [
                     'node-react' => [
                         'image' => 'node-react',

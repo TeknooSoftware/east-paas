@@ -30,6 +30,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
@@ -320,6 +321,7 @@ trait PodsTranscriberTrait
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
+        RestartPolicy $defaultRestartPolicy = null,
     ): array {
         $hostAlias = [
             'hostnames' => [],
@@ -335,6 +337,15 @@ trait PodsTranscriberTrait
             'hostAliases' => $hostAliases,
             'containers' => [],
         ];
+
+        $restartPolicy = $pod->getRestartPolicy() ?? $defaultRestartPolicy;
+        if (null !== $restartPolicy) {
+            $spec['restartPolicy'] = match ($restartPolicy) {
+                RestartPolicy::Always => 'Always',
+                RestartPolicy::Never => 'Never',
+                RestartPolicy::OnFailure => 'OnFailure',
+            };
+        }
 
         $imagePullSecretsName = $pod->getOciRegistryConfigName();
         if ($imagePullSecretsName instanceof Reference) {

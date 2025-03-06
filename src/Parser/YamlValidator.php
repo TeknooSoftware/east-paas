@@ -131,6 +131,7 @@ class YamlValidator
         'requires',
         'reset-on-deployment',
         'resources',
+        'restart-policy',
         'row',
         'schedule',
         'secret',

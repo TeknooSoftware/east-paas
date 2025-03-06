@@ -29,6 +29,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 
@@ -83,6 +84,7 @@ trait JobTranscriberTrait
                         prefixer: $prefixer,
                         requireLabel: $requireLabel,
                         defaultsBag: $defaultsBag,
+                        defaultRestartPolicy: RestartPolicy::Never,
                     )
                 ]
             ],

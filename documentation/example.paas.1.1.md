@@ -119,6 +119,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
               upgrade:
                   max-upgrading-pods: 2
                   max-unavailable-pods: 1
+              restart-policy: always
               containers:
                   php-run: #Container name
                       image: registry.teknoo.software/php-run #Container image to use
@@ -267,6 +268,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                   limit-on: "php-translation"
               pods:
                   php-translation:
+                      restart-policy: on-failure
                       containers:
                           php-translation:
                               image: registry.teknoo.software/php-cli #Container image to use

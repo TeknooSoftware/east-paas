@@ -34,6 +34,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\EmbeddedVolumeImage;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
@@ -126,6 +127,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     private const KEY_VOLUMES = 'volumes';
     private const KEY_WRITABLES = 'writables';
     private const KEY_WRITE_MANY = 'write-many';
+    private const KEY_RESTART_POLICY = 'restart-policy';
     private const VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
     private const VALUE_LATEST = 'latest';
 
@@ -510,6 +512,11 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                     $upgradeStrategy = UpgradeStrategy::from($podsList[self::KEY_UPGRADE][self::KEY_STRATEGY]);
                 }
 
+                $restartPolicy = null;
+                if (!empty($podsList[self::KEY_RESTART_POLICY])) {
+                    $restartPolicy = RestartPolicy::from($podsList[self::KEY_RESTART_POLICY]);
+                }
+
                 $ociRegistryConfig = $podsList[$ociKey] ?? $defaultsBag->getReference($ociKey);
                 $promise->success(
                     new Pod(
@@ -523,6 +530,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                         fsGroup: $fsGroup,
                         requires: (array)($podsList[self::KEY_REQUIRES] ?? []),
                         isStateless: $isStateless,
+                        restartPolicy: $restartPolicy,
                     )
                 );
             }

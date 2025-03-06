@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 
 /**
@@ -51,6 +52,7 @@ class PodTest extends TestCase
             fsGroup: 123,
             requires: ['foo', 'bar'],
             isStateless: false,
+            restartPolicy: RestartPolicy::Never,
         );
     }
 
@@ -129,5 +131,13 @@ class PodTest extends TestCase
     public function testIsStateless()
     {
         self::assertIsBool($this->buildObject()->isStateless());
+    }
+
+    public function testGetRestartPolicy()
+    {
+        self::assertEquals(
+            RestartPolicy::Never,
+            $this->buildObject()->getRestartPolicy(),
+        );
     }
 }

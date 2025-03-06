@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.3.0-beta3] - 2025-03-06
+### Beta Release
+- Add `restart-policy` to pod, with theses available values : `always`, `never` and `on-failure`. For `pods`, this entry
+ is optional, and by default is at null. For job's pods, the default value is `never`
+
 ## [4.3.0-beta2] - 2025-03-06
 ### Beta Release
 - Fix issues in Kubernetes Pods Transcriber to not define ports when it is empty
