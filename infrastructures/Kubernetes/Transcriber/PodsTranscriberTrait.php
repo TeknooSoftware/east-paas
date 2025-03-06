@@ -321,7 +321,7 @@ trait PodsTranscriberTrait
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
-        RestartPolicy $defaultRestartPolicy = null,
+        ?RestartPolicy $defaultRestartPolicy = null,
     ): array {
         $hostAlias = [
             'hostnames' => [],
