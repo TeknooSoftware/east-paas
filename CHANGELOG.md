@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.3.0-beta4] - 2025-03-07
+### Beta Release
+- Fix `write-many` behavior, by default it is at false when replica is to one, else it set to true. The defined value by
+ developpers is always kept and used by PaaS.
+
 ## [4.3.0-beta3] - 2025-03-06
 ### Beta Release
 - Add `restart-policy` to pod, with theses available values : `always`, `never` and `on-failure`. For `pods`, this entry
@@ -14,7 +19,9 @@
 - PaaS version update to `1.1`
 - Fix issues when different pods use same volumes' names
 - For persisted volumes, add `name` option to allow pods to share persistent volume
-- Always for persisted volumes, add `write-many` to allow concurrent writting (else only concurrent reading is allowed)
+- Always for persisted volumes, add `write-many` to allow concurrent writting (else only concurrent reading is allowed).
+    - By Default, only if `write-many` is not set, the value is set to false when pod's replicas it's set to 1, 
+      else `write-many`'s default value is at true. 
 - Add support of `Job` and cronjob:
 
 

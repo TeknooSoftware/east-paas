@@ -1387,6 +1387,7 @@ class FeatureContext implements Context
                             'data' => [
                                 'mount-path' => '/opt/data',
                                 'persistent' => true,
+                                'write-many' => false, #default it is at true because replicat is great than 1, force to 1
                                 'storage-size' => '3Gi',
                             ],
                             'data-replicated' => [
@@ -1395,7 +1396,7 @@ class FeatureContext implements Context
                                 'persistent' => true,
                                 'storage-provider' => 'replicated-provider',
                                 'storage-size' => '3Gi',
-                                'write-many' => true,
+                                //'write-many' => true, default it is at true because replicat is great than 1, force to 1
                             ],
                             'map' => [
                                 'mount-path' => '/map',

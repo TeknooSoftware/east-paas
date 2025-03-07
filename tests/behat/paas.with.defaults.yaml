@@ -96,6 +96,7 @@ pods:
                     data: #Persistent volume, can not be pre-populated
                         mount-path: '/opt/data'
                         persistent: true
+                        write-many: false #default it is at true because replicat is great than 1, force to 1
                         storage-size: 3Gi
                     data-replicated: #Persistent volume, can not be pre-populated
                         name: data-replicated #to share this volume between

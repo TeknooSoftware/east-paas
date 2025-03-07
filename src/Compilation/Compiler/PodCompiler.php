@@ -150,6 +150,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         array &$vDefinition,
         DefaultsBag $defaultsBag,
         bool $resetOnDeployment,
+        int $numberOfReplicas,
     ): PersistentVolume {
         $identifier = $vDefinition[self::KEY_STORAGE_IDENTIFIER] ?? $defaultsBag->getReference(
             self::KEY_STORAGE_IDENTIFIER,
@@ -159,13 +160,18 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             self::KEY_STORAGE_SIZE,
         );
 
+        $writeMany = ($numberOfReplicas > 1);
+        if (isset($vDefinition[self::KEY_WRITE_MANY])) {
+            $writeMany = !empty($vDefinition[self::KEY_WRITE_MANY]);
+        }
+
         return new PersistentVolume(
-            $volumeName,
-            $mountPath,
-            $identifier,
-            $storageSize,
-            $resetOnDeployment,
-            !empty($vDefinition[self::KEY_WRITE_MANY]),
+            name: $volumeName,
+            mountPath: $mountPath,
+            storageIdentifier: $identifier,
+            storageSize: $storageSize,
+            resetOnDeployment: $resetOnDeployment,
+            allowWriteMany: $writeMany,
         );
     }
 
@@ -175,12 +181,12 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     private function buildSecretVolume(
         string $volumeName,
         string $mountPath,
-        array &$volumeDefinition
+        array &$volumeDefinition,
     ): SecretVolume {
         return new SecretVolume(
-            $volumeName,
-            $mountPath,
-            $volumeDefinition[self::KEY_FROM_SECRET]
+            name: $volumeName,
+            mountPath: $mountPath,
+            secretIdentifier: $volumeDefinition[self::KEY_FROM_SECRET]
         );
     }
 
@@ -190,12 +196,12 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     private function buildMapVolume(
         string $volumeName,
         string $mountPath,
-        array &$volumeDefinition
+        array &$volumeDefinition,
     ): MapVolume {
         return new MapVolume(
-            $volumeName,
-            $mountPath,
-            $volumeDefinition[self::KEY_FROM_MAP]
+            name: $volumeName,
+            mountPath: $mountPath,
+            mapIdentifier: $volumeDefinition[self::KEY_FROM_MAP]
         );
     }
 
@@ -205,7 +211,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     private function buildVolume(
         string $volumeName,
         string $mountPath,
-        array &$volumeDefinition
+        array &$volumeDefinition,
     ): Volume {
         return new Volume(
             name: $volumeName,
@@ -230,6 +236,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         DefaultsBag $defaultsBag,
         bool &$isStateless,
         string $hashName,
+        int $numberOfReplicas,
     ): void {
         foreach ($volumes as $volumeName => &$volumeDefinition) {
             if (empty($volumeDefinition[self::KEY_MOUNT_PATH])) {
@@ -241,11 +248,12 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             if (isset($volumeDefinition[self::KEY_PERSISTENT])) {
                 $isStateless = false;
                 $containerVolumes[(string) $volumeName] = $this->buildPersistentVolume(
-                    $volumeDefinition[self::KEY_VOLUME_NAME] ?? $volumeName . '-' . $hashName,
-                    $mountPath,
-                    $volumeDefinition,
-                    $defaultsBag,
-                    !empty($volumeDefinition[self::KEY_RESET_ON_DEPLOYMENT] ?? false),
+                    volumeName: $volumeDefinition[self::KEY_VOLUME_NAME] ?? $volumeName . '-' . $hashName,
+                    mountPath: $mountPath,
+                    vDefinition: $volumeDefinition,
+                    defaultsBag: $defaultsBag,
+                    resetOnDeployment: !empty($volumeDefinition[self::KEY_RESET_ON_DEPLOYMENT] ?? false),
+                    numberOfReplicas: $numberOfReplicas,
                 );
 
                 continue;
@@ -253,9 +261,9 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 
             if (isset($volumeDefinition[self::KEY_FROM_SECRET])) {
                 $containerVolumes[(string) $volumeName] = $this->buildSecretVolume(
-                    $volumeName,
-                    $mountPath,
-                    $volumeDefinition
+                    volumeName: $volumeName,
+                    mountPath: $mountPath,
+                    volumeDefinition: $volumeDefinition,
                 );
 
                 continue;
@@ -263,9 +271,9 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 
             if (isset($volumeDefinition[self::KEY_FROM_MAP])) {
                 $containerVolumes[(string) $volumeName] = $this->buildMapVolume(
-                    $volumeName,
-                    $mountPath,
-                    $volumeDefinition
+                    volumeName: $volumeName,
+                    mountPath: $mountPath,
+                    volumeDefinition: $volumeDefinition,
                 );
 
                 continue;
@@ -273,9 +281,9 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 
             if (!isset($volumeDefinition[self::KEY_FROM])) {
                 $embeddedVolumes[(string) $volumeName] = $this->buildVolume(
-                    $volumeName . '-' . $hashName,
-                    $mountPath,
-                    $volumeDefinition
+                    volumeName: $volumeName . '-' . $hashName,
+                    mountPath: $mountPath,
+                    volumeDefinition: $volumeDefinition,
                 );
 
                 continue;
@@ -283,12 +291,12 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 
             $volumeFrom = $volumeDefinition[self::KEY_FROM];
             $compiledDeployment->importVolume(
-                $volumeFrom,
-                $mountPath,
-                $promise = new Promise(
+                volumeFrom: $volumeFrom,
+                mountPath: $mountPath,
+                promise: $promise = new Promise(
                     static fn (VolumeInterface $volume) => $volume,
                     static fn (#[SensitiveParameter] Throwable $error): never => throw $error,
-                )
+                ),
             );
             $containerVolumes[(string) $volumeName] = $promise->fetchResultIfCalled();
         }
@@ -315,7 +323,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             tag: $version,
             originalName: $originalImage,
             originalTag: $originalVersion,
-            volumes: $embeddedVolumes
+            volumes: $embeddedVolumes,
         );
 
         $compiledDeployment->addBuildable($embeddedImage);
@@ -398,13 +406,14 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                     $hashName = trim(implode('-', [$parentHashName, $podHashName, $containerHashName]), '-');
 
                     $this->processVolumes(
-                        $config[self::KEY_VOLUMES] ?? [],
-                        $embeddedVolumes,
-                        $containerVolumes,
-                        $compiledDeployment,
-                        $defaultsBag,
-                        $isStateless,
-                        $hashName,
+                        volumes: $config[self::KEY_VOLUMES] ?? [],
+                        embeddedVolumes: $embeddedVolumes,
+                        containerVolumes: $containerVolumes,
+                        compiledDeployment: $compiledDeployment,
+                        defaultsBag: $defaultsBag,
+                        isStateless: $isStateless,
+                        hashName: $hashName,
+                        numberOfReplicas: $numberOfReplicas,
                     );
 
                     $image = $config[self::KEY_IMAGE];

@@ -207,10 +207,15 @@ class YamlValidator
             }
 
             if (!is_array($mixedElement) && is_scalar($mixedElement)) {
+                $converted = (string) $mixedElement;
+                if (false === $mixedElement) {
+                    $converted = 'false';
+                }
+
                 $newNode = $document->createElementNS(
                     $this->xsdUrl,
                     $nodeName,
-                    str_replace('%', 'pc', (string) $mixedElement)
+                    str_replace('%', 'pc', $converted)
                 );
             } else {
                 $newNode = $document->createElementNS($this->xsdUrl, $nodeName);

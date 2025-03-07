@@ -182,6 +182,7 @@ class PodCompilerTest extends TestCase
                         'volumes' => [
                             'persistent_volume' => [
                                 'persistent' => true,
+                                'write-many' => false,
                                 'mount-path' => '/app/persistent/',
                             ],
                             'resetable_persistent_volume' => [
