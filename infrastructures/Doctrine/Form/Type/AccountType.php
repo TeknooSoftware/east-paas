@@ -68,7 +68,7 @@ class AccountType extends AbstractType
             [
                 'required' => false,
                 'attr' => [
-                    'readonly' => !empty($options['namespace_in_readonly']),
+                    'readonly' => !empty($options['namespaceIsReadonly']),
                 ],
             ]
         );
@@ -79,7 +79,7 @@ class AccountType extends AbstractType
             [
                 'required' => false,
                 'attr' => [
-                    'readonly' => !empty($options['namespace_in_readonly']),
+                    'readonly' => !empty($options['namespaceIsReadonly']),
                 ],
             ]
         );
@@ -153,13 +153,15 @@ class AccountType extends AbstractType
     {
         parent::configureOptions($resolver);
 
-        $resolver->setDefaults([
-            'data_class' => Account::class,
-            'namespace_in_readonly' => false,
-        ]);
-
+        $resolver->setDefined(['namespaceIsReadonly']);
         $resolver->setRequired(['doctrine_type']);
         $resolver->setAllowedTypes('doctrine_type', 'string');
+        $resolver->setAllowedTypes('namespaceIsReadonly', ['bool']);
+
+        $resolver->setDefaults([
+            'data_class' => Account::class,
+            'namespaceIsReadonly' => false,
+        ]);
 
         return $this;
     }

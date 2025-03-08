@@ -209,6 +209,9 @@ class ClusterType extends AbstractType
     {
         parent::configureOptions($resolver);
 
+        $resolver->setRequired(['allowEditingOfLocked']);
+        $resolver->setAllowedTypes('allowEditingOfLocked', ['bool']);
+
         $resolver->setDefaults([
             'data_class' => Cluster::class,
             'allowEditingOfLocked' => false,
