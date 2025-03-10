@@ -190,6 +190,10 @@ class CronJobTranscriber implements DeploymentInterface
                             defaultsBag: $defaultsBag,
                         );
 
+                        if ($dRepository->exists($name)) {
+                            $dRepository->delete($kubeSet);
+                        }
+
                         $result = $dRepository->apply($kubeSet);
 
                         $resultsSet[] = self::cleanResult($result);

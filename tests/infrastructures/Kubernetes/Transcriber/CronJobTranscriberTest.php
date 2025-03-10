@@ -277,6 +277,13 @@ class CronJobTranscriberTest extends TestCase
             );
 
         $dRepo->expects($this->exactly(3))
+            ->method('exists')
+            ->willReturnOnConsecutiveCalls(false, true, true);
+
+        $dRepo->expects($this->exactly(2))
+            ->method('delete');
+
+        $dRepo->expects($this->exactly(3))
             ->method('apply')
             ->willReturn(['foo']);
 

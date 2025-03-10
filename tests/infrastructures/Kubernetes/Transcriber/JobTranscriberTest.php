@@ -269,7 +269,6 @@ class JobTranscriberTest extends TestCase
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-
         $dRepo->expects($this->exactly(3))
             ->method('first')
             ->willReturnOnConsecutiveCalls(
@@ -277,6 +276,13 @@ class JobTranscriberTest extends TestCase
                 new Job(['metadata' => ['name' => 'foo']]),
                 null,
             );
+
+        $dRepo->expects($this->exactly(3))
+            ->method('exists')
+            ->willReturnOnConsecutiveCalls(false, true, true);
+
+        $dRepo->expects($this->exactly(2))
+            ->method('delete');
 
         $dRepo->expects($this->exactly(3))
             ->method('apply')

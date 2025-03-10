@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.3.1] - 2025-03-10
+### Stable Release
+- Fix CronJob and Job transcribers to delete existant jobs before replace them
+
 ## [4.3.0] - 2025-03-08
 ### Stable Release
 - PaaS version update to `1.1`
