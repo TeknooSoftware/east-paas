@@ -151,7 +151,7 @@ class JobTranscriber implements DeploymentInterface
                             defaultsBag: $defaultsBag,
                         );
 
-                        if ($dRepository->exists($name)) {
+                        if ($dRepository->exists($kubeSet->getMetadata('name') ?? $name . self::NAME_SUFFIX)) {
                             $dRepository->delete($kubeSet);
                         }
 
