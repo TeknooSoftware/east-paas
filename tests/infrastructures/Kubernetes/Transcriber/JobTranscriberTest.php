@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
@@ -65,6 +66,14 @@ class JobTranscriberTest extends TestCase
     public function buildTranscriber(): JobTranscriber
     {
         return new JobTranscriber();
+    }
+
+    public function testSetSleepService()
+    {
+        self::assertInstanceOf(
+            JobTranscriber::class,
+            $this->buildTranscriber()->setSleepService($this->createMock(SleepServiceInterface::class))
+        );
     }
 
     public function testRun()

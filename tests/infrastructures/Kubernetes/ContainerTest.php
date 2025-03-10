@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 use ArrayObject;
 use DI\Container;
 use DI\ContainerBuilder;
+use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CronJobTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\JobTranscriber;
@@ -141,6 +142,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
+        $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
 
         self::assertInstanceOf(
             Driver::class,
@@ -153,6 +155,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
+        $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
 
         self::assertInstanceOf(
             Directory::class,
@@ -270,6 +273,8 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.cronjob.require_label', 'foo');
+        $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
+
         self::assertInstanceOf(
             CronJobTranscriber::class,
             $container->get(CronJobTranscriber::class)
@@ -288,6 +293,8 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.job.require_label', 'foo');
+        $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
+
         self::assertInstanceOf(
             JobTranscriber::class,
             $container->get(JobTranscriber::class)

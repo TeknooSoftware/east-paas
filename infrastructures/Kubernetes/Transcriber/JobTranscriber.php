@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
@@ -35,6 +36,7 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
+use Teknoo\Kubernetes\Model\DeleteOptions;
 use Teknoo\Kubernetes\Model\Job as JobModel;
 use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -54,6 +56,15 @@ class JobTranscriber implements DeploymentInterface
 
     private const NAME_SUFFIX = '-job';
     private const POD_SUFFIX = '-pod-job';
+
+    private ?SleepServiceInterface $sleepService = null;
+
+    public function setSleepService(SleepServiceInterface $sleepService): self
+    {
+        $this->sleepService = $sleepService;
+
+        return $this;
+    }
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
@@ -105,6 +116,8 @@ class JobTranscriber implements DeploymentInterface
         bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $requireLabel = $this->requireLabel;
+        $sleepService = $this->sleepService;
+
         $compiledDeployment->foreachJob(
             static function (
                 Job $job,
@@ -117,6 +130,7 @@ class JobTranscriber implements DeploymentInterface
                 $promise,
                 $requireLabel,
                 $defaultsBag,
+                $sleepService,
             ): void {
                 if ($job->getPlanning() !== Planning::DuringDeployment) {
                     return;
@@ -152,7 +166,15 @@ class JobTranscriber implements DeploymentInterface
                         );
 
                         if ($dRepository->exists($kubeSet->getMetadata('name') ?? $name . self::NAME_SUFFIX)) {
-                            $dRepository->delete($kubeSet);
+                            $dRepository->delete(
+                                $kubeSet,
+                                new DeleteOptions([
+                                    'cascade' => 'orphan',
+                                    'gracePeriodSeconds' => 0,
+                                ])
+                            );
+
+                            $sleepService?->wait(2);
                         }
 
                         $result = $dRepository->apply($kubeSet);

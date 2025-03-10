@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
 use DomainException;
 use Psr\Container\ContainerInterface;
+use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
@@ -154,7 +155,7 @@ return [
             $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.job.require_label');
         }
 
-        return new $className($requireLabel);
+        return (new $className($requireLabel))->setSleepService($container->get(SleepServiceInterface::class));
     },
 
     CronJobTranscriber::class . ':class' => CronJobTranscriber::class,
@@ -171,7 +172,7 @@ return [
             $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.cronjob.require_label');
         }
 
-        return new $className($requireLabel);
+        return (new $className($requireLabel))->setSleepService($container->get(SleepServiceInterface::class));
     },
 
     DeploymentTranscriber::class . ':class' => DeploymentTranscriber::class,
