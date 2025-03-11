@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation;
 
+use Teknoo\East\Paas\Compilation\Exception\UnsupportedVersion;
 use Teknoo\East\Paas\Compilation\Exception\WrongCompiledDeploymentClassException;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentFactoryInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -43,10 +44,11 @@ class CompiledDeploymentFactory implements CompiledDeploymentFactoryInterface
 {
     /**
      * @param 'Teknoo\East\Paas\Compilation\CompiledDeployment' $className
+     * @param array<string, string> $xsdSchema
      */
     public function __construct(
         private readonly string $className,
-        private readonly string $xsdSchema
+        private readonly array $xsdSchema
     ) {
         if (!class_exists($this->className)) {
             throw new WrongCompiledDeploymentClassException(
@@ -56,15 +58,15 @@ class CompiledDeploymentFactory implements CompiledDeploymentFactoryInterface
     }
 
     public function build(
-        int $version,
+        float $version,
         ?string $prefix,
         ?string $projectName,
     ): CompiledDeploymentInterface {
         return new $this->className($version, $prefix, $projectName);
     }
 
-    public function getSchema(): string
+    public function getSchema(string $version): string
     {
-        return $this->xsdSchema;
+        return $this->xsdSchema[$version] ?? throw new UnsupportedVersion("PaaS about $version is not supported", 400);
     }
 }

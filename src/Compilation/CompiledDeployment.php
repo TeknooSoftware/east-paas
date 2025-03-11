@@ -102,10 +102,15 @@ class CompiledDeployment implements CompiledDeploymentInterface
     private ?DefaultsBag $defaultsBag = null;
 
     public function __construct(
-        private readonly int $version,
+        private readonly float $version,
         private readonly ?string $prefix,
         private readonly ?string $projectName,
     ) {
+    }
+
+    public function getVersion(): float
+    {
+        return $this->version;
     }
 
     public function setDefaultBags(DefaultsBag $bag): CompiledDeploymentInterface

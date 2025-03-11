@@ -206,6 +206,7 @@ class JobTranscriberTest extends TestCase
                     completion: CDJob\CompletionMode::Common,
                     successCondition: null,
                     timeLimit: 10,
+                    shelfLife: 20,
                     planning: CDJob\Planning::DuringDeployment,
                     planningSchedule: null,
                 );
@@ -222,6 +223,7 @@ class JobTranscriberTest extends TestCase
                         containerName: 'c1',
                     ),
                     timeLimit: 10,
+                    shelfLife: 20,
                     planning: CDJob\Planning::DuringDeployment,
                     planningSchedule: null,
                 );

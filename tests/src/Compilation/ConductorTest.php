@@ -80,9 +80,14 @@ class ConductorTest extends TestCase
         if (!$this->factory instanceof CompiledDeploymentFactoryInterface) {
             $this->factory = $this->createMock(CompiledDeploymentFactoryInterface::class);
 
+            $cd = $this->createMock(CompiledDeploymentInterface::class);
+            $cd->expects($this->any())
+                ->method('getVersion')
+                ->willReturn(1.0);
+
             $this->factory->expects($this->any())
                 ->method('build')
-                ->willReturn($this->createMock(CompiledDeploymentInterface::class));
+                ->willReturn($cd);
 
             $this->factory->expects($this->any())
                 ->method('getSchema')
@@ -175,7 +180,10 @@ class ConductorTest extends TestCase
             $this->getYamlParser(),
             $this->getYamlValidator(),
             $this->getResourceFactory(),
-            $compilers,
+            [
+                'v1' => $compilers,
+                'v1.1' => $compilers,
+            ],
         );
     }
 
@@ -437,7 +445,7 @@ EOF;
         );
     }
 
-    public function testPrepare()
+    public function testPrepareInV1()
     {
         $yaml = <<<'EOF'
 paas:
@@ -467,7 +475,73 @@ EOF;
                 }
             );
 
-        $jobUnit->expects($this->any())
+        $jobUnit->expects($this->never())
+            ->method('filteringConditions');
+
+        $this->getYamlValidator()
+            ->expects($this->any())
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise) {
+                    $promise->success($configuration);
+
+                    return $this->getYamlValidator();
+                }
+            );
+
+        $jobUnit->expects($this->once())
+            ->method('updateVariablesIn')
+            ->with($result)
+            ->willReturnCallback(
+                function (array $result, PromiseInterface $promise) use ($jobUnit) {
+                    $result['image']['foo']['path'] = '/image/foo';
+                    $promise->success($result);
+
+                    return $jobUnit;
+                }
+            );
+
+        self::assertInstanceOf(
+            ConductorInterface::class,
+            $conductor->prepare(
+                $yaml,
+                $promise
+            )
+        );
+    }
+
+    public function testPrepareInV1dot1()
+    {
+        $yaml = <<<'EOF'
+paas:
+  version: v1.1
+/*...*/
+EOF;
+
+        $result = $this->getResultArray();
+        $result['paas']['version'] = 'v1.1';
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createMock(JobWorkspaceInterface::class);
+
+        $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
+
+        $this->getYamlParser()
+            ->expects($this->any())
+            ->method('parse')
+            ->willReturnCallback(
+                function (string $configuration, PromiseInterface $promise) use ($result) {
+                    $promise->success($result);
+
+                    return $this->getYamlParser();
+                }
+            );
+
+        $jobUnit->expects($this->once())
             ->method('filteringConditions')
             ->willReturnCallback(
                 function (array $configuration, PromiseInterface $promise)  use ($jobUnit) {
@@ -747,8 +821,8 @@ EOF;
         $result['paas']['version'] = 'v2';
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
-        $promise->expects($this->never())->method('fail');
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $workspace = $this->createMock(JobWorkspaceInterface::class);
@@ -765,15 +839,8 @@ EOF;
                 }
             );
 
-        $jobUnit->expects($this->any())
-            ->method('filteringConditions')
-            ->willReturnCallback(
-                function (array $configuration, PromiseInterface $promise)  use ($jobUnit) {
-                    $promise->success($configuration);
-
-                    return $jobUnit;
-                }
-            );
+        $jobUnit->expects($this->never())
+            ->method('filteringConditions');
 
         $this->getYamlValidator()
             ->expects($this->any())
@@ -807,16 +874,8 @@ EOF;
                 }
             );
 
-        $jobUnit->expects($this->once())
-            ->method('updateVariablesIn')
-            ->with($result)
-            ->willReturnCallback(
-                function (array $result, PromiseInterface $promise) use ($jobUnit) {
-                    $promise->success($result);
-
-                    return $jobUnit;
-                }
-            );
+        $jobUnit->expects($this->never())
+            ->method('updateVariablesIn');
 
         $conductor->prepare(
             $yaml,
@@ -993,8 +1052,10 @@ EOF;
             $this->getYamlValidator(),
             $this->getResourceFactory(),
             [
-                '[secrets]' => $compiler,
-                '[volumes]' => $compiler,
+                'v1' => [
+                    '[secrets]' => $compiler,
+                    '[volumes]' => $compiler,
+                ],
             ],
         );
         $conductor = $this->prepareTestForCompile($result, $conductor);

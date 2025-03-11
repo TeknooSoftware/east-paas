@@ -198,11 +198,18 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="job_completions_shelf_life">
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:pattern value="([0-9]+)|null"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="job_completions">
     <xs:all>
       <xs:element name="count" type="xs:int" minOccurs="0" />
       <xs:element name="mode" type="xs:string" minOccurs="0" />
       <xs:element name="time-limit" type="xs:int" minOccurs="0" />
+      <xs:element name="shelf-life" type="epv:job_completions_shelf_life" minOccurs="0" />
       <xs:element name="success-on" type="epv:rows_list_int" minOccurs="0" />
       <xs:element name="fail-on" type="epv:rows_list_int" minOccurs="0" />
       <xs:element name="limit-on" type="xs:string" minOccurs="0" />

@@ -1,5 +1,15 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.3.2] - 2025-03-12
+### Stable Release
+- Add option `shelf-life` to job to define the TTL to keep the executed job after its completion, in second. 
+  By default, the value is set to 1h. If the option is set to null, no TTL will be applied.
+- Fix behavior, jobs options and conditions require `paas.version` define to `v1.1`. If the PaaS file is set to the `v1`
+  version, conditions and jobs are not available, compilers are disabled, conditions are not filtered, and error will be
+  thrown by the validator.
+- Replace DI parameter `teknoo.east.paas.compilation.yaml_validation.xsd_file` to 
+  `teknoo.east.paas.compilation.yaml_validation.xsd_path`.
+
 ## [4.3.1] - 2025-03-10
 ### Stable Release
 - Fix CronJob and Job transcribers to delete existant jobs before replace them

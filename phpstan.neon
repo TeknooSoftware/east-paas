@@ -113,6 +113,9 @@ parameters:
             message: '#[a-zA-Z\\]+\|null given#'
             path:  src/Object/Project.php
         -
+            message: '#Cannot access property \$message#'
+            path:  src/Parser/YamlValidator.php
+        -
             message: '#mixed#'
             path:  */di.php
         -   '#Unreachable statement - code above always terminates#'

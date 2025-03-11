@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * East Paas.
  *
@@ -23,24 +21,18 @@ declare(strict_types=1);
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\East\Paas\Contracts\Compilation;
+declare(strict_types=1);
 
-use IteratorAggregate;
-use Traversable;
+namespace Teknoo\East\Paas\Compilation\Exception;
+
+use DomainException;
 
 /**
- * To define a collection of `CompilerInstance` to pass to Conductor to compile and to normalize a PaaS Yaml.
- *
- * @extends IteratorAggregate<int, CompilerInterface>
- *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     https://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- * @template TKey
- * @template-covariant TValue
- * @template-extends IteratorAggregate<string, array<string, CompilerInterface>>
  */
-interface CompilerCollectionInterface extends IteratorAggregate
+class UnsupportedVersion extends DomainException
 {
 }

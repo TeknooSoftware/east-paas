@@ -139,6 +139,7 @@ class YamlValidator
         'security',
         'service',
         'services',
+        'shelf-life',
         'storage-provider',
         'storage-size',
         'strategy',
@@ -206,10 +207,14 @@ class YamlValidator
                 }
             }
 
-            if (!is_array($mixedElement) && is_scalar($mixedElement)) {
+            if (!is_array($mixedElement) && (is_scalar($mixedElement) || null === $mixedElement)) {
                 $converted = (string) $mixedElement;
                 if (false === $mixedElement) {
                     $converted = 'false';
+                }
+
+                if (null === $mixedElement) {
+                    $converted = 'null';
                 }
 
                 $newNode = $document->createElementNS(
@@ -282,8 +287,11 @@ class YamlValidator
             $libError = libxml_get_last_error();
             libxml_clear_errors();
 
-            if ($xmlError || false !== $libError) {
-                $exception = new RuntimeException((string) ($xmlError ?? $libError->message));
+            if ($xmlError instanceof Throwable || false !== $libError) {
+                $exception = new ValidationException(
+                    message: (string) ($xmlError?->getMessage() ?? $libError->message),
+                    code: 400,
+                );
                 $promise->fail($exception);
 
                 return $this;

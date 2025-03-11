@@ -29,6 +29,7 @@ use Closure;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Compilation\Conductor;
+use Teknoo\East\Paas\Compilation\Exception\UnsupportedVersion;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompilerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -90,8 +91,11 @@ class Running implements StateInterface
             $defaultsBags = new DefaultsBag();
             $compiledDeployment->setDefaultBags($defaultsBags);
 
+            $version = 'v' . $compiledDeployment->getVersion();
+            $compilers = $this->compilers[$version] ?? [];
+
             /** @var CompilerInterface $compiler */
-            foreach ($this->compilers as $pattern => $compiler) {
+            foreach ($compilers as $pattern => $compiler) {
                 $this->extract(
                     $this->configuration,
                     $pattern,

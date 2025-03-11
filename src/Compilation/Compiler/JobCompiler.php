@@ -42,6 +42,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Throwable;
 
+use function array_key_exists;
 use function array_map;
 use function hash;
 use function substr;
@@ -70,6 +71,7 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
     private const KEY_COMPLETIONS_FAILURE = 'fail-on';
     private const KEY_COMPLETIONS_LIMIT_ON = 'limit-on';
     private const KEY_COMPLETIONS_TIME_LIMIT = 'time-limit';
+    private const KEY_COMPLETIONS_SHELF_LIFE = 'shelf-life';
     private const KEY_PARALLEL = 'is-parallel';
     private const KEY_PLANNING = 'planning';
     private const KEY_PLANNING_SCHEDULE = 'schedule';
@@ -154,6 +156,18 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
             }
 
             $completion = $config[self::KEY_COMPLETIONS] ?? [];
+
+            $shelfLife = $completion[self::KEY_COMPLETIONS_SHELF_LIFE] ?? 60 * 60;
+            if (
+                array_key_exists(self::KEY_COMPLETIONS_SHELF_LIFE, $completion)
+                && (
+                    null === $completion[self::KEY_COMPLETIONS_SHELF_LIFE]
+                    || 'null' === $completion[self::KEY_COMPLETIONS_SHELF_LIFE]
+                )
+            ) {
+                $shelfLife = null;
+            }
+
             $compiledDeployment->addJob(
                 $name,
                 new Job(
@@ -166,6 +180,7 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
                     ),
                     successCondition: $successCondition,
                     timeLimit: $completion[self::KEY_COMPLETIONS_TIME_LIMIT] ?? null,
+                    shelfLife: $shelfLife,
                     planning: $planning,
                     planningSchedule: $planningSchedule,
                 ),

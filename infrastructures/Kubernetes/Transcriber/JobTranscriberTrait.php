@@ -94,6 +94,10 @@ trait JobTranscriberTrait
             $specs['spec']['activeDeadlineSeconds'] = $timeLimit;
         }
 
+        if (!empty($ttl = $job->getShelfLife())) {
+            $specs['spec']['ttlSecondsAfterFinished'] = $ttl;
+        }
+
         if (null !== ($successCondition = $job->getSuccessCondition())) {
             $rules = [];
 

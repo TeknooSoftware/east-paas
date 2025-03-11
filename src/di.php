@@ -348,13 +348,18 @@ return [
     CompilerCollectionInterface::class => static function (ContainerInterface $container): CompilerCollectionInterface {
         $collection = new class implements CompilerCollectionInterface {
             /**
-             * @var array<string, CompilerInterface>
+             * @var array<string, array<string, CompilerInterface>>
              */
             private array $collection = [];
 
-            public function add(string $pattern, CompilerInterface $compiler): void
+            /**
+             * @param string[] $versions
+             */
+            public function add(array $versions, string $pattern, CompilerInterface $compiler): void
             {
-                $this->collection[$pattern] = $compiler;
+                foreach ($versions as $version) {
+                    $this->collection[$version][$pattern] = $compiler;
+                }
             }
 
             public function getIterator(): Traversable
@@ -363,18 +368,18 @@ return [
             }
         };
 
-        $collection->add('[paas][requires]', $container->get(FeaturesRequirementCompiler::class));
-        $collection->add('[paas][quotas]', $container->get(QuotaCompiler::class));
-        $collection->add('[defaults]', $container->get(DefaultsCompiler::class));
-        $collection->add('[maps]', $container->get(MapCompiler::class));
-        $collection->add('[secrets]', $container->get(SecretCompiler::class));
-        $collection->add('[volumes]', $container->get(VolumeCompiler::class));
-        $collection->add('[images]', $container->get(ImageCompiler::class));
-        $collection->add('[builds]', $container->get(HookCompiler::class));
-        $collection->add('[jobs]', $container->get(JobCompiler::class));
-        $collection->add('[pods]', $container->get(PodCompiler::class));
-        $collection->add('[services]', $container->get(ServiceCompiler::class));
-        $collection->add('[ingresses]', $container->get(IngressCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[paas][requires]', $container->get(FeaturesRequirementCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[paas][quotas]', $container->get(QuotaCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[defaults]', $container->get(DefaultsCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[maps]', $container->get(MapCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[secrets]', $container->get(SecretCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[volumes]', $container->get(VolumeCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[images]', $container->get(ImageCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[builds]', $container->get(HookCompiler::class));
+        $collection->add(['v1.1'], '[jobs]', $container->get(JobCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[pods]', $container->get(PodCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[services]', $container->get(ServiceCompiler::class));
+        $collection->add(['v1', 'v1.1'], '[ingresses]', $container->get(IngressCompiler::class));
 
         return $collection;
     },
@@ -382,35 +387,45 @@ return [
     //Conductor
     CompiledDeploymentFactoryInterface::class => DIGet(CompiledDeploymentFactory::class),
     CompiledDeploymentFactory::class => static function (ContainerInterface $container): CompiledDeploymentFactory {
-        $xsdFilePath = __DIR__ . '/Contracts/Compilation/paas_validation.xsd';
+        $xsdFilePath = __DIR__ . '/Contracts/Compilation/xsd/';
 
-        if ($container->has('teknoo.east.paas.compilation.yaml_validation.xsd_file')) {
-            $xsdFilePath = $container->get('teknoo.east.paas.compilation.yaml_validation.xsd_file');
+        if ($container->has('teknoo.east.paas.compilation.yaml_validation.xsd_path')) {
+            $xsdFilePath = $container->get('teknoo.east.paas.compilation.yaml_validation.xsd_path');
         }
 
-        if (!file_exists($xsdFilePath) || !is_readable($xsdFilePath)) {
-            throw new InvalidArgumentException(
-                "The XSD validation file '$xsdFilePath' does not exist or is not readable."
-            );
+        $xsdCollections = [];
+        foreach (['v1', 'v1.1'] as $version) {
+            $file = $xsdFilePath . $version . '.paas_validation.xsd';
+            if (!file_exists($file) || !is_readable($file)) {
+                throw new InvalidArgumentException(
+                    "The XSD validation file '$file' does not exist or is not readable."
+                );
+            }
+
+            $xsdCollections[$version] = (string) file_get_contents($file);
         }
 
-        $xsdFileContent = (string) file_get_contents($xsdFilePath);
+
 
         return new CompiledDeploymentFactory(
             CompiledDeployment::class,
-            $xsdFileContent
+            $xsdCollections
         );
     },
 
     ConductorInterface::class => DIGet(Conductor::class),
     Conductor::class => static function (ContainerInterface $container): Conductor {
+        $collections = $container->get(CompilerCollectionInterface::class);
+        /** @var iterable<string, array<string, CompilerInterface>> $collections */
+        $collections = iterator_to_array($collections);
+
         return new Conductor(
             $container->get(CompiledDeploymentFactoryInterface::class),
             $container->get(PropertyAccessorInterface::class),
             $container->get(YamlParserInterface::class),
             $container->get(YamlValidator::class),
             $container->get(QuotaFactory::class),
-            $container->get(CompilerCollectionInterface::class),
+            $collections,
         );
     },
 

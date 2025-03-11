@@ -44,9 +44,9 @@ test:
 	rm -rf tests/var/cache/
 	XDEBUG_MODE=coverage ${PHP} -dmax_execution_time=0 -dzend_extension=xdebug.so -dxdebug.mode=coverage vendor/bin/phpunit -c phpunit.xml --colors --coverage-text
 ifeq ($(DEPENDENCIES), lowest)
-	${PHP} -d memory_limit=390M vendor/bin/behat
+	${PHP} -d memory_limit=400M vendor/bin/behat
 else
-	${PHP} -d memory_limit=320M vendor/bin/behat
+	${PHP} -d memory_limit=350M vendor/bin/behat
 endif
 	rm -rf tests/var/cache/
 

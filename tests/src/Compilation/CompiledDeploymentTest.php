@@ -65,6 +65,14 @@ class CompiledDeploymentTest extends TestCase
         return new CompiledDeployment(1, 'prefix', 'project');
     }
 
+    public function testGetVersion()
+    {
+        self::assertEquals(
+            1,
+            $this->buildObject()->getVersion()
+        );
+    }
+
     public function testSetDefaultBagsWrongBuildable()
     {
         $this->expectException(TypeError::class);

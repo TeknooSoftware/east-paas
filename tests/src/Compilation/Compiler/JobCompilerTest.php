@@ -71,6 +71,7 @@ class JobCompilerTest extends TestCase
                     'completions' => [
                         'count' => 2,
                         'time-limit' => 10,
+                        'shelf-life' => 20,
                     ],
                 ],
             ],
@@ -83,7 +84,7 @@ class JobCompilerTest extends TestCase
             'job1' => [
                 'pods' => [
                     'foo' => []
-                ]
+                ],
             ],
             'job2' => [
                 'pods' => [
@@ -93,7 +94,8 @@ class JobCompilerTest extends TestCase
                     'mode' => CompletionMode::Indexed->value,
                     'count' => 2,
                 ],
-                'schedule' => '**'
+                'schedule' => '**',
+                'shelf-life' => null,
             ],
             'job3' => [
                 'pods' => [
@@ -104,7 +106,8 @@ class JobCompilerTest extends TestCase
                 'completions' => [
                     'success-on' => [0],
                     'fail-on' => [1],
-                    'time-limit' => 10
+                    'time-limit' => 10,
+                    'shelf-life' => 20,
                 ]
             ],
             'job4' => [
@@ -112,6 +115,9 @@ class JobCompilerTest extends TestCase
                     'foo' => []
                 ],
                 'planning' => Planning::DuringDeployment->value,
+                'completions' => [
+                    'shelf-life' => null,
+                ]
             ]
         ];
     }
@@ -155,7 +161,8 @@ class JobCompilerTest extends TestCase
                 'completions' => [
                     'success-on' => [0],
                     'fail-on' => [1],
-                    'time-limit' => 10
+                    'time-limit' => 10,
+                    'shelf-life' => 20,
                 ]
             ]
         ];
@@ -210,7 +217,8 @@ class JobCompilerTest extends TestCase
                 'completions' => [
                     'success-on' => [0],
                     'fail-on' => [1],
-                    'time-limit' => 10
+                    'time-limit' => 10,
+                    'shelf-life' => 20,
                 ]
             ]
         ];
@@ -389,6 +397,7 @@ class JobCompilerTest extends TestCase
                     'completions' => [
                         'count' => 2,
                         'time-limit' => 10,
+                        'shelf-life' => 20,
                     ],
                     'pods' => [
                         'foo' => [

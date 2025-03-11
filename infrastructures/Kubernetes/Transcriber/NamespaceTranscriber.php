@@ -106,7 +106,7 @@ class NamespaceTranscriber implements GenericTranscriberInterface, DriverAwareIn
 
         $compiledDeployment->withJobSettings(
             static function (
-                int $version,
+                float $version,
                 string $prefix,
                 string $projectName,
             ) use (

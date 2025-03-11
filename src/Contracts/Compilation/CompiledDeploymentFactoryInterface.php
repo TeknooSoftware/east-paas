@@ -36,10 +36,10 @@ namespace Teknoo\East\Paas\Contracts\Compilation;
 interface CompiledDeploymentFactoryInterface
 {
     public function build(
-        int $version,
+        float $version,
         ?string $prefix,
         ?string $projectName,
     ): CompiledDeploymentInterface;
 
-    public function getSchema(): string;
+    public function getSchema(string $version): string;
 }

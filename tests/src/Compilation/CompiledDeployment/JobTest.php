@@ -52,6 +52,7 @@ class JobTest extends TestCase
             completion: CompletionMode::Common,
             successCondition: new SuccessCondition([0], [1]),
             timeLimit: 100,
+            shelfLife: 200,
             planning: Planning::Scheduled,
             planningSchedule: '* * * *'
         );
@@ -109,6 +110,14 @@ class JobTest extends TestCase
         self::assertEquals(
             100,
             $this->createJob()->getTimeLimit()
+        );
+    }
+
+    public function testGetShelfLife()
+    {
+        self::assertEquals(
+            200,
+            $this->createJob()->getShelfLife()
         );
     }
 

@@ -55,6 +55,7 @@ class Job implements ImmutableInterface
         private readonly CompletionMode $completion = CompletionMode::Common,
         private readonly ?SuccessCondition $successCondition = null,
         private readonly ?int $timeLimit = null,
+        private readonly ?int $shelfLife = (60 * 60),
         private readonly Planning $planning = Planning::DuringDeployment,
         private readonly ?string $planningSchedule = null,
     ) {
@@ -107,5 +108,10 @@ class Job implements ImmutableInterface
     public function getTimeLimit(): ?int
     {
         return $this->timeLimit;
+    }
+
+    public function getShelfLife(): ?int
+    {
+        return $this->shelfLife;
     }
 }

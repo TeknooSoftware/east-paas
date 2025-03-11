@@ -247,6 +247,7 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                   mode: indexed #similar to indexed completion in kubernetes
                   count: 3 #to launch 3 jobs
                   time-limit: 10 #time limit in second to set timeout the job (not a pod, but all pods)
+                  shelf-life: 20 #optional time in second to delete the job when it is completed (successful or not), 120s by default
               is-parallel: true #To launch 3*2 pods in parallel or sequential
               pods:
                   init-var:

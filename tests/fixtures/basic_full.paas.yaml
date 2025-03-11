@@ -1,5 +1,5 @@
 paas: #Dedicated to compiler
-  version: v1
+  version: v1.1
   requires:
     - set1
     - set2
@@ -205,6 +205,7 @@ jobs:
       mode: indexed
       count: 3
       time-limit: 10
+      shelf-life: 20 #optional time in second to delete the job when it is completed (successful or not), 120s by default
     is-parallel: true
     pods:
       init-var:
@@ -224,6 +225,7 @@ jobs:
       success-on: [0, 5]
       fail-on: [1]
       limit-on: "php-translation"
+      shelf-life: null
     pods:
       php-translation:
         restart-policy: on-failure

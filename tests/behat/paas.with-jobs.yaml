@@ -187,6 +187,7 @@ jobs:
             mode: indexed
             count: 3
             time-limit: 10
+            shelf-life: 20
         is-parallel: true
         pods:
             init-var:
@@ -206,6 +207,7 @@ jobs:
             success-on: [0, 5]
             fail-on: [1]
             limit-on: "php-translation"
+            shelf-life: null
         pods:
             php-translation:
                 containers:

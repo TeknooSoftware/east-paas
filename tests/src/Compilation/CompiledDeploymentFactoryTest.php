@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
 use Teknoo\East\Paas\Compilation\CompiledDeploymentFactory;
+use Teknoo\East\Paas\Compilation\Exception\UnsupportedVersion;
 
 /**
  * @license     https://teknoo.software/license/mit         MIT License
@@ -40,14 +41,14 @@ class CompiledDeploymentFactoryTest extends TestCase
     public function testInvalidClass()
     {
         $this->expectException(\RuntimeException::class);
-        new CompiledDeploymentFactory('foo', 'bar');
+        new CompiledDeploymentFactory('foo', ['v1' => 'bar']);
     }
 
     public function testBuild()
     {
         self::assertInstanceOf(
             CompiledDeployment::class,
-            (new CompiledDeploymentFactory(CompiledDeployment::class, 'bar'))
+            (new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar']))
                 ->build(1, 'prefix', 'foo')
         );
     }
@@ -56,7 +57,13 @@ class CompiledDeploymentFactoryTest extends TestCase
     {
         self::assertEquals(
             'bar',
-            (new CompiledDeploymentFactory(CompiledDeployment::class, 'bar'))->getSchema()
+            (new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar']))->getSchema('v1')
         );
+    }
+
+    public function testGetSchemaInvalidVersion()
+    {
+        $this->expectException(UnsupportedVersion::class);
+        (new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar']))->getSchema('v2');
     }
 }

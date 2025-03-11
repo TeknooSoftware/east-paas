@@ -49,10 +49,12 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 interface CompiledDeploymentInterface
 {
     public function __construct(
-        int $version,
+        float $version,
         ?string $prefix,
         ?string $projectName,
     );
+
+    public function getVersion(): float;
 
     public function setDefaultBags(DefaultsBag $bag): CompiledDeploymentInterface;
 

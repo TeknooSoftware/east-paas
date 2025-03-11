@@ -1423,7 +1423,7 @@ class ContainerTest extends TestCase
     public function testCompiledDeploymentFactoryWithInvalidXSD()
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.compilation.yaml_validation.xsd_file', 'fooooooo/bar');
+        $container->set('teknoo.east.paas.compilation.yaml_validation.xsd_path', 'fooooooo/bar');
 
         $this->expectException(InvalidArgumentException::class);
         self::assertInstanceOf(
@@ -1460,13 +1460,18 @@ class ContainerTest extends TestCase
             $collection = $container->get(CompilerCollectionInterface::class)
         );
 
-        foreach ($collection as $name => $compiler) {
-            self::assertIsString($name);
+        foreach ($collection as $version => $compilers) {
+            self::assertIsString($version);
 
-            self::assertInstanceOf(
-                CompilerInterface::class,
-                $compiler
-            );
+            self::assertIsArray($compilers);
+            foreach ($compilers as $pattern => $compiler) {
+                self::assertIsString($pattern);
+
+                self::assertInstanceOf(
+                    CompilerInterface::class,
+                    $compiler
+                );
+            }
         }
     }
 

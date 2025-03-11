@@ -42,9 +42,10 @@ return static function (
     string $withDefaults,
     string $projectName,
     bool $withJob,
+    bool $withCondition,
 ): CompiledDeployment {
     $cd = new CompiledDeployment(
-        version: 1,
+        version: $withJob || $withCondition ? 1.1 : 1,
         prefix: $prefix,
         projectName: $projectName,
     );
@@ -651,6 +652,7 @@ return static function (
                 completion: CompletionMode::Indexed,
                 completionsCount: 3,
                 timeLimit: 10,
+                shelfLife: 20,
                 isParallel: true,
                 pods: [
                     'init-var' => new Pod(
@@ -690,6 +692,7 @@ return static function (
                     failureExistCode: [1],
                     containerName: 'php-translation',
                 ),
+                shelfLife: null,
                 pods: [
                     'php-translation' => new Pod(
                         name: 'php-translation',
@@ -765,6 +768,7 @@ return static function (
                 name: 'job-backup',
                 planning: Planning::Scheduled,
                 planningSchedule: '0 0 /3 * * *',
+                shelfLife: 60 * 60,
                 pods: [
                     'backup' => new Pod(
                         name: 'backup',

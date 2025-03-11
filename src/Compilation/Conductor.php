@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation;
 
-use RuntimeException;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
+use Teknoo\East\Paas\Compilation\Exception\UnsupportedVersion;
 use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\East\Paas\Compilation\Conductor\Generator;
@@ -84,7 +84,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
     private array $configuration = [];
 
     /**
-     * @param array<string, CompilerInterface> $compilers
+     * @param array<string, array<string, CompilerInterface>> $compilers
      */
     public function __construct(
         private readonly CompiledDeploymentFactoryInterface $factory,
@@ -165,7 +165,14 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
             $parsedPromise = new Promise(
                 onSuccess: function (array $result): array {
-                    foreach ($this->compilers as $pattern => $compiler) {
+                    $version = str_replace('.0', '', ($result['paas'][self::CONFIG_KEY_VERSION] ?? 'v1.1'));
+                    if (!isset($this->compilers[$version])) {
+                        throw new UnsupportedVersion("Unsupported PaaS version {$version}", 400);
+                    }
+
+                    $compilers = $this->compilers[$version];
+
+                    foreach ($compilers as $pattern => $compiler) {
                         if (!$compiler instanceof ExtenderInterface) {
                             continue;
                         }
@@ -200,10 +207,19 @@ class Conductor implements ConductorInterface, AutomatedInterface
              * > $extendedPromise
              */
             $extendedPromise = new Promise(
-                onSuccess: fn ($result, PromiseInterface $next): JobUnitInterface => $job->filteringConditions(
-                    $result,
-                    $next
-                ),
+                onSuccess: static function (array $result, PromiseInterface $next) use ($job): JobUnitInterface {
+                    $version = str_replace('.0', '', ($result['paas'][self::CONFIG_KEY_VERSION] ?? 'v1.1'));
+                    if ($version === 'v1') {
+                        $next->success($result);
+
+                        return $job;
+                    }
+
+                    return $job->filteringConditions(
+                        $result,
+                        $next
+                    );
+                },
                 allowNext: true
             );
 
@@ -217,7 +233,9 @@ class Conductor implements ConductorInterface, AutomatedInterface
             $conditionsFiltered = new Promise(
                 onSuccess: fn ($result, PromiseInterface $next): YamlValidator => $this->validator->validate(
                     $result,
-                    $this->factory->getSchema(),
+                    $this->factory->getSchema(
+                        str_replace('.0', '', ($result['paas'][self::CONFIG_KEY_VERSION] ?? 'v1.1'))
+                    ),
                     $next
                 ),
                 allowNext: true
@@ -254,15 +272,16 @@ class Conductor implements ConductorInterface, AutomatedInterface
             ],
             function ($paas) use ($promise): void {
                 if (
-                    !isset($paas[self::CONFIG_KEY_VERSION])
-                    || !in_array($paas[self::CONFIG_KEY_VERSION], ['v1', 'v1.1'], true)
+                    empty($this->configuration)
+                    || !isset($paas[self::CONFIG_KEY_VERSION])
+                    || !in_array($paas[self::CONFIG_KEY_VERSION], ['v1', 'v1.0', 'v1.1'], true)
                 ) {
-                    $promise->fail(new RuntimeException('Paas config file version not supported', 400));
+                    $promise->fail(new UnsupportedVersion('Unsupported PaaS version', 400));
 
                     return;
                 }
 
-                $version = (int) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
+                $version = (float) str_replace('v', '', $paas[self::CONFIG_KEY_VERSION]);
                 $prefix = $paas[self::CONFIG_KEY_PREFIX] ?? null;
 
                 try {

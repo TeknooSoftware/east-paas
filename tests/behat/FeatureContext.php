@@ -166,6 +166,8 @@ class FeatureContext implements Context
 
     private static bool $jobsDefined = false;
 
+    private static bool $conditionsDefined = false;
+
     private static string $defaultsDefined = '';
 
     private ?string $calledUrl = null;
@@ -378,6 +380,7 @@ class FeatureContext implements Context
         self::$quotasDefined = '';
         self::$defaultsDefined = '';
         self::$jobsDefined = false;
+        self::$conditionsDefined = false;
         self::$CDCompared = false;
 
         if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
@@ -907,6 +910,16 @@ class FeatureContext implements Context
      */
     public function withThisBodyAnswerTheProblemJson($body): void
     {
+        $body = match ($body) {
+            'if{ENV=prod} error' => <<<EOF
+{"type":"https:\/\/teknoo.software\/probs\/issue","title":"DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}node', attribute 'name': 'if{ENV=prod}' is not a valid value of the atomic type '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}paas_token'.","status":400,"detail":["DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}node', attribute 'name': 'if{ENV=prod}' is not a valid value of the atomic type '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}paas_token'."]}
+EOF,
+            'job validation error' => <<<EOF
+{"type":"https:\/\/teknoo.software\/probs\/issue","title":"DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}jobs': This element is not expected.","status":400,"detail":["DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}jobs': This element is not expected."]}
+EOF,
+            default => $body,
+        };
+
         Assert::assertEquals('application/problem+json', $this->response->headers->get('Content-Type'));
         $expected = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
         $actual = json_decode($this->response->getContent(), true, 512, JSON_THROW_ON_ERROR);
@@ -1247,6 +1260,17 @@ class FeatureContext implements Context
     public function aProjectWithACompletePaasFileWithConditions(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-conditions.yaml';
+        self::$conditionsDefined = true;
+        self::$quotasDefined = '';
+    }
+
+    /**
+     * @Given a project with a complete paas file with conditions with wrong version
+     */
+    public function aProjectWithACompletePaasFileWithConditionsWithWrongVersion(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-conditions-and-wrong-version.yaml';
+        self::$conditionsDefined = true;
         self::$quotasDefined = '';
     }
 
@@ -1256,6 +1280,15 @@ class FeatureContext implements Context
     public function aProjectWithACompletePaasFileWithJobs(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-jobs.yaml';
+        self::$jobsDefined = true;
+    }
+
+    /**
+     * @Given a project with a complete paas file with jobs with wrong version
+     */
+    public function aProjectWithACompletePaasFileWithJobsWithWrongVersion(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-jobs-and-wrong-version.yaml';
         self::$jobsDefined = true;
     }
 
@@ -1823,6 +1856,7 @@ class FeatureContext implements Context
                 self::$defaultsDefined,
                 strtolower(trim((string)preg_replace('#[^A-Za-z0-9-]+#', '', self::$projectName))),
                 self::$jobsDefined,
+                self::$conditionsDefined,
             );
 
             //TO avoid circural references in var_export
@@ -2125,7 +2159,8 @@ EOF;
                         "restartPolicy": "Never"
                     }
                 },
-                "activeDeadlineSeconds": 10
+                "activeDeadlineSeconds": 10,
+                "ttlSecondsAfterFinished": 20
             }
         },
         {
@@ -2163,7 +2198,8 @@ EOF;
                         "restartPolicy": "Never"
                     }
                 },
-                "activeDeadlineSeconds": 10
+                "activeDeadlineSeconds": 10,
+                "ttlSecondsAfterFinished": 20
             }
         },
         {
@@ -2201,7 +2237,8 @@ EOF;
                         "restartPolicy": "Never"
                     }
                 },
-                "activeDeadlineSeconds": 10
+                "activeDeadlineSeconds": 10,
+                "ttlSecondsAfterFinished": 20
             }
         },
         {
@@ -2239,7 +2276,8 @@ EOF;
                         "restartPolicy": "Never"
                     }
                 },
-                "activeDeadlineSeconds": 10
+                "activeDeadlineSeconds": 10,
+                "ttlSecondsAfterFinished": 20
             }
         },
         {
@@ -2442,7 +2480,8 @@ EOF;
                                 ],
                                 "restartPolicy": "OnFailure"
                             }
-                        }
+                        },
+                        "ttlSecondsAfterFinished": 3600
                     }
                 }
             }
