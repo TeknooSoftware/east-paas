@@ -13,17 +13,20 @@
         <field field-name="type" type="string" nullable="false"/>
         <field field-name="address" type="string" nullable="false"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
-        <field field-name="updatedAt" name="updated_at" type="date" />
-        <embed-one field="identity"
-                   target-document="Teknoo\East\Paas\Object\ClusterCredentials"
-                   nullable="false" />
-        <embed-one field="environment"
-                   target-document="Teknoo\East\Paas\Object\Environment"
-                   nullable="false"/>
-        <reference-one field="project"
-                       target-document="Teknoo\East\Paas\Object\Project"
-                       mapped-by="clusters">
-            <cascade />
+        <field field-name="updatedAt" name="updated_at" type="date"/>
+        <embed-one
+                field="identity"
+                target-document="Teknoo\East\Paas\Object\ClusterCredentials"
+                nullable="false"/>
+        <embed-one
+                field="environment"
+                target-document="Teknoo\East\Paas\Object\Environment"
+                nullable="false"/>
+        <reference-one
+                field="project"
+                target-document="Teknoo\East\Paas\Object\Project"
+                mapped-by="clusters">
+            <cascade/>
         </reference-one>
         <field field-name="locked" name="locked" type="bool" nullable="false"/>
     </document>

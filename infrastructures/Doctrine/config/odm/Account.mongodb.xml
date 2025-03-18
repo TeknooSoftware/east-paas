@@ -6,12 +6,13 @@
                                             http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
 
     <document name="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account" collection="accounts">
-        <reference-many field="projects"
-                        target-document="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project"
-                        mapped-by="account"
-                        store-empty-array="true">
+        <reference-many
+                field="projects"
+                target-document="Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project"
+                mapped-by="account"
+                store-empty-array="true">
             <cascade>
-                <remove />
+                <remove/>
             </cascade>
         </reference-many>
         <lifecycle-callbacks>

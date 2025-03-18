@@ -10,7 +10,7 @@
         <field field-name="name" type="string" nullable="false"/>
         <field field-name="privateKey" name="private_key" type="string" nullable="false"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
-        <field field-name="updatedAt" name="updated_at" type="date" />
+        <field field-name="updatedAt" name="updated_at" type="date"/>
     </embedded-document>
 </doctrine-mongo-mapping>
 

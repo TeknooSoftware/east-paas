@@ -10,7 +10,7 @@
         <field field-name="name" type="string" nullable="false"/>
         <field field-name="prefix" type="string" nullable="true"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
-        <field field-name="updatedAt" name="updated_at" type="date" />
+        <field field-name="updatedAt" name="updated_at" type="date"/>
         <embed-one field-name="sourceRepository"
                    field="source_repository"
                    target-document="Teknoo\East\Paas\Object\GitRepository"
@@ -19,26 +19,29 @@
                    field="images_registry"
                    target-document="Teknoo\East\Paas\Object\ImageRegistry"
                    nullable="false"/>
-        <reference-one field="account"
-                       target-document="Teknoo\East\Paas\Object\Account"
-                       inversed-by="projects"
-                       nullable="false">
-            <cascade />
+        <reference-one
+                field="account"
+                target-document="Teknoo\East\Paas\Object\Account"
+                inversed-by="projects"
+                nullable="false">
+            <cascade/>
         </reference-one>
-        <reference-many field="clusters"
-                        target-document="Teknoo\East\Paas\Object\Cluster"
-                        inversed-by="project"
-                        store-empty-array="true">
+        <reference-many
+                field="clusters"
+                target-document="Teknoo\East\Paas\Object\Cluster"
+                inversed-by="project"
+                store-empty-array="true">
             <cascade>
                 <all/>
             </cascade>
         </reference-many>
-        <reference-many field="jobs"
-                        target-document="Teknoo\East\Paas\Object\Job"
-                        inversed-by="project"
-                        store-empty-array="true">
-            <cascade >
-                <remove />
+        <reference-many
+                field="jobs"
+                target-document="Teknoo\East\Paas\Object\Job"
+                inversed-by="project"
+                store-empty-array="true">
+            <cascade>
+                <remove/>
             </cascade>
         </reference-many>
     </document>

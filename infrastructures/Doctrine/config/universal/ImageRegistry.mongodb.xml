@@ -9,7 +9,7 @@
         <id type="string" strategy="UUID"/>
         <field field-name="apiUrl" name="api_url" type="string" nullable="false"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
-        <field field-name="updatedAt" name="updated_at" type="date" />
-        <embed-one field="identity" target-document="Teknoo\East\Paas\Object\XRegistryAuth" nullable="false" />
+        <field field-name="updatedAt" name="updated_at" type="date"/>
+        <embed-one field="identity" target-document="Teknoo\East\Paas\Object\XRegistryAuth" nullable="false"/>
     </embedded-document>
 </doctrine-mongo-mapping>

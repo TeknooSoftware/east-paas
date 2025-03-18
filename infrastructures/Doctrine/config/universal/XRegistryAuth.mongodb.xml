@@ -13,7 +13,7 @@
         <field field-name="auth" name="auth" type="string" nullable="true"/>
         <field field-name="serverAddress" name="server_address" type="string" nullable="true"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
-        <field field-name="updatedAt" name="updated_at" type="date" />
+        <field field-name="updatedAt" name="updated_at" type="date"/>
     </embedded-document>
 </doctrine-mongo-mapping>
 

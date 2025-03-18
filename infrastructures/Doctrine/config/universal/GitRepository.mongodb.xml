@@ -8,9 +8,9 @@
     <embedded-document name="Teknoo\East\Paas\Object\GitRepository">
         <id type="string" strategy="UUID"/>
         <field field-name="pullUrl" name="pull_url" type="string" nullable="false"/>
-        <field field-name="defaultBranch" name="default_branch" type="string" />
+        <field field-name="defaultBranch" name="default_branch" type="string"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>
-        <field field-name="updatedAt" name="updated_at" type="date" />
-        <embed-one field="identity" target-document="Teknoo\East\Paas\Object\SshIdentity" nullable="false" />
+        <field field-name="updatedAt" name="updated_at" type="date"/>
+        <embed-one field="identity" target-document="Teknoo\East\Paas\Object\SshIdentity" nullable="false"/>
     </embedded-document>
 </doctrine-mongo-mapping>
