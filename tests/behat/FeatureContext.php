@@ -33,6 +33,8 @@ use DI\Container as DiContainer;
 use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
+use Doctrine\Persistence\Mapping\ClassMetadata;
+use Doctrine\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use JsonException;
@@ -433,7 +435,7 @@ class FeatureContext implements Context
                 $this->repositories = $repositories;
             }
 
-            public function find(string $className, mixed $id)
+            public function find(string $className, mixed $id): object|null
             {
             }
 
@@ -476,11 +478,11 @@ class FeatureContext implements Context
                 return ($this->repositories)($className);
             }
 
-            public function getClassMetadata($className): void
+            public function getClassMetadata(string $className): ClassMetadata
             {
             }
 
-            public function getMetadataFactory(): void
+            public function getMetadataFactory(): ClassMetadataFactory
             {
             }
 
@@ -491,6 +493,11 @@ class FeatureContext implements Context
             public function contains($object): bool
             {
                 return true;
+            }
+
+            public function isUninitializedObject(mixed $value): bool
+            {
+                return false;
             }
         };
 

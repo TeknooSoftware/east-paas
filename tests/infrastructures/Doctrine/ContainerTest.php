@@ -29,6 +29,7 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
+use Doctrine\Persistence\ObjectRepository;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\ClusterRepositoryInterface;
@@ -79,7 +80,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $objectManager = $this->createMock(ObjectManager::class);
         $objectManager->expects($this->any())->method('getRepository')->with($objectClass)->willReturn(
-            $this->createMock(\DateTime::class)
+            $this->createMock(ObjectRepository::class)
         );
 
         $container->set(ObjectManager::class, $objectManager);

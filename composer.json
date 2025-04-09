@@ -27,17 +27,17 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "ext-dom": "*",
         "ext-json": "*",
         "ext-libxml": "*",
-        "php-di/php-di": "^7.0.7",
+        "php-di/php-di": "^7.0.9",
         "psr/http-client": "^1.0.3",
         "teknoo/immutable": "^3.0.19",
         "teknoo/states": "^6.4.3",
         "teknoo/recipe": "^6.0.3",
         "teknoo/east-foundation": "^8.0.4",
-        "teknoo/east-common": "^3.0.8"
+        "teknoo/east-common": "^3.3"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -49,9 +49,9 @@
         "nikic/php-parser": "^4.18||^5.4",
         "behat/behat": "^3.18.1",
         "doctrine/common": "^3.5",
-        "doctrine/mongodb-odm": "^2.10",
-        "doctrine/mongodb-odm-bundle": "^5.2",
-        "doctrine/persistence": "^3.4||^4",
+        "doctrine/mongodb-odm": "^2.11",
+        "doctrine/mongodb-odm-bundle": "^5.3",
+        "doctrine/persistence": "^4",
         "guzzlehttp/guzzle": "^7.9.2",
         "laminas/laminas-diactoros": "^3.5",
         "league/flysystem": "^3.29.1",
