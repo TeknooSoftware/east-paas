@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [4.4.0] - 2025-04-09
+### Stable Release
+- Drop Support of PHP 8.2
+- Drop Support of Doctrine Persistence 3
+- Fix bug in compliance with Doctrine Persistence 4
+
 ## [4.3.2] - 2025-03-12
 ### Stable Release
 - Add option `shelf-life` to job to define the TTL to keep the executed job after its completion, in second. 
