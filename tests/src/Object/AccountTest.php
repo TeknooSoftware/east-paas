@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -47,7 +47,7 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Inactive::class)]
@@ -58,7 +58,6 @@ class AccountTest extends TestCase
     use ObjectTestTrait;
 
     /**
-     * @return Account
      * @throws StateNotFound
      */
     public function buildObject(): Account
@@ -66,14 +65,13 @@ class AccountTest extends TestCase
         return new Account();
     }
 
-    public function testStatesListDeclaration()
+    public function testStatesListDeclaration(): void
     {
         $rf = new ReflectionMethod(Account::class, 'statesListDeclaration');
-        $rf->setAccessible(true);
-        self::assertIsArray($rf->getClosure()());
+        $this->assertIsArray($rf->getClosure()());
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
         $object = $this->generateObjectPopulated(['name' => 'fooBar']);
 
@@ -82,93 +80,69 @@ class AccountTest extends TestCase
             ->method('setData')
             ->with('fooBar');
 
-        self::assertInstanceOf(
-            Account::class,
-            $object->visit('name', $form->setData(...))
-        );
+        $this->assertInstanceOf(Account::class, $object->visit('name', $form->setData(...)));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
-        self::assertEquals(
-            'fooBar',
-            (string) $this->generateObjectPopulated(['name' => 'fooBar'])
-        );
+        $this->assertEquals('fooBar', (string) $this->generateObjectPopulated(['name' => 'fooBar']));
     }
 
     /**
      * @throws StateNotFound
      */
-    public function testSetName()
+    public function testSetName(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setName('fooBar')
-        );
+        $this->assertInstanceOf($object::class, $object->setName('fooBar'));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
-        self::assertInstanceOf(
-            Account::class,
-            $object->visit('name', $form->setData(...))
-        );
+        $this->assertInstanceOf(Account::class, $object->visit('name', $form->setData(...)));
     }
 
-    public function testSetNameExceptionOnBadArgument()
+    public function testSetNameExceptionOnBadArgument(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->setName(new stdClass());
     }
 
-    public function testSetNamespace()
+    public function testSetNamespace(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setNamespace('fooBar')
-        );
+        $this->assertInstanceOf($object::class, $object->setNamespace('fooBar'));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
-        self::assertInstanceOf(
-            Account::class,
-            $object->visit('namespace', $form->setData(...))
-        );
+        $this->assertInstanceOf(Account::class, $object->visit('namespace', $form->setData(...)));
     }
 
-    public function testSetNamespaceExceptionOnBadArgument()
+    public function testSetNamespaceExceptionOnBadArgument(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->setNamespace(new stdClass());
     }
 
-    public function testSetQuotas()
+    public function testSetQuotas(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setQuotas($a = ['compute' => ['cpu' => 5]])
-        );
+        $this->assertInstanceOf($object::class, $object->setQuotas($a = ['compute' => ['cpu' => 5]]));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with($a);
 
-        self::assertInstanceOf(
-            Account::class,
-            $object->visit('quotas', $form->setData(...))
-        );
+        $this->assertInstanceOf(Account::class, $object->visit('quotas', $form->setData(...)));
     }
 
-    public function testSetQuotasExceptionOnBadArgument()
+    public function testSetQuotasExceptionOnBadArgument(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->setQuotas(new stdClass());
@@ -177,26 +151,20 @@ class AccountTest extends TestCase
     /**
      * @throws StateNotFound
      */
-    public function testSetPrefixNamespace()
+    public function testSetPrefixNamespace(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setPrefixNamespace('fooBar')
-        );
+        $this->assertInstanceOf($object::class, $object->setPrefixNamespace('fooBar'));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
-        self::assertInstanceOf(
-            Account::class,
-            $object->visit('prefix_namespace', $form->setData(...))
-        );
+        $this->assertInstanceOf(Account::class, $object->visit('prefix_namespace', $form->setData(...)));
     }
 
-    public function testSetPrefixNamespaceExceptionOnBadArgument()
+    public function testSetPrefixNamespaceExceptionOnBadArgument(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->setPrefixNamespace(new stdClass());
@@ -205,49 +173,37 @@ class AccountTest extends TestCase
     /**
      * @throws StateNotFound
      */
-    public function testNamespaceIsItDefined()
+    public function testNamespaceIsItDefined(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setNamespace('foo')
-        );
+        $this->assertInstanceOf($object::class, $object->setNamespace('foo'));
 
         $called = false;
-        self::assertInstanceOf(
-            Account::class,
-            $object->namespaceIsItDefined(
-                function ($namespace, $base) use (&$called) {
-                    $called = true;
-                    self::assertEquals('foo', $namespace);
-                    self::assertNull($base);
-                }
-            )
-        );
+        $this->assertInstanceOf(Account::class, $object->namespaceIsItDefined(
+            function ($namespace, $base) use (&$called): void {
+                $called = true;
+                $this->assertEquals('foo', $namespace);
+                $this->assertNull($base);
+            }
+        ));
 
-        self::assertTrue($called);
+        $this->assertTrue($called);
 
-        self::assertInstanceOf(
-            $object::class,
-            $object->setPrefixNamespace('bar')
-        );
+        $this->assertInstanceOf($object::class, $object->setPrefixNamespace('bar'));
 
         $called = false;
-        self::assertInstanceOf(
-            Account::class,
-            $object->namespaceIsItDefined(
-                function ($namespace, $base) use (&$called) {
-                    $called = true;
-                    self::assertEquals('foo', $namespace);
-                    self::assertEquals('bar', $base);
-                }
-            )
-        );
+        $this->assertInstanceOf(Account::class, $object->namespaceIsItDefined(
+            function ($namespace, $base) use (&$called): void {
+                $called = true;
+                $this->assertEquals('foo', $namespace);
+                $this->assertEquals('bar', $base);
+            }
+        ));
 
-        self::assertTrue($called);
+        $this->assertTrue($called);
     }
 
-    public function testNamespaceIsItDefinedOnBadArgument()
+    public function testNamespaceIsItDefinedOnBadArgument(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->namespaceIsItDefined(new stdClass());
@@ -256,16 +212,13 @@ class AccountTest extends TestCase
     /**
      * @throws StateNotFound
      */
-    public function testSetProjects()
+    public function testSetProjects(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setProjects([new Project($this->createMock(Account::class))])
-        );
+        $this->assertInstanceOf($object::class, $object->setProjects([new Project($this->createMock(Account::class))]));
     }
 
-    public function testSetProjectsExceptionOnBadArgument()
+    public function testSetProjectsExceptionOnBadArgument(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->setProjects(new stdClass());
@@ -274,7 +227,7 @@ class AccountTest extends TestCase
     /**
      * @throws StateNotFound
      */
-    public function testGetUsers()
+    public function testGetUsers(): void
     {
         $argument = [new BaseUser()];
         $object = $this->generateObjectPopulated(['users' => $argument]);
@@ -284,43 +237,34 @@ class AccountTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Account::class,
-            $object->visit('users', $form->setData(...))
-        );
+        $this->assertInstanceOf(Account::class, $object->visit('users', $form->setData(...)));
     }
 
     /**
      * @throws StateNotFound
      */
-    public function testSetUsers()
+    public function testSetUsers(): void
     {
         $argument = [new BaseUser()];
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setUsers($argument)
-        );
+        $this->assertInstanceOf($object::class, $object->setUsers($argument));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Account::class,
-            $object->visit('users', $form->setData(...))
-        );
+        $this->assertInstanceOf(Account::class, $object->visit('users', $form->setData(...)));
     }
 
-    public function testSetUsersExceptionOnBadArgument()
+    public function testSetUsersExceptionOnBadArgument(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->setUsers(new stdClass());
     }
 
-    public function testCanIPrepareNewJobInactive()
+    public function testCanIPrepareNewJobInactive(): void
     {
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
@@ -330,13 +274,10 @@ class AccountTest extends TestCase
         $project->expects($this->once())->method('refuseExecution')
             ->with($job, 'teknoo.east.paas.error.account.inactive', $date = new DateTime('2018-05-01'));
 
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()->canIPrepareNewJob($project, $job, $date, $env)
-        );
+        $this->assertInstanceOf(Account::class, $this->buildObject()->canIPrepareNewJob($project, $job, $date, $env));
     }
 
-    public function testCanIPrepareNewJobInactiveBadProject()
+    public function testCanIPrepareNewJobInactiveBadProject(): void
     {
         $this->expectException(TypeError::class);
         $job = $this->createMock(Job::class);
@@ -345,7 +286,7 @@ class AccountTest extends TestCase
         $this->buildObject()->canIPrepareNewJob(new stdClass(), $job, new DateTime('2018-05-01'), $env);
     }
 
-    public function testCanIPrepareNewJobInactiveBadJob()
+    public function testCanIPrepareNewJobInactiveBadJob(): void
     {
         $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
@@ -354,7 +295,7 @@ class AccountTest extends TestCase
         $this->buildObject()->canIPrepareNewJob($project, new stdClass(), new DateTime('2018-05-01'), $env);
     }
 
-    public function testCanIPrepareNewJobInactiveBadDate()
+    public function testCanIPrepareNewJobInactiveBadDate(): void
     {
         $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
@@ -364,7 +305,7 @@ class AccountTest extends TestCase
         $this->buildObject()->canIPrepareNewJob($project, $job, new stdClass(), $env);
     }
 
-    public function testCanIPrepareNewJobActive()
+    public function testCanIPrepareNewJobActive(): void
     {
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
@@ -381,17 +322,14 @@ class AccountTest extends TestCase
         );
         $project->expects($this->never())->method('refuseExecution');
 
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()
-                ->setName('foo')
-                ->setNamespace('bar')
-                ->setPrefixNamespace('foo')
-                ->canIPrepareNewJob($project, $job, $date, $env)
-        );
+        $this->assertInstanceOf(Account::class, $this->buildObject()
+            ->setName('foo')
+            ->setNamespace('bar')
+            ->setPrefixNamespace('foo')
+            ->canIPrepareNewJob($project, $job, $date, $env));
     }
 
-    public function testCanIPrepareNewJobActiveWithQuota()
+    public function testCanIPrepareNewJobActiveWithQuota(): void
     {
         $job = $this->createMock(Job::class);
         $env = $this->createMock(Environment::class);
@@ -409,17 +347,14 @@ class AccountTest extends TestCase
             );
         $project->expects($this->never())->method('refuseExecution');
 
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()
-                ->setName('foo')
-                ->setNamespace('bar')
-                ->setQuotas(['compute' => ['cpu' => 5]])
-                ->canIPrepareNewJob($project, $job, $date, $env)
-        );
+        $this->assertInstanceOf(Account::class, $this->buildObject()
+            ->setName('foo')
+            ->setNamespace('bar')
+            ->setQuotas(['compute' => ['cpu' => 5]])
+            ->canIPrepareNewJob($project, $job, $date, $env));
     }
 
-    public function testCanIPrepareNewJobActiveBadProject()
+    public function testCanIPrepareNewJobActiveBadProject(): void
     {
         $this->expectException(TypeError::class);
         $job = $this->createMock(Job::class);
@@ -430,7 +365,7 @@ class AccountTest extends TestCase
             ->canIPrepareNewJob(new stdClass(), $job, new DateTime('2018-05-01'), $env);
     }
 
-    public function testCanIPrepareNewJobActiveBadJob()
+    public function testCanIPrepareNewJobActiveBadJob(): void
     {
         $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
@@ -441,7 +376,7 @@ class AccountTest extends TestCase
             ->canIPrepareNewJob($project, new stdClass(), new DateTime('2018-05-01'), $env);
     }
 
-    public function testCanIPrepareNewJobActiveBadDate()
+    public function testCanIPrepareNewJobActiveBadDate(): void
     {
         $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
@@ -453,7 +388,7 @@ class AccountTest extends TestCase
             ->canIPrepareNewJob($project, $job, new stdClass(), $env);
     }
 
-    public function testCanIPrepareNewJobActiveBadEnv()
+    public function testCanIPrepareNewJobActiveBadEnv(): void
     {
         $this->expectException(TypeError::class);
         $project = $this->createMock(Project::class);
@@ -463,84 +398,72 @@ class AccountTest extends TestCase
             ->setName('foo')
             ->canIPrepareNewJob($project, $job, new DateTime('2018-05-01'), new stdClass());
     }
-    
-    public function testVerifyAccessToUserInactive()
+
+    public function testVerifyAccessToUserInactive(): void
     {
         $user = $this->createMock(BaseUser::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('fail');
         $promise->expects($this->never())->method('success');
 
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()->verifyAccessToUser($user, $promise)
-        );
+        $this->assertInstanceOf(Account::class, $this->buildObject()->verifyAccessToUser($user, $promise));
     }
 
-    public function testVerifyAccessToUserActiveNotIn()
+    public function testVerifyAccessToUserActiveNotIn(): void
     {
         $user = $this->createMock(BaseUser::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('fail');
         $promise->expects($this->never())->method('success');
 
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()
-                ->setName('foo')
-                ->setNamespace('bar')
-                ->verifyAccessToUser($user, $promise)
-        );
+        $this->assertInstanceOf(Account::class, $this->buildObject()
+            ->setName('foo')
+            ->setNamespace('bar')
+            ->verifyAccessToUser($user, $promise));
     }
 
-    public function testVerifyAccessToUserActiveIn()
+    public function testVerifyAccessToUserActiveIn(): void
     {
         $user = $this->createMock(BaseUser::class);
-        $user->expects($this->any())->method('getId')->willReturn('foo');
+        $user->method('getId')->willReturn('foo');
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()
-                ->setName('foo')
-                ->setNamespace('bar')
-                ->setUsers([$user])
-                ->verifyAccessToUser($user, $promise)
-        );
+        $this->assertInstanceOf(Account::class, $this->buildObject()
+            ->setName('foo')
+            ->setNamespace('bar')
+            ->setUsers([$user])
+            ->verifyAccessToUser($user, $promise));
     }
 
-    public function testRequireAccountNamespace()
+    public function testRequireAccountNamespace(): void
     {
-        self::assertInstanceOf(
-            Account::class,
-            $this->generateObjectPopulated(['name' => 'fooBar', 'namespace' => 'barFoo'])
-                ->requireAccountNamespace(
-                    new class implements AccountAwareInterface {
-                        public function passAccountNamespace(
-                            Account $account,
-                            ?string $name,
-                            ?string $namespace,
-                            ?string $prefixNamespace,
-                        ): AccountAwareInterface {
-                            AccountTest::assertEquals('fooBar', $name);
-                            AccountTest::assertEquals('barFoo', $namespace);
+        $this->assertInstanceOf(Account::class, $this->generateObjectPopulated(['name' => 'fooBar', 'namespace' => 'barFoo'])
+            ->requireAccountNamespace(
+                new class () implements AccountAwareInterface {
+                    public function passAccountNamespace(
+                        Account $account,
+                        ?string $name,
+                        ?string $namespace,
+                        ?string $prefixNamespace,
+                    ): AccountAwareInterface {
+                        AccountTest::assertEquals('fooBar', $name);
+                        AccountTest::assertEquals('barFoo', $namespace);
 
-                            return $this;
-                        }
+                        return $this;
                     }
-                )
-        );
+                }
+            ));
     }
 
-    public function testExportToMeDataBadNormalizer()
+    public function testExportToMeDataBadNormalizer(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(new stdClass(), []);
     }
 
-    public function testExportToMeDataBadContext()
+    public function testExportToMeDataBadContext(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
@@ -549,7 +472,7 @@ class AccountTest extends TestCase
         );
     }
 
-    public function testExportToMe()
+    public function testExportToMe(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -561,23 +484,17 @@ class AccountTest extends TestCase
                 'namespace' => null,
             ]);
 
-        self::assertInstanceOf(
-            Account::class,
-            $this->buildObject()->setId('123')->setName('fooName')->exportToMeData(
-                $normalizer,
-                ['foo' => 'bar']
-            )
-        );
+        $this->assertInstanceOf(Account::class, $this->buildObject()->setId('123')->setName('fooName')->exportToMeData(
+            $normalizer,
+            ['foo' => 'bar']
+        ));
     }
 
-    public function testSetExportConfiguration()
+    public function testSetExportConfiguration(): void
     {
         Account::setExportConfiguration($conf = ['name' => ['default']]);
         $rc = new ReflectionClass(Account::class);
 
-        self::assertEquals(
-            $conf,
-            $rc->getStaticPropertyValue('exportConfigurations'),
-        );
+        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
     }
 }

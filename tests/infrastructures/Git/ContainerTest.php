@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -35,16 +35,15 @@ use Teknoo\East\Paas\Infrastructures\Git\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Git\Hook;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ContainerTest extends TestCase
 {
     /**
-     * @return Container
      * @throws \Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Git/di.php');
@@ -52,71 +51,50 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    public function testFactory()
+    public function testFactory(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.git.cloning.timeout', 1.0);
 
-        self::assertInstanceOf(
-            ProcessFactoryInterface::class,
-            $f = $container->get(ProcessFactoryInterface::class)
-        );
+        $this->assertInstanceOf(ProcessFactoryInterface::class, $f = $container->get(ProcessFactoryInterface::class));
 
-        self::assertInstanceOf(
-            Process::class,
-            $f('foo'),
-        );
+        $this->assertInstanceOf(Process::class, $f('foo'));
     }
 
-    public function testCloningAgentInterface()
+    public function testCloningAgentInterface(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            CloningAgentInterface::class,
-            $container->get(CloningAgentInterface::class)
-        );
+        $this->assertInstanceOf(CloningAgentInterface::class, $container->get(CloningAgentInterface::class));
     }
 
-    public function testGitCloningAgent()
+    public function testGitCloningAgent(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            CloningAgent::class,
-            $container->get(CloningAgent::class)
-        );
+        $this->assertInstanceOf(CloningAgent::class, $container->get(CloningAgent::class));
     }
 
-    public function testGitCloningAgentWithTimeout()
+    public function testGitCloningAgentWithTimeout(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.git.cloning.timeout', 240);
 
-        self::assertInstanceOf(
-            CloningAgent::class,
-            $container->get(CloningAgent::class)
-        );
+        $this->assertInstanceOf(CloningAgent::class, $container->get(CloningAgent::class));
     }
 
-    public function testHook()
+    public function testHook(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            Hook::class,
-            $container->get(Hook::class)
-        );
+        $this->assertInstanceOf(Hook::class, $container->get(Hook::class));
     }
 
-    public function testHookWithTimeout()
+    public function testHookWithTimeout(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.git.cloning.timeout', 240);
 
-        self::assertInstanceOf(
-            Hook::class,
-            $container->get(Hook::class)
-        );
+        $this->assertInstanceOf(Hook::class, $container->get(Hook::class));
     }
 }

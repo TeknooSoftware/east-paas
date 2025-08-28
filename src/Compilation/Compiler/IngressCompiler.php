@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -47,26 +47,38 @@ use function is_string;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class IngressCompiler implements CompilerInterface, ExtenderInterface
 {
     use MergeTrait;
 
-    private const KEY_HOST = 'host';
-    private const KEY_TLS = 'tls';
-    private const KEY_PROVIDER = 'provider';
-    private const KEY_SECRET = 'secret';
-    private const KEY_SERVICE = 'service';
-    private const KEY_SERVICE_NAME = 'name';
-    private const KEY_PORT = 'port';
-    private const KEY_PATHS = 'paths';
-    private const KEY_PATH = 'path';
-    private const KEY_HTTPS_BACKEND = 'https-backend';
-    private const KEY_META = 'meta';
-    private const KEY_ALIASES = 'aliases';
-    private const KEY_EXTENDS = 'extends';
+    private const string KEY_HOST = 'host';
+
+    private const string KEY_TLS = 'tls';
+
+    private const string KEY_PROVIDER = 'provider';
+
+    private const string KEY_SECRET = 'secret';
+
+    private const string KEY_SERVICE = 'service';
+
+    private const string KEY_SERVICE_NAME = 'name';
+
+    private const string KEY_PORT = 'port';
+
+    private const string KEY_PATHS = 'paths';
+
+    private const string KEY_PATH = 'path';
+
+    private const string KEY_HTTPS_BACKEND = 'https-backend';
+
+    private const string KEY_META = 'meta';
+
+    private const string KEY_ALIASES = 'aliases';
+
+    private const string KEY_EXTENDS = 'extends';
 
     /**
      * @param array<string, array<string, mixed>> $library

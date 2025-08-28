@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -31,57 +31,41 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Service::class)]
 class ServiceTest extends TestCase
 {
-    private function buildObject($internal = false): Service
+    private function buildObject(bool $internal = false): Service
     {
         return new Service('foo', 'bar', [80 => 8080], Transport::Tcp, $internal);
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getName()
-        );
+        $this->assertEquals('foo', $this->buildObject()->getName());
     }
 
-    public function testGetPodName()
+    public function testGetPodName(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()->getPodName()
-        );
+        $this->assertEquals('bar', $this->buildObject()->getPodName());
     }
 
-    public function testGetPorts()
+    public function testGetPorts(): void
     {
-        self::assertEquals(
-            [80 => 8080],
-            $this->buildObject()->getPorts()
-        );
+        $this->assertEquals([80 => 8080], $this->buildObject()->getPorts());
     }
 
-    public function testGetProtocol()
+    public function testGetProtocol(): void
     {
-        self::assertEquals(
-            Transport::Tcp,
-            $this->buildObject()->getProtocol()
-        );
+        $this->assertEquals(Transport::Tcp, $this->buildObject()->getProtocol());
     }
 
-    public function testIsInternal()
+    public function testIsInternal(): void
     {
-        self::assertFalse(
-            $this->buildObject()->isInternal()
-        );
+        $this->assertFalse($this->buildObject()->isInternal());
 
-        self::assertTrue(
-            $this->buildObject(true)->isInternal()
-        );
+        $this->assertTrue($this->buildObject(true)->isInternal());
     }
 }

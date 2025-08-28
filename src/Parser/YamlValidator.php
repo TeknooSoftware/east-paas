@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Parser;
 
 use DOMDocument;
 use DOMElement;
-use RuntimeException;
+use LibXMLError;
 use Teknoo\East\Paas\Parser\Exception\ValidationException;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
@@ -51,7 +51,7 @@ use const E_WARNING;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class YamlValidator
@@ -207,6 +207,7 @@ class YamlValidator
                 }
             }
 
+            $newNode = null;
             if (!is_array($mixedElement) && (is_scalar($mixedElement) || null === $mixedElement)) {
                 $converted = (string) $mixedElement;
                 if (false === $mixedElement) {
@@ -222,7 +223,7 @@ class YamlValidator
                     $nodeName,
                     str_replace('%', 'pc', $converted)
                 );
-            } else {
+            } elseif (is_array($mixedElement)) {
                 $newNode = $document->createElementNS($this->xsdUrl, $nodeName);
                 $this->parse(
                     $mixedElement,
@@ -231,6 +232,10 @@ class YamlValidator
                     $isPod || 'pods' === $name,
                     $isPod && 'volumes' === $name
                 );
+            }
+
+            if (!$newNode instanceof DOMElement) {
+                throw new ValidationException('Bad node type');
             }
 
             if (!$isStatic) {
@@ -280,16 +285,21 @@ class YamlValidator
         } catch (Throwable $error) {
             $xmlError = $error;
         } finally {
-            if ($previousHandler) {
+            if (null !== $previousHandler) {
                 restore_error_handler();
             }
 
             $libError = libxml_get_last_error();
             libxml_clear_errors();
 
-            if ($xmlError instanceof Throwable || false !== $libError) {
+            if ($xmlError instanceof Throwable || $libError instanceof LibXMLError) {
+                $message = null;
+                if ($xmlError instanceof Throwable) {
+                    $message = $xmlError->getMessage();
+                }
+
                 $exception = new ValidationException(
-                    message: (string) ($xmlError?->getMessage() ?? $libError->message),
+                    message: (string) ($message ?? $libError->message),
                     code: 400,
                 );
                 $promise->fail($exception);

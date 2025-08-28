@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -256,15 +256,15 @@ return static function (
     );
 
     $automaticResources = [
-        (new CompiledDeployment\AutomaticResource('cpu'))->setLimit('200m', '1.600'),
-        (new CompiledDeployment\AutomaticResource('memory'))->setLimit('20.480Mi', '163.840Mi'),
+        new CompiledDeployment\AutomaticResource('cpu')->setLimit('200m', '1.600'),
+        new CompiledDeployment\AutomaticResource('memory')->setLimit('20.480Mi', '163.840Mi'),
     ];
 
     $phpRunResources = match ($withQuota) {
         'automatic' => $automaticResources,
         'partial' => [
-            (new CompiledDeployment\AutomaticResource('cpu'))->setLimit('68m', '561m'),
-            (new CompiledDeployment\AutomaticResource('memory'))->setLimit('9.600Mi', '80Mi'),
+            new CompiledDeployment\AutomaticResource('cpu')->setLimit('68m', '561m'),
+            new CompiledDeployment\AutomaticResource('memory')->setLimit('9.600Mi', '80Mi'),
         ],
         'full' => [
             new CompiledDeployment\Resource('cpu', '200m', '500m'),
@@ -277,7 +277,7 @@ return static function (
         'automatic' => $automaticResources,
         'partial' => [
             new CompiledDeployment\Resource('cpu', '100m', '100m'),
-            (new CompiledDeployment\AutomaticResource('memory'))->setLimit('9.600Mi', '80Mi'),
+            new CompiledDeployment\AutomaticResource('memory')->setLimit('9.600Mi', '80Mi'),
         ],
         'full' => [
             new CompiledDeployment\Resource('cpu', '100m', '100m'),
@@ -289,8 +289,8 @@ return static function (
     $nginxResources = match ($withQuota) {
         'automatic' => $automaticResources,
         'partial' => [
-            (new CompiledDeployment\AutomaticResource('cpu'))->setLimit('68m', '561m'),
-            (new CompiledDeployment\AutomaticResource('memory'))->setLimit('9.600Mi', '80Mi'),
+            new CompiledDeployment\AutomaticResource('cpu')->setLimit('68m', '561m'),
+            new CompiledDeployment\AutomaticResource('memory')->setLimit('9.600Mi', '80Mi'),
         ],
         'full' => [
             new CompiledDeployment\Resource('cpu', '200m', '200m'),
@@ -602,7 +602,7 @@ return static function (
                     'oci-registry-config-name' => 'oci-registry-behat',
                 ]
             ),
-            'cluster' => (static function () {
+            'cluster' => (static function (): DefaultsBag {
                 $parent = new DefaultsBag(
                     values: [
                         'storage-provider' => 'user-default-behat-provider',
@@ -622,7 +622,7 @@ return static function (
                     'oci-registry-config-name' => 'oci-registry-behat-job',
                 ]
             ),
-            'job-cluster' => (static function () {
+            'job-cluster' => (static function (): DefaultsBag {
                 $parent = new DefaultsBag(
                     values: [
                         'storage-provider' => 'job-default-behat-provider',

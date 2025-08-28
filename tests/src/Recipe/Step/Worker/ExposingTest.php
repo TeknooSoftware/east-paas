@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -39,18 +39,15 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Exposing::class)]
 class ExposingTest extends TestCase
 {
-    private ?DispatchHistoryInterface $dispatchHistory = null;
+    private (DispatchHistoryInterface&MockObject)|null $dispatchHistory = null;
 
-    /**
-     * @return DispatchHistoryInterface|MockObject
-     */
-    public function getDispatchHistoryMock(): DispatchHistoryInterface
+    public function getDispatchHistoryMock(): DispatchHistoryInterface&MockObject
     {
         if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
             $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
@@ -66,7 +63,7 @@ class ExposingTest extends TestCase
         );
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
         $compileDep = $this->createMock(CompiledDeploymentInterface::class);
         $collection = $this->createMock(Collection::class);
@@ -75,16 +72,16 @@ class ExposingTest extends TestCase
         $manager = $this->createMock(ManagerInterface::class);
 
         $client = $this->createMock(DriverInterface::class);
-        $collection->expects($this->any())
+        $collection
             ->method('getIterator')
-            ->willReturnCallback(function () use ($client) {
+            ->willReturnCallback(function () use ($client): \Traversable {
                 yield $client;
             });
 
-        $client->expects($this->any())
+        $client
             ->method('expose')
             ->willReturnCallback(
-                static function ($compiledExposment, PromiseInterface $promise) use ($client) {
+                static function (\Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface $compiledExposment, PromiseInterface $promise) use ($client): \PHPUnit\Framework\MockObject\MockObject {
                     $promise->success(['foo' => 'bar']);
 
                     return $client;
@@ -99,21 +96,18 @@ class ExposingTest extends TestCase
             ->with($project, $env, $jobUnit->getId(), Exposing::class . ':Result')
             ->willReturnSelf();
 
-        self::assertInstanceOf(
-            Exposing::class,
-            ($this->buildStep())(
-                $collection,
-                $compileDep,
-                $eastClient,
-                $manager,
-                $project,
-                $env,
-                $jobUnit
-            )
-        );
+        $this->assertInstanceOf(Exposing::class, ($this->buildStep())(
+            $collection,
+            $compileDep,
+            $eastClient,
+            $manager,
+            $project,
+            $env,
+            $jobUnit
+        ));
     }
 
-    public function testInvokeOnError()
+    public function testInvokeOnError(): void
     {
         $compileDep = $this->createMock(CompiledDeploymentInterface::class);
         $collection = $this->createMock(Collection::class);
@@ -122,16 +116,16 @@ class ExposingTest extends TestCase
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
         $client = $this->createMock(DriverInterface::class);
-        $collection->expects($this->any())
+        $collection
             ->method('getIterator')
-            ->willReturnCallback(function () use ($client) {
+            ->willReturnCallback(function () use ($client): \Traversable {
                 yield $client;
             });
 
-        $client->expects($this->any())
+        $client
             ->method('expose')
             ->willReturnCallback(
-                static function ($compiledExposment, PromiseInterface $promise) use ($client) {
+                static function (\Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface $compiledExposment, PromiseInterface $promise) use ($client): \PHPUnit\Framework\MockObject\MockObject {
                     $promise->fail(new \Exception());
 
                     return $client;
@@ -147,17 +141,14 @@ class ExposingTest extends TestCase
         $manager->expects($this->once())
             ->method('error');
 
-        self::assertInstanceOf(
-            Exposing::class,
-            ($this->buildStep())(
-                $collection,
-                $compileDep,
-                $eastClient,
-                $manager,
-                'foo',
-                'bar',
-                $jobUnit
-            )
-        );
+        $this->assertInstanceOf(Exposing::class, ($this->buildStep())(
+            $collection,
+            $compileDep,
+            $eastClient,
+            $manager,
+            'foo',
+            'bar',
+            $jobUnit
+        ));
     }
 }

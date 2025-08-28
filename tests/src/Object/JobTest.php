@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -58,7 +58,7 @@ use TypeError;
 use function iterator_to_array;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Terminated::class)]
@@ -71,7 +71,6 @@ class JobTest extends TestCase
     use ObjectTestTrait;
 
     /**
-     * @return Job
      * @throws StateNotFound
      */
     public function buildObject(): Job
@@ -79,424 +78,299 @@ class JobTest extends TestCase
         return new Job();
     }
 
-    public function testStatesListDeclaration()
+    public function testStatesListDeclaration(): void
     {
         $rf = new ReflectionMethod(Job::class, 'statesListDeclaration');
-        $rf->setAccessible(true);
-        self::assertIsArray($rf->getClosure()());
+        $this->assertIsArray($rf->getClosure()());
     }
 
     /**
      * @throws StateNotFound
      */
-    public function testSetProject()
+    public function testSetProject(): void
     {
         $argument = new Project($this->createMock(Account::class));
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setProject($argument)
-        );
+        $this->assertInstanceOf($object::class, $object->setProject($argument));
 
         $rP = new ReflectionProperty($object, 'project');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            $argument,
-            $rP->getValue($object)
-        );
+        $this->assertEquals($argument, $rP->getValue($object));
     }
 
-    public function testGetProject()
+    public function testGetProject(): void
     {
         $argument = new Project($this->createMock(Account::class));
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            Project::class,
-            $object->setProject($argument)->getProject()
-        );
+        $this->assertInstanceOf(Project::class, $object->setProject($argument)->getProject());
     }
 
-    public function testSetProjectExceptionOnBadArgument()
+    public function testSetProjectExceptionOnBadArgument(): void
     {
         $this->expectException(Throwable::class);
         $this->buildObject()->setProject(new stdClass());
     }
 
-    public function testAddToHistory()
+    public function testAddToHistory(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->addToHistory('foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo'])
-        );
+        $this->assertInstanceOf($object::class, $object->addToHistory('foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']));
 
         $rP = new ReflectionProperty($object, 'history');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']),
-            $rP->getValue($object)
-        );
+        $this->assertEquals(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), $rP->getValue($object));
 
-        self::assertInstanceOf(
-            $object::class,
-            $object->addToHistory('foo2', new DateTimeImmutable('2018-05-01'))
-        );
+        $this->assertInstanceOf($object::class, $object->addToHistory('foo2', new DateTimeImmutable('2018-05-01')));
 
-        self::assertEquals(
-            new History(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), 'foo2', new DateTimeImmutable('2018-05-01')),
-            $rP->getValue($object)
-        );
+        $this->assertEquals(new History(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), 'foo2', new DateTimeImmutable('2018-05-01')), $rP->getValue($object));
     }
 
-    public function testAddToHistoryExceptionOnBadArgument()
+    public function testAddToHistoryExceptionOnBadArgument(): void
     {
         $this->expectException(Throwable::class);
         $this->buildObject()->addToHistory(new stdClass());
     }
 
-    public function testAddFromHistoryWithoutCallback()
+    public function testAddFromHistoryWithoutCallback(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->addFromHistory(
-                new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo'])
-            )
-        );
+        $this->assertInstanceOf($object::class, $object->addFromHistory(
+            new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo'])
+        ));
 
         $rP = new ReflectionProperty($object, 'history');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']),
-            $rP->getValue($object)
-        );
+        $this->assertEquals(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), $rP->getValue($object));
 
-        self::assertInstanceOf(
-            $object::class,
-            $object->addFromHistory(
-                new History(null, 'foo2', new DateTimeImmutable('2018-05-01'))
-            )
-        );
+        $this->assertInstanceOf($object::class, $object->addFromHistory(
+            new History(null, 'foo2', new DateTimeImmutable('2018-05-01'))
+        ));
 
-        self::assertEquals(
+        $this->assertEquals(new History(
             new History(
-                new History(
-                    null,
-                    'foo',
-                    new DateTimeImmutable('2018-05-01'),
-                    false,
-                    ['bar' => 'foo']
-                ),
-                'foo2',
-                new DateTimeImmutable('2018-05-01')
-            ),
-            $rP->getValue($object)
-        );
-    }
-
-    public function testAddFromHistoryWithFinal()
-    {
-        $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->addFromHistory(
-                new History(null, 'foo', new DateTimeImmutable('2018-05-01'), true, ['bar' => 'foo'])
-            )
-        );
-
-        $rP = new ReflectionProperty($object, 'history');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            new History(null, 'foo', new DateTimeImmutable('2018-05-01'), true, ['bar' => 'foo']),
-            $rP->getValue($object)
-        );
-
-        self::assertInstanceOf(
-            $object::class,
-            $object->addFromHistory(
-                new History(null, 'foo2', new DateTimeImmutable('2018-05-01'))
-            )
-        );
-
-        self::assertEquals(
-            new History(
-                new History(
-                    null,
-                    'foo2',
-                    new DateTimeImmutable('2018-05-01'),
-                    false
-                ),
+                null,
                 'foo',
                 new DateTimeImmutable('2018-05-01'),
-                true,
-                ['bar' => 'foo'],
+                false,
+                ['bar' => 'foo']
             ),
-            $rP->getValue($object)
-        );
+            'foo2',
+            new DateTimeImmutable('2018-05-01')
+        ), $rP->getValue($object));
     }
 
-    public function testAddFromHistoryWithCallback()
+    public function testAddFromHistoryWithFinal(): void
+    {
+        $object = $this->buildObject();
+        $this->assertInstanceOf($object::class, $object->addFromHistory(
+            new History(null, 'foo', new DateTimeImmutable('2018-05-01'), true, ['bar' => 'foo'])
+        ));
+
+        $rP = new ReflectionProperty($object, 'history');
+        $this->assertEquals(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), true, ['bar' => 'foo']), $rP->getValue($object));
+
+        $this->assertInstanceOf($object::class, $object->addFromHistory(
+            new History(null, 'foo2', new DateTimeImmutable('2018-05-01'))
+        ));
+
+        $this->assertEquals(new History(
+            new History(
+                null,
+                'foo2',
+                new DateTimeImmutable('2018-05-01'),
+                false
+            ),
+            'foo',
+            new DateTimeImmutable('2018-05-01'),
+            true,
+            ['bar' => 'foo'],
+        ), $rP->getValue($object));
+    }
+
+    public function testAddFromHistoryWithCallback(): void
     {
         $object = $this->buildObject();
         $called = false;
-        $callback = function (History $h) use (&$called) {
-            self::assertEquals(
-                new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']),
-                $h
-            );
+        $callback = function (History $h) use (&$called): void {
+            $this->assertEquals(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), $h);
             $called = true;
         };
-        self::assertInstanceOf(
-            $object::class,
-            $object->addFromHistory(
-                new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']),
-                $callback
-            )
-        );
-        self::assertTrue($called);
+        $this->assertInstanceOf($object::class, $object->addFromHistory(
+            new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']),
+            $callback
+        ));
+        $this->assertTrue($called);
 
         $rP = new ReflectionProperty($object, 'history');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']),
-            $rP->getValue($object)
-        );
+        $this->assertEquals(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), $rP->getValue($object));
 
         $called = false;
-        $callback = function (History $h) use (&$called) {
-            self::assertEquals(
-                new History(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), 'foo2', new DateTimeImmutable('2018-05-01')),
-                $h
-            );
+        $callback = function (History $h) use (&$called): void {
+            $this->assertEquals(new History(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), 'foo2', new DateTimeImmutable('2018-05-01')), $h);
             $called = true;
         };
-        self::assertInstanceOf(
-            $object::class,
-            $object->addFromHistory(
-                new History(null, 'foo2', new DateTimeImmutable('2018-05-01')),
-                $callback
-            )
-        );
-        self::assertTrue($called);
+        $this->assertInstanceOf($object::class, $object->addFromHistory(
+            new History(null, 'foo2', new DateTimeImmutable('2018-05-01')),
+            $callback
+        ));
+        $this->assertTrue($called);
 
-        self::assertEquals(
-            new History(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), 'foo2', new DateTimeImmutable('2018-05-01')),
-            $rP->getValue($object)
-        );
+        $this->assertEquals(new History(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), 'foo2', new DateTimeImmutable('2018-05-01')), $rP->getValue($object));
     }
 
-    public function testAddFromHistoryExceptionOnBadArgument()
+    public function testAddFromHistoryExceptionOnBadArgument(): void
     {
         $this->expectException(Throwable::class);
         $this->buildObject()->addFromHistory(new stdClass());
     }
 
-    public function testAddFromHistoryExceptionOnBadCallabled()
+    public function testAddFromHistoryExceptionOnBadCallabled(): void
     {
         $this->expectException(Throwable::class);
         $this->buildObject()->addFromHistory($this->createMock(History::class), new stdClass());
     }
 
-    public function testSetHistoryBadArgument()
+    public function testSetHistoryBadArgument(): void
     {
         $this->expectException(Throwable::class);
         $this->buildObject()->setHistory(new stdClass());
     }
 
-    public function testSetHistory()
+    public function testSetHistory(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setHistory(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']))
-        );
+        $this->assertInstanceOf($object::class, $object->setHistory(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo'])));
 
         $rP = new ReflectionProperty($object, 'history');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']),
-            $rP->getValue($object)
-        );
+        $this->assertEquals(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), $rP->getValue($object));
     }
 
-    public function testGetHistory()
+    public function testGetHistory(): void
     {
         $object = $this->buildObject();
-        self::assertNull(
-            $object->getHistory()
-        );
+        $this->assertNotInstanceOf(\Teknoo\East\Paas\Object\History::class, $object->getHistory());
 
         $history = new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']);
-        self::assertEquals(
-            $history,
-            $object->setHistory($history)->getHistory()
-        );
+        $this->assertEquals($history, $object->setHistory($history)->getHistory());
     }
 
-    public function testSetExtra()
+    public function testSetExtra(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setExtra(['foo' => 'bar'])
-        );
+        $this->assertInstanceOf($object::class, $object->setExtra(['foo' => 'bar']));
 
-        self::assertInstanceOf(
-            $object::class,
-            $object->setExtra(['bar' => 'foo'])
-        );
+        $this->assertInstanceOf($object::class, $object->setExtra(['bar' => 'foo']));
     }
 
-    public function testSetEnvironment()
+    public function testSetEnvironment(): void
     {
         $argument = new Environment('foo');
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setEnvironment($argument)
-        );
+        $this->assertInstanceOf($object::class, $object->setEnvironment($argument));
     }
 
-    public function testSetEnvironmentsExceptionOnBadArgument()
+    public function testSetEnvironmentsExceptionOnBadArgument(): void
     {
         $this->expectException(Throwable::class);
         $this->buildObject()->setEnvironment(new stdClass());
     }
-    
+
     /**
      * @throws StateNotFound
      */
-    public function testSetSourceRepository()
+    public function testSetSourceRepository(): void
     {
         $argument = $this->createMock(SourceRepositoryInterface::class);
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setSourceRepository($argument)
-        );
+        $this->assertInstanceOf($object::class, $object->setSourceRepository($argument));
     }
 
-    public function testSetSourceRepositoryExceptionOnBadArgument()
+    public function testSetSourceRepositoryExceptionOnBadArgument(): void
     {
         $this->expectException(Throwable::class);
         $this->buildObject()->setSourceRepository(new stdClass());
     }
-    
+
     /**
      * @throws StateNotFound
      */
-    public function testAddCluster()
+    public function testAddCluster(): void
     {
         $argument = $this->createMock(Cluster::class);
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->addCluster($argument)
-        );
+        $this->assertInstanceOf($object::class, $object->addCluster($argument));
 
-        self::assertInstanceOf(
-            $object::class,
-            $object->addCluster($argument)
-        );
+        $this->assertInstanceOf($object::class, $object->addCluster($argument));
     }
 
-    public function testSetClustersArray()
+    public function testSetClustersArray(): void
     {
         $argument = $this->createMock(Cluster::class);
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setClusters([$argument])
-        );
+        $this->assertInstanceOf($object::class, $object->setClusters([$argument]));
 
         $rP = new ReflectionProperty($object, 'clusters');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            [$argument],
-            $rP->getValue($object)
-        );
+        $this->assertEquals([$argument], $rP->getValue($object));
     }
 
-    public function testSetClustersCollection()
+    public function testSetClustersCollection(): void
     {
         $argument = $this->createMock(Cluster::class);
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setClusters(new ArrayObject([$argument]))
-        );
+        $this->assertInstanceOf($object::class, $object->setClusters(new ArrayObject([$argument])));
 
         $rP = new ReflectionProperty($object, 'clusters');
-        $rP->setAccessible(true);
-        self::assertEquals(
-            new ArrayObject([$argument]),
-            $rP->getValue($object)
-        );
+        $this->assertEquals(new ArrayObject([$argument]), $rP->getValue($object));
     }
 
-    public function testGetCluster()
+    public function testGetCluster(): void
     {
         $argument = $this->createMock(Cluster::class);
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setClusters(new ArrayObject([$argument]))
-        );
+        $this->assertInstanceOf($object::class, $object->setClusters(new ArrayObject([$argument])));
 
-        self::assertInstanceOf(
-            Job::class,
-            $object->visit(
-                'clusters',
-                fn ($clusters) => self::assertInstanceOf(
-                    Cluster::class,
-                    iterator_to_array($clusters)[0],
-                ),
-            ),
-        );
+        $this->assertInstanceOf(Job::class, $object->visit(
+            'clusters',
+            fn ($clusters) => $this->assertInstanceOf(Cluster::class, iterator_to_array($clusters)[0]),
+        ));
     }
 
-    public function testAddClusterExceptionOnBadArgument()
+    public function testAddClusterExceptionOnBadArgument(): void
     {
         $this->expectException(Throwable::class);
         $this->buildObject()->addCluster(new stdClass());
     }
 
-    public function testHistory()
+    public function testHistory(): void
     {
-        self::assertInstanceOf(
-            Job::class,
-            (new Job())
-                ->setId('test')
-                ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
-                ->setEnvironment(new Environment('foo'))
-                ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-                ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
-                ->addCluster($this->createMock(Cluster::class))
-                ->addToHistory('foo', new DateTimeImmutable('2018-05-01'), true)
-        );
+        $this->assertInstanceOf(Job::class, new Job()
+            ->setId('test')
+            ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
+            ->setEnvironment(new Environment('foo'))
+            ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
+            ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
+            ->addCluster($this->createMock(Cluster::class))
+            ->addToHistory('foo', new DateTimeImmutable('2018-05-01'), true));
     }
 
-    public function testConfigureCloningAgentNotExecuting()
+    public function testConfigureCloningAgentNotExecuting(): void
     {
         $this->expectException(MethodNotImplemented::class);
         $this->buildObject()->configureCloningAgent();
     }
 
-    public function testExportToMeDataBadNormalizer()
+    public function testExportToMeDataBadNormalizer(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(new stdClass(), []);
     }
 
-    public function testExportToMeDataBadContext()
+    public function testExportToMeDataBadContext(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
@@ -505,7 +379,7 @@ class JobTest extends TestCase
         );
     }
 
-    public function testExportToMe()
+    public function testExportToMe(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -529,26 +403,23 @@ class JobTest extends TestCase
                 ]
             ]);
 
-        self::assertInstanceOf(
-            Job::class,
-            $this->buildObject()->setId('123')
-                ->setPrefix('bar')
-                ->setExtra(['foo' => 'bar'])
-                ->setExtra(['bar' => 'foo'])
-                ->setDefaults(['hello' => 'world'])
-                ->setQuotas([
-                    'compute' => [
-                        'cpu' => 4,
-                    ],
-                ])
-                ->exportToMeData(
+        $this->assertInstanceOf(Job::class, $this->buildObject()->setId('123')
+            ->setPrefix('bar')
+            ->setExtra(['foo' => 'bar'])
+            ->setExtra(['bar' => 'foo'])
+            ->setDefaults(['hello' => 'world'])
+            ->setQuotas([
+                'compute' => [
+                    'cpu' => 4,
+                ],
+            ])
+            ->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']
-            )
-        );
+            ));
     }
 
-    public function testExportToMeApi()
+    public function testExportToMeApi(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -572,26 +443,23 @@ class JobTest extends TestCase
                 ]
             ]);
 
-        self::assertInstanceOf(
-            Job::class,
-            $this->buildObject()->setId('123')
-                ->setPrefix('bar')
-                ->setExtra(['foo' => 'bar'])
-                ->setExtra(['bar' => 'foo'])
-                ->setDefaults(['hello' => 'world'])
-                ->setQuotas([
-                    'compute' => [
-                        'cpu' => 4,
-                    ],
-                ])
-                ->exportToMeData(
+        $this->assertInstanceOf(Job::class, $this->buildObject()->setId('123')
+            ->setPrefix('bar')
+            ->setExtra(['foo' => 'bar'])
+            ->setExtra(['bar' => 'foo'])
+            ->setDefaults(['hello' => 'world'])
+            ->setQuotas([
+                'compute' => [
+                    'cpu' => 4,
+                ],
+            ])
+            ->exportToMeData(
                 $normalizer,
                 ['groups' => ['api']]
-            )
-        );
+            ));
     }
 
-    public function testExportToMeDigest()
+    public function testExportToMeDigest(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -603,123 +471,117 @@ class JobTest extends TestCase
                 'environment' => null,
             ]);
 
-        self::assertInstanceOf(
-            Job::class,
-            $this->buildObject()->setId('123')
-                ->setPrefix('bar')
-                ->setExtra(['foo' => 'bar'])
-                ->setExtra(['bar' => 'foo'])
-                ->exportToMeData(
+        $this->assertInstanceOf(Job::class, $this->buildObject()->setId('123')
+            ->setPrefix('bar')
+            ->setExtra(['foo' => 'bar'])
+            ->setExtra(['bar' => 'foo'])
+            ->exportToMeData(
                 $normalizer,
                 ['groups' => ['digest']]
-            )
-        );
+            ));
     }
 
-    public function testJobPendingIsRunnable()
+    public function testJobPendingIsRunnable(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(Job::class, (new Job())->isRunnable($promise));
+        $this->assertInstanceOf(Job::class, new Job()->isRunnable($promise));
     }
 
-    public function testJobTerminatedIsRunnable()
+    public function testJobTerminatedIsRunnable(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $object = (new Job())
+        $object = new Job()
             ->setId('test')
-            ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
+            ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
             ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
             ->addCluster($this->createMock(Cluster::class))
             ->addToHistory('foo', new DateTimeImmutable('2018-05-01'), true);
 
-        self::assertInstanceOf(Job::class, $object->isRunnable($promise));
+        $this->assertInstanceOf(Job::class, $object->isRunnable($promise));
     }
 
-    public function testJobTerminatedIsRunnableWithoutHistory()
+    public function testJobTerminatedIsRunnableWithoutHistory(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $object = (new Job())
+        $object = new Job()
             ->setId('test')
-            ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
+            ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
             ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
             ->addCluster($this->createMock(Cluster::class))
             ->addToHistory('foo', new DateTimeImmutable('2018-05-01'), true);
 
-        self::assertInstanceOf(Job::class, $object->isRunnable($promise));
+        $this->assertInstanceOf(Job::class, $object->isRunnable($promise));
     }
 
-    public function testJobExecutingIsRunnable()
+    public function testJobExecutingIsRunnable(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        $object = (new Job())
+        $object = new Job()
             ->setId('test')
-            ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
+            ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
             ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
             ->addCluster($this->createMock(Cluster::class))
             ->addToHistory('foo', new DateTimeImmutable('2018-05-01'));
 
-        self::assertInstanceOf(Job::class, $object->isRunnable($promise));
+        $this->assertInstanceOf(Job::class, $object->isRunnable($promise));
     }
 
-    public function testJobPendingValidate()
+    public function testJobPendingValidate(): void
     {
         $date = new DateTime('2018-01-01 00:00:00');
         $job = new Job();
-        self::assertInstanceOf(Job::class, $job->validate($date));
+        $this->assertInstanceOf(Job::class, $job->validate($date));
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail')
             ->with(new RuntimeException('teknoo.east.paas.error.job.not_validated', 400));
 
-        self::assertInstanceOf(Job::class, $job->isRunnable($promise));
+        $this->assertInstanceOf(Job::class, $job->isRunnable($promise));
     }
 
-    public function testJobExecutingValidate()
+    public function testJobExecutingValidate(): void
     {
         $date = new DateTime('2018-01-01 00:00:00');
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        $object = (new Job())
+        $object = new Job()
             ->setId('test')
-            ->setProject((new Project((new Account())->setId('foo')))->setId('bar')->setName('hello'))
+            ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
             ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
             ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
             ->addCluster($this->createMock(Cluster::class));
 
-        self::assertInstanceOf(Job::class, $object->validate($date));
-        self::assertInstanceOf(Job::class, $object->isRunnable($promise));
+        $this->assertInstanceOf(Job::class, $object->validate($date));
+        $this->assertInstanceOf(Job::class, $object->isRunnable($promise));
     }
 
-    public function testSetExportConfiguration()
+    public function testSetExportConfiguration(): void
     {
         Job::setExportConfiguration($conf = ['name' => ['default']]);
         $rc = new ReflectionClass(Job::class);
 
-        self::assertEquals(
-            $conf,
-            $rc->getStaticPropertyValue('exportConfigurations'),
-        );
+        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
     }
 }

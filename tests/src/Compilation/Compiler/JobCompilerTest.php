@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -44,7 +44,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(JobCompiler::class)]
@@ -122,7 +122,7 @@ class JobCompilerTest extends TestCase
         ];
     }
 
-    public function testCompileWithoutPods()
+    public function testCompileWithoutPods(): void
     {
         $definitions = [
             'job1' => [
@@ -150,7 +150,7 @@ class JobCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithoutSchedulingAndPlannedToBeScheduled()
+    public function testCompileWithoutSchedulingAndPlannedToBeScheduled(): void
     {
         $definitions = [
             'job1' => [
@@ -175,7 +175,6 @@ class JobCompilerTest extends TestCase
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
         $this->getPodCompiler()
-            ->expects($this->any())
             ->method('processSetOfPods')
             ->willReturnCallback(
                 function (
@@ -185,9 +184,9 @@ class JobCompilerTest extends TestCase
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,
                     PromiseInterface $promise,
-                ) {
+                ): PodCompiler&MockObject {
                     $pod = $this->createMock(Pod::class);
-                    $pod->expects($this->any())->method('getName')->willReturn('foo');
+                    $pod->method('getName')->willReturn('foo');
                     $promise->success($pod);
                     return $this->getPodCompiler();
                 }
@@ -205,7 +204,7 @@ class JobCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithSchedulingAndPlannedToBeStartOnDeployment()
+    public function testCompileWithSchedulingAndPlannedToBeStartOnDeployment(): void
     {
         $definitions = [
             'job1' => [
@@ -231,7 +230,6 @@ class JobCompilerTest extends TestCase
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
         $this->getPodCompiler()
-            ->expects($this->any())
             ->method('processSetOfPods')
             ->willReturnCallback(
                 function (
@@ -241,9 +239,9 @@ class JobCompilerTest extends TestCase
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,
                     PromiseInterface $promise,
-                ) {
+                ): PodCompiler&MockObject {
                     $pod = $this->createMock(Pod::class);
-                    $pod->expects($this->any())->method('getName')->willReturn('foo');
+                    $pod->method('getName')->willReturn('foo');
                     $promise->success($pod);
                     return $this->getPodCompiler();
                 }
@@ -261,7 +259,7 @@ class JobCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithoutDefinitions()
+    public function testCompileWithoutDefinitions(): void
     {
         $definitions = [];
 
@@ -270,20 +268,17 @@ class JobCompilerTest extends TestCase
 
         $this->getPodCompiler()->expects($this->never())->method('processSetOfPods');
 
-        self::assertInstanceOf(
-            JobCompiler::class,
-            $this->buildCompiler()->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(JobCompiler::class, $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompile()
+    public function testCompile(): void
     {
         $definitions = $this->getDefinitionsArray();
         $builder = $this->buildCompiler();
@@ -305,28 +300,25 @@ class JobCompilerTest extends TestCase
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,
                     PromiseInterface $promise,
-                ) {
+                ): PodCompiler&MockObject {
                     $pod = $this->createMock(Pod::class);
-                    $pod->expects($this->any())->method('getName')->willReturn('foo');
+                    $pod->method('getName')->willReturn('foo');
                     $promise->success($pod);
                     return $this->getPodCompiler();
                 }
             );
 
-        self::assertInstanceOf(
-            JobCompiler::class,
-            $builder->compile(
-                $definitions,
-                $compiledDeployment,
-                $workspace,
-                $jobUnit,
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(JobCompiler::class, $builder->compile(
+            $definitions,
+            $compiledDeployment,
+            $workspace,
+            $jobUnit,
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileWithWrongExtends()
+    public function testCompileWithWrongExtends(): void
     {
         $definitions = [
             'backup' => [
@@ -346,7 +338,7 @@ class JobCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithNonExistantExtends()
+    public function testCompileWithNonExistantExtends(): void
     {
         $definitions = [
             'backup' => [
@@ -367,7 +359,7 @@ class JobCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithExtends()
+    public function testCompileWithExtends(): void
     {
         $definitions = [
             'backup' => [
@@ -381,31 +373,25 @@ class JobCompilerTest extends TestCase
         ];
         $builder = $this->buildCompiler();
 
-        self::assertInstanceOf(
-            JobCompiler::class,
-            $builder->extends(
-                $definitions,
-            )
-        );
-
-        self::assertEquals(
+        $this->assertInstanceOf(JobCompiler::class, $builder->extends(
             $definitions,
-            [
-                'backup' => [
-                    'extends' => 'foo-ext',
-                    'is-parallel' => true,
-                    'completions' => [
-                        'count' => 2,
-                        'time-limit' => 10,
-                        'shelf-life' => 20,
-                    ],
-                    'pods' => [
-                        'foo' => [
-                            'image' => 'foo',
-                        ],
+        ));
+
+        $this->assertEquals($definitions, [
+            'backup' => [
+                'extends' => 'foo-ext',
+                'is-parallel' => true,
+                'completions' => [
+                    'count' => 2,
+                    'time-limit' => 10,
+                    'shelf-life' => 20,
+                ],
+                'pods' => [
+                    'foo' => [
+                        'image' => 'foo',
                     ],
                 ],
-            ]
-        );
+            ],
+        ]);
     }
 }

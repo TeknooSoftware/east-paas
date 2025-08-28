@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -31,6 +31,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Exception\MissingClassA
 
 use function class_exists;
 use function is_array;
+use function is_string;
 
 /**
  * Symfony Denormalizer to find in the json's attribuute `@class` the true type of the object to help
@@ -38,7 +39,7 @@ use function is_array;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ClassFinderDenormalizer implements DenormalizerAwareInterface, DenormalizerInterface
@@ -52,6 +53,7 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
 
     /**
      * @param array<string, mixed> $context
+     * @return array<string, mixed>|object
      */
     public function denormalize(
         mixed $data,
@@ -63,6 +65,7 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
             !$this->denormalizer instanceof DenormalizerInterface
             || !is_array($data)
             || empty($data['@class'])
+            || !is_string($data['@class'])
             || !class_exists($data['@class'], true)
         ) {
             throw new MissingClassAttributeException('Error, this object is not managed by this denormalizer');
@@ -86,6 +89,7 @@ class ClassFinderDenormalizer implements DenormalizerAwareInterface, Denormalize
         return $this->denormalizer instanceof DenormalizerInterface
             && is_array($data)
             && !empty($data['@class'])
+            && is_string($data['@class'])
             && class_exists($data['@class'], true);
     }
 

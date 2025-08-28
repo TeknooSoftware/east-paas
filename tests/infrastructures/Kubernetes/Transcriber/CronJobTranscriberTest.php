@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -56,7 +57,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(CronJobTranscriber::class)]
@@ -67,22 +68,19 @@ class CronJobTranscriberTest extends TestCase
         return new CronJobTranscriber();
     }
 
-    public function testSetSleepService()
+    public function testSetSleepService(): void
     {
-        self::assertInstanceOf(
-            CronJobTranscriber::class,
-            $this->buildTranscriber()->setSleepService($this->createMock(SleepServiceInterface::class))
-        );
+        $this->assertInstanceOf(CronJobTranscriber::class, $this->buildTranscriber()->setSleepService($this->createMock(SleepServiceInterface::class)));
     }
 
-    public function testRun()
+    public function testRun(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachJob')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -255,8 +253,8 @@ class CronJobTranscriberTest extends TestCase
                     ],
                     'a-prefix',
                 );
-                $callback($job2, [], [], 'a-prefix',);
-                $callback($job3, [], [], 'a-prefix',);
+                $callback($job2, [], [], 'a-prefix', );
+                $callback($job3, [], [], 'a-prefix', );
                 return $cd;
             });
 
@@ -266,13 +264,13 @@ class CronJobTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['cronJobs', [], $dRepo],
             ]);
 
-        $dRepo->expects($this->any())
+        $dRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -301,40 +299,37 @@ class CronJobTranscriberTest extends TestCase
         $promise->expects($this->exactly(2))
             ->method('success')
             ->willReturnCallback(
-                function ($result) use (&$count, $promise) {
+                function ($result) use (&$count, $promise): MockObject {
                     if ($count++ === 0) {
-                        self::assertEquals([['foo'],['foo']], $result);
+                        $this->assertEquals([['foo'],['foo']], $result);
                     } else {
-                        self::assertEquals([['foo']], $result);
+                        $this->assertEquals([['foo']], $result);
                     }
 
                     return $promise;
                 }
             );
-        $promise->expects($this->any())->method('fail')->willReturnCallback(fn (Throwable $e) => throw $e);
+        $promise->method('fail')->willReturnCallback(fn (Throwable $e): \Teknoo\Recipe\Promise\PromiseInterface => throw $e);
 
-        self::assertInstanceOf(
-            CronJobTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(CronJobTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
 
-    public function testRunWithOciRegistryConfigName()
+    public function testRunWithOciRegistryConfigName(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachJob')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -422,7 +417,7 @@ class CronJobTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1], 'foo');
-                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000, requires: ['x86_64', 'avx'],);
+                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000, requires: ['x86_64', 'avx'], );
 
                 $job = new CDJob(
                     name: 'job1',
@@ -460,13 +455,13 @@ class CronJobTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['cronJobs', [], $dRepo],
             ]);
 
-        $dRepo->expects($this->any())
+        $dRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -485,36 +480,33 @@ class CronJobTranscriberTest extends TestCase
         $promise->expects($this->exactly(1))
             ->method('success')
             ->willReturnCallback(
-                function ($result) use ($promise) {
-                    self::assertEquals([['foo'],['foo']], $result);
+                function ($result) use ($promise): MockObject {
+                    $this->assertEquals([['foo'],['foo']], $result);
 
                     return $promise;
                 }
             );
-        $promise->expects($this->any())->method('fail')->willReturnCallback(fn (Throwable $e) => throw $e);
+        $promise->method('fail')->willReturnCallback(fn (Throwable $e): \Teknoo\Recipe\Promise\PromiseInterface => throw $e);
 
-        self::assertInstanceOf(
-            CronJobTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(CronJobTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
 
-    public function testRunWithOciRegistryConfigNameAsReference()
+    public function testRunWithOciRegistryConfigNameAsReference(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachJob')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -602,7 +594,7 @@ class CronJobTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1], new Reference('oci-registry-config-name'));
-                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000, requires: ['x86_64', 'avx'],);
+                $pod2 = new Pod('p2', 1, [$c2, $c3], fsGroup: 1000, requires: ['x86_64', 'avx'], );
 
                 $job = new CDJob(
                     name: 'job1',
@@ -640,13 +632,13 @@ class CronJobTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['cronJobs', [], $dRepo],
             ]);
 
-        $dRepo->expects($this->any())
+        $dRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -665,35 +657,32 @@ class CronJobTranscriberTest extends TestCase
         $promise->expects($this->exactly(1))
             ->method('success')
             ->willReturnCallback(
-                function ($result) use ($promise) {
-                    self::assertEquals([['foo'],['foo']], $result);
+                function ($result) use ($promise): MockObject {
+                    $this->assertEquals([['foo'],['foo']], $result);
 
                     return $promise;
                 }
             );
-        $promise->expects($this->any())->method('fail')->willReturnCallback(fn (Throwable $e) => throw $e);
+        $promise->method('fail')->willReturnCallback(fn (Throwable $e): \Teknoo\Recipe\Promise\PromiseInterface => throw $e);
 
-        self::assertInstanceOf(
-            CronJobTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(CronJobTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testErrorOnFetching()
+    public function testErrorOnFetching(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachJob')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -807,12 +796,12 @@ class CronJobTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(DeploymentRepository::class);
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->with('cronJobs')
             ->willReturn($repo);
 
-        $repo->expects($this->any())
+        $repo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -820,9 +809,9 @@ class CronJobTranscriberTest extends TestCase
         $repo->expects($this->exactly(3))
             ->method('first')
             ->willReturnCallback(
-                function () use (&$call) {
+                function () use (&$call): null {
                     if (0 === $call) {
-                        $call++;
+                        ++$call;
                         throw new DomainException('foo');
                     }
 
@@ -838,35 +827,32 @@ class CronJobTranscriberTest extends TestCase
         $promise->expects($this->exactly(1))
             ->method('success')
             ->willReturnCallback(
-                function ($result) use ($promise) {
-                    self::assertEquals([['foo'],['foo']], $result);
+                function ($result) use ($promise): MockObject {
+                    $this->assertEquals([['foo'],['foo']], $result);
 
                     return $promise;
                 }
             );
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            CronJobTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(CronJobTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testError()
+    public function testError(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachJob')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -917,7 +903,7 @@ class CronJobTranscriberTest extends TestCase
                 );
 
                 $pod1 = new Pod('p1', 1, [$c1]);
-                $pod2 = new Pod('p2', 1, [$c2], fsGroup: 1000, requires: ['x86_64', 'avx'],);
+                $pod2 = new Pod('p2', 1, [$c2], fsGroup: 1000, requires: ['x86_64', 'avx'], );
 
                 $job = new CDJob(
                     name: 'job1',
@@ -961,12 +947,12 @@ class CronJobTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(DeploymentRepository::class);
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->with('cronJobs')
             ->willReturn($repo);
 
-        $repo->expects($this->any())
+        $repo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -982,9 +968,9 @@ class CronJobTranscriberTest extends TestCase
         $repo->expects($this->exactly(3))
             ->method('apply')
             ->willReturnCallback(
-                function () use (&$call) {
+                function () use (&$call): array {
                     if (0 === $call) {
-                        $call++;
+                        ++$call;
                         throw new DomainException('foo');
                     }
 
@@ -996,24 +982,21 @@ class CronJobTranscriberTest extends TestCase
         $promise->expects($this->exactly(1))
             ->method('success')
             ->willReturnCallback(
-                function ($result) use ($promise) {
-                    self::assertEquals([['foo'],['foo']], $result);
+                function ($result) use ($promise): MockObject {
+                    $this->assertEquals([['foo'],['foo']], $result);
 
                     return $promise;
                 }
             );
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            CronJobTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(CronJobTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 }

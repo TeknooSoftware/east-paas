@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ResourceManager::class)]
@@ -44,42 +44,33 @@ class ResourceManagerTest extends TestCase
         return new ResourceManager();
     }
 
-    public function testUpdateQuotaAvailabilityNewAvailability()
+    public function testUpdateQuotaAvailabilityNewAvailability(): void
     {
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $this->buildManager()->updateQuotaAvailability(
-                'cpu',
-                $this->createMock(AvailabilityInterface::class),
-            ),
-        );
+        $this->assertInstanceOf(ResourceManager::class, $this->buildManager()->updateQuotaAvailability(
+            'cpu',
+            $this->createMock(AvailabilityInterface::class),
+        ));
     }
 
-    public function testUpdateQuotaAvailabilityUpdateAvailability()
+    public function testUpdateQuotaAvailabilityUpdateAvailability(): void
     {
         $manager = $this->buildManager();
         $a1 = $this->createMock(AvailabilityInterface::class);
         $a1->expects($this->once())->method('update')->willReturnSelf();
         $a2 = $this->createMock(AvailabilityInterface::class);
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->updateQuotaAvailability(
-                'cpu',
-                $a1,
-            ),
-        );
+        $this->assertInstanceOf(ResourceManager::class, $manager->updateQuotaAvailability(
+            'cpu',
+            $a1,
+        ));
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->updateQuotaAvailability(
-                'cpu',
-                $a2,
-            ),
-        );
+        $this->assertInstanceOf(ResourceManager::class, $manager->updateQuotaAvailability(
+            'cpu',
+            $a2,
+        ));
     }
 
-    public function testUpdateQuotaAvailabilityFreezed()
+    public function testUpdateQuotaAvailabilityFreezed(): void
     {
         $manager = $this->buildManager();
         $a = $this->createMock(AvailabilityInterface::class);
@@ -92,7 +83,7 @@ class ResourceManagerTest extends TestCase
         );
     }
 
-    public function testReserveAvailabilityNotDefined()
+    public function testReserveAvailabilityNotDefined(): void
     {
         $manager = $this->buildManager();
 
@@ -100,105 +91,78 @@ class ResourceManagerTest extends TestCase
         $manager->reserve('cpu', '100m', '500m', 1, $this->createMock(ResourceSet::class));
     }
 
-    public function testReserve()
+    public function testReserve(): void
     {
         $manager = $this->buildManager();
         $a = $this->createMock(AvailabilityInterface::class);
         $a->expects($this->once())->method('reserve')->willReturnSelf();
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->updateQuotaAvailability(
-                'cpu',
-                $a,
-            ),
-        );
+        $this->assertInstanceOf(ResourceManager::class, $manager->updateQuotaAvailability(
+            'cpu',
+            $a,
+        ));
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->reserve('cpu', '100m', '500m', 1, $this->createMock(ResourceSet::class)),
-        );
+        $this->assertInstanceOf(ResourceManager::class, $manager->reserve('cpu', '100m', '500m', 1, $this->createMock(ResourceSet::class)));
     }
 
-    public function testPrepareAutomaticsReservationsNotDefined()
+    public function testPrepareAutomaticsReservationsNotDefined(): void
     {
         $manager = $this->buildManager();
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())->method('add');
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->prepareAutomaticsReservations(
-                $set,
-                3,
-                [
-                    'cpu',
-                ],
-            )
-        );
+        $this->assertInstanceOf(ResourceManager::class, $manager->prepareAutomaticsReservations(
+            $set,
+            3,
+            [
+                'cpu',
+            ],
+        ));
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->computeAutomaticReservations()
-        );
+        $this->assertInstanceOf(ResourceManager::class, $manager->computeAutomaticReservations());
     }
 
-    public function testAutomaticsReservations()
+    public function testAutomaticsReservations(): void
     {
         $manager = $this->buildManager();
         $a1 = $this->createMock(AvailabilityInterface::class);
         $a1->expects($this->exactly(1))
             ->method('updateResource')
             ->with(
-                $this->callback(fn () => true),
+                $this->callback(fn (): true => true),
                 100
             );
         $a2 = $this->createMock(AvailabilityInterface::class);
         $a2->expects($this->exactly(2))
             ->method('updateResource')
             ->with(
-                $this->callback(fn () => true),
+                $this->callback(fn (): true => true),
                 33
             );
 
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->exactly(3))->method('add');
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->updateQuotaAvailability(
+        $this->assertInstanceOf(ResourceManager::class, $manager->updateQuotaAvailability(
+            'cpu',
+            $a1,
+        ));
+
+        $this->assertInstanceOf(ResourceManager::class, $manager->updateQuotaAvailability(
+            'memory',
+            $a2,
+        ));
+
+        $this->assertInstanceOf(ResourceManager::class, $manager->prepareAutomaticsReservations(
+            $set,
+            2,
+            [
                 'cpu',
-                $a1,
-            ),
-        );
+            ],
+        ));
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->updateQuotaAvailability(
-                'memory',
-                $a2,
-            ),
-        );
+        $this->assertInstanceOf(ResourceManager::class, $manager->prepareAutomaticsReservations($set, 1, []));
 
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->prepareAutomaticsReservations(
-                $set,
-                2,
-                [
-                    'cpu',
-                ],
-            )
-        );
-
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->prepareAutomaticsReservations($set, 1, [])
-        );
-
-        self::assertInstanceOf(
-            ResourceManager::class,
-            $manager->computeAutomaticReservations()
-        );
+        $this->assertInstanceOf(ResourceManager::class, $manager->computeAutomaticReservations());
     }
 }

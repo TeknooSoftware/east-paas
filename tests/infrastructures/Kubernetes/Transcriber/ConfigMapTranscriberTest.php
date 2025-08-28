@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,15 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
@@ -35,8 +37,10 @@ use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Repository\ConfigMapRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+use function base64_encode;
+
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ConfigMapTranscriber::class)]
@@ -47,17 +51,17 @@ class ConfigMapTranscriberTest extends TestCase
         return new ConfigMapTranscriber();
     }
 
-    public function testRun()
+    public function testRun(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachMap')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $callback(new Map('foo', ['foo' => 'bar']), 'a-prefix');
                 $callback(new Map('foo2', ['foo' => 'bar']), 'a-prefix');
-                $callback(new Map('foo3', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]]), 'a-prefix');
+                $callback(new Map('foo3', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . base64_encode('bar')]]), 'a-prefix');
                 return $cd;
             });
 
@@ -67,7 +71,7 @@ class ConfigMapTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['configMaps', [], $seRepo],
@@ -81,55 +85,49 @@ class ConfigMapTranscriberTest extends TestCase
         $promise->expects($this->exactly(3))->method('success')->with(['foo']);
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            ConfigMapTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(ConfigMapTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testError()
+    public function testError(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachMap')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $callback(new Map('foo', ['foo' => 'bar']), 'a-prefix');
                 return $cd;
             });
 
         $repo = $this->createMock(ConfigMapRepository::class);
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->with('configMaps')
             ->willReturn($repo);
 
         $repo->expects($this->once())
             ->method('apply')
-            ->willThrowException(new \Exception());
+            ->willThrowException(new Exception());
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            ConfigMapTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(ConfigMapTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 }

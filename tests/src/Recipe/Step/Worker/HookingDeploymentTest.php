@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -40,18 +40,15 @@ use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(HookingDeployment::class)]
 class HookingDeploymentTest extends TestCase
 {
-    private ?DispatchHistoryInterface $dispatchHistory = null;
+    private (DispatchHistoryInterface&MockObject)|null $dispatchHistory = null;
 
-    /**
-     * @return DispatchHistoryInterface|MockObject
-     */
-    public function getDispatchHistoryMock(): DispatchHistoryInterface
+    public function getDispatchHistoryMock(): DispatchHistoryInterface&MockObject
     {
         if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
             $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
@@ -67,7 +64,7 @@ class HookingDeploymentTest extends TestCase
         );
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $compiled = $this->createMock(CompiledDeploymentInterface::class);
@@ -78,24 +75,31 @@ class HookingDeploymentTest extends TestCase
         $hook1 = $this->createMock(HookInterface::class);
         $hook1->expects($this->once())->method('setPath')->with('foo/bar');
         $hook1->expects($this->once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook1) {
+            function (PromiseInterface $promise) use ($hook1): \PHPUnit\Framework\MockObject\MockObject {
                 $promise->success('foo');
 
                 return $hook1;
             }
         );
 
-        $hook2 = new class implements HookInterface, HookAwareInterface {
-            public function setContext(JobUnitInterface $jobUnit, JobWorkspaceInterface $workspace): HookAwareInterface {
+        $hook2 = new class () implements HookInterface, HookAwareInterface {
+            public function setContext(JobUnitInterface $jobUnit, JobWorkspaceInterface $workspace): HookAwareInterface
+            {
                 return $this;
             }
-            public function setPath(string $path): HookInterface {
+
+            public function setPath(string $path): HookInterface
+            {
                 return $this;
             }
-            public function setOptions(array $options, PromiseInterface $promise): HookInterface {
+
+            public function setOptions(array $options, PromiseInterface $promise): HookInterface
+            {
                 return $this;
             }
-            public function run(PromiseInterface $promise): HookInterface {
+
+            public function run(PromiseInterface $promise): HookInterface
+            {
                 $promise->success('foo');
 
                 return $this;
@@ -105,7 +109,7 @@ class HookingDeploymentTest extends TestCase
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                function (callable $callback) use ($workspace) {
+                function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
                     $callback('foo/bar');
 
                     return $workspace;
@@ -115,7 +119,7 @@ class HookingDeploymentTest extends TestCase
         $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
-                function (callable $callback) use ($hook1, $hook2, $compiled) {
+                function (callable $callback) use ($hook1, $hook2, $compiled): \PHPUnit\Framework\MockObject\MockObject {
                     $callback($hook1);
                     $callback($hook2);
 
@@ -131,21 +135,18 @@ class HookingDeploymentTest extends TestCase
             ->with($project, $env, $jobUnit->getId(), HookingDeployment::class . ':Result')
             ->willReturnSelf();
 
-        self::assertInstanceOf(
-            HookingDeployment::class,
-            ($this->buildStep())(
-                $workspace,
-                $compiled,
-                $project,
-                $env,
-                $jobUnit,
-                $client,
-                $manager
-            )
-        );
+        $this->assertInstanceOf(HookingDeployment::class, ($this->buildStep())(
+            $workspace,
+            $compiled,
+            $project,
+            $env,
+            $jobUnit,
+            $client,
+            $manager
+        ));
     }
 
-    public function testInvokeOnError()
+    public function testInvokeOnError(): void
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $compiled = $this->createMock(CompiledDeploymentInterface::class);
@@ -156,7 +157,7 @@ class HookingDeploymentTest extends TestCase
         $hook1 = $this->createMock(HookInterface::class);
         $hook1->expects($this->once())->method('setPath')->with('foo/bar');
         $hook1->expects($this->once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook1) {
+            function (PromiseInterface $promise) use ($hook1): \PHPUnit\Framework\MockObject\MockObject {
                 $promise->fail(new \RuntimeException('foo'));
 
                 return $hook1;
@@ -169,7 +170,7 @@ class HookingDeploymentTest extends TestCase
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                function (callable $callback) use ($workspace) {
+                function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
                     $callback('foo/bar');
 
                     return $workspace;
@@ -179,7 +180,7 @@ class HookingDeploymentTest extends TestCase
         $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
-                function (callable $callback) use ($hook1, $hook2, $compiled) {
+                function (callable $callback) use ($hook1, $hook2, $compiled): \PHPUnit\Framework\MockObject\MockObject {
                     $callback($hook1);
                     $callback($hook2);
 
@@ -196,21 +197,18 @@ class HookingDeploymentTest extends TestCase
         $manager->expects($this->once())
             ->method('error');
 
-        self::assertInstanceOf(
-            HookingDeployment::class,
-            ($this->buildStep())(
-                $workspace,
-                $compiled,
-                'foo',
-                'bar',
-                $jobUnit,
-                $client,
-                $manager
-            )
-        );
+        $this->assertInstanceOf(HookingDeployment::class, ($this->buildStep())(
+            $workspace,
+            $compiled,
+            'foo',
+            'bar',
+            $jobUnit,
+            $client,
+            $manager
+        ));
     }
 
-    public function testInvokeOnErrorForSecondHook()
+    public function testInvokeOnErrorForSecondHook(): void
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $compiled = $this->createMock(CompiledDeploymentInterface::class);
@@ -224,7 +222,7 @@ class HookingDeploymentTest extends TestCase
         $hook1 = $this->createMock(HookInterface::class);
         $hook1->expects($this->once())->method('setPath')->with('foo/bar');
         $hook1->expects($this->once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook1) {
+            function (PromiseInterface $promise) use ($hook1): \PHPUnit\Framework\MockObject\MockObject {
                 $promise->success('foo');
 
                 return $hook1;
@@ -233,7 +231,7 @@ class HookingDeploymentTest extends TestCase
         $hook2 = $this->createMock(HookInterface::class);
         $hook2->expects($this->once())->method('setPath')->with('foo/bar');
         $hook2->expects($this->once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook2) {
+            function (PromiseInterface $promise) use ($hook2): \PHPUnit\Framework\MockObject\MockObject {
                 $promise->fail(new \RuntimeException('foo'));
 
                 return $hook2;
@@ -243,7 +241,7 @@ class HookingDeploymentTest extends TestCase
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                function (callable $callback) use ($workspace) {
+                function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
                     $callback('foo/bar');
 
                     return $workspace;
@@ -253,7 +251,7 @@ class HookingDeploymentTest extends TestCase
         $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
-                function (callable $callback) use ($hook1, $hook2, $compiled) {
+                function (callable $callback) use ($hook1, $hook2, $compiled): \PHPUnit\Framework\MockObject\MockObject {
                     $callback($hook1);
                     $callback($hook2);
 
@@ -272,17 +270,14 @@ class HookingDeploymentTest extends TestCase
         $manager->expects($this->once())
             ->method('error');
 
-        self::assertInstanceOf(
-            HookingDeployment::class,
-            ($this->buildStep())(
-                $workspace,
-                $compiled,
-                $project,
-                $env,
-                $jobUnit,
-                $client,
-                $manager
-            )
-        );
+        $this->assertInstanceOf(HookingDeployment::class, ($this->buildStep())(
+            $workspace,
+            $compiled,
+            $project,
+            $env,
+            $jobUnit,
+            $client,
+            $manager
+        ));
     }
 }

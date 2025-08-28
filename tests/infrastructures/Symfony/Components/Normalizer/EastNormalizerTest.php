@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,18 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingNormalizer;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Normalizer;
 
+use DateTime;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
+use stdClass;
+use Teknoo\East\FoundationBundle\Normalizer\EastNormalizer as EastNormalizerBase;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\EastNormalizer;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -33,7 +38,7 @@ use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Object\Job;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(EastNormalizer::class)]
@@ -44,13 +49,13 @@ class EastNormalizerTest extends TestCase
         return new EastNormalizer();
     }
 
-    public function testNormalizeBadObject()
+    public function testNormalizeBadObject(): void
     {
-        $this->expectException(\RuntimeException::class);
-        $this->buildNormalizer()->normalize(new \stdClass());
+        $this->expectException(RuntimeException::class);
+        $this->buildNormalizer()->normalize(new stdClass());
     }
 
-    public function testNormalize()
+    public function testNormalize(): void
     {
         $object = $this->createMock(NormalizableInterface::class);
         $normalizer = $this->buildNormalizer();
@@ -60,23 +65,20 @@ class EastNormalizerTest extends TestCase
 
         $object->expects($this->once())
             ->method('exportToMeData')
-            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue) {
-                self::assertInstanceOf(\Teknoo\East\FoundationBundle\Normalizer\EastNormalizer::class, $nrmlz);
-                self::assertNotSame($normalizer, $nrmlz);
-                self::assertEquals($context, $ctxt);
+            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject {
+                $this->assertInstanceOf(EastNormalizerBase::class, $nrmlz);
+                $this->assertNotSame($normalizer, $nrmlz);
+                $this->assertEquals($context, $ctxt);
 
                 $nrmlz->injectData($returnValue);
 
                 return $object;
             });
 
-        self::assertEquals(
-            $returnValue,
-            $normalizer->normalize($object, 'json', $context)
-        );
+        $this->assertEquals($returnValue, $normalizer->normalize($object, 'json', $context));
     }
 
-    public function testNormalizeWithJob()
+    public function testNormalizeWithJob(): void
     {
         $object = $this->createMock(Job::class);
         $normalizer = $this->buildNormalizer();
@@ -89,23 +91,20 @@ class EastNormalizerTest extends TestCase
 
         $object->expects($this->once())
             ->method('exportToMeData')
-            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue) {
-                self::assertInstanceOf(\Teknoo\East\FoundationBundle\Normalizer\EastNormalizer::class, $nrmlz);
-                self::assertNotSame($normalizer, $nrmlz);
-                self::assertEquals($context, $ctxt);
+            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject {
+                $this->assertInstanceOf(EastNormalizerBase::class, $nrmlz);
+                $this->assertNotSame($normalizer, $nrmlz);
+                $this->assertEquals($context, $ctxt);
 
                 $nrmlz->injectData($returnValue);
 
                 return $object;
             });
 
-        self::assertEquals(
-            $returnValue,
-            $normalizer->normalize($object, 'json', $context)
-        );
+        $this->assertEquals($returnValue, $normalizer->normalize($object, 'json', $context));
     }
 
-    public function testNormalizeWithAwareNormalizerWithOnlyScalarValues()
+    public function testNormalizeWithAwareNormalizerWithOnlyScalarValues(): void
     {
         $object = $this->createMock(NormalizableInterface::class);
         $normalizer = $this->buildNormalizer();
@@ -115,10 +114,10 @@ class EastNormalizerTest extends TestCase
 
         $object->expects($this->once())
             ->method('exportToMeData')
-            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue) {
-                self::assertInstanceOf(EastNormalizer::class, $nrmlz);
-                self::assertNotSame($normalizer, $nrmlz);
-                self::assertEquals($context, $ctxt);
+            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject {
+                $this->assertInstanceOf(EastNormalizer::class, $nrmlz);
+                $this->assertNotSame($normalizer, $nrmlz);
+                $this->assertEquals($context, $ctxt);
 
                 $nrmlz->injectData($returnValue);
 
@@ -131,27 +130,24 @@ class EastNormalizerTest extends TestCase
 
         $normalizer->setNormalizer($normalizer2);
 
-        self::assertEquals(
-            $returnValue,
-            $normalizer->normalize($object, 'json', $context)
-        );
+        $this->assertEquals($returnValue, $normalizer->normalize($object, 'json', $context));
     }
 
-    public function testNormalizeWithAwareNormalizer()
+    public function testNormalizeWithAwareNormalizer(): void
     {
         $object = $this->createMock(NormalizableInterface::class);
         $normalizer = $this->buildNormalizer();
 
-        $returnValue = ['foo' => 'bar', 'bar' => ($date = new \DateTime('2018-05-01 02:03:04'))];
+        $returnValue = ['foo' => 'bar', 'bar' => ($date = new DateTime('2018-05-01 02:03:04'))];
         $returnValue2 = ['foo' => 'bar', 'bar' => '2018-05-01 02:03:04'];
         $context = ['context' => 'hello'];
 
         $object->expects($this->once())
             ->method('exportToMeData')
-            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue) {
-                self::assertInstanceOf(EastNormalizer::class, $nrmlz);
-                self::assertNotSame($normalizer, $nrmlz);
-                self::assertEquals($context, $ctxt);
+            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject {
+                $this->assertInstanceOf(EastNormalizer::class, $nrmlz);
+                $this->assertNotSame($normalizer, $nrmlz);
+                $this->assertEquals($context, $ctxt);
 
                 $nrmlz->injectData($returnValue);
 
@@ -166,9 +162,6 @@ class EastNormalizerTest extends TestCase
 
         $normalizer->setNormalizer($normalizer2);
 
-        self::assertEquals(
-            $returnValue2,
-            $normalizer->normalize($object, 'json', $context)
-        );
+        $this->assertEquals($returnValue2, $normalizer->normalize($object, 'json', $context));
     }
 }

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,32 +19,32 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingSerializing;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Serializing;
 
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
+use stdClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Deserializer::class)]
 class DeserializerTest extends TestCase
 {
-    private ?SymfonySerializerInterface $serializer = null;
+    private (SymfonySerializerInterface&MockObject)|null $serializer = null;
 
-    /**
-     * @return SymfonySerializerInterface|MockObject
-     */
-    private function getSfSerializerMock(): SymfonySerializerInterface
+    private function getSfSerializerMock(): SymfonySerializerInterface&MockObject
     {
         if (!$this->serializer instanceof SymfonySerializerInterface) {
             $this->serializer = $this->createMock(SymfonySerializerInterface::class);
@@ -60,11 +60,11 @@ class DeserializerTest extends TestCase
         );
     }
 
-    public function testDeserializeWrongData()
+    public function testDeserializeWrongData(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildDeserializer()->deserialize(
-            new \stdClass(),
+            new stdClass(),
             'foo',
             'bar',
             $this->createMock(PromiseInterface::class),
@@ -72,97 +72,89 @@ class DeserializerTest extends TestCase
         );
     }
 
-    public function testDeserializeWrongType()
+    public function testDeserializeWrongType(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildDeserializer()->deserialize(
             'foo',
-            new \stdClass(),
+            new stdClass(),
             'bar',
             $this->createMock(PromiseInterface::class),
             []
         );
     }
 
-    public function testDeserializeWrongFormat()
+    public function testDeserializeWrongFormat(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildDeserializer()->deserialize(
             'foo',
             'bar',
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(PromiseInterface::class),
             []
         );
     }
 
-    public function testDeserializeWrongPromise()
+    public function testDeserializeWrongPromise(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildDeserializer()->deserialize(
             'foo',
             'bar',
             'foo',
-            new \stdClass(),
+            new stdClass(),
             []
         );
     }
 
-    public function testDeserializeWrongContext()
+    public function testDeserializeWrongContext(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildDeserializer()->deserialize(
             'foo',
             'bar',
             'foo',
             $this->createMock(PromiseInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
-    public function testDeserializeGood()
+    public function testDeserializeGood(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
         $this->getSfSerializerMock()
-            ->expects($this->any())
             ->method('deserialize')
             ->willReturn(['foo' => 'bar']);
 
-        self::assertInstanceOf(
-            Deserializer::class,
-            $this->buildDeserializer()->deserialize(
-                'foo',
-                'bar',
-                'foo',
-                $promise,
-                []
-            )
-        );
+        $this->assertInstanceOf(Deserializer::class, $this->buildDeserializer()->deserialize(
+            'foo',
+            'bar',
+            'foo',
+            $promise,
+            []
+        ));
     }
 
-    public function testDeserializeFail()
+    public function testDeserializeFail(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
         $this->getSfSerializerMock()
-            ->expects($this->any())
             ->method('deserialize')
-            ->willThrowException(new \Exception('foo'));
+            ->willThrowException(new Exception('foo'));
 
-        self::assertInstanceOf(
-            Deserializer::class,
-            $this->buildDeserializer()->deserialize(
-                'foo',
-                'bar',
-                'foo',
-                $promise,
-                []
-            )
-        );
+        $this->assertInstanceOf(Deserializer::class, $this->buildDeserializer()->deserialize(
+            'foo',
+            'bar',
+            'foo',
+            $promise,
+            []
+        ));
     }
 }

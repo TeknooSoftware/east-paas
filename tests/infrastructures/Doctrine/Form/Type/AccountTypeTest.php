@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,15 +19,17 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Doctrine\Form\Type;
 
+use ArrayIterator;
 use Doctrine\Bundle\MongoDBBundle\Form\Type\DocumentType;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
@@ -44,7 +46,7 @@ use Teknoo\East\Paas\Object\AccountQuota;
 use Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type\FormTestTrait;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(AccountType::class)]
@@ -59,14 +61,14 @@ class AccountTypeTest extends TestCase
         ];
     }
 
-    public function buildForm()
+    public function buildForm(): AccountType
     {
         return new AccountType();
     }
 
-    private function getObject()
+    private function getObject(): Account
     {
-        return (new Account())->setQuotas(
+        return new Account()->setQuotas(
             [
                 'compute' => [
                     'cpu' => '5'
@@ -96,24 +98,21 @@ class AccountTypeTest extends TestCase
         ];
     }
 
-    public function testConfigureOptions()
+    public function testConfigureOptions(): void
     {
-        self::assertInstanceOf(
-            AbstractType::class,
-            $this->buildForm()->configureOptions(
-                $this->createMock(OptionsResolver::class)
-            )
-        );
+        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->configureOptions(
+            $this->createMock(OptionsResolver::class)
+        ));
     }
 
-    public function testBuildFormSubmitted()
+    public function testBuildFormSubmitted(): void
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
-        $builder->expects($this->any())
+        $builder
             ->method('add')
             ->willReturnCallback(
-                function ($child, $type, array $options = array()) use ($builder) {
+                function (string|FormBuilderInterface $child, ?string $type, array $options = []) use ($builder): MockObject {
                     if (DocumentType::class == $type && isset($options['query_builder'])) {
                         $qBuilder = $this->createMock(Builder::class);
                         $qBuilder->expects($this->once())
@@ -138,9 +137,9 @@ class AccountTypeTest extends TestCase
                 }
             );
 
-        $builder->expects($this->any())
+        $builder
             ->method('addEventListener')
-            ->willReturnCallback(function ($name, $callable) use ($builder) {
+            ->willReturnCallback(function (string $name, callable $callable) use ($builder): MockObject {
                 $form = $this->createMock(FormInterface::class);
                 $event = new FormEvent($form, $this->getObject());
                 $callable($event);
@@ -148,30 +147,28 @@ class AccountTypeTest extends TestCase
                 return $builder;
             });
 
-        $builder->expects($this->any())
+        $builder
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder): MockObject {
                 $children = [];
-                foreach ($this->getFormArray() as $name=>$value) {
+                foreach ($this->getFormArray() as $name => $value) {
                     $mock = $this->createMock(FormInterface::class);
-                    $mock->expects($this->any())->method('getData')->willReturn($value);
-                    $mock->expects($this->any())->method('getName')->willReturn($name);
+                    $mock->method('getData')->willReturn($value);
+                    $mock->method('getName')->willReturn($name);
 
                     $children[$name] = $mock;
                 }
-                $form = new \ArrayIterator($children);
+
+                $form = new ArrayIterator($children);
 
                 $dataMapper->mapDataToForms($this->getObject(), $form);
                 $result = $this->getObject();
                 $dataMapper->mapFormsToData($form, $result);
-                self::assertInstanceOf(IdentifiedObjectInterface::class, $result);
+                $this->assertInstanceOf(IdentifiedObjectInterface::class, $result);
 
                 return $builder;
             });
 
-        self::assertInstanceOf(
-            AbstractType::class,
-            $this->buildForm()->buildForm($builder, $this->getOptions())
-        );
+        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, $this->getOptions()));
     }
 }

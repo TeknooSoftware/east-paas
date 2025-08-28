@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -31,13 +31,13 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Ingress::class)]
 class IngressTest extends TestCase
 {
-    private function buildObject($internal = false): Ingress
+    private function buildObject(): Ingress
     {
         return new Ingress(
             name: 'foo',
@@ -58,100 +58,71 @@ class IngressTest extends TestCase
         );
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
+        $this->assertEquals('foo', $this->buildObject()->getName());
+    }
+
+    public function testGetHost(): void
+    {
+        $this->assertEquals('bar.com', $this->buildObject()->getHost());
+    }
+
+    public function testGetProvider(): void
+    {
+        $this->assertEquals('providerName', $this->buildObject()->getProvider());
+    }
+
+    public function testGetPorts(): void
+    {
+        $this->assertEquals('bar', $this->buildObject()->getDefaultServiceName());
+    }
+
+    public function testGetProtocol(): void
+    {
+        $this->assertEquals(8080, $this->buildObject()->getDefaultServicePort());
+    }
+
+    public function testIsInternal(): void
+    {
+        $this->assertEquals([
+            new IngressPath('/foo', 'bar', 80)
+        ], $this->buildObject()->getPaths());
+    }
+
+    public function testGetTlsSecret(): void
+    {
+        $this->assertEquals('fooSecret', $this->buildObject()->getTlsSecret());
+    }
+
+    public function testIsHttpsBackend(): void
+    {
+        $this->assertTrue($this->buildObject()->isHttpsBackend());
+
+        $this->assertFalse(new Ingress(
             'foo',
-            $this->buildObject()->getName()
-        );
-    }
-
-    public function testGetHost()
-    {
-        self::assertEquals(
             'bar.com',
-            $this->buildObject()->getHost()
-        );
-    }
-
-    public function testGetProvider()
-    {
-        self::assertEquals(
             'providerName',
-            $this->buildObject()->getProvider()
-        );
-    }
-
-    public function testGetPorts()
-    {
-        self::assertEquals(
             'bar',
-            $this->buildObject()->getDefaultServiceName()
-        );
-    }
-
-    public function testGetProtocol()
-    {
-        self::assertEquals(
             8080,
-            $this->buildObject()->getDefaultServicePort()
-        );
-    }
-
-    public function testIsInternal()
-    {
-        self::assertEquals(
             [
                 new IngressPath('/foo', 'bar', 80)
             ],
-            $this->buildObject()->getPaths()
-        );
-    }
-
-    public function testGetTlsSecret()
-    {
-        self::assertEquals(
             'fooSecret',
-            $this->buildObject()->getTlsSecret()
-        );
+            false,
+        )->isHttpsBackend());
     }
 
-    public function testIsHttpsBackend()
+    public function testGetMeta(): void
     {
-        self::assertTrue($this->buildObject()->isHttpsBackend());
-
-        self::assertFalse(
-            (new Ingress(
-                'foo',
-                'bar.com',
-                'providerName',
-                'bar',
-                8080,
-                [
-                    new IngressPath('/foo', 'bar', 80)
-                ],
-                'fooSecret',
-                false,
-            ))->isHttpsBackend()
-        );
+        $this->assertEquals(['foo' => 'bar'], $this->buildObject()->getMeta());
     }
 
-    public function testGetMeta()
+    public function testGetAliases(): void
     {
-        self::assertEquals(
-            ['foo' => 'bar'],
-            $this->buildObject()->getMeta()
-        );
-    }
-
-    public function testGetAliases()
-    {
-        self::assertEquals(
-            [
-                'www.bar.com',
-                'www2.bar.com',
-            ],
-            $this->buildObject()->getAliases()
-        );
+        $this->assertEquals([
+            'www.bar.com',
+            'www2.bar.com',
+        ], $this->buildObject()->getAliases());
     }
 }

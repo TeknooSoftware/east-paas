@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use function iterator_to_array;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ResourceSet::class)]
@@ -50,34 +50,25 @@ class ResourceSetTest extends TestCase
         );
     }
 
-    public function testGetIterator()
+    public function testGetIterator(): void
     {
-        self::assertEquals(
-            [
-                $this->createMock(Resource::class),
-                $this->createMock(Resource::class),
-                $this->createMock(Resource::class),
-            ],
-            iterator_to_array($this->buildObject()),
-        );
+        $this->assertEquals([
+            $this->createMock(Resource::class),
+            $this->createMock(Resource::class),
+            $this->createMock(Resource::class),
+        ], iterator_to_array($this->buildObject()));
     }
 
-    public function testCount()
+    public function testCount(): void
     {
-        self::assertEquals(
-            3,
-            $this->buildObject()->count(),
-        );
+        $this->assertCount(3, $this->buildObject());
     }
 
-    public function testAdd()
+    public function testAdd(): void
     {
         $object = $this->buildObject();
         $object->add($this->createMock(Resource::class));
 
-        self::assertEquals(
-            4,
-            $object->count(),
-        );
+        $this->assertCount(4, $object);
     }
 }

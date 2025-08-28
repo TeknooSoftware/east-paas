@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\EnvironmentType;
 use Teknoo\East\Paas\Object\Environment;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(EnvironmentType::class)]
@@ -41,12 +41,12 @@ class EnvironmentTypeTest extends TestCase
 {
     use FormTestTrait;
 
-    public function buildForm()
+    public function buildForm(): EnvironmentType
     {
         return new EnvironmentType();
     }
 
-    private function getObject()
+    private function getObject(): Environment
     {
         return new Environment();
     }
@@ -58,13 +58,10 @@ class EnvironmentTypeTest extends TestCase
         ];
     }
 
-    public function testConfigureOptions()
+    public function testConfigureOptions(): void
     {
-        self::assertInstanceOf(
-            AbstractType::class,
-            $this->buildForm()->configureOptions(
-                $this->createMock(OptionsResolver::class)
-            )
-        );
+        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->configureOptions(
+            $this->createMock(OptionsResolver::class)
+        ));
     }
 }

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -33,16 +33,15 @@ use League\Flysystem\Filesystem;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ContainerTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @return Container
      * @throws \Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Flysystem/di.php');
@@ -50,49 +49,37 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         return $containerDefinition->build();
     }
 
-    public function testLocal()
+    public function testLocal(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
-        self::assertInstanceOf(
-            LocalFilesystemAdapter::class,
-            $container->get(LocalFilesystemAdapter::class)
-        );
+        $this->assertInstanceOf(LocalFilesystemAdapter::class, $container->get(LocalFilesystemAdapter::class));
     }
 
-    public function testFilesystem()
+    public function testFilesystem(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
-        self::assertInstanceOf(
-            Filesystem::class,
-            $container->get(Filesystem::class)
-        );
+        $this->assertInstanceOf(Filesystem::class, $container->get(Filesystem::class));
     }
 
-    public function testJobWorkspaceInterface()
+    public function testJobWorkspaceInterface(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
         $container->set('teknoo.east.paas.project_configuration_filename', '.paas.yaml');
 
-        self::assertInstanceOf(
-            JobWorkspaceInterface::class,
-            $container->get(JobWorkspaceInterface::class)
-        );
+        $this->assertInstanceOf(JobWorkspaceInterface::class, $container->get(JobWorkspaceInterface::class));
     }
 
-    public function testJobWorkspaceFlysystem()
+    public function testJobWorkspaceFlysystem(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
         $container->set('teknoo.east.paas.project_configuration_filename', '.paas.yaml');
 
-        self::assertInstanceOf(
-            Workspace::class,
-            $container->get(Workspace::class)
-        );
+        $this->assertInstanceOf(Workspace::class, $container->get(Workspace::class));
     }
 }

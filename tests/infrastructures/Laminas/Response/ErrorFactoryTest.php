@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,92 +19,94 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Laminas\Response;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\Error;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ErrorFactory::class)]
 class ErrorFactoryTest extends TestCase
 {
-    public function testBuildFailureHandlerWithReason()
+    public function testBuildFailureHandlerWithReason(): void
     {
         $factory = new ErrorFactory();
         $client = $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $callable = $factory->buildFailureHandler($client, $manager, 500, 'foo');
-        self::assertIsCallable($callable);
+        $this->assertIsCallable($callable);
 
         $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
-                function ($error) use ($client) {
-                    self::assertInstanceOf(Error::class, $error);
-                    self::assertEquals('foo', $error->getReasonPhrase());
+                function ($error) use ($client): MockObject {
+                    $this->assertInstanceOf(Error::class, $error);
+                    $this->assertEquals('foo', $error->getReasonPhrase());
                     return $client;
                 }
             );
         $manager->expects($this->once())->method('finish');
 
-        $callable(new \RuntimeException('bar', 501));
+        $callable(new RuntimeException('bar', 501));
     }
 
-    public function testBuildFailureHandlerWithInvalidCode()
+    public function testBuildFailureHandlerWithInvalidCode(): void
     {
         $factory = new ErrorFactory();
         $client = $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $callable = $factory->buildFailureHandler($client, $manager, 500, null);
-        self::assertIsCallable($callable);
+        $this->assertIsCallable($callable);
 
         $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
-                function ($error) use ($client) {
-                    self::assertInstanceOf(Error::class, $error);
-                    self::assertEquals('bar', $error->getReasonPhrase());
+                function ($error) use ($client): MockObject {
+                    $this->assertInstanceOf(Error::class, $error);
+                    $this->assertEquals('bar', $error->getReasonPhrase());
                     return $client;
                 }
             );
         $manager->expects($this->once())->method('finish');
 
-        $callable(new \RuntimeException('bar', 100));
+        $callable(new RuntimeException('bar', 100));
     }
 
-    public function testBuildFailureHandlerWithNoReason()
+    public function testBuildFailureHandlerWithNoReason(): void
     {
         $factory = new ErrorFactory();
         $client = $this->createMock(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $callable = $factory->buildFailureHandler($client, $manager, 500, null);
-        self::assertIsCallable($callable);
+        $this->assertIsCallable($callable);
 
         $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
-                function ($error) use ($client) {
-                    self::assertInstanceOf(Error::class, $error);
-                    self::assertEquals('bar', $error->getReasonPhrase());
+                function ($error) use ($client): MockObject {
+                    $this->assertInstanceOf(Error::class, $error);
+                    $this->assertEquals('bar', $error->getReasonPhrase());
                     return $client;
                 }
             );
         $manager->expects($this->once())->method('finish');
 
-        $callable(new \RuntimeException('bar', 501));
+        $callable(new RuntimeException('bar', 501));
     }
 }

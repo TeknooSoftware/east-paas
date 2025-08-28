@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -30,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Image::class)]
@@ -41,53 +41,39 @@ class ImageTest extends TestCase
         return new Image('foo', 'bar', true, '1.2', ['foo' => 'bar']);
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getName()
-        );
+        $this->assertEquals('foo', $this->buildObject()->getName());
     }
 
-    public function testWithRegistryAndGetUrl()
+    public function testWithRegistryAndGetUrl(): void
     {
         $image1 = $this->buildObject();
-        self::assertEquals('foo', $image1->getUrl());
+        $this->assertEquals('foo', $image1->getUrl());
         $image2 = $image1->withRegistry('bar');
-        self::assertInstanceOf(Image::class, $image2);
-        self::assertNotSame($image1, $image2);
-        self::assertEquals('foo', $image1->getUrl());
-        self::assertEquals('bar/foo', $image2->getUrl());
+        $this->assertInstanceOf(Image::class, $image2);
+        $this->assertNotSame($image1, $image2);
+        $this->assertEquals('foo', $image1->getUrl());
+        $this->assertEquals('bar/foo', $image2->getUrl());
     }
 
-    public function testGetPath()
+    public function testGetPath(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()->getPath()
-        );
+        $this->assertEquals('bar', $this->buildObject()->getPath());
     }
 
-    public function testIsLibrary()
+    public function testIsLibrary(): void
     {
-        self::assertTrue(
-            $this->buildObject()->isLibrary()
-        );
+        $this->assertTrue($this->buildObject()->isLibrary());
     }
 
-    public function testGetTag()
+    public function testGetTag(): void
     {
-        self::assertEquals(
-            '1.2',
-            $this->buildObject()->getTag()
-        );
+        $this->assertEquals('1.2', $this->buildObject()->getTag());
     }
 
-    public function testGetVariables()
+    public function testGetVariables(): void
     {
-        self::assertEquals(
-            ['foo' => 'bar'],
-            $this->buildObject()->getVariables()
-        );
+        $this->assertEquals(['foo' => 'bar'], $this->buildObject()->getVariables());
     }
 }

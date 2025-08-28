@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -32,13 +32,16 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\Exception\NotSupportedEx
 use Teknoo\East\Paas\Object\History;
 
 use function is_array;
+use function is_int;
+use function is_numeric;
+use function is_string;
 
 /**
  * Symfony denormalizer dedicated to PaaS History object.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class HistoryDenormalizer implements DenormalizerInterface
@@ -58,7 +61,7 @@ class HistoryDenormalizer implements DenormalizerInterface
         }
 
         $date = new DateTime();
-        if (isset($data['date'])) {
+        if (isset($data['date']) && is_string($data['date'])) {
             $date = DateTime::createFromFormat(History::DATE_FORMAT, $data['date']);
         }
 
@@ -66,13 +69,29 @@ class HistoryDenormalizer implements DenormalizerInterface
             throw new NotSupportedException('Bad denormalized date');
         }
 
+        $message = $data['message'] ?? '';
+        if (!is_string($message)) {
+            throw new NotSupportedException('Bad denormalized message');
+        }
+
+        $extra = $data['extra'] ?? [];
+        if (!is_array($extra)) {
+            throw new NotSupportedException('Wrong extra format, must be an array');
+        }
+        /** @var array<string, mixed> $extra */
+
+        $serialNumber = $data['serial_number'] ?? 0;
+        if (!is_numeric($serialNumber)) {
+            throw new NotSupportedException('Bad denormalized serial number');
+        }
+
         return new History(
             previous: $previous,
-            message: $data['message'] ?? '',
+            message: $message,
             date: $date,
             isFinal: !empty($data['is_final']),
-            extra: $data['extra'] ?? [],
-            serialNumber: $data['serial_number'] ?? 0,
+            extra: $extra,
+            serialNumber: (int) $serialNumber,
         );
     }
 

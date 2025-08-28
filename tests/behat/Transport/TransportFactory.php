@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -36,14 +36,14 @@ use function strpos;
 use function substr;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class TransportFactory implements TransportFactoryInterface
 {
-    private GuzzleTransport $guzzleTransport;
+    private readonly GuzzleTransport $guzzleTransport;
 
-    private string $protocol;
+    private readonly string $protocol;
 
     public function __construct(GuzzleTransport $guzzleTransport, string $protocol)
     {
@@ -65,7 +65,7 @@ class TransportFactory implements TransportFactoryInterface
      */
     public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
-        if (0 !== strpos($dsn, $this->protocol)) {
+        if (!str_starts_with($dsn, $this->protocol)) {
             throw new RuntimeException("The $dsn is not managed by this transport");
         }
 
@@ -82,6 +82,6 @@ class TransportFactory implements TransportFactoryInterface
      */
     public function supports(string $dsn, array $options): bool
     {
-        return 0 === strpos($dsn, $this->protocol);
+        return str_starts_with($dsn, $this->protocol);
     }
 }

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -34,10 +34,11 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\PipHook;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
+
 use function str_replace;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(PipHook::class)]
@@ -62,7 +63,7 @@ class PipHookTest extends TestCase
         return new PipHook(
             $bin,
             10,
-            new class($bin, $success, $expectedArguments, $this) implements ProcessFactoryInterface {
+            new readonly class ($bin, $success, $expectedArguments, $this) implements ProcessFactoryInterface {
                 public function __construct(
                     private string|array $bin,
                     private bool $success,
@@ -87,27 +88,24 @@ class PipHookTest extends TestCase
         );
     }
 
-    public function testSetPathBadPath()
+    public function testSetPathBadPath(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildHook()->setPath(new \stdClass());
     }
 
-    public function testSetPath()
+    public function testSetPath(): void
     {
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setPath('/foo')
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setPath('/foo'));
     }
 
-    public function testSetOptionsBadOptions()
+    public function testSetOptionsBadOptions(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildHook()->setOptions(new \stdClass(), $this->createMock(PromiseInterface::class));
     }
 
-    public function testSetOptionsNotScalar()
+    public function testSetOptionsNotScalar(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
@@ -116,121 +114,94 @@ class PipHookTest extends TestCase
         $this->buildHook()->setOptions(['foo' => new \stdClass()], $promise);
     }
 
-    public function testSetOptionsBadPromise()
+    public function testSetOptionsBadPromise(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildHook()->setOptions([], new \stdClass());
     }
 
-    public function testSetOptionsWithPipe()
+    public function testSetOptionsWithPipe(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['install || rm -r /'], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['install || rm -r /'], $promise));
     }
 
-    public function testSetOptionsWithAnd()
+    public function testSetOptionsWithAnd(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['install && rm -r /'], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['install && rm -r /'], $promise));
     }
 
-    public function testSetOptionsWithNonSaclarArguments()
+    public function testSetOptionsWithNonSaclarArguments(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => [['foo']]], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['action' => 'install', 'arguments' => [['foo']]], $promise));
     }
 
-    public function testSetOptionsWithPipeInArguments()
+    public function testSetOptionsWithPipeInArguments(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['--no-dev || rm -r /']], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['--no-dev || rm -r /']], $promise));
     }
 
-    public function testSetOptionsWithAndInArguments()
+    public function testSetOptionsWithAndInArguments(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['--no-dev && rm -r /']], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['--no-dev && rm -r /']], $promise));
     }
 
-    public function testSetOptionsWithForbiddenCommand()
+    public function testSetOptionsWithForbiddenCommand(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['global', 'install'], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['global', 'install'], $promise));
     }
 
-    public function testSetOptions()
+    public function testSetOptions(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->any())->method('success');
+        $promise->method('success');
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['install'], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['install'], $promise));
     }
 
-    public function testSetOptionsWithAction()
+    public function testSetOptionsWithAction(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->any())->method('success');
+        $promise->method('success');
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['action' => 'install'], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['action' => 'install'], $promise));
     }
 
-    public function testSetOptionsWithActionAndArguments()
+    public function testSetOptionsWithActionAndArguments(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->any())->method('success');
+        $promise->method('success');
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook()->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promise));
     }
 
-    public function testRunProcessSuccess()
+    public function testRunProcessSuccess(): void
     {
         $promiseOpt = $this->createMock(PromiseInterface::class);
         $promiseOpt->expects($this->once())->method('success');
@@ -240,23 +211,20 @@ class PipHookTest extends TestCase
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook(
-                    true,
-                    [
-                        'install',
-                        '--force-reinstall',
-                        '-r',
-                        'myfile.txt',
-                    ]
-                )
-                ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
-                ->run($promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook(
+            true,
+            [
+                    'install',
+                    '--force-reinstall',
+                    '-r',
+                    'myfile.txt',
+                ]
+        )
+            ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
+            ->run($promise));
     }
 
-    public function testRunProcessSuccessWithArray()
+    public function testRunProcessSuccessWithArray(): void
     {
         $promiseOpt = $this->createMock(PromiseInterface::class);
         $promiseOpt->expects($this->once())->method('success');
@@ -266,27 +234,24 @@ class PipHookTest extends TestCase
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook(
-                    success: true,
-                    expectedArguments: [
-                        'install',
-                        '--force-reinstall',
-                        '-r',
-                        'myfile.txt',
-                    ],
-                    bin: [
-                        __DIR__ . '/../../../pip.phar',
-                        '--',
-                    ]
-                )
-                ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
-                ->run($promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook(
+            success: true,
+            expectedArguments: [
+                    'install',
+                    '--force-reinstall',
+                    '-r',
+                    'myfile.txt',
+                ],
+            bin: [
+                    __DIR__ . '/../../../pip.phar',
+                    '--',
+                ]
+        )
+            ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
+            ->run($promise));
     }
 
-    public function testRunProcessSuccessWithPWD()
+    public function testRunProcessSuccessWithPWD(): void
     {
         $promiseOpt = $this->createMock(PromiseInterface::class);
         $promiseOpt->expects($this->once())->method('success');
@@ -296,37 +261,31 @@ class PipHookTest extends TestCase
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook(
-                    success: true,
-                    expectedArguments: [
-                        'install',
-                        '--force-reinstall',
-                        '-r',
-                        'myfile.txt',
-                    ],
-                    bin: [
-                        __DIR__ . '/../../../pip.phar',
-                        '--',
-                        '${PWD}',
-                    ]
-                )
-                ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
-                ->setPath('/foo')
-                ->run($promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook(
+            success: true,
+            expectedArguments: [
+                    'install',
+                    '--force-reinstall',
+                    '-r',
+                    'myfile.txt',
+                ],
+            bin: [
+                    __DIR__ . '/../../../pip.phar',
+                    '--',
+                    '${PWD}',
+                ]
+        )
+            ->setOptions(['action' => 'install', 'arguments' => ['force-reinstall', 'r', 'myfile.txt']], $promiseOpt)
+            ->setPath('/foo')
+            ->run($promise));
     }
 
-    public function testRunProcessFail()
+    public function testRunProcessFail(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            PipHook::class,
-            $this->buildHook(false)->run($promise)
-        );
+        $this->assertInstanceOf(PipHook::class, $this->buildHook(false)->run($promise));
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection ALL */
 
 declare(strict_types=1);
@@ -8,7 +9,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -20,13 +21,17 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Behat;
 
 use Behat\Behat\Context\Context;
+use Behat\Hook\BeforeScenario;
+use Behat\Step\Given;
+use Behat\Step\Then;
+use Behat\Step\When;
 use DateTime;
 use DateTimeZone;
 use DI\Container as DiContainer;
@@ -216,13 +221,14 @@ class FeatureContext implements Context
 
     private array $nextJobDefault = [];
 
-    private ?string $testStorageIdentifier;
+    private ?string $testStorageIdentifier = null;
 
-    private ?string $testStorageSize;
+    private ?string $testStorageSize = null;
 
-    private ?string $testDefaultOciRegistryConfig;
+    private ?string $testDefaultOciRegistryConfig = null;
 
     private string $privateKey = __DIR__ . '/../var/keys/private.pem';
+
     private string $publicKey = __DIR__ . '/../var/keys/public.pem';
 
     public static array $messageByTypeIsEncrypted = [];
@@ -235,9 +241,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given the platform is booted
      * @throws Exception
      */
+    #[Given('the platform is booted')]
     public function thePlatformIsBooted(): void
     {
         if (!empty($this->testStorageIdentifier)) {
@@ -262,19 +268,19 @@ class FeatureContext implements Context
         $counter = 0;
         $this->sfContainer
             ->get(SerialGenerator::class)
-            ->setGenerator(function () use (&$counter) {
+            ->setGenerator(function () use (&$counter): int {
                 return ++$counter;
             });
     }
 
     private function initiateSymfonyKernel(): void
     {
-        $this->kernel = new class($this, 'test') extends BaseKernel {
+        $this->kernel = new class ($this, 'test') extends BaseKernel {
             use MicroKernelTrait;
 
             private FeatureContext $context;
 
-            public function __construct(FeatureContext $context, $environment)
+            public function __construct(FeatureContext $context, string $environment)
             {
                 $this->context = $context;
 
@@ -319,6 +325,7 @@ class FeatureContext implements Context
                 foreach ($this->context->additionalsParameters as $name => &$params) {
                     $container->setParameter($name, $params);
                 }
+
                 unset($params);
 
                 $container->set(ObjectManager::class, $this->context->buildObjectManager());
@@ -337,7 +344,7 @@ class FeatureContext implements Context
             {
                 $characters = 'abcdefghijklmnopqrstuvwxyz';
                 $str = '';
-                for ($i = 0; $i < 10; $i++) {
+                for ($i = 0; $i < 10; ++$i) {
                     $str .= $characters[random_int(0, strlen($characters) - 1)];
                 }
 
@@ -349,9 +356,7 @@ class FeatureContext implements Context
         $this->sfContainer = $this->kernel->getContainer();
     }
 
-    /**
-     * @BeforeScenario
-     */
+    #[BeforeScenario]
     public function clearData(): void
     {
         $this->objectManager = null;
@@ -425,12 +430,12 @@ class FeatureContext implements Context
 
     public function buildObjectManager(): ObjectManager
     {
-        $this->objectManager = new class($this->getRepository(...), $this) implements ObjectManager {
+        $this->objectManager = new class ($this->getRepository(...), $this) implements ObjectManager {
             private $repositories;
 
             public function __construct(
                 callable $repositories,
-                private FeatureContext $context,
+                private readonly FeatureContext $context,
             ) {
                 $this->repositories = $repositories;
             }
@@ -506,11 +511,12 @@ class FeatureContext implements Context
 
     private function buildRepository(string $className): void
     {
-        $this->repositories[$className] = new class($className, $this->getObject(...), $this->setObject(...))
-            extends DocumentRepository {
-            private string $className;
+        $this->repositories[$className] = new class ($className, $this->getObject(...), $this->setObject(...)) extends DocumentRepository {
+            private readonly string $className;
+
             /** @var callable */
             private $getter;
+
             /** @var callable */
             private $setter;
 
@@ -541,7 +547,7 @@ class FeatureContext implements Context
 
             public function createQueryBuilder(): QueryBuilder
             {
-                return new class($this->getter, $this->className) extends QueryBuilder {
+                return new class ($this->getter, $this->className) extends QueryBuilder {
                     private array $criteria;
 
                     /**
@@ -551,7 +557,7 @@ class FeatureContext implements Context
 
                     public function __construct(
                         callable $getter,
-                        private string $className,
+                        private readonly string $className,
                     ) {
                         $this->getter = $getter;
                     }
@@ -583,9 +589,7 @@ class FeatureContext implements Context
         };
     }
 
-    /**
-     * @Given I have a configured platform
-     */
+    #[Given('I have a configured platform')]
     public function iHaveAConfiguredPlatform(): void
     {
         $this->clusterType = 'behat';
@@ -602,9 +606,7 @@ class FeatureContext implements Context
         ];
     }
 
-    /**
-     * @Given some defaults to compile jobs
-     */
+    #[Given('some defaults to compile jobs')]
     public function someDefaultsToCompileJobs(): void
     {
         $this->testStorageIdentifier = 'system-defaults-storage-identifiers';
@@ -613,9 +615,7 @@ class FeatureContext implements Context
         self::$defaultsDefined = 'system';
     }
 
-    /**
-     * @Given encryption capacities between servers and agents
-     */
+    #[Given('encryption capacities between servers and agents')]
     public function encryptionCapacitiesBetweenServersAndAgents(): void
     {
         if (!file_exists($this->privateKey) || !is_readable($this->privateKey)) {
@@ -630,17 +630,13 @@ class FeatureContext implements Context
         $_ENV['TEKNOO_PAAS_SECURITY_PUBLIC_KEY'] = $this->publicKey;
     }
 
-    /**
-     * @Then all messages must be not encrypted
-     */
+    #[Then('all messages must be not encrypted')]
     public function allMessagesMustBeNotEncrypted(): void
     {
         $this->checkMessagesAreEncryptedOrNot(false);
     }
 
-    /**
-     * @Then all messages must be encrypted
-     */
+    #[Then('all messages must be encrypted')]
     public function allMessagesMustBeEncrypted(): void
     {
         $this->checkMessagesAreEncryptedOrNot(true);
@@ -664,24 +660,20 @@ class FeatureContext implements Context
         }
     }
 
-    /**
-     * @Given A consumer Account :id
-     */
-    public function aConsumerAccount($id): void
+    #[Given('A consumer Account :id')]
+    public function aConsumerAccount(?string $id): void
     {
         $this->accountId = $id;
         $this->repositories[Account::class]->register(
             $id,
-            $this->account = (new Account())
+            $this->account = new Account()
                 ->setId($this->accountId)
                 ->setName('Consumer Account')
                 ->setNamespace('behat-test')
         );
     }
 
-    /**
-     * @Given quotas defined for this account
-     */
+    #[Given('quotas defined for this account')]
     public function quotasDefinedForThisAccount(): void
     {
         $this->account?->setQuotas(
@@ -692,9 +684,7 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given larges quotas defined for this account
-     */
+    #[Given('larges quotas defined for this account')]
     public function largesQuotasDefinedForThisAccount(): void
     {
         $this->account?->setQuotas(
@@ -705,11 +695,9 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given a project on this account :name with the id :id
-     * @Given a project on this account :name with the id :id and a prefix :prefix
-     */
-    public function aProjectOnThisAccountWithTheId($name, $id, $prefix = ''): void
+    #[Given('a project on this account :name with the id :id')]
+    #[Given('a project on this account :name with the id :id and a prefix :prefix')]
+    public function aProjectOnThisAccountWithTheId(?string $name, ?string $id, string $prefix = ''): void
     {
         self::$projectName = $name;
         $this->projectId = $id;
@@ -717,26 +705,24 @@ class FeatureContext implements Context
 
         $this->repositories[Project::class]->register(
             $id,
-            $this->project = (new Project($this->account))->setId($this->projectId)->setName(self::$projectName)
+            $this->project = new Project($this->account)->setId($this->projectId)->setName(self::$projectName)
         );
 
         if (self::$useHnc) {
-            self::$hncSuffix = '-' . str_replace(' ', '', strtolower($name));
+            self::$hncSuffix = '-' . str_replace(' ', '', strtolower((string) $name));
         } else {
             self::$hncSuffix = '';
         }
     }
 
-    /**
-     * @Given a cluster :name dedicated to the environment :id
-     */
-    public function aClusterDedicatedToTheEnvironment($name, $id): void
+    #[Given('a cluster :name dedicated to the environment :id')]
+    public function aClusterDedicatedToTheEnvironment(?string $name, ?string $id): void
     {
         $this->clusterName = $name;
         $this->envName = $id;
 
         $this->project->setClusters([
-            $this->cluster = (new Cluster())
+            $this->cluster = new Cluster()
                 ->setId('cluster-id')
                 ->setType($this->clusterType)
                 ->setProject($this->project)
@@ -746,56 +732,48 @@ class FeatureContext implements Context
                 ->setEnvironment($this->environment = new Environment($this->envName))
                 ->setAddress('https://foo-bar')
                 ->setIdentity(
-                    (
                     new ClusterCredentials(
                         caCertificate: 'caCertValue',
                         clientCertificate: 'fooBar',
                         clientKey: 'barKey',
                         token: 'fooBar',
-                    )
                     )->setId('cluster-auth-id')
                 )
         ]);
     }
 
-    /**
-     * @Given a repository on the url :url
-     */
-    public function aRepositoryOnTheUrl($url): void
+    #[Given('a repository on the url :url')]
+    public function aRepositoryOnTheUrl(?string $url): void
     {
         $this->repositoryUrl = $url;
 
         $this->project->setSourceRepository(
-            $this->sourceRepository = (new GitRepository($this->repositoryUrl))->setId('git-id')
+            $this->sourceRepository = new GitRepository($this->repositoryUrl)->setId('git-id')
         );
     }
 
-    /**
-     * @Given a oci repository
-     */
+    #[Given('a oci repository')]
     public function aOciRepository(): void
     {
         $this->project->setImagesRegistry(
             new ImageRegistry(
                 apiUrl: 'https://foo.bar',
-                identity: (
+                identity:
                 new XRegistryAuth(
                     username: 'fooBar',
                     password: 'fooBar',
                     email: 'fooBar',
                     auth: '',
                     serverAddress: 'fooBar',
-                )
-                )->setId('xauth-id')
-                ,
+                )->setId('xauth-id'),
             )
         );
     }
 
     /**
-     * @When I call the PaaS with this PUT request :url
      * @throws Exception
      */
+    #[When('I call the PaaS with this PUT request :url')]
     public function iCallThePaasWithThisPutRequest(string $url): void
     {
         $this->calledUrl = $url;
@@ -813,9 +791,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * @When I call the PaaS with this PUT request :url with body :body and content type defined to :contentType
      * @throws Exception
      */
+    #[When('I call the PaaS with this PUT request :url with body :body and content type defined to :contentType')]
     public function iCallThePaasWithThisPutRequestWithBodyAndContentTypeDefinedTo(
         string $url,
         string $body,
@@ -835,10 +813,10 @@ class FeatureContext implements Context
     }
 
     /**
-     * @When I push a new message :text at :date to :url
      * @throws JsonException
      * @throws Exception
      */
+    #[When('I push a new message :text at :date to :url')]
     public function iPushANewMessageAtTo(string $text, string $date, string $url): void
     {
         $this->calledUrl = $url;
@@ -862,11 +840,11 @@ class FeatureContext implements Context
     }
 
     /**
-     * @When I run a job :jobId from project :projectId to :url
      * @throws JsonException
      * @throws Exception
      */
-    public function iRunANewJobFromProjectAtTo(string $jobId, string $projectId, $url): void
+    #[When('I run a job :jobId from project :projectId to :url')]
+    public function iRunANewJobFromProjectAtTo(string $jobId, string $projectId, ?string $url): void
     {
         $defaults = match (self::$defaultsDefined) {
             'system', 'generic', 'cluster' => [],
@@ -902,9 +880,7 @@ class FeatureContext implements Context
         $this->response = $this->kernel->handle($request);
     }
 
-    /**
-     * @Then I must obtain an HTTP answer with this status code equals to :code
-     */
+    #[Then('I must obtain an HTTP answer with this status code equals to :code')]
     public function iMustObtainAnHttpAnswerWithThisStatusCodeEqualsTo(string $code): void
     {
         Assert::assertInstanceOf(Response::class, $this->response);
@@ -912,9 +888,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then with this body answer, the problem json, :body
      * @throws JsonException
      */
+    #[Then('with this body answer, the problem json, :body')]
     public function withThisBodyAnswerTheProblemJson($body): void
     {
         $body = match ($body) {
@@ -928,7 +904,7 @@ EOF,
         };
 
         Assert::assertEquals('application/problem+json', $this->response->headers->get('Content-Type'));
-        $expected = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        $expected = json_decode((string) $body, true, 512, JSON_THROW_ON_ERROR);
         $actual = json_decode($this->response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         Assert::assertEquals($expected, $actual);
     }
@@ -1016,9 +992,7 @@ EOF,
         ];
     }
 
-    /**
-     * @Then with the job normalized in the body
-     */
+    #[Then('with the job normalized in the body')]
     public function withTheJobNormalizedInTheBody(): void
     {
         $job = $this->getNormalizedJob([]);
@@ -1035,14 +1009,14 @@ EOF,
     }
 
     /**
-     * @Then with the job normalized in the body with variables :variables
-     * @Then with the job normalized in the body with variables :variables and quotas :quota
      * @throws JsonException
      */
+    #[Then('with the job normalized in the body with variables :variables')]
+    #[Then('with the job normalized in the body with variables :variables and quotas :quota')]
     public function withTheJobNormalizedInTheBodyWithVariables($variables, string $quota = ''): void
     {
         $job = $this->getNormalizedJob(
-            variables: json_decode($variables, true, 512, JSON_THROW_ON_ERROR),
+            variables: json_decode((string) $variables, true, 512, JSON_THROW_ON_ERROR),
             quotas: match ($quota) {
                 'defined' => $this->quotasAllowed,
                 default => [],
@@ -1059,9 +1033,9 @@ EOF,
     }
 
     /**
-     * @Then with the job normalized with hnc in the body
      * @throws JsonException
      */
+    #[Then('with the job normalized with hnc in the body')]
     public function withTheJobNormalizedWithHncInTheBody(): void
     {
         $job = $this->getNormalizedJob([], true);
@@ -1078,13 +1052,13 @@ EOF,
     }
 
     /**
-     * @Then with the job normalized with hnc in the body with variables :variables and quotas defined
      * @throws JsonException
      */
+    #[Then('with the job normalized with hnc in the body with variables :variables and quotas defined')]
     public function withTheJobNormalizedWithHncInTheBodyWithVariables($variables): void
     {
         $job = $this->getNormalizedJob(
-            variables: json_decode($variables, true),
+            variables: json_decode((string) $variables, true),
             hnc: true,
             quotas: $this->quotasAllowed
         );
@@ -1098,12 +1072,10 @@ EOF,
         }
     }
 
-    /**
-     * @Given the next job will have generic defaults set in job unit
-     */
+    #[Given('the next job will have generic defaults set in job unit')]
     public function theNextJobWillHaveGenericDefaultsSetInJobUnit(): void
     {
-        if (self::$defaultsDefined) {
+        if (self::$defaultsDefined !== '' && self::$defaultsDefined !== '0') {
             self::$defaultsDefined = 'job-generic';
         }
 
@@ -1114,9 +1086,7 @@ EOF,
         ];
     }
 
-    /**
-     * @Given the next job will have cluster's defaults set in job unit
-     */
+    #[Given("the next job will have cluster's defaults set in job unit")]
     public function theNextJobWillHaveClusterDefaultsSetInJobUnit(): void
     {
         if (empty(self::$defaultsDefined)) {
@@ -1146,7 +1116,7 @@ EOF,
     ): void {
         $this->jobDate = $date;
 
-        $job = (new Job())->setId($id)
+        $job = new Job()->setId($id)
             ->setProject($this->project)
             ->setSourceRepository($this->sourceRepository)
             ->setClusters([$this->cluster])
@@ -1181,10 +1151,10 @@ EOF,
     }
 
     /**
-     * @Given a job with the id :id at date :date
-     * @Given a job with the id :id at date :date and with :countVCore vcore and :countMemory memory quotas
      * @throws Exception
      */
+    #[Given('a job with the id :id at date :date')]
+    #[Given('a job with the id :id at date :date and with :countVCore vcore and :countMemory memory quotas')]
     public function aJobWithTheIdAtDate(
         mixed $id,
         string $date,
@@ -1195,11 +1165,11 @@ EOF,
     }
 
     /**
-     * @Then with the history :message at date :date normalized in the body
      * @throws JsonException
      * @throws Exception
      */
-    public function withTheHistoryAtDateNormalizedInTheBody($message, $date): void
+    #[Then('with the history :message at date :date normalized in the body')]
+    public function withTheHistoryAtDateNormalizedInTheBody(?string $message, ?string $date): void
     {
         $history = [
             'message' => $this->historyMessage = $message,
@@ -1207,7 +1177,8 @@ EOF,
             'is_final' => false,
             'extra' => [],
             'previous' => new History(
-                null, 'teknoo.east.paas.jobs.configured',
+                null,
+                'teknoo.east.paas.jobs.configured',
                 new DateTime($this->jobDate)
             ),
             'serial_number' => 0,
@@ -1219,10 +1190,10 @@ EOF,
     }
 
     /**
-     * @Then with the final history at date :date in the body
-     * @Then with the final history at date :date and with the serial at :serial in the body
      * @throws JsonException
      */
+    #[Then('with the final history at date :date in the body')]
+    #[Then('with the final history at date :date and with the serial at :serial in the body')]
     public function withTheFinalHistoryInTheBody(string $date, int $serial = 1): void
     {
         $history = [
@@ -1244,26 +1215,20 @@ EOF,
         Assert::assertTrue(self::$CDCompared, 'CD Is not compared');
     }
 
-    /**
-     * @Given a malformed body
-     */
+    #[Given('a malformed body')]
     public function aMalformedBody(): void
     {
         $this->requestBody = 'fooBar';
     }
 
-    /**
-     * @Given a project with a complete paas file
-     */
+    #[Given('a project with a complete paas file')]
     public function aProjectWithACompletePaasFile(): void
     {
         $this->paasFile = __DIR__ . '/paas.yaml';
         self::$quotasDefined = '';
     }
 
-    /**
-     * @Given a project with a complete paas file with conditions
-     */
+    #[Given('a project with a complete paas file with conditions')]
     public function aProjectWithACompletePaasFileWithConditions(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-conditions.yaml';
@@ -1271,9 +1236,7 @@ EOF,
         self::$quotasDefined = '';
     }
 
-    /**
-     * @Given a project with a complete paas file with conditions with wrong version
-     */
+    #[Given('a project with a complete paas file with conditions with wrong version')]
     public function aProjectWithACompletePaasFileWithConditionsWithWrongVersion(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-conditions-and-wrong-version.yaml';
@@ -1281,117 +1244,91 @@ EOF,
         self::$quotasDefined = '';
     }
 
-    /**
-     * @Given a project with a complete paas file with jobs
-     */
+    #[Given('a project with a complete paas file with jobs')]
     public function aProjectWithACompletePaasFileWithJobs(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-jobs.yaml';
         self::$jobsDefined = true;
     }
 
-    /**
-     * @Given a project with a complete paas file with jobs with wrong version
-     */
+    #[Given('a project with a complete paas file with jobs with wrong version')]
     public function aProjectWithACompletePaasFileWithJobsWithWrongVersion(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-jobs-and-wrong-version.yaml';
         self::$jobsDefined = true;
     }
 
-    /**
-     * @Given a project with a complete paas file without resources
-     */
+    #[Given('a project with a complete paas file without resources')]
     public function aProjectWithACompletePaasFileWithoutResource(): void
     {
         $this->paasFile = __DIR__ . '/paas.yaml';
         self::$quotasDefined = 'automatic';
     }
 
-    /**
-     * @Given a project with a paas file using extends
-     */
+    #[Given('a project with a paas file using extends')]
     public function aProjectWithAPaasFileUsingExtends(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-extends.yaml';
         self::$quotasDefined = '';
     }
 
-    /**
-     * @Given a project with a paas file with requirements
-     */
+    #[Given('a project with a paas file with requirements')]
     public function aProjectWithAPaasFileWithRequirements(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-requires.yaml';
         self::$quotasDefined = '';
     }
 
-    /**
-     * @Given a project with a paas file with requirements and enhancements
-     */
+    #[Given('a project with a paas file with requirements and enhancements')]
     public function aProjectWithAPaasFileWithRequirementsAndEnhancements(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-requires-and-enhancements.yaml';
         self::$quotasDefined = '';
     }
 
-    /**
-     * @Given a project with a complete paas file with defaults
-     */
+    #[Given('a project with a complete paas file with defaults')]
     public function aProjectWithAPaasFileWithDefaults(): void
     {
         $this->paasFile = __DIR__ . '/paas.with.defaults.yaml';
         self::$defaultsDefined = 'generic';
     }
 
-    /**
-     * @Given a project with a complete paas file with defaults for the cluster
-     */
+    #[Given('a project with a complete paas file with defaults for the cluster')]
     public function aProjectWithAPaasFileWithDefaultsForTheCluster(): void
     {
         $this->paasFile = __DIR__ . '/paas.with.defaults-clusters.yaml';
         self::$defaultsDefined = 'cluster';
     }
 
-    /**
-     * @Given a project with a complete paas file with partial resources
-     */
+    #[Given('a project with a complete paas file with partial resources')]
     public function aProjectWithAPaasFileWithPartialResources(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-partial-resources.yaml';
         self::$quotasDefined = 'partial';
     }
 
-    /**
-     * @Given a project with a complete paas file with resources
-     */
+    #[Given('a project with a complete paas file with resources')]
     public function aProjectWithAPaasFileWithResources(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-resources.yaml';
         self::$quotasDefined = 'full';
     }
 
-    /**
-     * @Given a project with a complete paas file with resources and relative quota
-     */
+    #[Given('a project with a complete paas file with resources and relative quota')]
     public function aProjectWithAPaasFileWithResourcesAndRelativeQuota(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-resources-and-relative-quota.yaml';
         self::$quotasDefined = 'full';
     }
 
-    /**
-     * @Given a project with a complete paas file with limited quota
-     */
+    #[Given('a project with a complete paas file with limited quota')]
     public function aProjectWithAPaasFileWithLimitedQuota(): void
     {
         $this->paasFile = __DIR__ . '/paas.with-quotas-exceeded.yaml';
         self::$quotasDefined = 'limited';
     }
 
-    /**
-     * @Given extensions libraries provided by administrators
-     */
+    #[Given('extensions libraries provided by administrators')]
     public function extensionsLibrariesProvidedByAdministrators(): void
     {
         $this->additionalsParameters['teknoo.east.paas.compilation.ingresses_extends.library'] = [
@@ -1480,13 +1417,11 @@ EOF,
         ];
     }
 
-    /**
-     * @Given validator for requirements
-     */
-    public function aValidatorForRequirements()
+    #[Given('validator for requirements')]
+    public function aValidatorForRequirements(): void
     {
         $this->sfContainer->get(FeaturesRequirementCompiler::class)->addValidator(
-            new class implements ValidatorInterface {
+            new class () implements ValidatorInterface {
                 public function __invoke(Set $requirements): void
                 {
                     $requirements->validate('set1');
@@ -1496,16 +1431,14 @@ EOF,
         );
     }
 
-    /**
-     * @Given a job workspace agent
-     */
+    #[Given('a job workspace agent')]
     public function aJobWorkspaceAgent(): void
     {
-        $workspace = new class ($this->paasFile) implements JobWorkspaceInterface {
+        $workspace = new readonly class ($this->paasFile) implements JobWorkspaceInterface {
             use ImmutableTrait;
 
             public function __construct(
-                private readonly ?string $paasFile,
+                private ?string $paasFile,
             ) {
             }
 
@@ -1519,7 +1452,7 @@ EOF,
                 return $this;
             }
 
-            public function writeFile(FileInterface $file, callable $return = null): JobWorkspaceInterface
+            public function writeFile(FileInterface $file, ?callable $return = null): JobWorkspaceInterface
             {
                 return $this;
             }
@@ -1569,12 +1502,10 @@ EOF,
         );
     }
 
-    /**
-     * @Given a git cloning agent
-     */
+    #[Given('a git cloning agent')]
     public function aGitCloningAgent(): void
     {
-        $cloningAgent = new class implements CloningAgentInterface {
+        $cloningAgent = new class () implements CloningAgentInterface {
             use ImmutableTrait;
 
             private ?JobWorkspaceInterface $workspace = null;
@@ -1609,16 +1540,13 @@ EOF,
         );
     }
 
-    /**
-     * @Given a composer hook as hook builder
-     */
+    #[Given('a composer hook as hook builder')]
     public function aComposerHookAsHookBuilder(): void
     {
         $hook = new HookMock();
 
         $hooks = ['composer' => clone $hook, 'hook-id-foo' => clone $hook];
-        $collection = new class ($hooks) implements HooksCollectionInterface {
-
+        $collection = new readonly class ($hooks) implements HooksCollectionInterface {
             private iterable $hooks;
 
             public function __construct(iterable $hooks)
@@ -1638,9 +1566,7 @@ EOF,
         );
     }
 
-    /**
-     * @Given an image builder
-     */
+    #[Given('an image builder')]
     public function anImageBuilder(): void
     {
         $builder = new class ($this) implements BuilderInterface {
@@ -1688,28 +1614,22 @@ EOF,
         );
     }
 
-    /**
-     * @Given simulate a very slowly database
-     */
+    #[Given('simulate a very slowly database')]
     public function simulateAVerySlowlyDatabase(): void
     {
         $this->slowDb = true;
     }
 
-    /**
-     * @Given simulate a too long image building
-     */
+    #[Given('simulate a too long image building')]
     public function simulateATooLongImageBuilding(): void
     {
         $this->slowBuilder = true;
     }
 
-    /**
-     * @Given a cluster client
-     */
+    #[Given('a cluster client')]
     public function aClusterClient(): void
     {
-        $client = new class implements DriverInterface {
+        $client = new class () implements DriverInterface {
             public function configure(
                 string $url,
                 ?IdentityInterface $identity,
@@ -1741,9 +1661,7 @@ EOF,
         $this->sfContainer->get(Directory::class)->register('behat', $client);
     }
 
-    /**
-     * @Given an OCI builder
-     */
+    #[Given('an OCI builder')]
     public function anOciBuilder(): void
     {
         $generator = new Generator();
@@ -1757,7 +1675,7 @@ EOF,
         $mock->expects(new AnyInvokedCountMatcher())
             ->method('isSuccessful')
             ->willReturnCallback(
-                function () {
+                function (): true {
                     if ($this->slowBuilder) {
                         $expectedTime = time() + 25;
                         while (time() < $expectedTime) {
@@ -1771,7 +1689,7 @@ EOF,
 
         $this->sfContainer->set(
             ProcessFactoryInterface::class,
-            new class ($mock) implements ProcessFactoryInterface {
+            new readonly class ($mock) implements ProcessFactoryInterface {
                 public function __construct(
                     private Process $process,
                 ) {
@@ -1790,9 +1708,7 @@ EOF,
         );
     }
 
-    /**
-     * @Given a kubernetes client
-     */
+    #[Given('a kubernetes client')]
     public function aKubernetesClient(): void
     {
         $generator = new Generator();
@@ -1827,7 +1743,7 @@ EOF,
 
         $this->sfContainer->set(
             ClientFactoryInterface::class,
-            new class ($mock) implements ClientFactoryInterface {
+            new readonly class ($mock) implements ClientFactoryInterface {
                 public function __construct(
                     private Client $client,
                 ) {
@@ -1846,9 +1762,7 @@ EOF,
         $this->clusterType = 'kubernetes';
     }
 
-    /**
-     * @Given a cluster supporting hierarchical namespace
-     */
+    #[Given('a cluster supporting hierarchical namespace')]
     public function aClusterSupportingHierarchicalNamespace(): void
     {
         self::$useHnc = true;
@@ -1856,59 +1770,51 @@ EOF,
 
     public static function compareCD(CompiledDeploymentInterface $cd): void
     {
-        try {
-            $ecd = (include('expectedCD.php'))(
-                self::$projectPrefix,
-                self::$quotasDefined,
-                self::$defaultsDefined,
-                strtolower(trim((string)preg_replace('#[^A-Za-z0-9-]+#', '', self::$projectName))),
-                self::$jobsDefined,
-                self::$conditionsDefined,
-            );
-
-            //TO avoid circural references in var_export
-            $tcd = clone $cd;
-            $ro = new ReflectionObject($tcd);
-            $rp = $ro->getProperty('defaultsBag');
-            $rp->setValue($tcd, $tbag = clone $rp->getValue($tcd));
-            $ro = new ReflectionObject($tbag);
-            $rp = $ro->getProperty('children');
-            $child = $rp->getValue($tbag);
-            if (!empty($child)) {
-                $rp->setValue($tbag, ['behat-cluster' => clone $child['behat-cluster']]);
-            }
-
-            $tcd->compileDefaultsBags(
-                'behat-cluster',
-                function (DefaultsBag $bag) {
-                    $ro = new ReflectionObject($bag);
-                    $ro->getProperty('parent')->setValue($bag, null);
-                }
-            );
-
-            $ecd->compileDefaultsBags(
-                'behat-cluster',
-                function (DefaultsBag $bag) {
-                    $ro = new ReflectionObject($bag);
-                    $ro->getProperty('parent')->setValue($bag, null);
-                }
-            );
-
-            Assert::assertEquals(
-                var_export($ecd, true),
-                var_export($tcd, true)
-            );
-
-            self::$CDCompared = true;
-        } catch (Throwable $e) {
-            throw $e;
+        $ecd = (include('expectedCD.php'))(
+            self::$projectPrefix,
+            self::$quotasDefined,
+            self::$defaultsDefined,
+            strtolower(trim((string)preg_replace('#[^A-Za-z0-9-]+#', '', (string) self::$projectName))),
+            self::$jobsDefined,
+            self::$conditionsDefined,
+        );
+        //TO avoid circural references in var_export
+        $tcd = clone $cd;
+        $ro = new ReflectionObject($tcd);
+        $rp = $ro->getProperty('defaultsBag');
+        $rp->setValue($tcd, $tbag = clone $rp->getValue($tcd));
+        $ro = new ReflectionObject($tbag);
+        $rp = $ro->getProperty('children');
+        $child = $rp->getValue($tbag);
+        if (!empty($child)) {
+            $rp->setValue($tbag, ['behat-cluster' => clone $child['behat-cluster']]);
         }
+
+        $tcd->compileDefaultsBags(
+            'behat-cluster',
+            function (DefaultsBag $bag): void {
+                $ro = new ReflectionObject($bag);
+                $ro->getProperty('parent')->setValue($bag, null);
+            }
+        );
+        $ecd->compileDefaultsBags(
+            'behat-cluster',
+            function (DefaultsBag $bag): void {
+                $ro = new ReflectionObject($bag);
+                $ro->getProperty('parent')->setValue($bag, null);
+            }
+        );
+        Assert::assertEquals(
+            var_export($ecd, true),
+            var_export($tcd, true)
+        );
+        self::$CDCompared = true;
     }
 
     /**
-     * @Then some Kubernetes manifests have been created
      * @throws JsonException
      */
+    #[Then('some Kubernetes manifests have been created')]
     public function someKubernetesManifestsHaveBeenCreated(): void
     {
         $hncSuffix = self::$hncSuffix;
@@ -1933,7 +1839,7 @@ EOF,
             }
         }
     ],
-    
+
 EOF;
         }
 
@@ -1941,7 +1847,7 @@ EOF;
 
         $prefixResource = ', "resources": ';
         $automaticResources = $prefixResource . json_encode(
-                [
+            [
                     'requests' => [
                         'cpu' => '200m',
                         'memory' => '20.480Mi',
@@ -1951,8 +1857,8 @@ EOF;
                         'memory' => '163.840Mi',
                     ],
                 ],
-                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT,
-            );
+            JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT,
+        );
 
         $storageClass = match (self::$defaultsDefined) {
             'system' => 'system-defaults-storage-identifiers',
@@ -1973,7 +1879,7 @@ EOF;
         $phpRunResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial' => $prefixResource . json_encode(
-                    [
+                [
                         'requests' => [
                             'cpu' => '68m',
                             'memory' => '9.600Mi',
@@ -1983,10 +1889,10 @@ EOF;
                             'memory' => '80Mi',
                         ],
                     ],
-                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
-                ),
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+            ),
             'full' => $prefixResource . json_encode(
-                    [
+                [
                         'requests' => [
                             'cpu' => '200m',
                             'memory' => '64Mi',
@@ -1996,15 +1902,15 @@ EOF;
                             'memory' => '96Mi',
                         ],
                     ],
-                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
-                ),
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+            ),
             default => ''
         };
 
         $shellResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial' => $prefixResource . json_encode(
-                    [
+                [
                         'requests' => [
                             'cpu' => '100m',
                             'memory' => '9.600Mi',
@@ -2014,10 +1920,10 @@ EOF;
                             'memory' => '80Mi',
                         ],
                     ],
-                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
-                ),
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+            ),
             'full' => $prefixResource . json_encode(
-                    [
+                [
                         'requests' => [
                             'cpu' => '100m',
                             'memory' => '32Mi',
@@ -2027,15 +1933,15 @@ EOF;
                             'memory' => '32Mi',
                         ],
                     ],
-                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
-                ),
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+            ),
             default => ''
         };
 
         $nginxResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial' => $prefixResource . json_encode(
-                    [
+                [
                         'requests' => [
                             'cpu' => '68m',
                             'memory' => '9.600Mi',
@@ -2045,10 +1951,10 @@ EOF;
                             'memory' => '80Mi',
                         ],
                     ],
-                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
-                ),
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+            ),
             'full' => $prefixResource . json_encode(
-                    [
+                [
                         'requests' => [
                             'cpu' => '200m',
                             'memory' => '64Mi',
@@ -2058,15 +1964,15 @@ EOF;
                             'memory' => '64Mi',
                         ],
                     ],
-                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
-                ),
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+            ),
             default => ''
         };
 
         $wafResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial', 'full' => $prefixResource . json_encode(
-                    [
+                [
                         'requests' => [
                             'cpu' => '100m',
                             'memory' => '64Mi',
@@ -2076,15 +1982,15 @@ EOF;
                             'memory' => '64Mi',
                         ],
                     ],
-                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
-                ),
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+            ),
             default => ''
         };
 
         $blackfireResources = match (self::$quotasDefined) {
             'automatic' => $automaticResources,
             'partial', 'full' => $prefixResource . json_encode(
-                    [
+                [
                         'requests' => [
                             'cpu' => '100m',
                             'memory' => '128Mi',
@@ -2094,8 +2000,8 @@ EOF;
                             'memory' => '128Mi',
                         ],
                     ],
-                    JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
-                ),
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
+            ),
             default => ''
         };
 
@@ -3226,19 +3132,13 @@ EOF;
 
         $json = json_encode($this->manifests, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
 
-        try {
-            Assert::assertEquals(
-                $expectedPretty,
-                $json,
-            );
-        } catch (Throwable $e) {
-            throw $e;
-        }
+        Assert::assertEquals(
+            $expectedPretty,
+            $json,
+        );
     }
 
-    /**
-     * @When I export the job :jobId with :group data
-     */
+    #[When('I export the job :jobId with :group data')]
     public function iExportTheJobWithData(string $jobId, string $group): void
     {
         $sr = $this->sfContainer->get('external_serializer');
@@ -3247,9 +3147,7 @@ EOF;
         $this->jobJsonExported = $sr->serialize($job, 'json', ['groups' => [$group]]);
     }
 
-    /**
-     * @Then I must obtain a :described job
-     */
+    #[Then('I must obtain a :described job')]
     public function iMustObtainAJob($described): void
     {
         Assert::assertStringEqualsFile(

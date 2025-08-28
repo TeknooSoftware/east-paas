@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,38 +19,35 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
-
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\TranscriberCollection;
 
+use function iterator_to_array;
+
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(TranscriberCollection::class)]
 class TranscriberCollectionTest extends TestCase
 {
-    public function testAdd()
+    public function testAdd(): void
     {
-        self::assertInstanceOf(
-            TranscriberCollection::class,
-            (new TranscriberCollection())->add(
-                1,
-                $this->createMock(TranscriberInterface::class)
-            )
-        );
+        $this->assertInstanceOf(TranscriberCollection::class, new TranscriberCollection()->add(
+            1,
+            $this->createMock(TranscriberInterface::class)
+        ));
     }
 
-    public function testGetIterator()
+    public function testGetIterator(): void
     {
         $collection = new TranscriberCollection();
 
@@ -63,9 +60,6 @@ class TranscriberCollectionTest extends TestCase
         $collection->add(3, $c3);
 
         $iterator = $collection->getIterator();
-        self::assertSame(
-            [$c2, $c1, $c3],
-            \iterator_to_array($iterator)
-        );
+        $this->assertSame([$c2, $c1, $c3], iterator_to_array($iterator));
     }
 }

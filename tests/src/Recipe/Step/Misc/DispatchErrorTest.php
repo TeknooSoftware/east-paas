@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,14 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -35,18 +36,15 @@ use Teknoo\East\Paas\Recipe\Step\Misc\DispatchError;
 use Throwable;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(DispatchError::class)]
 class DispatchErrorTest extends TestCase
 {
-    private ?ErrorFactoryInterface $errorFactory = null;
+    private (ErrorFactoryInterface&MockObject)|null $errorFactory = null;
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|ErrorFactoryInterface
-     */
-    public function geterrorFactoryMock(): ErrorFactoryInterface
+    public function geterrorFactoryMock(): ErrorFactoryInterface&MockObject
     {
         if (!$this->errorFactory instanceof ErrorFactoryInterface) {
             $this->errorFactory = $this->createMock(ErrorFactoryInterface::class);
@@ -60,16 +58,13 @@ class DispatchErrorTest extends TestCase
         return new DispatchError($this->geterrorFactoryMock());
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
-        self::assertInstanceOf(
-            DispatchError::class,
-            $this->buildStep()(
-                $this->createMock(ManagerInterface::class),
-                $this->createMock(ClientInterface::class),
-                $this->createMock(Throwable::class),
-            )
-        );
+        $this->assertInstanceOf(DispatchError::class, $this->buildStep()(
+            $this->createMock(ManagerInterface::class),
+            $this->createMock(ClientInterface::class),
+            $this->createMock(Throwable::class),
+        ));
     }
 
 }

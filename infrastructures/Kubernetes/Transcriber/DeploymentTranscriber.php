@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -46,7 +46,7 @@ use Throwable;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class DeploymentTranscriber implements DeploymentInterface
@@ -54,16 +54,20 @@ class DeploymentTranscriber implements DeploymentInterface
     use CommonTrait;
     use PodsTranscriberTrait;
 
-    private const NAME_SUFFIX = '-dplmt';
-    private const POD_SUFFIX = '-pod';
-    private const VOLUME_SUFFIX = '-volume';
-    private const SECRET_SUFFIX = '-secret';
-    private const MAP_SUFFIX = '-map';
+    private const string NAME_SUFFIX = '-dplmt';
+
+    private const string POD_SUFFIX = '-pod';
+
+    private const string VOLUME_SUFFIX = '-volume';
+
+    private const string SECRET_SUFFIX = '-secret';
+
+    private const string MAP_SUFFIX = '-map';
 
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
-     * @param array<string, Volume>|Volume[] $volumes
+     * @param array<string, Volume> $volumes
      * @return array<string, mixed>
      */
     protected static function writeSpec(
@@ -86,7 +90,7 @@ class DeploymentTranscriber implements DeploymentInterface
             version: $version,
             prefixer: $prefixer,
             requireLabel: $requireLabel,
-            updateStrategy: static fn () => match ($pod->getUpgradeStrategy()) {
+            updateStrategy: static fn (): array => match ($pod->getUpgradeStrategy()) {
                 UpgradeStrategy::RollingUpgrade => [
                     'type' => 'RollingUpdate',
                     'rollingUpdate' => [
@@ -108,7 +112,7 @@ class DeploymentTranscriber implements DeploymentInterface
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
-     * @param array<string, Volume>|Volume[] $volumes
+     * @param array<string, Volume> $volumes
      */
     private static function convertToDeployment(
         string $name,
@@ -181,6 +185,8 @@ class DeploymentTranscriber implements DeploymentInterface
                     return;
                 }
 
+                /** @var array<array<Image>> $images */
+                /** @var array<string, Volume> $volumes */
                 $kubeSet = self::convertToDeployment(
                     name: $name,
                     pod: $pod,

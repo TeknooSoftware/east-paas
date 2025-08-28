@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(DefaultsBag::class)]
@@ -43,65 +43,44 @@ class DefaultsBagTest extends TestCase
         return new DefaultsBag();
     }
 
-    public function testSet()
+    public function testSet(): void
     {
-        self::assertInstanceOf(
-            DefaultsBag::class,
-            $this->buildObject()->set('foo', 'bar'),
-        );
+        $this->assertInstanceOf(DefaultsBag::class, $this->buildObject()->set('foo', 'bar'));
 
-        self::assertInstanceOf(
-            DefaultsBag::class,
-            $this->buildObject()->set('foo', null),
-        );
+        $this->assertInstanceOf(DefaultsBag::class, $this->buildObject()->set('foo', null));
     }
 
-    public function testForCluster()
+    public function testForCluster(): void
     {
         $parent = $this->buildObject();
         $parent->set('foo', 'bar');
         $child = $parent->forCluster('foo');
 
-        self::assertInstanceOf(
-            DefaultsBag::class,
-            $child
-        );
+        $this->assertInstanceOf(DefaultsBag::class, $child);
 
-        self::assertNotSame(
-            $child,
-            $parent,
-        );
+        $this->assertNotSame($child, $parent);
     }
 
-    public function testGetBagFor()
+    public function testGetBagFor(): void
     {
         $parent = $this->buildObject();
         $parent->set('foo', 'bar');
         $child = $parent->forCluster('foo');
 
-        self::assertInstanceOf(
-            DefaultsBag::class,
-            $parent->getBagFor('foo'),
-        );
+        $this->assertInstanceOf(DefaultsBag::class, $parent->getBagFor('foo'));
 
-        self::assertSame(
-            $child,
-            $parent->getBagFor('foo'),
-        );
+        $this->assertSame($child, $parent->getBagFor('foo'));
 
-        self::assertSame(
-            $parent,
-            $parent->getBagFor('bar'),
-        );
+        $this->assertSame($parent, $parent->getBagFor('bar'));
     }
 
-    public function testGetReferenceOfNotDefined()
+    public function testGetReferenceOfNotDefined(): void
     {
         $this->expectException(DomainException::class);
         $this->buildObject()->getReference('foo');
     }
 
-    public function testGetReferenceOfNotDefinedFromChild()
+    public function testGetReferenceOfNotDefinedFromChild(): void
     {
         $this->expectException(DomainException::class);
         $this->buildObject()
@@ -109,55 +88,43 @@ class DefaultsBagTest extends TestCase
             ->getReference('foo');
     }
 
-    public function testGetReferenceOfNull()
+    public function testGetReferenceOfNull(): void
     {
-        self::assertInstanceOf(
-            Reference::class,
-            $this->buildObject()
-                ->set('foo', null)
-                ->getReference('foo')
-        );
+        $this->assertInstanceOf(Reference::class, $this->buildObject()
+            ->set('foo', null)
+            ->getReference('foo'));
     }
 
-    public function testGetReference()
+    public function testGetReference(): void
     {
-        self::assertInstanceOf(
-            Reference::class,
-            $this->buildObject()
-                ->set('foo', 'bar')
-                ->getReference('foo')
-        );
+        $this->assertInstanceOf(Reference::class, $this->buildObject()
+            ->set('foo', 'bar')
+            ->getReference('foo'));
     }
 
-    public function testGetReferenceFromParent()
+    public function testGetReferenceFromParent(): void
     {
-        self::assertInstanceOf(
-            Reference::class,
-            $this->buildObject()
-                ->set('foo', 'bar')
-                ->forCluster('subCluster')
-                ->getReference('foo')
-        );
+        $this->assertInstanceOf(Reference::class, $this->buildObject()
+            ->set('foo', 'bar')
+            ->forCluster('subCluster')
+            ->getReference('foo'));
     }
 
-    public function testGetReferenceFromChild()
+    public function testGetReferenceFromChild(): void
     {
-        self::assertInstanceOf(
-            Reference::class,
-            $this->buildObject()
-                ->forCluster('subCluster')
-                ->set('foo', 'bar')
-                ->getReference('foo')
-        );
+        $this->assertInstanceOf(Reference::class, $this->buildObject()
+            ->forCluster('subCluster')
+            ->set('foo', 'bar')
+            ->getReference('foo'));
     }
 
-    public function testResolveOfNotDefined()
+    public function testResolveOfNotDefined(): void
     {
         $this->expectException(DomainException::class);
         $this->buildObject()->resolve(new Reference('foo'));
     }
 
-    public function testResolveOfNotDefinedFromChild()
+    public function testResolveOfNotDefinedFromChild(): void
     {
         $this->expectException(DomainException::class);
         $this->buildObject()
@@ -165,53 +132,39 @@ class DefaultsBagTest extends TestCase
             ->resolve(new Reference('foo'));
     }
 
-    public function testResolveOfNull()
+    public function testResolveOfNull(): void
     {
-        self::assertNull(
-            $this->buildObject()
-                ->set('foo', null)
-                ->resolve(new Reference('foo'))
-        );
+        $this->assertNull($this->buildObject()
+            ->set('foo', null)
+            ->resolve(new Reference('foo')));
     }
 
-    public function testResolve()
+    public function testResolve(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()
-                ->set('foo', 'bar')
-                ->resolve(new Reference('foo'))
-        );
+        $this->assertEquals('bar', $this->buildObject()
+            ->set('foo', 'bar')
+            ->resolve(new Reference('foo')));
     }
 
-    public function testResolveFromParent()
+    public function testResolveFromParent(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()
-                ->set('foo', 'bar')
-                ->forCluster('subCluster')
-                ->resolve(new Reference('foo'))
-        );
+        $this->assertEquals('bar', $this->buildObject()
+            ->set('foo', 'bar')
+            ->forCluster('subCluster')
+            ->resolve(new Reference('foo')));
     }
 
-    public function testResolveFromChild()
+    public function testResolveFromChild(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()
-                ->forCluster('subCluster')
-                ->set('foo', 'bar')
-                ->resolve(new Reference('foo'))
-        );
+        $this->assertEquals('bar', $this->buildObject()
+            ->forCluster('subCluster')
+            ->set('foo', 'bar')
+            ->resolve(new Reference('foo')));
 
-        self::assertEquals(
-            'bar',
-            $this->buildObject()
-                ->set('foo', 'foo')
-                ->forCluster('subCluster')
-                ->set('foo', 'bar')
-                ->resolve(new Reference('foo'))
-        );
+        $this->assertEquals('bar', $this->buildObject()
+            ->set('foo', 'foo')
+            ->forCluster('subCluster')
+            ->set('foo', 'bar')
+            ->resolve(new Reference('foo')));
     }
 }

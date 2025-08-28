@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Teknoo\Tests\East\Paas\Behat\config;
 
 use Laminas\Diactoros\RequestFactory;
@@ -16,10 +18,9 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Client\ClientInterface as PsrClient;
 use Teknoo\East\Diactoros\ResponseMessageFactory;
 use Teknoo\East\Foundation\Http\Message\MessageFactoryInterface;
-
 use Teknoo\East\Paas\Contracts\Recipe\Plan\RunJobInterface;
-use Teknoo\East\Paas\Contracts\Recipe\Step\Additional\RunJobStepsInterface;
 use Teknoo\Tests\East\Paas\Behat\FeatureContext;
+
 use function DI\create;
 use function DI\decorate;
 use function DI\get;
@@ -54,13 +55,11 @@ return [
     StreamFactory::class => create(),
 
     //Job
-    PsrClient::class => static function (): PsrClient {
-        return new class () implements PsrClient {
-            public function sendRequest(RequestInterface $request): ResponseInterface
-            {
-                return new \Laminas\Diactoros\Response();
-            }
-        };
+    PsrClient::class => static fn (): PsrClient => new class () implements PsrClient {
+        public function sendRequest(RequestInterface $request): ResponseInterface
+        {
+            return new \Laminas\Diactoros\Response();
+        }
     },
 
     MessageFactoryInterface::class => get(ResponseMessageFactory::class),

@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -50,7 +50,7 @@ use function iterator_to_array;
 /**
  * Symfony form to edit East PaaS Cluster
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ClusterType extends AbstractType
@@ -117,7 +117,7 @@ class ClusterType extends AbstractType
                 if (
                     $allowEditingOfLocked
                     || !$data instanceof Cluster
-                    || !$data->isLocked()
+                    || true !== $data->isLocked()
                 ) {
                     return;
                 }
@@ -150,7 +150,7 @@ class ClusterType extends AbstractType
             }
         );
 
-        $builder->setDataMapper(new class ($allowEditingOfLocked) implements DataMapperInterface {
+        $builder->setDataMapper(new readonly class ($allowEditingOfLocked) implements DataMapperInterface {
             public function __construct(
                 private bool $allowEditingOfLocked,
             ) {
@@ -167,7 +167,7 @@ class ClusterType extends AbstractType
                 }
 
                 $visitors = array_map(
-                    static fn(FormInterface $form): callable => $form->setData(...),
+                    static fn (FormInterface $form): callable => $form->setData(...),
                     iterator_to_array($forms)
                 );
 
@@ -186,7 +186,7 @@ class ClusterType extends AbstractType
 
                 $forms = iterator_to_array($forms);
 
-                if ($this->allowEditingOfLocked || !$data->isLocked()) {
+                if ($this->allowEditingOfLocked || true !== $data->isLocked()) {
                     $data->setName((string) $forms['name']->getData());
                     $data->setNamespace((string) $forms['namespace']->getData());
                     $data->useHierarchicalNamespaces(!empty($forms['useHierarchicalNamespaces']->getData()));

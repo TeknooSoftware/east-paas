@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,48 +19,43 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
+use Error;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\Parameter;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Immutable\Exception\ImmutableException;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Parameter::class)]
 class ParameterTest extends TestCase
 {
-    public function buildParameter()
+    public function buildParameter(): Parameter
     {
         return new Parameter('foo', 'bar');
     }
 
-    public function testContructorUnique()
+    public function testContructorUnique(): void
     {
-        $this->expectException(\Error::class);
+        $this->expectException(Error::class);
         $this->buildParameter()->__construct('foo', 'bar');
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            '%foo',
-            $this->buildParameter()->getName()
-        );
+        $this->assertEquals('%foo', $this->buildParameter()->getName());
     }
 
-    public function testGetValue()
+    public function testGetValue(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildParameter()->getValue()
-        );
+        $this->assertEquals('bar', $this->buildParameter()->getValue());
     }
 }

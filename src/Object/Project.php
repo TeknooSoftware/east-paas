@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -59,7 +59,7 @@ use const PHP_INT_MAX;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class Project implements
@@ -135,11 +135,11 @@ class Project implements
     protected function listAssertions(): array
     {
         return [
-            (new Property(Executable::class))
+            new Property(Executable::class)
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
                 ->with('imagesRegistry', new IsInstanceOf(ImageRegistryInterface::class))
                 ->with('clusters', new CountsMore(0)),
-            (new Callback(Draft::class))
+            new Callback(Draft::class)
                 ->call(static function (Project $project, AssertionInterface $assertion): void {
                     $project->isNotInState([Executable::class], static function () use ($assertion): void {
                         $assertion->isValid();
@@ -184,11 +184,6 @@ class Project implements
         return $this;
     }
 
-    private function getSourceRepository(): ?SourceRepositoryInterface
-    {
-        return $this->sourceRepository;
-    }
-
     public function setSourceRepository(SourceRepositoryInterface $repository): Project
     {
         $this->sourceRepository = $repository;
@@ -196,11 +191,6 @@ class Project implements
         $this->updateStates();
 
         return $this;
-    }
-
-    private function getImagesRegistry(): ?ImageRegistryInterface
-    {
-        return $this->imagesRegistry;
     }
 
     public function setImagesRegistry(ImageRegistryInterface $repository): Project
@@ -224,14 +214,6 @@ class Project implements
         $this->updateClusters();
 
         return $this;
-    }
-
-    /**
-     * @return iterable<Cluster>
-     */
-    private function getClusters()
-    {
-        return $this->clusters;
     }
 
     public function updateClusters(): Project
@@ -264,10 +246,10 @@ class Project implements
             'account' => $this->getAccount(),
             'id' => $this->getId(),
             'name' => $this->getName(),
-            'prefix' => $this->getPrefix(),
-            'sourceRepository' => fn () => $this->getSourceRepository(),
-            'imagesRegistry' => fn () => $this->getImagesRegistry(),
-            'clusters' => fn () => $this->getClusters(),
+            'prefix' => $this->prefix,
+            'sourceRepository' => fn (): ?SourceRepositoryInterface => $this->sourceRepository,
+            'imagesRegistry' => fn (): ?ImageRegistryInterface => $this->imagesRegistry,
+            'clusters' => fn (): iterable => $this->clusters,
         ];
 
         $this->setGroupsConfiguration(self::$exportConfigurations);

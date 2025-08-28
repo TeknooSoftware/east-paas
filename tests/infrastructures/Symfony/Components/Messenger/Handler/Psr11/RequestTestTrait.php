@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,12 +19,13 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
@@ -34,23 +35,20 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 trait RequestTestTrait
 {
-    private ?UriFactoryInterface $uriFactory = null;
+    private (UriFactoryInterface&MockObject)|null $uriFactory = null;
 
-    private ?RequestFactoryInterface $requestFactory = null;
+    private (RequestFactoryInterface&MockObject)|null $requestFactory = null;
 
-    private ?StreamFactoryInterface $streamFactory = null;
+    private (StreamFactoryInterface&MockObject)|null $streamFactory = null;
 
-    private ?ClientInterface $client = null;
+    private (ClientInterface&MockObject)|null $client = null;
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|UriFactoryInterface
-     */
-    public function getUriFactoryInterfaceMock(): UriFactoryInterface
+    public function getUriFactoryInterfaceMock(): UriFactoryInterface&MockObject
     {
         if (!$this->uriFactory instanceof UriFactoryInterface) {
             $this->uriFactory = $this->createMock(UriFactoryInterface::class);
@@ -59,10 +57,7 @@ trait RequestTestTrait
         return $this->uriFactory;
     }
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|RequestFactoryInterface
-     */
-    public function getRequestFactoryInterfaceMock(): RequestFactoryInterface
+    public function getRequestFactoryInterfaceMock(): RequestFactoryInterface&MockObject
     {
         if (!$this->requestFactory instanceof RequestFactoryInterface) {
             $this->requestFactory = $this->createMock(RequestFactoryInterface::class);
@@ -71,10 +66,7 @@ trait RequestTestTrait
         return $this->requestFactory;
     }
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|StreamFactoryInterface
-     */
-    public function getStreamFactoryInterfaceMock(): StreamFactoryInterface
+    public function getStreamFactoryInterfaceMock(): StreamFactoryInterface&MockObject
     {
         if (!$this->streamFactory instanceof StreamFactoryInterface) {
             $this->streamFactory = $this->createMock(StreamFactoryInterface::class);
@@ -83,10 +75,7 @@ trait RequestTestTrait
         return $this->streamFactory;
     }
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|ClientInterface
-     */
-    public function getClientInterfaceMock(): ClientInterface
+    public function getClientInterfaceMock(): ClientInterface&MockObject
     {
         if (!$this->client instanceof ClientInterface) {
             $this->client = $this->createMock(ClientInterface::class);
@@ -95,7 +84,7 @@ trait RequestTestTrait
         return $this->client;
     }
 
-    private function doTest($object, $class, $argument)
+    private function doTest($object, $class, $argument): void
     {
         $this->getUriFactoryInterfaceMock()
             ->expects($this->any())
@@ -126,7 +115,7 @@ trait RequestTestTrait
             ->expects($this->once())
             ->method('sendRequest');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             $class,
             $object($argument)
         );

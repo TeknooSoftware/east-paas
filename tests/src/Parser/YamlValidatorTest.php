@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -28,13 +28,17 @@ namespace Teknoo\Tests\East\Paas\Parser;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Parser;
+use Teknoo\East\Paas\Parser\Exception\ValidationException;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
 use Teknoo\East\Paas\Parser\YamlValidator;
 
+use function dirname;
+use function file_get_contents;
+
 /**
  * @author      Richard Déloge <richard@teknoo.software>
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(YamlValidator::class)]
@@ -49,17 +53,17 @@ class YamlValidatorTest extends TestCase
     {
         $fileName = dirname(__DIR__, 2) . '/fixtures/basic_full.paas.yaml';
         $conf = file_get_contents($fileName);
-        return (new Parser())->parse($conf);
+        return new Parser()->parse($conf);
     }
 
     private function getXsdFile(): string
     {
-        $fileName = \dirname(__DIR__, 3) . '/src/Contracts/Compilation/xsd/v1.1.paas_validation.xsd';
+        $fileName = dirname(__DIR__, 3) . '/src/Contracts/Compilation/xsd/v1.1.paas_validation.xsd';
 
-        return \file_get_contents($fileName);
+        return file_get_contents($fileName);
     }
 
-    public function testValidConf()
+    public function testValidConf(): void
     {
         $configuration = $this->getYamlArray();
 
@@ -69,16 +73,14 @@ class YamlValidatorTest extends TestCase
 
         $xsd = $this->getXsdFile();
 
-        self::assertInstanceOf(
-            YamlValidator::class,
-            $this->buildValidator()->validate(
-                $configuration,
-                $xsd,
-                $promise
-            )
-        );
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $xsd,
+            $promise
+        ));
     }
-    public function testNotValidConfWithNonValidName()
+
+    public function testNotValidConfWithNonValidName(): void
     {
         $configuration = $this->getYamlArray();
         $configuration['services']['php_service'] = $configuration['services']['php-service'];
@@ -90,17 +92,32 @@ class YamlValidatorTest extends TestCase
 
         $xsd = $this->getXsdFile();
 
-        self::assertInstanceOf(
-            YamlValidator::class,
-            $this->buildValidator()->validate(
-                $configuration,
-                $xsd,
-                $promise
-            )
-        );
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $xsd,
+            $promise
+        ));
     }
 
-    public function testNotValidConfWithMissingParts()
+    public function testNotValidConfWithNonValidElement(): void
+    {
+        $configuration = $this->getYamlArray();
+        $configuration['services']['php-service'] = new \stdClass();
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(ValidationException::class));
+
+        $xsd = $this->getXsdFile();
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $xsd,
+            $promise
+        ));
+    }
+
+    public function testNotValidConfWithMissingParts(): void
     {
         $configuration = $this->getYamlArray();
         unset($configuration['pods']);
@@ -111,13 +128,10 @@ class YamlValidatorTest extends TestCase
 
         $xsd = $this->getXsdFile();
 
-        self::assertInstanceOf(
-            YamlValidator::class,
-            $this->buildValidator()->validate(
-                $configuration,
-                $xsd,
-                $promise
-            )
-        );
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $xsd,
+            $promise
+        ));
     }
 }

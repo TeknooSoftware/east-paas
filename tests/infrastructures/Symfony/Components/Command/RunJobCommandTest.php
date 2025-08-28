@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -41,31 +41,33 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayResultHandler;
 
+use function file_put_contents;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
+
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(RunJobCommand::class)]
 class RunJobCommandTest extends TestCase
 {
-    private ?Executor $Executor = null;
+    private (Executor&MockObject)|null $Executor = null;
 
-    private ?Client $client = null;
+    private (Client&MockObject)|null $client = null;
 
-    private ?RunJobInterface $runJob = null;
+    private (RunJobInterface&MockObject)|null $runJob = null;
 
-    private ?MessageFactoryInterface $messageFactory = null;
+    private (MessageFactoryInterface&MockObject)|null $messageFactory = null;
 
-    private ?StreamFactoryInterface $streamFactory = null;
+    private (StreamFactoryInterface&MockObject)|null $streamFactory = null;
 
-    private ?DisplayHistoryHandler $stepDisplayHistory = null;
+    private (DisplayHistoryHandler&MockObject)|null $stepDisplayHistory = null;
 
-    private ?DisplayResultHandler $stepDisplayResult = null;
+    private (DisplayResultHandler&MockObject)|null $stepDisplayResult = null;
 
-    /**
-     * @return Executor|MockObject
-     */
-    private function getExecutorMock(): Executor
+    private function getExecutorMock(): Executor&MockObject
     {
         if (!$this->Executor instanceof Executor) {
             $this->Executor = $this->createMock(Executor::class);
@@ -73,11 +75,8 @@ class RunJobCommandTest extends TestCase
 
         return $this->Executor;
     }
-    
-    /**
-     * @return Client|MockObject
-     */
-    private function getClientMock(): Client
+
+    private function getClientMock(): Client&MockObject
     {
         if (!$this->client instanceof Client) {
             $this->client = $this->createMock(Client::class);
@@ -86,10 +85,7 @@ class RunJobCommandTest extends TestCase
         return $this->client;
     }
 
-    /**
-     * @return RunJobInterface|MockObject
-     */
-    private function getRunJobMock(): RunJobInterface
+    private function getRunJobMock(): RunJobInterface&MockObject
     {
         if (!$this->runJob instanceof RunJobInterface) {
             $this->runJob = $this->createMock(RunJobInterface::class);
@@ -98,10 +94,7 @@ class RunJobCommandTest extends TestCase
         return $this->runJob;
     }
 
-    /**
-     * @return MessageFactoryInterface|MockObject
-     */
-    private function getMessageFactoryMock(): MessageFactoryInterface
+    private function getMessageFactoryMock(): MessageFactoryInterface&MockObject
     {
         if (!$this->messageFactory instanceof MessageFactoryInterface) {
             $this->messageFactory = $this->createMock(MessageFactoryInterface::class);
@@ -110,10 +103,7 @@ class RunJobCommandTest extends TestCase
         return $this->messageFactory;
     }
 
-    /**
-     * @return StreamFactoryInterface|MockObject
-     */
-    private function getStreamFactoryMock(): StreamFactoryInterface
+    private function getStreamFactoryMock(): StreamFactoryInterface&MockObject
     {
         if (!$this->streamFactory instanceof StreamFactoryInterface) {
             $this->streamFactory = $this->createMock(StreamFactoryInterface::class);
@@ -122,10 +112,7 @@ class RunJobCommandTest extends TestCase
         return $this->streamFactory;
     }
 
-    /**
-     * @return DisplayHistoryHandler|MockObject
-     */
-    public function getStepDisplayHistory(): ?DisplayHistoryHandler
+    public function getStepDisplayHistory(): DisplayHistoryHandler&MockObject
     {
         if (!$this->stepDisplayHistory instanceof DisplayHistoryHandler) {
             $this->stepDisplayHistory = $this->createMock(DisplayHistoryHandler::class);
@@ -134,10 +121,7 @@ class RunJobCommandTest extends TestCase
         return $this->stepDisplayHistory;
     }
 
-    /**
-     * @return DisplayResultHandler|MockObject
-     */
-    public function getStepDisplayResult(): ?DisplayResultHandler
+    public function getStepDisplayResult(): DisplayResultHandler&MockObject
     {
         if (!$this->stepDisplayResult instanceof DisplayResultHandler) {
             $this->stepDisplayResult = $this->createMock(DisplayResultHandler::class);
@@ -161,94 +145,81 @@ class RunJobCommandTest extends TestCase
         );
     }
 
-    public function testExecutionFromFile()
+    public function testExecutionFromFile(): void
     {
-        $fileName = \tempnam(\sys_get_temp_dir(), 'paas_test');
-        \file_put_contents($fileName, 'fooBar');
+        $fileName = tempnam(sys_get_temp_dir(), 'paas_test');
+        file_put_contents($fileName, 'fooBar');
 
         $input = $this->createMock(InputInterface::class);
-        $input->expects($this->any())
+        $input
             ->method('getArgument')
             ->willReturn($fileName);
 
         $request = $this->createMock(MessageInterface::class);
-        $request->expects($this->any())
+        $request
             ->method('withBody')
             ->willReturnSelf();
 
         $this->getStreamFactoryMock()
-            ->expects($this->any())
             ->method('createStream')
             ->with('fooBar')
             ->willReturn($this->createMock(StreamInterface::class));
 
         $this->getMessageFactoryMock()
-            ->expects($this->any())
             ->method('createMessage')
             ->willReturn($request);
 
         $output = $this->createMock(OutputInterface::class);
 
-        self::assertEquals(
-            0,
-            $this->buildCommand()->run(
-                $input,
-                $output
-            )
-        );
+        $this->assertEquals(0, $this->buildCommand()->run(
+            $input,
+            $output
+        ));
 
-        @\unlink($fileName);
+        @unlink($fileName);
     }
 
-    public function testExecutionFromInput()
+    public function testExecutionFromInput(): void
     {
         $input = $this->createMock(InputInterface::class);
-        $input->expects($this->any())
+        $input
             ->method('getArgument')
             ->willReturn('fooBar');
 
         $request = $this->createMock(MessageInterface::class);
-        $request->expects($this->any())
+        $request
             ->method('withBody')
             ->willReturnSelf();
 
         $this->getStreamFactoryMock()
-            ->expects($this->any())
             ->method('createStream')
             ->with('fooBar')
             ->willReturn($this->createMock(StreamInterface::class));
 
         $this->getMessageFactoryMock()
-            ->expects($this->any())
             ->method('createMessage')
             ->willReturn($request);
 
         $output = $this->createMock(OutputInterface::class);
 
-        self::assertEquals(
-            0,
-            $this->buildCommand()->run(
-                $input,
-                $output
-            )
-        );
+        $this->assertEquals(0, $this->buildCommand()->run(
+            $input,
+            $output
+        ));
     }
 
-    public function testExecutionFromInputNotAString()
+    public function testExecutionFromInputNotAString(): void
     {
         $input = $this->createMock(InputInterface::class);
-        $input->expects($this->any())
+        $input
             ->method('getArgument')
             ->willReturn(123);
 
         $output = $this->createMock(OutputInterface::class);
 
-        self::assertEquals(
-            1,
-            $this->buildCommand()->run(
-                $input,
-                $output
-            )
-        );
+        $this->assertEquals(1, $this->buildCommand()->run(
+            $input,
+            $output
+        ));
     }
 }

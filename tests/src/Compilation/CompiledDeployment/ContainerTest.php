@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Container::class)]
@@ -52,67 +52,43 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getName(),
-        );
+        $this->assertEquals('foo', $this->buildObject()->getName());
     }
 
-    public function testGetImage()
+    public function testGetImage(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()->getImage(),
-        );
+        $this->assertEquals('bar', $this->buildObject()->getImage());
     }
 
-    public function testGetVersion()
+    public function testGetVersion(): void
     {
-        self::assertEquals(
-            '1.2',
-            $this->buildObject()->getVersion(),
-        );
+        $this->assertEquals('1.2', $this->buildObject()->getVersion());
     }
 
-    public function testGetListen()
+    public function testGetListen(): void
     {
-        self::assertEquals(
-            [80],
-            $this->buildObject()->getListen(),
-        );
+        $this->assertEquals([80], $this->buildObject()->getListen());
     }
 
-    public function testGetVolumes()
+    public function testGetVolumes(): void
     {
-        self::assertEquals(
-            ['foo', 'bar'],
-            $this->buildObject()->getVolumes(),
-        );
+        $this->assertEquals(['foo', 'bar'], $this->buildObject()->getVolumes());
     }
 
-    public function testGetVariables()
+    public function testGetVariables(): void
     {
-        self::assertEquals(
-            ['bar' => 'foo'],
-            $this->buildObject()->getVariables(),
-        );
+        $this->assertEquals(['bar' => 'foo'], $this->buildObject()->getVariables());
     }
 
-    public function testGetHealthcheck()
+    public function testGetHealthcheck(): void
     {
-        self::assertInstanceOf(
-            HealthCheck::class,
-            $this->buildObject()->getHealthCheck(),
-        );
+        $this->assertInstanceOf(HealthCheck::class, $this->buildObject()->getHealthCheck());
     }
 
-    public function testGetResources()
+    public function testGetResources(): void
     {
-        self::assertInstanceOf(
-            ResourceSet::class,
-            $this->buildObject()->getResources(),
-        );
+        $this->assertInstanceOf(ResourceSet::class, $this->buildObject()->getResources());
     }
 }

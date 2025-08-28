@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySe
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\HistorySent;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(HistorySentHandler::class)]
@@ -43,24 +43,18 @@ class HistorySentHandlerTest extends TestCase
         return new HistorySentHandler();
     }
 
-    public function testInvokeWithoutHandler()
+    public function testInvokeWithoutHandler(): void
     {
-        self::assertInstanceOf(
-            HistorySentHandler::class,
-            ($this->buildStep())($this->createMock(HistorySent::class))
-        );
+        $this->assertInstanceOf(HistorySentHandler::class, ($this->buildStep())($this->createMock(HistorySent::class)));
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
         $handler = $this->createMock(HistorySentHandlerInterface::class);
 
         $handler->expects($this->once())
             ->method('__invoke');
 
-        self::assertInstanceOf(
-            HistorySentHandler::class,
-            ($this->buildStep()->setHandler($handler))($this->createMock(HistorySent::class))
-        );
+        $this->assertInstanceOf(HistorySentHandler::class, ($this->buildStep()->setHandler($handler))($this->createMock(HistorySent::class)));
     }
 }

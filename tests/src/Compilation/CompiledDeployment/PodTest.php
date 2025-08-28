@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\UpgradeStrategy;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Pod::class)]
@@ -56,88 +56,59 @@ class PodTest extends TestCase
         );
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getName()
-        );
+        $this->assertEquals('foo', $this->buildObject()->getName());
     }
 
-    public function testGetReplicas()
+    public function testGetReplicas(): void
     {
-        self::assertEquals(
-            '2',
-            $this->buildObject()->getReplicas()
-        );
+        $this->assertEquals('2', $this->buildObject()->getReplicas());
     }
 
-    public function testGetOciRegistryConfigName()
+    public function testGetOciRegistryConfigName(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()->getOciRegistryConfigName()
-        );
+        $this->assertEquals('bar', $this->buildObject()->getOciRegistryConfigName());
     }
 
-    public function testGetMaxUpgradingPods()
+    public function testGetMaxUpgradingPods(): void
     {
-        self::assertEquals(
-            3,
-            $this->buildObject()->getMaxUpgradingPods()
-        );
+        $this->assertEquals(3, $this->buildObject()->getMaxUpgradingPods());
     }
 
-    public function testGetMaxUnavailablePods()
+    public function testGetMaxUnavailablePods(): void
     {
-        self::assertEquals(
-            2,
-            $this->buildObject()->getMaxUnavailablePods()
-        );
+        $this->assertEquals(2, $this->buildObject()->getMaxUnavailablePods());
     }
 
-    public function testGetUpgradeStrategy()
+    public function testGetUpgradeStrategy(): void
     {
-        self::assertEquals(
-            UpgradeStrategy::RollingUpgrade,
-            $this->buildObject()->getUpgradeStrategy()
-        );
+        $this->assertEquals(UpgradeStrategy::RollingUpgrade, $this->buildObject()->getUpgradeStrategy());
     }
 
-    public function testGetFsGroup()
+    public function testGetFsGroup(): void
     {
-        self::assertEquals(
-            123,
-            $this->buildObject()->getFsGroup()
-        );
+        $this->assertEquals(123, $this->buildObject()->getFsGroup());
     }
 
 
-    public function testGetRequires()
+    public function testGetRequires(): void
     {
-        self::assertEquals(
-            ['foo', 'bar'],
-            $this->buildObject()->getRequires()
-        );
+        $this->assertEquals(['foo', 'bar'], $this->buildObject()->getRequires());
     }
 
-    public function testGetIterator()
+    public function testGetIterator(): void
     {
-        foreach ($this->buildObject() as $container) {
-            self::assertInstanceOf(Container::class, $container);
-        }
+        $this->assertContainsOnlyInstancesOf(Container::class, $this->buildObject());
     }
 
-    public function testIsStateless()
+    public function testIsStateless(): void
     {
-        self::assertIsBool($this->buildObject()->isStateless());
+        $this->assertIsBool($this->buildObject()->isStateless());
     }
 
-    public function testGetRestartPolicy()
+    public function testGetRestartPolicy(): void
     {
-        self::assertEquals(
-            RestartPolicy::Never,
-            $this->buildObject()->getRestartPolicy(),
-        );
+        $this->assertEquals(RestartPolicy::Never, $this->buildObject()->getRestartPolicy());
     }
 }

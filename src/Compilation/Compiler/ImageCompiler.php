@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -46,16 +46,20 @@ use function trim;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ImageCompiler implements CompilerInterface
 {
-    private const KEY_BUILD_NAME = 'build-name';
-    private const KEY_TAG = 'tag';
-    private const KEY_VARIABLES = 'variables';
-    private const KEY_PATH = 'path';
-    private const VALUE_TAG_LATEST = 'latest';
+    private const string KEY_BUILD_NAME = 'build-name';
+
+    private const string KEY_TAG = 'tag';
+
+    private const string KEY_VARIABLES = 'variables';
+
+    private const string KEY_PATH = 'path';
+
+    private const string VALUE_TAG_LATEST = 'latest';
 
     /**
      * @param array<string, string|array<string, mixed>> $imagesLibrary
@@ -128,7 +132,7 @@ class ImageCompiler implements CompilerInterface
             }
 
             $workspace->runInRepositoryPath(
-                static fn($root) => $addImage($root . $config[self::KEY_PATH])
+                static fn ($root) => $addImage($root . $config[self::KEY_PATH])
             );
         }
 

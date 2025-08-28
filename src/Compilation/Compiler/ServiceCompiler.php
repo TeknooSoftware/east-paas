@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -46,20 +46,26 @@ use function strtoupper;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ServiceCompiler implements CompilerInterface, ExtenderInterface
 {
     use MergeTrait;
 
-    private const KEY_PORTS = 'ports';
-    private const KEY_LISTEN = 'listen';
-    private const KEY_TARGET = 'target';
-    private const KEY_POD_NAME = 'pod';
-    private const KEY_PROTOCOL = 'protocol';
-    private const KEY_INTERNAL = 'internal';
-    private const KEY_EXTENDS = 'extends';
+    private const string KEY_PORTS = 'ports';
+
+    private const string KEY_LISTEN = 'listen';
+
+    private const string KEY_TARGET = 'target';
+
+    private const string KEY_POD_NAME = 'pod';
+
+    private const string KEY_PROTOCOL = 'protocol';
+
+    private const string KEY_INTERNAL = 'internal';
+
+    private const string KEY_EXTENDS = 'extends';
 
     /**
      * @param array<string, array<string, mixed>> $library
@@ -89,7 +95,7 @@ class ServiceCompiler implements CompilerInterface, ExtenderInterface
                     $name,
                     $config[self::KEY_POD_NAME] ?? $name,
                     $ports,
-                    Transport::from(strtoupper($config[self::KEY_PROTOCOL] ?? Transport::Tcp->value)),
+                    Transport::from(strtoupper((string) ($config[self::KEY_PROTOCOL] ?? Transport::Tcp->value))),
                     !isset($config[self::KEY_INTERNAL]) || !empty($config[self::KEY_INTERNAL])
                 )
             );

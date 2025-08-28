@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,15 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
@@ -35,8 +37,10 @@ use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Repository\SecretRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+use function base64_encode;
+
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(SecretTranscriber::class)]
@@ -47,17 +51,17 @@ class SecretTranscriberTest extends TestCase
         return new SecretTranscriber();
     }
 
-    public function testRun()
+    public function testRun(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachSecret')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'a-prefix');
                 $callback(new Secret('foo2', 'map', ['foo' => 'bar'], 'tls'), 'a-prefix');
-                $callback(new Secret('foo3', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . \base64_encode('bar')]], 'foo'), 'a-prefix');
+                $callback(new Secret('foo3', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . base64_encode('bar')]], 'foo'), 'a-prefix');
                 $callback(new Secret('foo4', 'foo', ['bar'], 'tls'), 'a-prefix');
                 return $cd;
             });
@@ -68,7 +72,7 @@ class SecretTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['secrets', [], $seRepo],
@@ -78,7 +82,7 @@ class SecretTranscriberTest extends TestCase
             ->method('apply')
             ->willReturn([
                 'foo' => 'bar',
-                'metadata' => ['managedFields' =>['foo']],
+                'metadata' => ['managedFields' => ['foo']],
                 'data' => ['foo' => 'bar'],
             ]);
 
@@ -90,55 +94,49 @@ class SecretTranscriberTest extends TestCase
         ]);
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            SecretTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(SecretTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testError()
+    public function testError(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachSecret')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'a-prefix');
                 return $cd;
             });
 
         $repo = $this->createMock(SecretRepository::class);
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->with('secrets')
             ->willReturn($repo);
 
         $repo->expects($this->once())
             ->method('apply')
-            ->willThrowException(new \Exception());
+            ->willThrowException(new Exception());
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            SecretTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(SecretTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 }

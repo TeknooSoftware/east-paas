@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,15 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
@@ -37,7 +39,7 @@ use Teknoo\Kubernetes\Repository\ServiceRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ServiceTranscriber::class)]
@@ -48,7 +50,7 @@ class ServiceTranscriberTest extends TestCase
         return new ServiceTranscriber();
     }
 
-    public function testRun()
+    public function testRun(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
@@ -56,7 +58,7 @@ class ServiceTranscriberTest extends TestCase
 
         $cd->expects($this->once())
             ->method('foreachService')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $callback(
                     new Service('foo', 'foo', [80 => 8080], Transport::Udp, false),
                     'a-prefix',
@@ -87,7 +89,7 @@ class ServiceTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['services', [], $repoService],
@@ -97,26 +99,23 @@ class ServiceTranscriberTest extends TestCase
         $promise->expects($this->exactly(2))->method('success')->with(['foo']);
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            ServiceTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(ServiceTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testError()
+    public function testError(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachService')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $callback(
                     new Service('foo', 'foo', [80 => 8080], Transport::Tcp, false),
                     'a-prefix',
@@ -129,7 +128,7 @@ class ServiceTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(ServiceRepository::class);
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->with('services')
             ->willReturn($repo);
@@ -141,13 +140,13 @@ class ServiceTranscriberTest extends TestCase
         $counter = 0;
         $repo->expects($this->exactly(2))
             ->method('apply')
-            ->willReturnCallback(function () use (&$counter) {
+            ->willReturnCallback(function () use (&$counter): array {
                 if (0 === $counter) {
-                    $counter++;
+                    ++$counter;
                     return ['foo'];
                 }
 
-                throw new \Exception('foo');
+                throw new Exception('foo');
             });
 
         $repo->expects($this->once())
@@ -158,16 +157,13 @@ class ServiceTranscriberTest extends TestCase
         $promise->expects($this->once())->method('success')->with(['foo']);
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            ServiceTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(ServiceTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 }

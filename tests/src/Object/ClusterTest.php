@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,14 +19,17 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Object;
 
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
+use stdClass;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -40,10 +43,13 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Job;
 use Teknoo\East\Paas\Object\Project;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use Teknoo\States\Proxy\Exception\StateNotFound;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
+use Throwable;
+use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Cluster::class)]
@@ -51,15 +57,12 @@ class ClusterTest extends TestCase
 {
     use ObjectTestTrait;
 
-    /**
-     * @return Cluster
-     */
     public function buildObject(): Cluster
     {
         return new Cluster();
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
         $argument = 'fooBar';
         $object = $this->generateObjectPopulated(['name' => $argument]);
@@ -69,30 +72,21 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['name' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['name' => $form->setData(...)]));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
-        self::assertEquals(
-            'fooBar',
-            (string) $this->generateObjectPopulated(['name' => 'fooBar'])
-        );
+        $this->assertEquals('fooBar', (string) $this->generateObjectPopulated(['name' => 'fooBar']));
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
-    public function testSetName()
+    public function testSetName(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setName('fooBar')
-        );
+        $this->assertInstanceOf($object::class, $object->setName('fooBar'));
 
         $argument = 'fooBar';
         $object = $this->generateObjectPopulated(['name' => $argument]);
@@ -102,100 +96,78 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['name' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['name' => $form->setData(...)]));
     }
 
-    public function testSetNameExceptionOnBadArgument()
+    public function testSetNameExceptionOnBadArgument(): void
     {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->setName(new \stdClass());
+        $this->expectException(Throwable::class);
+        $this->buildObject()->setName(new stdClass());
     }
 
-    public function testSetNamespace()
+    public function testSetNamespace(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setNamespace('fooBar')
-        );
+        $this->assertInstanceOf($object::class, $object->setNamespace('fooBar'));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with('fooBar');
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['namespace' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['namespace' => $form->setData(...)]));
     }
 
-    public function testSetNamespaceExceptionOnBadArgument()
+    public function testSetNamespaceExceptionOnBadArgument(): void
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->setNamespace(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->setNamespace(new stdClass());
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
-    public function testUseHierarchicalNamespaces()
+    public function testUseHierarchicalNamespaces(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->useHierarchicalNamespaces(true)
-        );
+        $this->assertInstanceOf($object::class, $object->useHierarchicalNamespaces(true));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with(true);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['use_hierarchical_namespaces' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['use_hierarchical_namespaces' => $form->setData(...)]));
     }
 
-    public function testUseHierarchicalNamespacesExceptionOnBadArgument()
+    public function testUseHierarchicalNamespacesExceptionOnBadArgument(): void
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->useHierarchicalNamespaces(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->useHierarchicalNamespaces(new stdClass());
     }
 
     /**
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
-    public function testSetProject()
+    public function testSetProject(): void
     {
         $argument = new Project($this->createMock(Account::class));
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setProject($argument)
-        );
+        $this->assertInstanceOf($object::class, $object->setProject($argument));
 
-        $rP = new \ReflectionProperty($object, 'project');
-        $rP->setAccessible(true);
+        $rP = new ReflectionProperty($object, 'project');
 
-        self::assertEquals(
-            $argument,
-            $rP->getValue($object)
-        );
+        $this->assertEquals($argument, $rP->getValue($object));
     }
 
-    public function testSetProjectExceptionOnBadArgument()
+    public function testSetProjectExceptionOnBadArgument(): void
     {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->setProject(new \stdClass());
+        $this->expectException(Throwable::class);
+        $this->buildObject()->setProject(new stdClass());
     }
 
-    public function testGetAddress()
+    public function testGetAddress(): void
     {
         $argument = 'fooBar';
         $object = $this->generateObjectPopulated(['address' => $argument]);
@@ -205,19 +177,13 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['address' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['address' => $form->setData(...)]));
     }
 
-    public function testSetAddress()
+    public function testSetAddress(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setAddress('fooBar')
-        );
+        $this->assertInstanceOf($object::class, $object->setAddress('fooBar'));
 
         $argument = 'fooBar';
 
@@ -226,13 +192,10 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['address' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['address' => $form->setData(...)]));
     }
 
-    public function testGetType()
+    public function testGetType(): void
     {
         $argument = 'fooBar';
         $object = $this->generateObjectPopulated(['type' => $argument]);
@@ -242,19 +205,13 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['type' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['type' => $form->setData(...)]));
     }
 
-    public function testSetType()
+    public function testSetType(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setType('fooBar')
-        );
+        $this->assertInstanceOf($object::class, $object->setType('fooBar'));
 
         $argument = 'fooBar';
 
@@ -263,40 +220,31 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['type' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['type' => $form->setData(...)]));
     }
 
-    public function testSetEnvironment()
+    public function testSetEnvironment(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setEnvironment(
-                $argument = $this->createMock(Environment::class)
-            )
-        );
+        $this->assertInstanceOf($object::class, $object->setEnvironment(
+            $argument = $this->createMock(Environment::class)
+        ));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['environment' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['environment' => $form->setData(...)]));
     }
 
-    public function testSetAddressExceptionOnBadArgument()
+    public function testSetAddressExceptionOnBadArgument(): void
     {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->setAddress(new \stdClass());
+        $this->expectException(Throwable::class);
+        $this->buildObject()->setAddress(new stdClass());
     }
 
-    public function testGetIdentity()
+    public function testGetIdentity(): void
     {
         $argument = $this->createMock(IdentityInterface::class);
         $object = $this->generateObjectPopulated(['identity' => $argument]);
@@ -306,34 +254,25 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['identity' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['identity' => $form->setData(...)]));
     }
 
-    public function testSetIdentity()
+    public function testSetIdentity(): void
     {
         $argument = $this->createMock(IdentityInterface::class);
 
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setIdentity($argument)
-        );
+        $this->assertInstanceOf($object::class, $object->setIdentity($argument));
 
         $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['identity' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['identity' => $form->setData(...)]));
     }
 
-    public function testIsLocked()
+    public function testIsLocked(): void
     {
         $argument = true;
         $object = $this->generateObjectPopulated(['locked' => $argument]);
@@ -343,23 +282,15 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['locked' => $form->setData(...)]),
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['locked' => $form->setData(...)]));
 
-        self::assertTrue(
-            $object->isLocked(),
-        );
+        $this->assertTrue($object->isLocked());
     }
 
-    public function testSetLocked()
+    public function testSetLocked(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            $object::class,
-            $object->setLocked(true)
-        );
+        $this->assertInstanceOf($object::class, $object->setLocked(true));
 
         $argument = true;
 
@@ -368,34 +299,31 @@ class ClusterTest extends TestCase
             ->method('setData')
             ->with($argument);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $object->visit(['locked' => $form->setData(...)])
-        );
+        $this->assertInstanceOf(Cluster::class, $object->visit(['locked' => $form->setData(...)]));
     }
 
-    public function testSetIdentityExceptionOnBadArgument()
+    public function testSetIdentityExceptionOnBadArgument(): void
     {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->setIdentity(new \stdClass());
+        $this->expectException(Throwable::class);
+        $this->buildObject()->setIdentity(new stdClass());
     }
 
-    public function testExportToMeDataBadNormalizer()
+    public function testExportToMeDataBadNormalizer(): void
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->exportToMeData(new \stdClass(), []);
+        $this->expectException(TypeError::class);
+        $this->buildObject()->exportToMeData(new stdClass(), []);
     }
 
-    public function testExportToMeDataBadContext()
+    public function testExportToMeDataBadContext(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
             $this->createMock(EastNormalizerInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
-    public function testExportToMe()
+    public function testExportToMe(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -413,51 +341,42 @@ class ClusterTest extends TestCase
                 'locked' => true,
             ]);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $this->buildObject()->setId('123')
-                ->setName('fooName')
-                ->setNamespace('foo-bar')
-                ->useHierarchicalNamespaces(true)
-                ->setType('fooType')
-                ->setAddress('fooAddress')
-                ->setIdentity($identity)
-                ->setEnvironment($environment)
-                ->setLocked(true)
-                ->exportToMeData(
+        $this->assertInstanceOf(Cluster::class, $this->buildObject()->setId('123')
+            ->setName('fooName')
+            ->setNamespace('foo-bar')
+            ->useHierarchicalNamespaces(true)
+            ->setType('fooType')
+            ->setAddress('fooAddress')
+            ->setIdentity($identity)
+            ->setEnvironment($environment)
+            ->setLocked(true)
+            ->exportToMeData(
                 $normalizer,
                 ['foo' => 'bar']
-            )
-        );
+            ));
     }
 
-    public function testPrepareJobForEnvironmentMissingEnv()
+    public function testPrepareJobForEnvironmentMissingEnv(): void
     {
         $job = $this->createMock(Job::class);
         $job->expects($this->never())->method('__call')->with('addcluster');
 
         $env = new Environment('foo');
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $this->buildObject()->prepareJobForEnvironment($job, $env)
-        );
+        $this->assertInstanceOf(Cluster::class, $this->buildObject()->prepareJobForEnvironment($job, $env));
     }
 
-    public function testPrepareJobForEnvironmentEnvNotEquals()
+    public function testPrepareJobForEnvironmentEnvNotEquals(): void
     {
         $job = $this->createMock(Job::class);
         $job->expects($this->never())->method('__call')->with('addCluster');
 
         $env = new Environment('foo');
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $this->buildObject()->setEnvironment(new Environment('bar'))->prepareJobForEnvironment($job, $env)
-        );
+        $this->assertInstanceOf(Cluster::class, $this->buildObject()->setEnvironment(new Environment('bar'))->prepareJobForEnvironment($job, $env));
     }
 
-    public function testPrepareJobForEnvironmentEnvEquals()
+    public function testPrepareJobForEnvironmentEnvEquals(): void
     {
         $env = new Environment('foo');
 
@@ -466,44 +385,41 @@ class ClusterTest extends TestCase
         $job = $this->createMock(Job::class);
         $job->expects($this->once())->method('addCluster')->with($cluster);
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $cluster->prepareJobForEnvironment($job, $env)
-        );
+        $this->assertInstanceOf(Cluster::class, $cluster->prepareJobForEnvironment($job, $env));
     }
 
-    public function testPrepareJobForEnvironmentBadJob()
+    public function testPrepareJobForEnvironmentBadJob(): void
     {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->prepareJobForEnvironment(new \stdClass(), $this->createMock(Environment::class));
+        $this->expectException(Throwable::class);
+        $this->buildObject()->prepareJobForEnvironment(new stdClass(), $this->createMock(Environment::class));
     }
 
-    public function testPrepareJobForEnvironmentBadEnv()
+    public function testPrepareJobForEnvironmentBadEnv(): void
     {
-        $this->expectException(\Throwable::class);
-        $this->buildObject()->prepareJobForEnvironment($this->createMock(Job::class), new \stdClass());
+        $this->expectException(Throwable::class);
+        $this->buildObject()->prepareJobForEnvironment($this->createMock(Job::class), new stdClass());
     }
 
-    public function testSelectClusterBadDirectory()
+    public function testSelectClusterBadDirectory(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->selectCluster(
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(PromiseInterface::class)
         );
     }
 
-    public function testSelectClusterBadPromise()
+    public function testSelectClusterBadPromise(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         $this->buildObject()->selectCluster(
             $this->createMock(Directory::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
-    public function testSelectCluster()
+    public function testSelectCluster(): void
     {
         $directory = $this->createMock(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
@@ -519,38 +435,35 @@ class ClusterTest extends TestCase
             ]
         );
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $cluster->selectCluster(
-                $directory,
-                $this->createMock(CompiledDeploymentInterface::class),
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Cluster::class, $cluster->selectCluster(
+            $directory,
+            $this->createMock(CompiledDeploymentInterface::class),
+            $promise
+        ));
     }
 
-    public function testConfigureClusterBadClient()
+    public function testConfigureClusterBadClient(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->configureCluster(
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(DefaultsBag::class),
             $this->createMock(PromiseInterface::class),
         );
     }
 
-    public function testConfigureClusterBadPromise()
+    public function testConfigureClusterBadPromise(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         $this->buildObject()->configureCluster(
             $this->createMock(DriverInterface::class),
             $this->createMock(DefaultsBag::class),
-            new \stdClass(),
+            new stdClass(),
         );
     }
 
-    public function testConfigureCluster()
+    public function testConfigureCluster(): void
     {
         $client = $this->createMock(DriverInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
@@ -570,17 +483,14 @@ class ClusterTest extends TestCase
         $promise->expects($this->once())->method('success')->with($client)->willReturnSelf();
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $cluster->configureCluster(
-                $client,
-                $this->createMock(DefaultsBag::class),
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Cluster::class, $cluster->configureCluster(
+            $client,
+            $this->createMock(DefaultsBag::class),
+            $promise
+        ));
     }
 
-    public function testConfigureClusterOnError()
+    public function testConfigureClusterOnError(): void
     {
         $client = $this->createMock(DriverInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
@@ -595,33 +505,27 @@ class ClusterTest extends TestCase
         $client->expects($this->once())
             ->method('configure')
             ->with($address, $identity)
-            ->willThrowException(new \Exception());
+            ->willThrowException(new Exception());
 
         $promise->expects($this->never())->method('success');
-        $promise->expects($this->once())->method('fail')->with(new \Exception)->willReturnSelf();
+        $promise->expects($this->once())->method('fail')->with(new Exception())->willReturnSelf();
 
-        self::assertInstanceOf(
-            Cluster::class,
-            $cluster->configureCluster(
-                $client,
-                $this->createMock(DefaultsBag::class),
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Cluster::class, $cluster->configureCluster(
+            $client,
+            $this->createMock(DefaultsBag::class),
+            $promise
+        ));
     }
 
-    public function testTellMeYourEnvironment()
+    public function testTellMeYourEnvironment(): void
     {
-        self::assertInstanceOf(
-            Cluster::class,
-            $this->buildObject()->tellMeYourEnvironment(static function() {})
-        );
+        $this->assertInstanceOf(Cluster::class, $this->buildObject()->tellMeYourEnvironment(static function (): void {}));
     }
 
 
-    public function testTellMeYourEnvironmentBallCallback()
+    public function testTellMeYourEnvironmentBallCallback(): void
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->tellMeYourEnvironment(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildObject()->tellMeYourEnvironment(new stdClass());
     }
 }

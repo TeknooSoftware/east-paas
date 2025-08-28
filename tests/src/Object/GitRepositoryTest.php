@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(GitRepository::class)]
@@ -41,45 +41,33 @@ class GitRepositoryTest extends TestCase
 {
     use ObjectTestTrait;
 
-    /**
-     * @return GitRepository
-     */
     public function buildObject(): GitRepository
     {
         return new GitRepository('fooBar', 'barFoo', $this->createMock(IdentityInterface::class));
     }
 
-    public function testGetPullUrl()
+    public function testGetPullUrl(): void
     {
-        self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated()->getPullUrl()
-        );
+        $this->assertEquals('fooBar', $this->generateObjectPopulated()->getPullUrl());
     }
 
-    public function testGetDefaultBranch()
+    public function testGetDefaultBranch(): void
     {
-        self::assertEquals(
-            'barFoo',
-            $this->generateObjectPopulated()->getDefaultBranch()
-        );
+        $this->assertEquals('barFoo', $this->generateObjectPopulated()->getDefaultBranch());
     }
 
-    public function testGetIdentity()
+    public function testGetIdentity(): void
     {
-        self::assertInstanceOf(
-            IdentityInterface::class,
-            $this->generateObjectPopulated()->getIdentity()
-        );
+        $this->assertInstanceOf(IdentityInterface::class, $this->generateObjectPopulated()->getIdentity());
     }
 
-    public function testExportToMeDataBadNormalizer()
+    public function testExportToMeDataBadNormalizer(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->exportToMeData(new \stdClass(), []);
     }
 
-    public function testExportToMeDataBadContext()
+    public function testExportToMeDataBadContext(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->exportToMeData(
@@ -88,7 +76,7 @@ class GitRepositoryTest extends TestCase
         );
     }
 
-    public function testExportToMe()
+    public function testExportToMe(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -101,12 +89,9 @@ class GitRepositoryTest extends TestCase
                 'identity' => $this->createMock(IdentityInterface::class),
             ]);
 
-        self::assertInstanceOf(
-            GitRepository::class,
-            $this->buildObject()->setId('123')->exportToMeData(
-                $normalizer,
-                ['foo' => 'bar']
-            )
-        );
+        $this->assertInstanceOf(GitRepository::class, $this->buildObject()->setId('123')->exportToMeData(
+            $normalizer,
+            ['foo' => 'bar']
+        ));
     }
 }

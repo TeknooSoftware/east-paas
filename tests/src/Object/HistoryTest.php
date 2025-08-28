@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,21 +19,27 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Object;
 
 use DateTime;
+use DateTimeImmutable;
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
+use TypeError;
+
+use function json_encode;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(History::class)]
@@ -42,120 +48,96 @@ class HistoryTest extends TestCase
     use ObjectTestTrait;
 
     /**
-     * @return History
-     * @throws \Exception
+     * @throws Exception
      */
     public function buildObject(): History
     {
-        return new History(new History(null, 'foo', new \DateTimeImmutable('2018-04-01')), 'fooBar', new \DateTimeImmutable('2018-05-01'), true, ['foo'=>'bar']);
+        return new History(new History(null, 'foo', new DateTimeImmutable('2018-04-01')), 'fooBar', new DateTimeImmutable('2018-05-01'), true, ['foo' => 'bar']);
     }
 
-    public function testGetMessage()
+    public function testGetMessage(): void
     {
-        self::assertEquals(
-            'fooBar',
-            $this->buildObject()->getMessage()
-        );
+        $this->assertEquals('fooBar', $this->buildObject()->getMessage());
     }
 
-    public function testGetDate()
+    public function testGetDate(): void
     {
-        self::assertEquals(
-            new \DateTimeImmutable('2018-05-01'),
-            $this->buildObject()->getDate()
-        );
+        $this->assertEquals(new DateTimeImmutable('2018-05-01'), $this->buildObject()->getDate());
     }
 
-    public function testGetExtra()
+    public function testGetExtra(): void
     {
-        self::assertEquals(
-            ['foo'=>'bar'],
-            $this->buildObject()->getExtra()
-        );
+        $this->assertEquals(['foo' => 'bar'], $this->buildObject()->getExtra());
     }
 
-    public function testGetPrevious()
+    public function testGetPrevious(): void
     {
-        self::assertInstanceOf(
-            History::class,
-            $this->buildObject()->getPrevious()
-        );
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getPrevious()->getMessage()
-        );
-        self::assertNull(
-            $this->buildObject()->getPrevious()->getPrevious()
-        );
+        $this->assertInstanceOf(History::class, $this->buildObject()->getPrevious());
+        $this->assertEquals('foo', $this->buildObject()->getPrevious()->getMessage());
+        $this->assertNotInstanceOf(\Teknoo\East\Paas\Object\History::class, $this->buildObject()->getPrevious()->getPrevious());
     }
 
-    public function testIsFinal()
+    public function testIsFinal(): void
     {
-        self::assertTrue($this->buildObject()->isFinal());
+        $this->assertTrue($this->buildObject()->isFinal());
 
-        self::assertInstanceOf(
-            History::class,
-            $this->buildObject()->getPrevious()
-        );
+        $this->assertInstanceOf(History::class, $this->buildObject()->getPrevious());
 
-        self::assertFalse($this->buildObject()->getPrevious()->isFinal());
+        $this->assertFalse($this->buildObject()->getPrevious()->isFinal());
     }
 
-    public function testJsonSerialize()
+    public function testJsonSerialize(): void
     {
-        self::assertEquals(
-            '{"message":"bar","date":"2018-05-01 00:00:00 UTC","is_final":true,"extra":[],"previous":{"message":"foo","date":"2018-04-01 00:00:00 UTC","is_final":false,"extra":{"foo":"bar"},"previous":null,"serial_number":123},"serial_number":0}',
-            \json_encode(
-                value: new History(
-                    new History(
-                        null,
-                        'foo',
-                        new \DateTimeImmutable('2018-04-01'),
-                        false,
-                        ['foo'=>'bar'],
-                        123,
-                    ),
-                    'bar',
-                    new \DateTimeImmutable('2018-05-01'),
-                    true,
-                    serialNumber: 0,
+        $this->assertEquals('{"message":"bar","date":"2018-05-01 00:00:00 UTC","is_final":true,"extra":[],"previous":{"message":"foo","date":"2018-04-01 00:00:00 UTC","is_final":false,"extra":{"foo":"bar"},"previous":null,"serial_number":123},"serial_number":0}', json_encode(
+            value: new History(
+                new History(
+                    null,
+                    'foo',
+                    new DateTimeImmutable('2018-04-01'),
+                    false,
+                    ['foo' => 'bar'],
+                    123,
                 ),
-                flags: JSON_THROW_ON_ERROR
-            )
-        );
+                'bar',
+                new DateTimeImmutable('2018-05-01'),
+                true,
+                serialNumber: 0,
+            ),
+            flags: JSON_THROW_ON_ERROR
+        ));
     }
 
-    public function testCloneBadPrevious()
+    public function testCloneBadPrevious(): void
     {
-        $this->expectException(\TypeError::class);
-        (new History(null, 'foo', new DateTime('2018-11-25')))->clone(new \stdClass());
+        $this->expectException(TypeError::class);
+        new History(null, 'foo', new DateTime('2018-11-25'))->clone(new stdClass());
     }
 
-    public function testCloneWithoutParent()
+    public function testCloneWithoutParent(): void
     {
         $history = new History(null, 'foo', new DateTime('2018-11-25'));
         $cloned = $history->clone(null);
 
-        self::assertNotSame($history, $cloned);
-        self::assertEquals($history, $cloned);
+        $this->assertNotSame($history, $cloned);
+        $this->assertEquals($history, $cloned);
     }
 
-    public function testCloneWithoutParentWithParent()
+    public function testCloneWithoutParentWithParent(): void
     {
-        $parent = new History(null, 'bar', new DateTime('2018-10-25'), serialNumber: 0,);
-        $history = new History(null, 'foo', new DateTime('2018-11-25'), serialNumber: 0,);
-        $expected = new History($parent, 'foo', new DateTime('2018-11-25'), serialNumber: 0,);
+        $parent = new History(null, 'bar', new DateTime('2018-10-25'), serialNumber: 0, );
+        $history = new History(null, 'foo', new DateTime('2018-11-25'), serialNumber: 0, );
+        $expected = new History($parent, 'foo', new DateTime('2018-11-25'), serialNumber: 0, );
         $cloned = $history->clone($parent);
 
-        self::assertNotSame($history, $cloned);
-        self::assertNotSame($parent, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history, $cloned);
+        $this->assertNotSame($parent, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testCloneWithoutParentWithMoreRecent()
+    public function testCloneWithoutParentWithMoreRecent(): void
     {
-        $recent = new History(null, 'bar', new DateTime('2019-10-25'), serialNumber: 0,);
-        $history = new History(null, 'foo', new DateTime('2018-11-25'), serialNumber: 0,);
+        $recent = new History(null, 'bar', new DateTime('2019-10-25'), serialNumber: 0, );
+        $history = new History(null, 'foo', new DateTime('2018-11-25'), serialNumber: 0, );
         $expected = new History(
             $history,
             'bar',
@@ -165,17 +147,17 @@ class HistoryTest extends TestCase
 
         $cloned = $history->clone($recent);
 
-        self::assertNotSame($history, $cloned);
-        self::assertNotSame($recent, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history, $cloned);
+        $this->assertNotSame($recent, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testCloneWithNewHistoryToInsert()
+    public function testCloneWithNewHistoryToInsert(): void
     {
-        $newHistory = new History(null, 'bar', new DateTime('2019-10-25'), serialNumber: 0,);
-        $history1 = new History(null, 'foo1', new DateTime('2017-11-25'), serialNumber: 0,);
-        $history2 = new History($history1, 'foo2', new DateTime('2018-11-25'), serialNumber: 0,);
-        $history3 = new History($history2, 'foo3', new DateTime('2020-11-25'), serialNumber: 0,);
+        $newHistory = new History(null, 'bar', new DateTime('2019-10-25'), serialNumber: 0, );
+        $history1 = new History(null, 'foo1', new DateTime('2017-11-25'), serialNumber: 0, );
+        $history2 = new History($history1, 'foo2', new DateTime('2018-11-25'), serialNumber: 0, );
+        $history3 = new History($history2, 'foo3', new DateTime('2020-11-25'), serialNumber: 0, );
 
         $expected = new History(
             new History(
@@ -201,19 +183,19 @@ class HistoryTest extends TestCase
 
         $cloned = $history3->clone($newHistory);
 
-        self::assertNotSame($history1, $cloned);
-        self::assertNotSame($history2, $cloned);
-        self::assertNotSame($history3, $cloned);
-        self::assertNotSame($newHistory, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history1, $cloned);
+        $this->assertNotSame($history2, $cloned);
+        $this->assertNotSame($history3, $cloned);
+        $this->assertNotSame($newHistory, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testCloneWithNewHistoryToInsert2()
+    public function testCloneWithNewHistoryToInsert2(): void
     {
-        $newHistory = new History(null, 'bar', new DateTime('2018-10-25'), serialNumber: 0,);
-        $history1 = new History(null, 'foo1', new DateTime('2017-11-25'), serialNumber: 0,);
-        $history2 = new History($history1, 'foo2', new DateTime('2019-11-25'), serialNumber: 0,);
-        $history3 = new History($history2, 'foo3', new DateTime('2020-11-25'), serialNumber: 0,);
+        $newHistory = new History(null, 'bar', new DateTime('2018-10-25'), serialNumber: 0, );
+        $history1 = new History(null, 'foo1', new DateTime('2017-11-25'), serialNumber: 0, );
+        $history2 = new History($history1, 'foo2', new DateTime('2019-11-25'), serialNumber: 0, );
+        $history3 = new History($history2, 'foo3', new DateTime('2020-11-25'), serialNumber: 0, );
 
         $expected = new History(
             new History(
@@ -239,14 +221,14 @@ class HistoryTest extends TestCase
 
         $cloned = $history3->clone($newHistory);
 
-        self::assertNotSame($history1, $cloned);
-        self::assertNotSame($history2, $cloned);
-        self::assertNotSame($history3, $cloned);
-        self::assertNotSame($newHistory, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history1, $cloned);
+        $this->assertNotSame($history2, $cloned);
+        $this->assertNotSame($history3, $cloned);
+        $this->assertNotSame($newHistory, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testCloneWithoutParentWithMoreRecentWithCounter()
+    public function testCloneWithoutParentWithMoreRecentWithCounter(): void
     {
         $recent = new History(
             previous: null,
@@ -271,12 +253,12 @@ class HistoryTest extends TestCase
 
         $cloned = $history->clone($recent);
 
-        self::assertNotSame($history, $cloned);
-        self::assertNotSame($recent, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history, $cloned);
+        $this->assertNotSame($recent, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testCloneWithNewHistoryToInsertWithCounter()
+    public function testCloneWithNewHistoryToInsertWithCounter(): void
     {
         $newHistory = new History(
             previous: null,
@@ -327,14 +309,14 @@ class HistoryTest extends TestCase
 
         $cloned = $history3->clone($newHistory);
 
-        self::assertNotSame($history1, $cloned);
-        self::assertNotSame($history2, $cloned);
-        self::assertNotSame($history3, $cloned);
-        self::assertNotSame($newHistory, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history1, $cloned);
+        $this->assertNotSame($history2, $cloned);
+        $this->assertNotSame($history3, $cloned);
+        $this->assertNotSame($newHistory, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testCloneWithNewHistoryToInsert2WithCounter()
+    public function testCloneWithNewHistoryToInsert2WithCounter(): void
     {
         $newHistory = new History(
             previous:null,
@@ -407,14 +389,14 @@ class HistoryTest extends TestCase
 
         $cloned = $history5->clone($newHistory);
 
-        self::assertNotSame($history1, $cloned);
-        self::assertNotSame($history2, $cloned);
-        self::assertNotSame($history3, $cloned);
-        self::assertNotSame($newHistory, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history1, $cloned);
+        $this->assertNotSame($history2, $cloned);
+        $this->assertNotSame($history3, $cloned);
+        $this->assertNotSame($newHistory, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testCloneWithNewHistoryToInsertWithCounterAndFinal()
+    public function testCloneWithNewHistoryToInsertWithCounterAndFinal(): void
     {
         $recent = new History(
             previous: null,
@@ -441,9 +423,9 @@ class HistoryTest extends TestCase
 
         $cloned = $history->clone($recent);
 
-        self::assertNotSame($history, $cloned);
-        self::assertNotSame($recent, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history, $cloned);
+        $this->assertNotSame($recent, $cloned);
+        $this->assertEquals($expected, $cloned);
 
         $recent = new History(
             previous: null,
@@ -470,12 +452,12 @@ class HistoryTest extends TestCase
 
         $cloned = $history->clone($recent);
 
-        self::assertNotSame($history, $cloned);
-        self::assertNotSame($recent, $cloned);
-        self::assertEquals($expected, $cloned);
+        $this->assertNotSame($history, $cloned);
+        $this->assertNotSame($recent, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testLimitNotExceed()
+    public function testLimitNotExceed(): void
     {
         $history = new History(
             previous: new History(
@@ -507,10 +489,10 @@ class HistoryTest extends TestCase
 
         $cloned = $history->limit(5);
 
-        self::assertEquals($expected, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 
-    public function testLimitExceed()
+    public function testLimitExceed(): void
     {
         $history = new History(
             previous: new History(
@@ -572,6 +554,6 @@ class HistoryTest extends TestCase
 
         $cloned = $history->limit(2);
 
-        self::assertEquals($expected, $cloned);
+        $this->assertEquals($expected, $cloned);
     }
 }

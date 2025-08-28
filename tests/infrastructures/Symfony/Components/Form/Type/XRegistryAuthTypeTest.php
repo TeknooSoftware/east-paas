@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -37,7 +37,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Paas\Object\XRegistryAuth;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(XRegistryAuthType::class)]
@@ -45,12 +45,12 @@ class XRegistryAuthTypeTest extends TestCase
 {
     use FormTestTrait;
 
-    public function buildForm()
+    public function buildForm(): XRegistryAuthType
     {
         return new XRegistryAuthType();
     }
 
-    private function getObject()
+    private function getObject(): XRegistryAuth
     {
         return new XRegistryAuth();
     }
@@ -65,17 +65,14 @@ class XRegistryAuthTypeTest extends TestCase
         ];
     }
 
-    public function testConfigureOptions()
+    public function testConfigureOptions(): void
     {
-        self::assertInstanceOf(
-            AbstractType::class,
-            $this->buildForm()->configureOptions(
-                $this->createMock(OptionsResolver::class)
-            )
-        );
+        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->configureOptions(
+            $this->createMock(OptionsResolver::class)
+        ));
     }
 
-    public function testDataMapperWithSecureData()
+    public function testDataMapperWithSecureData(): void
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
@@ -87,14 +84,14 @@ class XRegistryAuthTypeTest extends TestCase
             serverAddress: '',
         );
 
-        $builder->expects($this->any())
+        $builder
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object) {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): \PHPUnit\Framework\MockObject\MockObject {
                 $children = [];
                 $formArray = $this->getFormArray();
                 $formArray['password'] = '';
                 $formArray['clear'] = false;
-                foreach ($formArray as $name=>$value) {
+                foreach ($formArray as $name => $value) {
                     $mock = $this->createMock(FormInterface::class);
                     $mock->expects($this->once())->method('getData')->willReturn($value);
                     $children[$name] = $mock;
@@ -105,17 +102,11 @@ class XRegistryAuthTypeTest extends TestCase
                 $object2 = '';
                 $dataMapper->mapFormsToData($forms, $object2);
 
-                self::assertEquals(
-                    $object,
-                    $object2,
-                );
+                $this->assertEquals($object, $object2);
 
                 return $builder;
             });
 
-        self::assertInstanceOf(
-            AbstractType::class,
-            $this->buildForm()->buildForm($builder, [])
-        );
+        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, []));
     }
 }

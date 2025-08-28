@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -41,16 +41,15 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ContainerTest extends TestCase
 {
     /**
-     * @return Container
      * @throws \Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Doctrine/di.php');
@@ -58,28 +57,25 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    private function generateTestForRepository(string $objectClass, string $repositoryClass)
+    private function generateTestForRepository(string $objectClass, string $repositoryClass): void
     {
         $container = $this->buildContainer();
         $objectManager = $this->createMock(ObjectManager::class);
-        $objectManager->expects($this->any())->method('getRepository')->with($objectClass)->willReturn(
+        $objectManager->method('getRepository')->with($objectClass)->willReturn(
             $this->createMock(DocumentRepository::class)
         );
 
         $container->set(ObjectManager::class, $objectManager);
         $repository = $container->get($repositoryClass);
 
-        self::assertInstanceOf(
-            $repositoryClass,
-            $repository
-        );
+        $this->assertInstanceOf($repositoryClass, $repository);
     }
 
-    private function generateTestForRepositoryWithUnsupportedRepository(string $objectClass, string $repositoryClass)
+    private function generateTestForRepositoryWithUnsupportedRepository(string $objectClass, string $repositoryClass): void
     {
         $container = $this->buildContainer();
         $objectManager = $this->createMock(ObjectManager::class);
-        $objectManager->expects($this->any())->method('getRepository')->with($objectClass)->willReturn(
+        $objectManager->method('getRepository')->with($objectClass)->willReturn(
             $this->createMock(ObjectRepository::class)
         );
 
@@ -87,45 +83,45 @@ class ContainerTest extends TestCase
         $container->get($repositoryClass);
     }
 
-    public function testAccountRepository()
+    public function testAccountRepository(): void
     {
         $this->generateTestForRepository(Account::class, AccountRepositoryInterface::class);
     }
 
-    public function testProjectRepository()
+    public function testProjectRepository(): void
     {
         $this->generateTestForRepository(Project::class, ProjectRepositoryInterface::class);
     }
 
-    public function testJobRepository()
+    public function testJobRepository(): void
     {
         $this->generateTestForRepository(Job::class, JobRepositoryInterface::class);
     }
 
-    public function testClusterRepository()
+    public function testClusterRepository(): void
     {
         $this->generateTestForRepository(Cluster::class, ClusterRepositoryInterface::class);
     }
 
-    public function testAccountRepositoryWithUnsupportedRepository()
+    public function testAccountRepositoryWithUnsupportedRepository(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->generateTestForRepositoryWithUnsupportedRepository(Account::class, AccountRepositoryInterface::class);
     }
 
-    public function testProjectRepositoryWithUnsupportedRepository()
+    public function testProjectRepositoryWithUnsupportedRepository(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->generateTestForRepositoryWithUnsupportedRepository(Project::class, ProjectRepositoryInterface::class);
     }
 
-    public function testJobRepositoryWithUnsupportedRepository()
+    public function testJobRepositoryWithUnsupportedRepository(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->generateTestForRepositoryWithUnsupportedRepository(Job::class, JobRepositoryInterface::class);
     }
 
-    public function testClusterRepositoryWithUnsupportedRepository()
+    public function testClusterRepositoryWithUnsupportedRepository(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->generateTestForRepositoryWithUnsupportedRepository(Cluster::class, ClusterRepositoryInterface::class);

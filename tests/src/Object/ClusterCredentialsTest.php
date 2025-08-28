@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -35,7 +35,7 @@ use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ClusterCredentials::class)]
@@ -43,85 +43,58 @@ class ClusterCredentialsTest extends TestCase
 {
     use ObjectTestTrait;
 
-    /**
-     * @return ClusterCredentials
-     */
     public function buildObject(): ClusterCredentials
     {
         return new ClusterCredentials('caBar', 'certBar', 'keyFoo', 'barFoo', 'barFoo2', 'barBar');
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'barFoo2',
-            $this->generateObjectPopulated()->getName()
-        );
+        $this->assertEquals('barFoo2', $this->generateObjectPopulated()->getName());
     }
 
-    public function testToString()
+    public function testToString(): void
     {
-        self::assertEquals(
-            'barFoo2',
-            (string) $this->generateObjectPopulated()
-        );
+        $this->assertEquals('barFoo2', (string) $this->generateObjectPopulated());
     }
 
-    public function testGetCaCertificate()
+    public function testGetCaCertificate(): void
     {
-        self::assertEquals(
-            'caBar',
-            $this->generateObjectPopulated()->getCaCertificate()
-        );
+        $this->assertEquals('caBar', $this->generateObjectPopulated()->getCaCertificate());
     }
 
-    public function testGetClientCertificate()
+    public function testGetClientCertificate(): void
     {
-        self::assertEquals(
-            'certBar',
-            $this->generateObjectPopulated()->getClientCertificate()
-        );
+        $this->assertEquals('certBar', $this->generateObjectPopulated()->getClientCertificate());
     }
 
-    public function testGetClientFoo()
+    public function testGetClientFoo(): void
     {
-        self::assertEquals(
-            'keyFoo',
-            $this->generateObjectPopulated()->getClientKey()
-        );
+        $this->assertEquals('keyFoo', $this->generateObjectPopulated()->getClientKey());
     }
 
-    public function testGetToken()
+    public function testGetToken(): void
     {
-        self::assertEquals(
-            'barFoo',
-            $this->generateObjectPopulated()->getToken()
-        );
+        $this->assertEquals('barFoo', $this->generateObjectPopulated()->getToken());
     }
 
-    public function testGetUsername()
+    public function testGetUsername(): void
     {
-        self::assertEquals(
-            'barFoo2',
-            $this->generateObjectPopulated()->getUsername()
-        );
+        $this->assertEquals('barFoo2', $this->generateObjectPopulated()->getUsername());
     }
 
-    public function testGetPassword()
+    public function testGetPassword(): void
     {
-        self::assertEquals(
-            'barBar',
-            $this->generateObjectPopulated()->getPassword()
-        );
+        $this->assertEquals('barBar', $this->generateObjectPopulated()->getPassword());
     }
 
-    public function testExportToMeDataBadNormalizer()
+    public function testExportToMeDataBadNormalizer(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(new stdClass(), []);
     }
 
-    public function testExportToMeDataBadContext()
+    public function testExportToMeDataBadContext(): void
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
@@ -130,7 +103,7 @@ class ClusterCredentialsTest extends TestCase
         );
     }
 
-    public function testExportToMe()
+    public function testExportToMe(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -146,16 +119,13 @@ class ClusterCredentialsTest extends TestCase
                 'password' => 'barBar',
             ]);
 
-        self::assertInstanceOf(
-            ClusterCredentials::class,
-            $this->buildObject()->setId('123')->exportToMeData(
-                $normalizer,
-                ['foo' => 'bar']
-            )
-        );
+        $this->assertInstanceOf(ClusterCredentials::class, $this->buildObject()->setId('123')->exportToMeData(
+            $normalizer,
+            ['foo' => 'bar']
+        ));
     }
 
-    public function testExportToMeApi()
+    public function testExportToMeApi(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -166,23 +136,17 @@ class ClusterCredentialsTest extends TestCase
                 'username' => 'barFoo2',
             ]);
 
-        self::assertInstanceOf(
-            ClusterCredentials::class,
-            $this->buildObject()->setId('123')->exportToMeData(
-                $normalizer,
-                ['groups' => 'api']
-            )
-        );
+        $this->assertInstanceOf(ClusterCredentials::class, $this->buildObject()->setId('123')->exportToMeData(
+            $normalizer,
+            ['groups' => 'api']
+        ));
     }
 
-    public function testSetExportConfiguration()
+    public function testSetExportConfiguration(): void
     {
         ClusterCredentials::setExportConfiguration($conf = ['name' => ['all']]);
         $rc = new ReflectionClass(ClusterCredentials::class);
 
-        self::assertEquals(
-            $conf,
-            $rc->getStaticPropertyValue('exportConfigurations'),
-        );
+        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
     }
 }

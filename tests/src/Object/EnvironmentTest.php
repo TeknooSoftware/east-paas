@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Object\Environment;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Environment::class)]
@@ -41,83 +41,65 @@ class EnvironmentTest extends TestCase
 {
     use ObjectTestTrait;
 
-    /**
-     * @return Environment
-     */
     public function buildObject(): Environment
     {
         return new Environment('fooBar');
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'fooBar',
-            $this->generateObjectPopulated()->getName()
-        );
+        $this->assertEquals('fooBar', $this->generateObjectPopulated()->getName());
     }
 
-    public function testToString()
+    public function testToString(): void
     {
-        self::assertEquals(
-            'fooBar',
-            (string) $this->generateObjectPopulated()
-        );
+        $this->assertEquals('fooBar', (string) $this->generateObjectPopulated());
     }
 
-    public function testIsEqualToInvalidBadClass()
+    public function testIsEqualToInvalidBadClass(): void
     {
         $promiseInvalid = $this->createMock(PromiseInterface::class);
         $promiseInvalid->expects($this->never())->method('success');
         $promiseInvalid->expects($this->once())->method('fail')
             ->with(new \LogicException('teknoo.east.paas.error.environment.not_equal'));
 
-        self::assertInstanceOf(
-            Environment::class,
-            $this->buildObject()->isEqualTo(new \stdClass(), $promiseInvalid)
-        );
+        $this->assertInstanceOf(Environment::class, $this->buildObject()->isEqualTo(new \stdClass(), $promiseInvalid));
     }
 
 
-    public function testIsEqualToInvalid()
+    public function testIsEqualToInvalid(): void
     {
         $promiseInvalid = $this->createMock(PromiseInterface::class);
         $promiseInvalid->expects($this->never())->method('success');
         $promiseInvalid->expects($this->once())->method('fail')
             ->with(new \LogicException('teknoo.east.paas.error.environment.not_equal'));
 
-        self::assertInstanceOf(
-            Environment::class,
-            $this->buildObject()->isEqualTo(new Environment('barFoo'), $promiseInvalid)
-        );
+        $this->assertInstanceOf(Environment::class, $this->buildObject()->isEqualTo(new Environment('barFoo'), $promiseInvalid));
     }
 
-    public function testIsEqualToValid()
+    public function testIsEqualToValid(): void
     {
         $env = new Environment('fooBar');
         $promiseInvalid = $this->createMock(PromiseInterface::class);
         $promiseInvalid->expects($this->once())->method('success')->with($env);
         $promiseInvalid->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            Environment::class,
-            $this->buildObject()->isEqualTo($env, $promiseInvalid)
-        );
+        $this->assertInstanceOf(Environment::class, $this->buildObject()->isEqualTo($env, $promiseInvalid));
     }
 
-    public function testIsEqualBadPromise()
+    public function testIsEqualBadPromise(): void
     {
         $this->expectException(\Throwable::class);
         $this->buildObject()->isEqualTo(null, new \stdClass());
     }
 
-    public function testExportToMeDataBadNormalizer()
+    public function testExportToMeDataBadNormalizer(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->exportToMeData(new \stdClass(), []);
     }
 
-    public function testExportToMeDataBadContext()
+    public function testExportToMeDataBadContext(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->exportToMeData(
@@ -126,7 +108,7 @@ class EnvironmentTest extends TestCase
         );
     }
 
-    public function testExportToMe()
+    public function testExportToMe(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -136,12 +118,9 @@ class EnvironmentTest extends TestCase
                 'name' => 'fooBar',
             ]);
 
-        self::assertInstanceOf(
-            Environment::class,
-            $this->buildObject()->exportToMeData(
-                $normalizer,
-                ['foo' => 'bar']
-            )
-        );
+        $this->assertInstanceOf(Environment::class, $this->buildObject()->exportToMeData(
+            $normalizer,
+            ['foo' => 'bar']
+        ));
     }
 }

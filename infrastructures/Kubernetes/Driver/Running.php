@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 
 use Closure;
 use SensitiveParameter;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DriverAwareInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\Promise;
@@ -47,7 +48,7 @@ use Throwable;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class Running implements StateInterface
@@ -57,7 +58,7 @@ class Running implements StateInterface
     private function getClient(): Closure
     {
         return function (): KubernetesClient {
-            return $this->client ?? ($this->clientFactory)(
+            return $this->client ??= ($this->clientFactory)(
                 (string) $this->master,
                 $this->credentials,
             );
@@ -88,12 +89,13 @@ class Running implements StateInterface
 
             try {
                 $promise = new Promise(
-                    onSuccess: $mainPromise->success(...),
+                    onSuccess: $mainPromise->allowReuse()->success(...),
                     onFail: static function (#[SensitiveParameter] Throwable $error): never {
                         //To break the foreach loop
                         throw $error;
                     }
                 );
+                $promise->allowReuse();
 
                 foreach ($this->transcribers as $transcriber) {
                     if ($transcriber instanceof DriverAwareInterface) {

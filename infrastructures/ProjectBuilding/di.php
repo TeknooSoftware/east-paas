@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -30,11 +30,11 @@ use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts\ProcessFactoryInt
 
 return [
     ProcessFactoryInterface::class => static function (): callable {
-        return new class implements ProcessFactoryInterface {
+        return new class () implements ProcessFactoryInterface {
             public function __invoke(array $command, string $cwd, float $timeout): Process
             {
                 $process = new Process($command, $cwd);
-                $process->setTimeout($timeout,);
+                $process->setTimeout($timeout);
 
                 return $process;
             }
