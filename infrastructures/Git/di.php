@@ -39,7 +39,7 @@ return [
             $timeout = (float) $container->get('teknoo.east.paas.git.cloning.timeout');
         }
 
-        return new readonly class ($timeout) implements ProcessFactoryInterface {
+        return new class ($timeout) implements ProcessFactoryInterface {
             public function __construct(
                 private float $timeout,
             ) {
