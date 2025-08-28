@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -46,14 +46,17 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use function file_put_contents;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ContainerTest extends TestCase
 {
     private string $privateKeyRSA = __DIR__ . '/../../var/keys/rsa.private.pem';
+
     private string $publicKeyRSA = __DIR__ . '/../../var/keys/rsa.public.pem';
+
     private string $privateKeyDSA = __DIR__ . '/../../var/keys/dsa.private.pem';
+
     private string $publicKeyDSA = __DIR__ . '/../../var/keys/dsa.public.pem';
 
     protected function setUp(): void
@@ -68,10 +71,9 @@ class ContainerTest extends TestCase
     }
 
     /**
-     * @return Container
      * @throws \Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__ . '/../../../infrastructures/PhpSecLib/di.php');
@@ -79,7 +81,7 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    public function testGetEncryptionWhenNoKeysDefined()
+    public function testGetEncryptionWhenNoKeysDefined(): void
     {
         $container = $this->buildContainer();
 
@@ -104,12 +106,10 @@ class ContainerTest extends TestCase
             unset($_ENV[$publicKeyRSAEnvKey]);
         }
 
-        self::assertNull(
-            $container->get(EncryptionInterface::class),
-        );
+        $this->assertNull($container->get(EncryptionInterface::class));
     }
 
-    public function testGetEncryptionWhenNoPrivateKeyDefined()
+    public function testGetEncryptionWhenNoPrivateKeyDefined(): void
     {
         $container = $this->buildContainer();
 
@@ -133,7 +133,7 @@ class ContainerTest extends TestCase
         $_ENV[$publicKeyRSAEnvKey] = __DIR__ . '/../../var/keys/rsa.public.pem';
 
         $service = $container->get(EncryptionInterface::class);
-        self::assertInstanceOf(EncryptionInterface::class, $service);
+        $this->assertInstanceOf(EncryptionInterface::class, $service);
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('fail');
@@ -144,7 +144,7 @@ class ContainerTest extends TestCase
         );
     }
 
-    public function testGetEncryptionWhenNoPublicKeyDefined()
+    public function testGetEncryptionWhenNoPublicKeyDefined(): void
     {
         $container = $this->buildContainer();
 
@@ -171,7 +171,7 @@ class ContainerTest extends TestCase
         $container->get(EncryptionInterface::class);
     }
 
-    public function testGetEncryptionWhenWrongAlgoDefined()
+    public function testGetEncryptionWhenWrongAlgoDefined(): void
     {
         $container = $this->buildContainer();
 
@@ -193,7 +193,7 @@ class ContainerTest extends TestCase
         $container->get(EncryptionInterface::class);
     }
 
-    public function testGetEncryptionWithRSA()
+    public function testGetEncryptionWithRSA(): void
     {
         $container = $this->buildContainer();
 
@@ -210,13 +210,10 @@ class ContainerTest extends TestCase
         $_ENV[$publicKeyRSAEnvKey] = __DIR__ . '/../../var/keys/rsa.public.pem';
         $_ENV[$privateKeyRSAEnvKey] = __DIR__ . '/../../var/keys/rsa.private.pem';
 
-        self::assertInstanceOf(
-            EncryptionInterface::class,
-            $container->get(EncryptionInterface::class)
-        );
+        $this->assertInstanceOf(EncryptionInterface::class, $container->get(EncryptionInterface::class));
     }
 
-    public function testGetEncryptionWithDSA()
+    public function testGetEncryptionWithDSA(): void
     {
         $container = $this->buildContainer();
 
@@ -233,9 +230,6 @@ class ContainerTest extends TestCase
         $_ENV[$publicKeyDSAEnvKey] = __DIR__ . '/../../var/keys/dsa.public.pem';
         $_ENV[$privateKeyDSAEnvKey] = __DIR__ . '/../../var/keys/dsa.private.pem';
 
-        self::assertInstanceOf(
-            EncryptionInterface::class,
-            $container->get(EncryptionInterface::class)
-        );
+        $this->assertInstanceOf(EncryptionInterface::class, $container->get(EncryptionInterface::class));
     }
 }

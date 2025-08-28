@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -55,26 +55,38 @@ use function substr;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class JobCompiler implements CompilerInterface, ExtenderInterface
 {
     use MergeTrait;
 
-    private const KEY_EXTENDS = 'extends';
-    private const KEY_PODS = 'pods';
-    private const KEY_COMPLETIONS = 'completions';
-    private const KEY_COMPLETIONS_MODE = 'mode';
-    private const KEY_COMPLETIONS_COUNT = 'count';
-    private const KEY_COMPLETIONS_SUCCESS = 'success-on';
-    private const KEY_COMPLETIONS_FAILURE = 'fail-on';
-    private const KEY_COMPLETIONS_LIMIT_ON = 'limit-on';
-    private const KEY_COMPLETIONS_TIME_LIMIT = 'time-limit';
-    private const KEY_COMPLETIONS_SHELF_LIFE = 'shelf-life';
-    private const KEY_PARALLEL = 'is-parallel';
-    private const KEY_PLANNING = 'planning';
-    private const KEY_PLANNING_SCHEDULE = 'schedule';
+    private const string KEY_EXTENDS = 'extends';
+
+    private const string KEY_PODS = 'pods';
+
+    private const string KEY_COMPLETIONS = 'completions';
+
+    private const string KEY_COMPLETIONS_MODE = 'mode';
+
+    private const string KEY_COMPLETIONS_COUNT = 'count';
+
+    private const string KEY_COMPLETIONS_SUCCESS = 'success-on';
+
+    private const string KEY_COMPLETIONS_FAILURE = 'fail-on';
+
+    private const string KEY_COMPLETIONS_LIMIT_ON = 'limit-on';
+
+    private const string KEY_COMPLETIONS_TIME_LIMIT = 'time-limit';
+
+    private const string KEY_COMPLETIONS_SHELF_LIFE = 'shelf-life';
+
+    private const string KEY_PARALLEL = 'is-parallel';
+
+    private const string KEY_PLANNING = 'planning';
+
+    private const string KEY_PLANNING_SCHEDULE = 'schedule';
 
     /**
      * @param array<string, array<string, mixed>> $jobsLibrary

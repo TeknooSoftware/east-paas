@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -28,10 +28,13 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Normalizer;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use stdClass;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\Exception\NotSupportedException;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\JobUnitDenormalizer;
 use Teknoo\East\Paas\Job\JobUnit;
 use Teknoo\East\Paas\Object\AccountQuota;
@@ -41,11 +44,13 @@ use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Object\ImageRegistry;
 use Teknoo\East\Paas\Object\Job;
+use TypeError;
+
 use function func_get_args;
 use function in_array;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(JobUnitDenormalizer::class)]
@@ -56,48 +61,87 @@ class JobUnitDenormalizerTest extends TestCase
         return new JobUnitDenormalizer();
     }
 
-    public function testSetDenormalizerBadArgument()
+    public function testSetDenormalizerBadArgument(): void
     {
-        $this->expectException(\TypeError::class);
-        $this->buildNormalizer()->setDenormalizer(new \stdClass());
+        $this->expectException(TypeError::class);
+        $this->buildNormalizer()->setDenormalizer(new stdClass());
     }
 
-    public function testSetDenormalizer()
+    public function testSetDenormalizer(): void
     {
-        self::assertInstanceOf(
-            JobUnitDenormalizer::class,
-            $this->buildNormalizer()->setDenormalizer(
-                $this->createMock(DenormalizerInterface::class)
-            )
-        );
+        $this->assertInstanceOf(JobUnitDenormalizer::class, $this->buildNormalizer()->setDenormalizer(
+            $this->createMock(DenormalizerInterface::class)
+        ));
     }
 
-    public function testSupportsDenormalization()
+    public function testSupportsDenormalization(): void
     {
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        self::assertFalse($this->buildNormalizer()->supportsDenormalization(new \stdClass(), 'foo'));
-        self::assertFalse($this->buildNormalizer()->supportsDenormalization(['foo'=>'bar'], 'foo'));
-        self::assertTrue($this->buildNormalizer()->setDenormalizer($denormalizer)->supportsDenormalization(['foo'=>'bar'], JobUnitInterface::class));
+        $this->assertFalse($this->buildNormalizer()->supportsDenormalization(new stdClass(), 'foo'));
+        $this->assertFalse($this->buildNormalizer()->supportsDenormalization(['foo' => 'bar'], 'foo'));
+        $this->assertTrue($this->buildNormalizer()->setDenormalizer($denormalizer)->supportsDenormalization(['foo' => 'bar'], JobUnitInterface::class));
     }
 
-    public function testDenormalizeNotDenormalizer()
+    public function testDenormalizeNotDenormalizer(): void
     {
-        $this->expectException(\RuntimeException::class);
-        $this->buildNormalizer()->denormalize(new \stdClass(), 'foo');
+        $this->expectException(RuntimeException::class);
+        $this->buildNormalizer()->denormalize(new stdClass(), 'foo');
     }
 
-    public function testDenormalizeNotArray()
+    public function testDenormalizeNotArray(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(new \stdClass(), 'foo');
+        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(new stdClass(), 'foo');
     }
 
-    public function testDenormalizeNotClass()
+    public function testDenormalizeNotClass(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['foo' => 'bar'], 'foo');
+    }
+
+
+    public function testDenormalizeNotId(): void
+    {
+        $this->expectException(NotSupportedException::class);
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['foo' => 'bar'], JobUnitInterface::class);
+    }
+
+    public function testDenormalizeNotStringId(): void
+    {
+        $this->expectException(NotSupportedException::class);
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['id' => new \stdClass()], JobUnitInterface::class);
+    }
+
+    public function testDenormalizeNotValidProject(): void
+    {
+        $this->expectException(NotSupportedException::class);
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['id' => '123'], JobUnitInterface::class);
+    }
+
+    public function testDenormalizeNotValidrefix(): void
+    {
+        $this->expectException(NotSupportedException::class);
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            'prefix' => new \stdClass()
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize($jobNormalized, JobUnitInterface::class);
     }
 
     public function buildParametersVerification(
@@ -131,12 +175,56 @@ class JobUnitDenormalizerTest extends TestCase
         };
     }
 
-    public function testDenormalizeWithoutSourceRepository()
+    public function testDenormalizeWithoutSourceRepositoryDefined(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects($this->any())
+        $denormalizer
+            ->method('denormalize')
+            ->willReturnOnConsecutiveCalls(
+                null,
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
+                $env = $this->createMock(Environment::class),
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo'],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithoutSourceRepositoryDenormalized(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 null,
@@ -175,12 +263,56 @@ class JobUnitDenormalizerTest extends TestCase
             ->denormalize($jobNormalized, JobUnitInterface::class);
     }
 
-    public function testDenormalizeWithoutImageRegistry()
+    public function testDenormalizeWithoutImageRegistryDefined(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects($this->any())
+        $denormalizer
+            ->method('denormalize')
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                null,
+                $env = $this->createMock(Environment::class),
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo'],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithoutImageRegistryDenormalized(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -219,12 +351,56 @@ class JobUnitDenormalizerTest extends TestCase
             ->denormalize($jobNormalized, JobUnitInterface::class);
     }
 
-    public function testDenormalizeWithoutEnvironment()
+    public function testDenormalizeWithoutEnvironmentDefined(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects($this->any())
+        $denormalizer
+            ->method('denormalize')
+            ->willReturnOnConsecutiveCalls(
+                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $iregistry = $this->createMock(ImageRegistryInterface::class),
+                null,
+                $clusters = [$this->createMock(Cluster::class)],
+                $history = $this->createMock(History::class)
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "environment" => 'foo',
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "variables" => ['foo' => 'bar'],
+            "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
+        ];
+
+        $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithoutEnvironmentDenormalized(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -263,12 +439,12 @@ class JobUnitDenormalizerTest extends TestCase
             ->denormalize($jobNormalized, JobUnitInterface::class);
     }
 
-    public function testDenormalizeWithoutCluster()
+    public function testDenormalizeWithoutCluster(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects($this->any())
+        $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -307,18 +483,18 @@ class JobUnitDenormalizerTest extends TestCase
             ->denormalize($jobNormalized, JobUnitInterface::class);
     }
 
-    public function testDenormalizeWithoutClusterInstance()
+    public function testDenormalizeWithoutClusterInstance(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects($this->any())
+        $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
                 $iregistry = $this->createMock(ImageRegistryInterface::class),
                 $env = $this->createMock(Environment::class),
-                [new \stdClass()],
+                [new stdClass()],
                 $history = $this->createMock(History::class)
             );
 
@@ -351,12 +527,12 @@ class JobUnitDenormalizerTest extends TestCase
             ->denormalize($jobNormalized, JobUnitInterface::class);
     }
 
-    public function testDenormalizeWithoutHistory()
+    public function testDenormalizeWithoutHistory(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $denormalizer = $this->createMock(DenormalizerInterface::class);
-        $denormalizer->expects($this->any())
+        $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 $srepo = $this->createMock(SourceRepositoryInterface::class),
@@ -395,7 +571,7 @@ class JobUnitDenormalizerTest extends TestCase
             ->denormalize($jobNormalized, JobUnitInterface::class);
     }
 
-    public function testDenormalize()
+    public function testDenormalize(): void
     {
         $denormalizer = $this->createMock(DenormalizerInterface::class);
         $denormalizer->expects($this->exactly(5))
@@ -438,11 +614,11 @@ class JobUnitDenormalizerTest extends TestCase
         ];
 
         $jobUnit = new JobUnit(
-            id: $id, 
-            projectResume: $project, 
+            id: $id,
+            projectResume: $project,
             environment: $env,
-            prefix: 'foobar', 
-            sourceRepository: $srepo, 
+            prefix: 'foobar',
+            sourceRepository: $srepo,
             imagesRegistry: $iregistry,
             clusters: $clusters,
             variables: ['foo' => 'bar'],
@@ -451,15 +627,247 @@ class JobUnitDenormalizerTest extends TestCase
                 new AccountQuota('compute', 'cpu', '5'),
             ]
         );
-        self::assertEquals(
-            $jobUnit,
-            $this->buildNormalizer()->setDenormalizer($denormalizer)
-                ->denormalize($jobNormalized, JobUnitInterface::class)
-        );
+        $this->assertEquals($jobUnit, $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class));
     }
 
-    public function testGetSupportedTypes()
+    public function testDenormalizeWithoutVariables(): void
     {
-        self::assertIsArray($this->buildNormalizer()->getSupportedTypes('array'));
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects($this->exactly(5))
+            ->method('denormalize')
+            ->willReturnCallback(
+                $this->buildParametersVerification(
+                    $srepo = $this->createMock(SourceRepositoryInterface::class),
+                    $iregistry = $this->createMock(ImageRegistryInterface::class),
+                    $env = $this->createMock(Environment::class),
+                    $clusters = [$this->createMock(Cluster::class)],
+                    $history = $this->createMock(History::class),
+                )
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "base_namespace" => 'fooBar',
+            "prefix" => 'foobar',
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ]
+        ];
+
+        $jobUnit = new JobUnit(
+            id: $id,
+            projectResume: $project,
+            environment: $env,
+            prefix: 'foobar',
+            sourceRepository: $srepo,
+            imagesRegistry: $iregistry,
+            clusters: $clusters,
+            variables: [],
+            history: $history,
+            quotas: [
+                new AccountQuota('compute', 'cpu', '5'),
+            ]
+        );
+        $this->assertEquals($jobUnit, $this->buildNormalizer()->setDenormalizer($denormalizer)
+            ->denormalize($jobNormalized, JobUnitInterface::class));
+    }
+
+    public function testDenormalizeWithInvalidQuota(): void
+    {
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects($this->exactly(5))
+            ->method('denormalize')
+            ->willReturnCallback(
+                $this->buildParametersVerification(
+                    $srepo = $this->createMock(SourceRepositoryInterface::class),
+                    $iregistry = $this->createMock(ImageRegistryInterface::class),
+                    $env = $this->createMock(Environment::class),
+                    $clusters = [$this->createMock(Cluster::class)],
+                    $history = $this->createMock(History::class),
+                )
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "base_namespace" => 'fooBar',
+            "prefix" => 'foobar',
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "history" => ['history' => 'bar'],
+            "quotas" => 123
+        ];
+
+        $jobUnit = new JobUnit(
+            id: $id,
+            projectResume: $project,
+            environment: $env,
+            prefix: 'foobar',
+            sourceRepository: $srepo,
+            imagesRegistry: $iregistry,
+            clusters: $clusters,
+            variables: ['foo' => 'bar'],
+            history: $history,
+            quotas: [
+                new AccountQuota('compute', 'cpu', '5'),
+            ]
+        );
+
+        $this->expectException(NotSupportedException::class);
+        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithInvalidExtra(): void
+    {
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects($this->exactly(5))
+            ->method('denormalize')
+            ->willReturnCallback(
+                $this->buildParametersVerification(
+                    $srepo = $this->createMock(SourceRepositoryInterface::class),
+                    $iregistry = $this->createMock(ImageRegistryInterface::class),
+                    $env = $this->createMock(Environment::class),
+                    $clusters = [$this->createMock(Cluster::class)],
+                    $history = $this->createMock(History::class),
+                )
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "base_namespace" => 'fooBar',
+            "prefix" => 'foobar',
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ],
+            "extra" => 123
+        ];
+
+        $jobUnit = new JobUnit(
+            id: $id,
+            projectResume: $project,
+            environment: $env,
+            prefix: 'foobar',
+            sourceRepository: $srepo,
+            imagesRegistry: $iregistry,
+            clusters: $clusters,
+            variables: ['foo' => 'bar'],
+            history: $history,
+            quotas: [
+                new AccountQuota('compute', 'cpu', '5'),
+            ]
+        );
+
+        $this->expectException(NotSupportedException::class);
+        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testDenormalizeWithInvalidDefaults(): void
+    {
+        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer->expects($this->exactly(5))
+            ->method('denormalize')
+            ->willReturnCallback(
+                $this->buildParametersVerification(
+                    $srepo = $this->createMock(SourceRepositoryInterface::class),
+                    $iregistry = $this->createMock(ImageRegistryInterface::class),
+                    $env = $this->createMock(Environment::class),
+                    $clusters = [$this->createMock(Cluster::class)],
+                    $history = $this->createMock(History::class),
+                )
+            );
+
+        $id = "c529be6e38cf3e40bea008eaee8bfb4f";
+        $project = [
+            "@class" => "Teknoo\\Paas\\Object\\Project",
+            "id" => "a8c295574b4232148ee343caf08f1cd4",
+            "name" => "paas_test"
+        ];
+        $jobNormalized = [
+            "@class" => Job::class,
+            "id" => $id,
+            "project" => $project,
+            "base_namespace" => 'fooBar',
+            "prefix" => 'foobar',
+            "environment" => ['env' => 'bar'],
+            "source_repository" => ['url' => 'foo', '@class' => GitRepository::class],
+            "images_repository" => ['url' => 'foo', '@class' => ImageRegistry::class],
+            "clusters" => [['cluster' => 'bar']],
+            "history" => ['history' => 'bar'],
+            "quotas" => [
+                [
+                    'category' => 'compute',
+                    'type' => 'cpu',
+                    'capacity' => '5',
+                ]
+            ],
+            "defaults" => 123
+        ];
+
+        $jobUnit = new JobUnit(
+            id: $id,
+            projectResume: $project,
+            environment: $env,
+            prefix: 'foobar',
+            sourceRepository: $srepo,
+            imagesRegistry: $iregistry,
+            clusters: $clusters,
+            variables: ['foo' => 'bar'],
+            history: $history,
+            quotas: [
+                new AccountQuota('compute', 'cpu', '5'),
+            ]
+        );
+
+        $this->expectException(NotSupportedException::class);
+        $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize($jobNormalized, JobUnitInterface::class);
+    }
+
+    public function testGetSupportedTypes(): void
+    {
+        $this->assertIsArray($this->buildNormalizer()->getSupportedTypes('array'));
     }
 }

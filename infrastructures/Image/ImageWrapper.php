@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -66,7 +66,7 @@ use function random_bytes;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ImageWrapper implements BuilderInterface, AutomatedInterface
@@ -119,11 +119,11 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
     protected function listAssertions(): array
     {
         return [
-            (new Property(Running::class))
+            new Property(Running::class)
                 ->with('projectId', new Property\IsNotEmpty())
                 ->with('url', new Property\IsNotEmpty()),
 
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('url', new Property\IsEmpty()),
         ];
     }
@@ -185,10 +185,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                     $paths = [];
                     $writables = [];
                     foreach ($newImage->getVolumes() as $volume) {
-                        if (
-                            $volume instanceof PersistentVolumeInterface
-                            || !$volume instanceof Volume
-                        ) {
+                        if ($volume instanceof PersistentVolumeInterface || !$volume instanceof Volume) {
                             continue;
                         }
 
@@ -199,6 +196,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                             if (count($parts) > 1) {
                                 $dest = array_pop($parts);
                             }
+
                             $paths[$path] = $mP . '/' . $dest;
                         }
 
@@ -269,6 +267,7 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
                     if (count($parts) > 1) {
                         $dest = array_pop($parts);
                     }
+
                     $paths[$path] = $lP . '/' . $dest;
                 }
 

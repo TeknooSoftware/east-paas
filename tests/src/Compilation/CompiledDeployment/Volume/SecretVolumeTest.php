@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -30,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(SecretVolume::class)]
@@ -41,27 +41,18 @@ class SecretVolumeTest extends TestCase
         return new SecretVolume('foo', 'bar', 'foobar');
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getName()
-        );
+        $this->assertEquals('foo', $this->buildObject()->getName());
     }
 
-    public function testGetMountPath()
+    public function testGetMountPath(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()->getMountPath()
-        );
+        $this->assertEquals('bar', $this->buildObject()->getMountPath());
     }
 
-    public function testGetSecretIdentifier()
+    public function testGetSecretIdentifier(): void
     {
-        self::assertEquals(
-            'foobar',
-            $this->buildObject()->getSecretIdentifier()
-        );
+        $this->assertEquals('foobar', $this->buildObject()->getSecretIdentifier());
     }
 }

@@ -2,20 +2,11 @@ parameters:
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
-            message: '#::cleanResult#'
-            path: infrastructures/Kubernetes/Transcriber
-        -
-            message: '#constructor expects array#'
-            path: infrastructures/Kubernetes/Transcriber
+            message: '#is never assigne#'
+            path: infrastructures/Git/Hook.php
         -
             message: '#DefaultsBag\|null given#'
             path: infrastructures/Kubernetes/
-        -
-            message: '#mixed#'
-            path: infrastructures/Image/di.php
-        -
-            message: '#Process::setEnv#'
-            path: infrastructures/Image/ImageWrapper.php
         -
             message: '#non-native method stdClass::#'
             path: infrastructures/PhpSecLib/Security/Encryption.php
@@ -23,32 +14,14 @@ parameters:
             message: '#Cannot call method decrypt#'
             path: infrastructures/Symfony/Components/Messenger/Handler/Psr11
         -
-            message: '#mixed#'
-            path: src/Job/JobUnit.php
-        -
-            message: '#getSshIdentity\(\) is unused#'
-            path: infrastructures/Git/CloningAgent.php
-        -
             message: '#Cannot cast iterable#'
             path: infrastructures/ProjectBuilding/
         -
             message: '#Cannot cast array#'
             path: infrastructures/ProjectBuilding/AbstractHook.php
         -
-            message: '#expects array<string>, array given#'
-            path: infrastructures/ProjectBuilding/AbstractHook.php
-        -
             message: '#mixed#'
             path: infrastructures/Kubernetes/
-        -
-            message: '#mixed#'
-            path: infrastructures/Kubernetes/Transcriber/DeploymentTranscriber.php
-        -
-            message: '#mixed#'
-            path: infrastructures/Kubernetes/Transcriber/StatefulSetsTranscriber.php
-        -
-            message: '#SecretTranscriber::encode#'
-            path: infrastructures/Kubernetes/Transcriber/SecretTranscriber.php
         -
             message: '#::getVersion\(\) expects#'
             path: infrastructures/Kubernetes/Transcriber/
@@ -56,8 +29,8 @@ parameters:
             message: '#mixed given#'
             path: infrastructures/Doctrine/Form/Type/AccountType.php
         -
-            message: '# expects array<string, mixed>, mixed given#'
-            path: infrastructures/Symfony/Components/Configuration/YamlParser.php
+            message: '#expects callable\(string\): string, Closure\(\): mixed given#'
+            path: infrastructures/PhpSecLib/Security/Encryption.php
         -
             message: '#mixed given#'
             path: infrastructures/Symfony/Components/Form/Type/
@@ -77,31 +50,28 @@ parameters:
             message: '#ClassFinderDenormalizer::denormalize#'
             path: infrastructures/Symfony/Components/Normalizer/ClassFinderDenormalizer.php
         -
-            message: '# expects array<string, mixed>, array\|ArrayObject\|bool\|float\|int\|string\|null given#'
-            path: infrastructures/Symfony/Components/Serializing/Normalizer.php
+            message: '#Parameter \&\$array by-ref type#'
+            path: infrastructures/Symfony/Components/Configuration/PropertyAccessor.php
+        -
+            message: '#mixed#'
+            path: src/Job/JobUnit.php
+        -
+            message: '#Cannot access offset#'
+            path:  src/Compilation/Conductor.php
         -
             message: '#mixed#' #array validated by validation schema
-            path:  src/Compilation/
-        -
-            message: '#array<string>, array given#' #array validated by validation schema
             path:  src/Compilation/
         -
             message: '#always true#' #false positive
             path:  src/Compilation/Compiler/Quota/MemoryAvailability.php
         -
             message: '#is unused#'
-            path:  src/Object/Account.php
+            path:  src/Object/
         -
-            message: '#project is never read, only written#'
-            path:  src/Object/Cluster.php
-        -
-            message: '#runVisit\(\) is unused#'
+            message: '#is never read, only written.#'
             path:  src/Object/Cluster.php
         -
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
-            path:  src/Object/Job.php
-        -
-            message: '#RuntimeException constructor expects int, mixed given#'
             path:  src/Object/Job.php
         -
             message: '#Cannot access an offset on iterable#'
@@ -118,6 +88,4 @@ parameters:
         -
             message: '#mixed#'
             path:  */di.php
-        -   '#Unreachable statement - code above always terminates#'
-        -   '#is never read, only written.#'
         -   '#[a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'

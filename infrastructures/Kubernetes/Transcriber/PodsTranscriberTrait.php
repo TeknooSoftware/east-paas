@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -55,7 +55,7 @@ use function substr;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 trait PodsTranscriberTrait
@@ -155,7 +155,7 @@ trait PodsTranscriberTrait
 
             if (!empty($portsListened = $container->getListen())) {
                 $spec['ports'] = array_map(
-                    static fn($port): array => ['containerPort' => $port,],
+                    static fn (int $port): array => ['containerPort' => $port,],
                     $portsListened,
                 );
             }
@@ -228,7 +228,7 @@ trait PodsTranscriberTrait
      * @param array<string, mixed> $specs
      * @param array<string, SecretVolume|MapVolume|Volume> $volumes
      */
-    private static function convertToVolumes(array &$specs, Pod $pod, array $volumes, callable $prefixer,): void
+    private static function convertToVolumes(array &$specs, Pod $pod, array $volumes, callable $prefixer): void
     {
         foreach ($volumes as $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
@@ -311,7 +311,7 @@ trait PodsTranscriberTrait
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
-     * @param array<string, Volume>|Volume[] $volumes
+     * @param array<string, Volume> $volumes
      * @return array<string, mixed>
      */
     protected static function podTemplateSpecWriting(
@@ -392,7 +392,7 @@ trait PodsTranscriberTrait
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
-     * @param array<string, Volume>|Volume[] $volumes
+     * @param array<string, Volume> $volumes
      * @return array<string, mixed>
      */
     protected static function commonSpecWriting(

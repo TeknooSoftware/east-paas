@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -47,15 +47,16 @@ use Throwable;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class CronJobTranscriber implements DeploymentInterface
 {
     use JobTranscriberTrait;
 
-    private const NAME_SUFFIX = '-cronjob';
-    private const POD_SUFFIX = '-pod-cronjob';
+    private const string NAME_SUFFIX = '-cronjob';
+
+    private const string POD_SUFFIX = '-pod-cronjob';
 
     private ?SleepServiceInterface $sleepService = null;
 
@@ -68,7 +69,7 @@ class CronJobTranscriber implements DeploymentInterface
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
-     * @param array<string, Volume>|Volume[] $volumes
+     * @param array<string, Volume> $volumes
      * @return array<string, mixed>
      */
     protected static function writeCronJobSpec(
@@ -115,8 +116,7 @@ class CronJobTranscriber implements DeploymentInterface
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
-     * @param array<string, Volume>|Volume[] $volumes
-     * @return CronJob
+     * @param array<string, Volume> $volumes
      */
     private static function convertToCronJob(
         string $name,
@@ -191,6 +191,8 @@ class CronJobTranscriber implements DeploymentInterface
                         $oldVersion = 0;
                         $version = self::getVersion($name, $dRepository, $oldVersion, $previousJob);
 
+                        /** @var array<array<Image>> $images */
+                        /** @var array<string, Volume> $volumes */
                         $kubeSet = self::convertToCronJob(
                             name: $name,
                             job: $job,

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -34,17 +34,16 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @package Teknoo\Tests\East\Paas\Infrastructures\Image
  */
 class ContainerTest extends TestCase
 {
     /**
-     * @return Container
      * @throws \Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__ . '/../../../infrastructures/Image/di.php');
@@ -52,56 +51,41 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    public function testProcessFactoryInterface()
+    public function testProcessFactoryInterface(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            ProcessFactoryInterface::class,
-            $factory = $container->get(ProcessFactoryInterface::class)
-        );
+        $this->assertInstanceOf(ProcessFactoryInterface::class, $factory = $container->get(ProcessFactoryInterface::class));
 
-        self::assertInstanceOf(
-            Process::class,
-            $factory('foo')
-        );
+        $this->assertInstanceOf(Process::class, $factory('foo'));
     }
 
-    public function testBuilderInterface()
+    public function testBuilderInterface(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.img_builder.cmd', 'docker');
         $container->set('teknoo.east.paas.img_builder.build.platforms', 'bar');
 
-        self::assertInstanceOf(
-            BuilderInterface::class,
-            $container->get(BuilderInterface::class)
-        );
+        $this->assertInstanceOf(BuilderInterface::class, $container->get(BuilderInterface::class));
     }
 
-    public function testImageWrapper()
+    public function testImageWrapper(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.img_builder.build.platforms', 'bar');
 
-        self::assertInstanceOf(
-            ImageWrapper::class,
-            $container->get(ImageWrapper::class)
-        );
+        $this->assertInstanceOf(ImageWrapper::class, $container->get(ImageWrapper::class));
     }
 
-    public function testImageWrapperWithTileout()
+    public function testImageWrapperWithTileout(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.img_builder.build.platforms', 'bar');
         $container->set('teknoo.east.paas.img_builder.build.timeout', 123);
 
-        self::assertInstanceOf(
-            ImageWrapper::class,
-            $container->get(ImageWrapper::class)
-        );
+        $this->assertInstanceOf(ImageWrapper::class, $container->get(ImageWrapper::class));
     }
 }

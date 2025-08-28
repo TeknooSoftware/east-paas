@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -34,7 +34,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Job::class)]
@@ -58,82 +58,53 @@ class JobTest extends TestCase
         );
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'foo',
-            $this->createJob()->getName()
-        );
+        $this->assertEquals('foo', $this->createJob()->getName());
     }
 
-    public function testGetPods()
+    public function testGetPods(): void
     {
-        self::assertEquals(
-            ['bar' => $this->createMock(Pod::class)],
-            $this->createJob()->getPods()
-        );
+        $this->assertEquals(['bar' => $this->createMock(Pod::class)], $this->createJob()->getPods());
     }
 
-    public function testGetCompletionsCount()
+    public function testGetCompletionsCount(): void
     {
-        self::assertEquals(
-            1,
-            $this->createJob()->getCompletionsCount()
-        );
+        $this->assertEquals(1, $this->createJob()->getCompletionsCount());
     }
 
-    public function testIsParallel()
+    public function testIsParallel(): void
     {
-        self::assertTrue(
-            $this->createJob()->isParallel()
-        );
+        $this->assertTrue($this->createJob()->isParallel());
     }
 
-    public function testGetCompletion()
+    public function testGetCompletion(): void
     {
-        self::assertEquals(
-            CompletionMode::Common,
-            $this->createJob()->getCompletion()
-        );
+        $this->assertEquals(CompletionMode::Common, $this->createJob()->getCompletion());
     }
 
-    public function testGetSuccessCondition()
+    public function testGetSuccessCondition(): void
     {
-        self::assertEquals(
-            new SuccessCondition([0], [1]),
-            $this->createJob()->getSuccessCondition()
-        );
+        $this->assertEquals(new SuccessCondition([0], [1]), $this->createJob()->getSuccessCondition());
     }
 
-    public function testGetTimeLimit()
+    public function testGetTimeLimit(): void
     {
-        self::assertEquals(
-            100,
-            $this->createJob()->getTimeLimit()
-        );
+        $this->assertEquals(100, $this->createJob()->getTimeLimit());
     }
 
-    public function testGetShelfLife()
+    public function testGetShelfLife(): void
     {
-        self::assertEquals(
-            200,
-            $this->createJob()->getShelfLife()
-        );
+        $this->assertEquals(200, $this->createJob()->getShelfLife());
     }
 
-    public function testGetPlanning()
+    public function testGetPlanning(): void
     {
-        self::assertEquals(
-            Planning::Scheduled,
-            $this->createJob()->getPlanning()
-        );
+        $this->assertEquals(Planning::Scheduled, $this->createJob()->getPlanning());
     }
 
-    public function testGetPlanningSchedule()
+    public function testGetPlanningSchedule(): void
     {
-        self::assertEquals(
-            '* * * *',
-            $this->createJob()->getPlanningSchedule()
-        );
+        $this->assertEquals('* * * *', $this->createJob()->getPlanningSchedule());
     }
 }

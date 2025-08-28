@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,17 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use ArrayIterator;
+use DomainException;
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\HookCompiler;
@@ -37,7 +41,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(HookCompiler::class)]
@@ -52,9 +56,9 @@ class HookCompilerTest extends TestCase
         ];
     }
 
-    public function testCompileHookNotPresent()
+    public function testCompileHookNotPresent(): void
     {
-        $this->expectException(\DomainException::class);
+        $this->expectException(DomainException::class);
 
         $definitions = $this->getDefinitionsArray();
 
@@ -69,30 +73,27 @@ class HookCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addHook');
 
-        self::assertInstanceOf(
-            HookCompiler::class,
-            $hookCompiler->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileHookError()
+    public function testCompileHookError(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
 
         $definitions = $this->getDefinitionsArray();
 
         $hook = $this->createMock(HookInterface::class);
-        $hook->expects($this->any())
+        $hook
             ->method('setOptions')
-            ->willReturnCallback(function (array $options, PromiseInterface $promise) use ($hook) {
-                $promise->fail(new \Exception());
+            ->willReturnCallback(function (array $options, PromiseInterface $promise) use ($hook): MockObject {
+                $promise->fail(new Exception());
 
                 return $hook;
             });
@@ -106,25 +107,22 @@ class HookCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addHook');
 
-        self::assertInstanceOf(
-            HookCompiler::class,
-            $hookCompiler->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileWithArrayLibrary()
+    public function testCompileWithArrayLibrary(): void
     {
         $definitions = $this->getDefinitionsArray();
 
         $hook = $this->createMock(HookInterface::class);
-        $hook->expects($this->any())
+        $hook
             ->method('setOptions')
             ->willReturnSelf();
 
@@ -137,24 +135,21 @@ class HookCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->once())->method('addHook');
 
-        self::assertInstanceOf(
-            HookCompiler::class,
-            $hookCompiler->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileWithoutDefinitions()
+    public function testCompileWithoutDefinitions(): void
     {
         $definitions = [];
         $hookCompiler = new HookCompiler(
-            new \ArrayIterator([
+            new ArrayIterator([
                 'composer' => $this->createMock(HookInterface::class)
             ])
         );
@@ -162,30 +157,27 @@ class HookCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addHook');
 
-        self::assertInstanceOf(
-            HookCompiler::class,
-            $hookCompiler->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileWithIteratorLibrary()
+    public function testCompileWithIteratorLibrary(): void
     {
         $definitions = $this->getDefinitionsArray();
 
         $hook = $this->createMock(HookInterface::class);
-        $hook->expects($this->any())
+        $hook
             ->method('setOptions')
             ->willReturnSelf();
 
         $hookCompiler = new HookCompiler(
-            new \ArrayIterator([
+            new ArrayIterator([
                 'composer' => $hook
             ])
         );
@@ -193,16 +185,13 @@ class HookCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->once())->method('addHook');
 
-        self::assertInstanceOf(
-            HookCompiler::class,
-            $hookCompiler->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 }

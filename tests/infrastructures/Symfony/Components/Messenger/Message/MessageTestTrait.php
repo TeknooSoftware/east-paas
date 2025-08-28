@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,142 +19,138 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Message;
 
-use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Message\MessageTrait;
-use Teknoo\Immutable\Exception\ImmutableException;
+use Error;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 trait MessageTestTrait
 {
-    /**
-     * @return MessageTrait
-     */
     abstract public function buildMessage();
 
-    public function testContructorUnique()
+    public function testContructorUnique(): void
     {
-        $this->expectException(\Error::class);
+        $this->expectException(Error::class);
         $this->buildMessage()->__construct('foo', 'bar', 'hello', 'world');
     }
 
-    public function testGetProjectId()
+    public function testGetProjectId(): void
     {
-        self::assertEquals(
+        $this->assertEquals(
             'foo',
             $this->buildMessage()->getProjectId()
         );
     }
 
-    public function testGetEnvironment()
+    public function testGetEnvironment(): void
     {
-        self::assertEquals(
+        $this->assertEquals(
             'bar',
             $this->buildMessage()->getEnvironment()
         );
     }
 
-    public function testGetJobId()
+    public function testGetJobId(): void
     {
-        self::assertEquals(
+        $this->assertEquals(
             'hello',
             $this->buildMessage()->getJobId()
         );
     }
 
-    public function testGetMessage()
+    public function testGetMessage(): void
     {
-        self::assertEquals(
+        $this->assertEquals(
             'world',
             $this->buildMessage()->getMessage()
         );
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
-        self::assertEquals(
+        $this->assertEquals(
             'world',
             $this->buildMessage()->getContent()
         );
     }
 
-    public function testToString()
+    public function testToString(): void
     {
-        self::assertEquals(
+        $this->assertEquals(
             'world',
             (string) $this->buildMessage()
         );
     }
 
-    public function testGetEncryptionAlgorithm()
+    public function testGetEncryptionAlgorithm(): void
     {
-        self::assertNull(
+        $this->assertNull(
             $this->buildMessage()->getEncryptionAlgorithm()
         );
     }
 
-    public function testCloneWith()
+    public function testCloneWith(): void
     {
         $messageA = $this->buildMessage();
         $messageB = $messageA->cloneWith('monde', 'anAlgo');
 
-        self::assertEquals(
+        $this->assertEquals(
             $messageA::class,
             $messageB::class,
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'foo',
             $messageA->getProjectId()
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'foo',
             $messageB->getProjectId()
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'bar',
             $messageA->getEnvironment()
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'bar',
             $messageB->getEnvironment()
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'hello',
             $messageA->getJobId()
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'hello',
             $messageB->getJobId()
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'world',
             $messageA->getMessage()
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'monde',
             $messageB->getMessage()
         );
 
-        self::assertNull(
+        $this->assertNull(
             $messageA->getEncryptionAlgorithm()
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'anAlgo',
             $messageB->getEncryptionAlgorithm()
         );

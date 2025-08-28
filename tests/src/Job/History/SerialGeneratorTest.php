@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -30,32 +30,29 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(SerialGenerator::class)]
 class SerialGeneratorTest extends TestCase
 {
-    public function testGeneration()
+    public function testGeneration(): void
     {
         $generator = new SerialGenerator(123);
-        self::assertEquals(124, $generator->getNewSerialNumber());
-        self::assertEquals(125, $generator->getNewSerialNumber());
-        self::assertEquals(126, $generator->getNewSerialNumber());
-        self::assertEquals(127, $generator->getNewSerialNumber());
+        $this->assertEquals(124, $generator->getNewSerialNumber());
+        $this->assertEquals(125, $generator->getNewSerialNumber());
+        $this->assertEquals(126, $generator->getNewSerialNumber());
+        $this->assertEquals(127, $generator->getNewSerialNumber());
     }
 
-    public function testGenerationWithAnotherGenerator()
+    public function testGenerationWithAnotherGenerator(): void
     {
         $generator = new SerialGenerator(1);
-        self::assertInstanceOf(
-            SerialGenerator::class,
-            $generator->setGenerator(fn ($number) => $number*2)
-        );
+        $this->assertInstanceOf(SerialGenerator::class, $generator->setGenerator(fn ($number): int|float => $number * 2));
 
-        self::assertEquals(2, $generator->getNewSerialNumber());
-        self::assertEquals(4, $generator->getNewSerialNumber());
-        self::assertEquals(8, $generator->getNewSerialNumber());
-        self::assertEquals(16, $generator->getNewSerialNumber());
+        $this->assertEquals(2, $generator->getNewSerialNumber());
+        $this->assertEquals(4, $generator->getNewSerialNumber());
+        $this->assertEquals(8, $generator->getNewSerialNumber());
+        $this->assertEquals(16, $generator->getNewSerialNumber());
     }
 }

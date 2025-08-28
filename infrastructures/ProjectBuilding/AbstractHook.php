@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -46,7 +46,7 @@ use function trim;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 abstract class AbstractHook implements HookInterface
@@ -60,12 +60,12 @@ abstract class AbstractHook implements HookInterface
 
     private readonly ProcessFactoryInterface $factory;
 
-    private ?string $path = '';
+    private string $path = '';
 
     private string $localPath = '';
 
     /**
-     * @var array<string, mixed>
+     * @var array<string>
      */
     private array $options = [];
 
@@ -136,7 +136,7 @@ abstract class AbstractHook implements HookInterface
         if (!isset($options['action'])) {
             $cmd = (string) reset($options);
         } else {
-            $cmd = $options['action'];
+            $cmd = (string) $options['action'];
             $args = $options['arguments'] ?? [];
         }
 
@@ -151,6 +151,8 @@ abstract class AbstractHook implements HookInterface
         }
 
         if (!isset($grantedCommands[$cmd])) {
+
+            /** @var string $cmd */
             throw new InvalidArgumentException("$cmd is forbidden");
         }
 
@@ -164,10 +166,11 @@ abstract class AbstractHook implements HookInterface
                     $final[] = '--' . $arg;
                 }
             } else {
-                $final[] = $arg;
+                $final[] = (string) $arg;
             }
         }
 
+        /** @var string[] $final */
         return $final;
     }
 
@@ -190,9 +193,9 @@ abstract class AbstractHook implements HookInterface
         $command->run();
 
         if ($command->isSuccessful()) {
-            $promise->success($command->getOutput() . (string) $command->getErrorOutput());
+            $promise->success($command->getOutput() . $command->getErrorOutput());
         } else {
-            $promise->fail(new RuntimeException((string) $command->getErrorOutput()));
+            $promise->fail(new RuntimeException($command->getErrorOutput()));
         }
 
         return $this;

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -30,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Volume::class)]
@@ -41,98 +41,64 @@ class VolumeTest extends TestCase
         return new Volume('foo', ['foo', 'bar'], 'bar', '/mount', ['bar']);
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'foo',
-            $this->buildObject()->getName()
-        );
+        $this->assertEquals('foo', $this->buildObject()->getName());
     }
 
-    public function testWithRegistryAndGetUrl()
+    public function testWithRegistryAndGetUrl(): void
     {
         $volume1 = $this->buildObject();
-        self::assertEquals('foo', $volume1->getUrl());
+        $this->assertEquals('foo', $volume1->getUrl());
         $volume2 = $volume1->withRegistry('bar');
-        self::assertInstanceOf(Volume::class, $volume2);
-        self::assertNotSame($volume1, $volume2);
-        self::assertEquals('foo', $volume1->getUrl());
-        self::assertEquals('bar/foo', $volume2->getUrl());
+        $this->assertInstanceOf(Volume::class, $volume2);
+        $this->assertNotSame($volume1, $volume2);
+        $this->assertEquals('foo', $volume1->getUrl());
+        $this->assertEquals('bar/foo', $volume2->getUrl());
     }
 
-    public function testGetPath()
+    public function testGetPath(): void
     {
-        self::assertEquals(
-            ['foo', 'bar'],
-            $this->buildObject()->getPaths()
-        );
+        $this->assertEquals(['foo', 'bar'], $this->buildObject()->getPaths());
     }
 
-    public function testGetLocalPath()
+    public function testGetLocalPath(): void
     {
-        self::assertEquals(
-            'bar',
-            $this->buildObject()->getLocalPath()
-        );
+        $this->assertEquals('bar', $this->buildObject()->getLocalPath());
     }
 
-    public function testGetMountPath()
+    public function testGetMountPath(): void
     {
-        self::assertEquals(
-            '/mount',
-            $this->buildObject()->getMountPath()
-        );
+        $this->assertEquals('/mount', $this->buildObject()->getMountPath());
 
-        self::assertEquals(
-            'mount',
-            (new Volume('foo', ['foo', 'bar'], 'bar', 'mount'))->getMountPath()
-        );
+        $this->assertEquals('mount', new Volume('foo', ['foo', 'bar'], 'bar', 'mount')->getMountPath());
     }
 
 
-    public function testGetWritable()
+    public function testGetWritable(): void
     {
-        self::assertEquals(
-            ['bar'],
-            $this->buildObject()->getWritables()
-        );
+        $this->assertEquals(['bar'], $this->buildObject()->getWritables());
     }
 
-    public function testIsEmbedded()
+    public function testIsEmbedded(): void
     {
-        self::assertFalse(
-            $this->buildObject()->isEmbedded()
-        );
+        $this->assertFalse($this->buildObject()->isEmbedded());
 
-        self::assertTrue(
-            (new Volume('foo', ['foo', 'bar'], 'bar', 'mount', [], true))->isEmbedded()
-        );
+        $this->assertTrue(new Volume('foo', ['foo', 'bar'], 'bar', 'mount', [], true)->isEmbedded());
     }
 
-    public function testImport()
+    public function testImport(): void
     {
         $volume = $this->buildObject();
 
         $volumeImported = $volume->import('foo');
 
-        self::assertInstanceOf(
-            Volume::class,
-            $volumeImported
-        );
+        $this->assertInstanceOf(Volume::class, $volumeImported);
 
-        self::assertNotEquals(
-            $volume,
-            $volumeImported
-        );
+        $this->assertNotEquals($volume, $volumeImported);
 
-        self::assertEquals(
-            '/mount',
-            $volume->getMountPath()
-        );
+        $this->assertEquals('/mount', $volume->getMountPath());
 
-        self::assertEquals(
-            'foo',
-            $volumeImported->getMountPath()
-        );
+        $this->assertEquals('foo', $volumeImported->getMountPath());
     }
 }

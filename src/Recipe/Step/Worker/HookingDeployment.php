@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -43,7 +43,7 @@ use Throwable;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class HookingDeployment
@@ -73,12 +73,13 @@ class HookingDeployment
                     ['hook_output' => $buildSuccess]
                 );
             },
-            onFail: static fn(#[SensitiveParameter] Throwable $error) => throw $error,
+            onFail: static fn (#[SensitiveParameter] Throwable $error) => throw $error,
         );
 
         $workspace->runInRepositoryPath(
-            static function ($path) use ($compiledDeployment, $promise, $jobUnit, $workspace, $manager): void {
+            static function (string $path) use ($compiledDeployment, $promise, $jobUnit, $workspace, $manager): void {
                 try {
+                    $promise->allowReuse();
                     $compiledDeployment->foreachHook(
                         static function (HookInterface $hook) use ($path, $promise, $jobUnit, $workspace): void {
                             if ($hook instanceof HookAwareInterface) {

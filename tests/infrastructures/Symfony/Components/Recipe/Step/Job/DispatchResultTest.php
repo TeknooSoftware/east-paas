@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,14 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Job;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -44,33 +45,21 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\Tests\East\Paas\ErrorFactory;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(DispatchResult::class)]
 class DispatchResultTest extends TestCase
 {
-    /**
-     * @var DatesService
-     */
-    private $dateTimeService;
+    private (DatesService&MockObject)|null $dateTimeService = null;
 
-    /**
-     * @var NormalizerInterface
-     */
-    private $normalizer;
+    private (NormalizerInterface&MockObject)|null $normalizer = null;
 
-    private ?MessageBusInterface $bus = null;
+    private (MessageBusInterface&MockObject)|null $bus = null;
 
-    /**
-     * @var \PHPUnit\Framework\MockObject\MockObject|SerialGenerator
-     */
-    private $generator;
+    private (SerialGenerator&MockObject)|null $generator = null;
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|DatesService
-     */
-    public function getDateTimeServiceMock(): DatesService
+    public function getDateTimeServiceMock(): DatesService&MockObject
     {
         if (!$this->dateTimeService instanceof DatesService) {
             $this->dateTimeService = $this->createMock(DatesService::class);
@@ -79,10 +68,7 @@ class DispatchResultTest extends TestCase
         return $this->dateTimeService;
     }
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|MessageBusInterface
-     */
-    public function getMessageBusMock(): MessageBusInterface
+    public function getMessageBusMock(): MessageBusInterface&MockObject
     {
         if (!$this->bus instanceof MessageBusInterface) {
             $this->bus = $this->createMock(MessageBusInterface::class);
@@ -91,10 +77,7 @@ class DispatchResultTest extends TestCase
         return $this->bus;
     }
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|NormalizerInterface
-     */
-    public function getNormalizer(): NormalizerInterface
+    public function getNormalizer(): NormalizerInterface&MockObject
     {
         if (!$this->normalizer instanceof NormalizerInterface) {
             $this->normalizer = $this->createMock(NormalizerInterface::class);
@@ -103,16 +86,12 @@ class DispatchResultTest extends TestCase
         return $this->normalizer;
     }
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|SerialGenerator
-     */
-    public function getSerialGeneratorMock(): SerialGenerator
+    public function getSerialGeneratorMock(): SerialGenerator&MockObject
     {
         if (!$this->generator instanceof SerialGenerator) {
             $this->generator = $this->createMock(SerialGenerator::class);
 
             $this->generator
-                ->expects($this->any())
                 ->method('getNewSerialNumber')
                 ->willReturn(0);
         }
@@ -132,19 +111,19 @@ class DispatchResultTest extends TestCase
         );
     }
 
-    public function testInvokeBadManager()
+    public function testInvokeBadManager(): void
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(new \stdClass(), $this->createMock(JobUnitInterface::class), 'foo');
     }
 
-    public function testInvokeBadJob()
+    public function testInvokeBadJob(): void
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())($this->createMock(ManagerInterface::class), new \stdClass(), 'foo');
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
         $client = $this->createMock(EastClient::class);
 
@@ -153,9 +132,8 @@ class DispatchResultTest extends TestCase
         $env = 'bar';
 
         $this->getDateTimeServiceMock()
-            ->expects($this->any())
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback) {
+            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
                 $callback(new \DateTime('2018-08-01'));
 
                 return $this->getDateTimeServiceMock();
@@ -169,7 +147,7 @@ class DispatchResultTest extends TestCase
                 function (
                     $object,
                     PromiseInterface $promise
-                ) use ($result) {
+                ) use ($result): NormalizerInterface&MockObject {
                     $promise->success($result);
 
                     return $this->getNormalizer();
@@ -178,11 +156,11 @@ class DispatchResultTest extends TestCase
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->willReturnCallback(function ($values) use ($manager) {
-               self::assertInstanceOf(History::class, $values[History::class]);
-               self::assertIsString($values['historySerialized']);
+            ->willReturnCallback(function (array $values) use ($manager): MockObject {
+                $this->assertInstanceOf(History::class, $values[History::class]);
+                $this->assertIsString($values['historySerialized']);
 
-               return $manager;
+                return $manager;
             });
 
         $this->getMessageBusMock()
@@ -190,13 +168,13 @@ class DispatchResultTest extends TestCase
             ->method('dispatch')
             ->willReturn(new Envelope(new \stdClass()));
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DispatchResult::class,
             ($this->buildStep())($manager, $client, $project, $env, 'babar', $result)
         );
     }
 
-    public function testInvokeWithEncryption()
+    public function testInvokeWithEncryption(): void
     {
         $client = $this->createMock(EastClient::class);
 
@@ -205,9 +183,8 @@ class DispatchResultTest extends TestCase
         $env = 'bar';
 
         $this->getDateTimeServiceMock()
-            ->expects($this->any())
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback) {
+            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
                 $callback(new \DateTime('2018-08-01'));
 
                 return $this->getDateTimeServiceMock();
@@ -221,7 +198,7 @@ class DispatchResultTest extends TestCase
                 function (
                     $object,
                     PromiseInterface $promise
-                ) use ($result) {
+                ) use ($result): NormalizerInterface&MockObject {
                     $promise->success($result);
 
                     return $this->getNormalizer();
@@ -230,11 +207,11 @@ class DispatchResultTest extends TestCase
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->willReturnCallback(function ($values) use ($manager) {
-               self::assertInstanceOf(History::class, $values[History::class]);
-               self::assertIsString($values['historySerialized']);
+            ->willReturnCallback(function (array $values) use ($manager): MockObject {
+                $this->assertInstanceOf(History::class, $values[History::class]);
+                $this->assertIsString($values['historySerialized']);
 
-               return $manager;
+                return $manager;
             });
 
         $this->getMessageBusMock()
@@ -244,26 +221,26 @@ class DispatchResultTest extends TestCase
 
 
         $encryption = $this->createMock(EncryptionInterface::class);
-        $encryption->expects($this->any())
+        $encryption
             ->method('encrypt')
             ->willReturnCallback(
                 function (
                     MessagePaaS $message,
                     PromiseInterface $promise,
-                ) use ($encryption) {
+                ) use ($encryption): MockObject {
                     $promise->success($message);
 
                     return $encryption;
                 }
             );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DispatchResult::class,
             ($this->buildStep($encryption))($manager, $client, $project, $env, 'babar', $result)
         );
     }
 
-    public function testInvokeWithException()
+    public function testInvokeWithException(): void
     {
         $client = $this->createMock(EastClient::class);
 
@@ -272,9 +249,8 @@ class DispatchResultTest extends TestCase
         $env = 'bar';
 
         $this->getDateTimeServiceMock()
-            ->expects($this->any())
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback) {
+            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
                 $callback(new \DateTime('2018-08-01'));
 
                 return $this->getDateTimeServiceMock();
@@ -289,7 +265,7 @@ class DispatchResultTest extends TestCase
                 function (
                     $object,
                     PromiseInterface $promise
-                ) use ($result) {
+                ) use ($result): NormalizerInterface&MockObject {
                     $promise->success($result);
 
                     return $this->getNormalizer();
@@ -298,11 +274,11 @@ class DispatchResultTest extends TestCase
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->willReturnCallback(function ($values) use ($manager) {
-               self::assertInstanceOf(History::class, $values[History::class]);
-               self::assertIsString($values['historySerialized']);
+            ->willReturnCallback(function (array $values) use ($manager): MockObject {
+                $this->assertInstanceOf(History::class, $values[History::class]);
+                $this->assertIsString($values['historySerialized']);
 
-               return $manager;
+                return $manager;
             });
 
         $this->getMessageBusMock()
@@ -310,13 +286,13 @@ class DispatchResultTest extends TestCase
             ->method('dispatch')
             ->willReturn(new Envelope(new \stdClass()));
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DispatchResult::class,
             ($this->buildStep())($manager, $client, $project, $env, 'babar', null, $error)
         );
     }
 
-    public function testInvokeWithNoResult()
+    public function testInvokeWithNoResult(): void
     {
         $client = $this->createMock(EastClient::class);
 
@@ -325,9 +301,8 @@ class DispatchResultTest extends TestCase
         $env = 'bar';
 
         $this->getDateTimeServiceMock()
-            ->expects($this->any())
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback) {
+            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
                 $callback(new \DateTime('2018-08-01'));
 
                 return $this->getDateTimeServiceMock();
@@ -341,7 +316,7 @@ class DispatchResultTest extends TestCase
                 function (
                     $object,
                     PromiseInterface $promise
-                ) use ($result) {
+                ) use ($result): NormalizerInterface&MockObject {
                     $promise->success($result);
 
                     return $this->getNormalizer();
@@ -350,11 +325,11 @@ class DispatchResultTest extends TestCase
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->willReturnCallback(function ($values) use ($manager) {
-               self::assertInstanceOf(History::class, $values[History::class]);
-               self::assertIsString($values['historySerialized']);
+            ->willReturnCallback(function (array $values) use ($manager): MockObject {
+                $this->assertInstanceOf(History::class, $values[History::class]);
+                $this->assertIsString($values['historySerialized']);
 
-               return $manager;
+                return $manager;
             });
 
         $this->getMessageBusMock()
@@ -362,17 +337,17 @@ class DispatchResultTest extends TestCase
             ->method('dispatch')
             ->willReturn(new Envelope(new \stdClass()));
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DispatchResult::class,
             ($this->buildStep())($manager, $client, $project, $env, 'babar')
         );
     }
 
-    public function testInvokeError()
+    public function testInvokeError(): void
     {
         $message = $this->createMock(MessageInterface::class);
-        $message->expects($this->any())->method('withAddedHeader')->willReturnSelf();
-        $message->expects($this->any())->method('withBody')->willReturnSelf();
+        $message->method('withAddedHeader')->willReturnSelf();
+        $message->method('withBody')->willReturnSelf();
 
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(EastClient::class);
@@ -381,9 +356,8 @@ class DispatchResultTest extends TestCase
         $env = 'bar';
 
         $this->getDateTimeServiceMock()
-            ->expects($this->any())
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback) {
+            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
                 $callback(new \DateTime('2018-08-01'));
 
                 return $this->getDateTimeServiceMock();
@@ -397,7 +371,7 @@ class DispatchResultTest extends TestCase
                 function (
                     $object,
                     PromiseInterface $promise
-                ) use ($result) {
+                ) use ($result): NormalizerInterface&MockObject {
                     $promise->success($result);
 
                     return $this->getNormalizer();
@@ -406,9 +380,9 @@ class DispatchResultTest extends TestCase
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->willReturnCallback(function ($values) use ($manager) {
-                self::assertInstanceOf(History::class, $values[History::class]);
-                self::assertIsString($values['historySerialized']);
+            ->willReturnCallback(function (array $values) use ($manager): MockObject {
+                $this->assertInstanceOf(History::class, $values[History::class]);
+                $this->assertIsString($values['historySerialized']);
 
                 return $manager;
             });
@@ -426,7 +400,7 @@ class DispatchResultTest extends TestCase
             ->method('finish')
             ->with(new \Exception('foo'));
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DispatchResult::class,
             ($this->buildStep())($manager, $client, $project, $env, 'babarz', $result)
         );

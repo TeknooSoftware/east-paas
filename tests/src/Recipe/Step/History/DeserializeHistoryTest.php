@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,37 +19,35 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\History;
 
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Object\History;
 use Teknoo\East\Paas\Recipe\Step\History\DeserializeHistory;
 use Teknoo\Recipe\Promise\PromiseInterface;
+use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(DeserializeHistory::class)]
 class DeserializeHistoryTest extends TestCase
 {
-    /**
-     * @var DeserializerInterface
-     */
-    private $deserializer;
+    private (DeserializerInterface&MockObject)|null $deserializer = null;
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|DeserializerInterface
-     */
-    public function getDeserializer(): DeserializerInterface
+    public function getDeserializer(): DeserializerInterface&MockObject
     {
         if (!$this->deserializer instanceof DeserializerInterface) {
             $this->deserializer = $this->createMock(DeserializerInterface::class);
@@ -65,25 +63,25 @@ class DeserializeHistoryTest extends TestCase
         );
     }
 
-    public function testInvokeBadSerializedHistory()
+    public function testInvokeBadSerializedHistory(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         ($this->buildStep())(
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(ManagerInterface::class)
         );
     }
 
-    public function testInvokeBadManager()
+    public function testInvokeBadManager(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         ($this->buildStep())(
             'fooBar',
-            new \stdClass()
+            new stdClass()
         );
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
         $history = $this->createMock(History::class);
         $manager = $this->createMock(ManagerInterface::class);
@@ -100,7 +98,7 @@ class DeserializeHistoryTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ) use ($history) {
+                ) use ($history): DeserializerInterface&MockObject {
                     $promise->success($history);
 
                     return $this->getDeserializer();
@@ -112,18 +110,18 @@ class DeserializeHistoryTest extends TestCase
             ->with([History::class => $history])
             ->willReturnSelf();
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DeserializeHistory::class,
             ($this->buildStep())('fooBar', $manager, $client)
         );
     }
 
-    public function testInvokeErrorInDeserialization()
+    public function testInvokeErrorInDeserialization(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
-        $error = new \Exception('fooBar');
+        $error = new Exception('fooBar');
         $this->getDeserializer()
             ->expects($this->once())
             ->method('deserialize')
@@ -135,7 +133,7 @@ class DeserializeHistoryTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ) use ($error) {
+                ) use ($error): DeserializerInterface&MockObject {
                     $promise->fail($error);
 
                     return $this->getDeserializer();
@@ -148,7 +146,7 @@ class DeserializeHistoryTest extends TestCase
         $manager->expects($this->once())
             ->method('error');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DeserializeHistory::class,
             ($this->buildStep())('fooBar', $manager, $client)
         );

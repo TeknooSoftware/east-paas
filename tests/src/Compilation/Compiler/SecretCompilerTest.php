@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -35,7 +35,7 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(SecretCompiler::class)]
@@ -65,27 +65,24 @@ class SecretCompilerTest extends TestCase
         ];
     }
 
-    public function testCompileWithoutDefinitions()
+    public function testCompileWithoutDefinitions(): void
     {
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addSecret');
 
-        self::assertInstanceOf(
-            SecretCompiler::class,
-            $this->buildCompiler()->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(SecretCompiler::class, $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompile()
+    public function testCompile(): void
     {
         $definitions = $this->getDefinitionsArray();
         $builder = $this->buildCompiler();
@@ -96,16 +93,13 @@ class SecretCompilerTest extends TestCase
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
-        self::assertInstanceOf(
-            SecretCompiler::class,
-            $builder->compile(
-                $definitions,
-                $compiledDeployment,
-                $workspace,
-                $jobUnit,
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(SecretCompiler::class, $builder->compile(
+            $definitions,
+            $compiledDeployment,
+            $workspace,
+            $jobUnit,
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 }

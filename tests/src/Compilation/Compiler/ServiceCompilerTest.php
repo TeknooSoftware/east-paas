@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
@@ -42,7 +43,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use function func_get_args;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ServiceCompiler::class)]
@@ -98,27 +99,24 @@ class ServiceCompilerTest extends TestCase
         ];
     }
 
-    public function testCompileWithoutDefinitions()
+    public function testCompileWithoutDefinitions(): void
     {
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addService');
 
-        self::assertInstanceOf(
-            ServiceCompiler::class,
-            $this->buildCompiler()->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(ServiceCompiler::class, $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompile()
+    public function testCompile(): void
     {
         $definitions = $this->getDefinitionsArray();
         $builder = $this->buildCompiler();
@@ -128,7 +126,7 @@ class ServiceCompilerTest extends TestCase
             ->expects($this->exactly(3))
             ->method('addService')
             ->willReturnCallback(
-                function () use ($compiledDeployment) {
+                function () use ($compiledDeployment): MockObject {
                     $args = func_get_args();
                     $expectedArgs1 = [
                         'php-react',
@@ -174,20 +172,17 @@ class ServiceCompilerTest extends TestCase
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
-        self::assertInstanceOf(
-            ServiceCompiler::class,
-            $builder->compile(
-                $definitions,
-                $compiledDeployment,
-                $workspace,
-                $jobUnit,
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(ServiceCompiler::class, $builder->compile(
+            $definitions,
+            $compiledDeployment,
+            $workspace,
+            $jobUnit,
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileWithWrongExtends()
+    public function testCompileWithWrongExtends(): void
     {
         $definitions = [
             'php-react' => [
@@ -209,7 +204,7 @@ class ServiceCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithNonExistantExtends()
+    public function testCompileWithNonExistantExtends(): void
     {
         $definitions = [
             'php-react' => [
@@ -231,7 +226,7 @@ class ServiceCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithExtends()
+    public function testCompileWithExtends(): void
     {
         $definitions = [
             'php-react' => [
@@ -259,46 +254,40 @@ class ServiceCompilerTest extends TestCase
         ];
         $builder = $this->buildCompiler();
 
-        self::assertInstanceOf(
-            ServiceCompiler::class,
-            $builder->extends(
-                $definitions,
-            )
-        );
-
-        self::assertEquals(
+        $this->assertInstanceOf(ServiceCompiler::class, $builder->extends(
             $definitions,
-            [
-                'php-react' => [
-                    'extends' => 'foo-ext',
-                    'internal' => false,
-                    'ports' => [
-                        [
-                            'listen' => 80,
-                            'target' => 8080,
-                        ],
+        ));
+
+        $this->assertEquals($definitions, [
+            'php-react' => [
+                'extends' => 'foo-ext',
+                'internal' => false,
+                'ports' => [
+                    [
+                        'listen' => 80,
+                        'target' => 8080,
                     ],
                 ],
-                'php-internal' => [
-                    'extends' => 'foo-ext',
-                    'internal' => true,
-                    'ports' => [
-                        [
-                            'listen' => 1234,
-                            'target' => 8080,
-                        ],
+            ],
+            'php-internal' => [
+                'extends' => 'foo-ext',
+                'internal' => true,
+                'ports' => [
+                    [
+                        'listen' => 1234,
+                        'target' => 8080,
                     ],
                 ],
-                'php-filled' => [
-                    'internal' => true,
-                    'ports' => [
-                        [
-                            'listen' => 1234,
-                            'target' => 8080,
-                        ],
+            ],
+            'php-filled' => [
+                'internal' => true,
+                'ports' => [
+                    [
+                        'listen' => 1234,
+                        'target' => 8080,
                     ],
                 ],
-            ]
-        );
+            ],
+        ]);
     }
 }

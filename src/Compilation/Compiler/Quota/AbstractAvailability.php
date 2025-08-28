@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -44,7 +44,7 @@ use function str_ends_with;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 abstract class AbstractAvailability implements AvailabilityInterface
@@ -72,7 +72,8 @@ abstract class AbstractAvailability implements AvailabilityInterface
             );
         }
 
-        $this->sharableNormalizedCapacity = $this->normalizedCapacity = $this->stringCapacityToValue($this->capacity);
+        $this->normalizedCapacity = $this->stringCapacityToValue($this->capacity);
+        $this->sharableNormalizedCapacity = $this->normalizedCapacity;
         $this->initialNormalizedCapacity = $this->normalizedCapacity;
 
         if (!$this->isSoft && $this->isRelative($this->requires)) {
@@ -139,8 +140,8 @@ abstract class AbstractAvailability implements AvailabilityInterface
         $testValue = $this->stringCapacityToValue($capacity) * $numberOfReplicas;
 
         $currentValue -= $testValue;
-
-        $this->sharableNormalizedCapacity = $this->normalizedCapacity = $currentValue;
+        $this->sharableNormalizedCapacity = $currentValue;
+        $this->normalizedCapacity = $currentValue;
         $this->capacity = $this->valueToStringCapacity($currentValue);
     }
 
@@ -175,11 +176,6 @@ abstract class AbstractAvailability implements AvailabilityInterface
         }
 
         return true;
-    }
-
-    private function getType(): string
-    {
-        return $this->type;
     }
 
     public function getCapacity(): string
@@ -248,7 +244,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
                 message: sprintf(
                     "Error the limit `%s` for `%s` is lower than the require `%s`",
                     $limit,
-                    $this->getType(),
+                    $this->type,
                     $require,
                 ),
                 code: 400,
@@ -292,7 +288,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
         }
 
         $resource = new Resource(
-            $this->getType(),
+            $this->type,
             $this->normalizedValue($require),
             $this->normalizedValue($limit),
         );

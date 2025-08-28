@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
 use Teknoo\East\Paas\Compilation\Compiler\Exception\ResourceWrongConfigurationException;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(AutomaticResource::class)]
@@ -45,54 +45,35 @@ class AutomaticResourceTest extends TestCase
         );
     }
 
-    public function testGetType()
+    public function testGetType(): void
     {
-        self::assertEquals(
-            'cpu',
-            $this->buildObject()->getType(),
-        );
+        $this->assertEquals('cpu', $this->buildObject()->getType());
     }
 
-    public function testGetRequire()
+    public function testGetRequire(): void
     {
-        self::assertEmpty(
-            $this->buildObject()->getRequire(),
-        );
+        $this->assertEmpty($this->buildObject()->getRequire());
     }
 
-    public function testGetLimit()
+    public function testGetLimit(): void
     {
-        self::assertEmpty(
-            $this->buildObject()->getLimit(),
-        );
+        $this->assertEmpty($this->buildObject()->getLimit());
     }
 
-    public function testSetLimit()
+    public function testSetLimit(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            AutomaticResource::class,
-            $object->setLimit('100m', '500m')
-        );
+        $this->assertInstanceOf(AutomaticResource::class, $object->setLimit('100m', '500m'));
 
-        self::assertEquals(
-            '100m',
-            $object->getRequire(),
-        );
+        $this->assertEquals('100m', $object->getRequire());
 
-        self::assertEquals(
-            '500m',
-            $object->getLimit(),
-        );
+        $this->assertEquals('500m', $object->getLimit());
     }
 
-    public function testSetLimitAlreadySet()
+    public function testSetLimitAlreadySet(): void
     {
         $object = $this->buildObject();
-        self::assertInstanceOf(
-            AutomaticResource::class,
-            $object->setLimit('100m', '500m')
-        );
+        $this->assertInstanceOf(AutomaticResource::class, $object->setLimit('100m', '500m'));
 
         $this->expectException(ResourceWrongConfigurationException::class);
         $object->setLimit('100m', '500m');

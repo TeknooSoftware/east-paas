@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -36,7 +36,7 @@ use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\Immutable\ImmutableInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 trait FormTestTrait
@@ -51,12 +51,12 @@ trait FormTestTrait
         return [];
     }
 
-    private function getObject()
+    private function getObject(): ?object
     {
         return null;
     }
 
-    public function testBuildForm()
+    public function testBuildForm(): void
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
@@ -74,37 +74,38 @@ trait FormTestTrait
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
-                foreach ($this->getFormArray() as $name=>$value) {
+                foreach ($this->getFormArray() as $name => $value) {
                     $mock = $this->createMock(FormInterface::class);
                     $mock->expects($this->any())->method('getData')->willReturn($value);
                     $mock->expects($this->any())->method('getName')->willReturn($name);
 
                     $children[$name] = $mock;
                 }
+
                 $form = new \ArrayIterator($children);
 
                 $dataMapper->mapDataToForms(null, $form);
                 $result = $this->getObject();
                 $dataMapper->mapFormsToData($form, $result);
-                self::assertInstanceOf(IdentifiedObjectInterface::class, $result);
+                $this->assertInstanceOf(IdentifiedObjectInterface::class, $result);
 
                 return $builder;
             });
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             AbstractType::class,
             $this->buildForm()->buildForm($builder, $this->getOptions())
         );
     }
 
-    public function testBuildFormBadInput()
+    public function testBuildFormBadInput(): void
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
         $builder->expects($this->any())
             ->method('add')
             ->willReturnCallback(
-                function ($child, $type, array $options = array()) use ($builder) {
+                function ($child, $type, array $options = []) use ($builder) {
                     if (DocumentType::class == $type && isset($options['query_builder'])) {
                         $qBuilder = $this->createMock(Builder::class);
                         $qBuilder->expects($this->once())
@@ -152,12 +153,13 @@ trait FormTestTrait
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
-                foreach ($this->getFormArray() as $name=>$value) {
+                foreach ($this->getFormArray() as $name => $value) {
                     $mock = $this->createMock(FormInterface::class);
                     $mock->expects($this->any())->method('getData')->willReturn($value);
                     $mock->expects($this->any())->method('getName')->willReturn($name);
                     $children[$name] = $mock;
                 }
+
                 $form = new \ArrayIterator($children);
 
                 $dataMapper->mapDataToForms(null, $form);
@@ -168,25 +170,25 @@ trait FormTestTrait
 
                 $result = null;
                 $dataMapper->mapFormsToData($form, $result);
-                self::assertEmpty($result);
+                $this->assertEmpty($result);
 
                 return $builder;
             });
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             AbstractType::class,
             $this->buildForm()->buildForm($builder, $this->getOptions())
         );
     }
 
-    public function testBuildFormSubmitted()
+    public function testBuildFormSubmitted(): void
     {
         $builder = $this->createMock(FormBuilderInterface::class);
 
         $builder->expects($this->any())
             ->method('add')
             ->willReturnCallback(
-                function ($child, $type, array $options = array()) use ($builder) {
+                function ($child, $type, array $options = []) use ($builder) {
                     if (DocumentType::class == $type && isset($options['query_builder'])) {
                         $qBuilder = $this->createMock(Builder::class);
                         $qBuilder->expects($this->once())
@@ -225,23 +227,24 @@ trait FormTestTrait
             ->method('setDataMapper')
             ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder) {
                 $children = [];
-                foreach ($this->getFormArray() as $name=>$value) {
+                foreach ($this->getFormArray() as $name => $value) {
                     $mock = $this->createMock(FormInterface::class);
                     $mock->expects($this->any())->method('getData')->willReturn($value);
                     $mock->expects($this->any())->method('getName')->willReturn($name);
                     $children[$name] = $mock;
                 }
+
                 $form = new \ArrayIterator($children);
 
                 $dataMapper->mapDataToForms($this->getObject(), $form);
                 $result = $this->getObject();
                 $dataMapper->mapFormsToData($form, $result);
-                self::assertInstanceOf(IdentifiedObjectInterface::class, $result);
+                $this->assertInstanceOf(IdentifiedObjectInterface::class, $result);
 
                 return $builder;
             });
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             AbstractType::class,
             $this->buildForm()->buildForm($builder, $this->getOptions())
         );

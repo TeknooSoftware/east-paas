@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,15 +19,19 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Job;
 
+use DateTimeImmutable;
+use DomainException;
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\Factory as QuotaFactory;
@@ -52,33 +56,22 @@ use Teknoo\East\Paas\Object\Project;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
+use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(JobUnit::class)]
-class   JobUnitTest extends TestCase
+class JobUnitTest extends TestCase
 {
-    /**
-     * @var SourceRepositoryInterface
-     */
-    private $sourceRepository;
-    
-    /**
-     * @var ImageRegistryInterface
-     */
-    private $imagesRegistry;
+    private (SourceRepositoryInterface&MockObject)|null $sourceRepository = null;
 
-    /**
-     * @var Cluster
-     */
-    private $cluster;
+    private (ImageRegistryInterface&MockObject)|null $imagesRegistry = null;
 
-    /**
-     * @return SourceRepositoryInterface
-     */
-    public function getSourceRepositoryMock(): SourceRepositoryInterface
+    private (Cluster&MockObject)|null $cluster = null;
+
+    public function getSourceRepositoryMock(): SourceRepositoryInterface&MockObject
     {
         if (!$this->sourceRepository instanceof SourceRepositoryInterface) {
             $this->sourceRepository = $this->createMock(SourceRepositoryInterface::class);
@@ -87,16 +80,13 @@ class   JobUnitTest extends TestCase
         return $this->sourceRepository;
     }
 
-    /**
-     * @return ImageRegistryInterface
-     */
-    public function getImagesRegistryMock(): ImageRegistryInterface
+    public function getImagesRegistryMock(): ImageRegistryInterface&MockObject
     {
         if (!$this->imagesRegistry instanceof ImageRegistryInterface) {
             $this->imagesRegistry = $this->createMock(ImageRegistryInterface::class);
 
-            $this->imagesRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
-            $this->imagesRegistry->expects($this->any())->method('getIdentity')->willReturn(
+            $this->imagesRegistry->method('getApiUrl')->willReturn('foo');
+            $this->imagesRegistry->method('getIdentity')->willReturn(
                 $this->createMock(IdentityInterface::class)
             );
         }
@@ -104,10 +94,8 @@ class   JobUnitTest extends TestCase
         return $this->imagesRegistry;
     }
 
-    /**
-     * @return Cluster|MockObject
-     */
-    public function getClusterMock(): Cluster
+
+    public function getClusterMock(): Cluster&MockObject
     {
         if (!$this->cluster instanceof Cluster) {
             $this->cluster = $this->createMock(Cluster::class);
@@ -118,7 +106,7 @@ class   JobUnitTest extends TestCase
 
     private function buildObject(
         array $extra = [],
-        ImageRegistryInterface $imageRegistry = null,
+        ?ImageRegistryInterface $imageRegistry = null,
         string $id = 'test',
         string $prefix = 'bar',
         array $defaults = [],
@@ -127,7 +115,7 @@ class   JobUnitTest extends TestCase
             'foo' => 'bar',
             'bar' => 'FOO',
         ],
-    ) {
+    ): JobUnit {
         return new JobUnit(
             id: $id,
             projectResume: ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
@@ -137,53 +125,53 @@ class   JobUnitTest extends TestCase
             imagesRegistry: $imageRegistry ?? $this->getImagesRegistryMock(),
             clusters: [$this->getClusterMock()],
             variables: $variables,
-            history: new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),
+            history: new History(null, 'foo', new DateTimeImmutable('2018-05-01')),
             extra: $extra,
             defaults: $defaults,
             quotas: $quotas,
         );
     }
 
-    public function testGetShortId()
+    public function testGetShortId(): void
     {
         $obj = $this->buildObject();
-        self::assertEquals(
+        $this->assertEquals(
             'test',
             $obj->getId(),
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'test',
             $obj->getShortId(),
         );
 
         $obj = $this->buildObject(id: 'azertyuiopqsdfghjklm');
-        self::assertEquals(
+        $this->assertEquals(
             'azertyuiopqsdfghjklm',
             $obj->getId(),
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             'azer-jklm',
             $obj->getShortId(),
         );
     }
 
-    public function testGetEnvironmentTag()
+    public function testGetEnvironmentTag(): void
     {
-        self::assertIsString(
+        $this->assertIsString(
             $this->buildObject()->getEnvironmentTag()
         );
     }
 
-    public function testGetProjectNormalizedName()
+    public function testGetProjectNormalizedName(): void
     {
-        self::assertIsString(
+        $this->assertIsString(
             $this->buildObject()->getProjectNormalizedName()
         );
     }
 
-    public function testConfigureCloningAgentOnSuccess()
+    public function testConfigureCloningAgentOnSuccess(): void
     {
         $object = $this->buildObject();
 
@@ -197,13 +185,13 @@ class   JobUnitTest extends TestCase
             ->method('configure')
             ->with($this->getSourceRepositoryMock(), $workspace);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $object->configureCloningAgent($agent, $workspace, $promise)
         );
     }
 
-    public function testConfigureCloningAgentOnError()
+    public function testConfigureCloningAgentOnError(): void
     {
         $object = $this->buildObject();
 
@@ -216,15 +204,15 @@ class   JobUnitTest extends TestCase
         $agent->expects($this->once())
             ->method('configure')
             ->with($this->getSourceRepositoryMock(), $workspace)
-            ->willThrowException(new \Exception());
+            ->willThrowException(new Exception());
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $object->configureCloningAgent($agent, $workspace, $promise)
         );
     }
 
-    public function testConfigureImageBuilderOnSuccess()
+    public function testConfigureImageBuilderOnSuccess(): void
     {
         $object = $this->buildObject();
 
@@ -236,16 +224,16 @@ class   JobUnitTest extends TestCase
         $builder->expects($this->once())
             ->method('configure')
             ->with('bar', 'foo', self::callback(
-                fn ($o) => $o instanceof IdentityInterface
+                fn ($o): bool => $o instanceof IdentityInterface
             ));
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $object->configureImageBuilder($builder, $promise)
         );
     }
 
-    public function testConfigureImageBuilderOnError()
+    public function testConfigureImageBuilderOnError(): void
     {
         $object = $this->buildObject();
 
@@ -257,17 +245,17 @@ class   JobUnitTest extends TestCase
         $builder->expects($this->once())
             ->method('configure')
             ->with('bar', 'foo', self::callback(
-                fn ($o) => $o instanceof IdentityInterface
+                fn ($o): bool => $o instanceof IdentityInterface
             ))
-            ->willThrowException(new \Exception());
+            ->willThrowException(new Exception());
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $object->configureImageBuilder($builder, $promise)
         );
     }
 
-    public function testConfigureClusterOnSuccess()
+    public function testConfigureClusterOnSuccess(): void
     {
         $object = $this->buildObject();
 
@@ -281,20 +269,20 @@ class   JobUnitTest extends TestCase
             ->method('selectCluster')
             ->with($directory)
             ->willReturnCallback(
-                function ($c, CompiledDeploymentInterface $cd, PromiseInterface $p) {
+                function ($c, CompiledDeploymentInterface $cd, PromiseInterface $p): Cluster&MockObject {
                     $p->success($this->createMock(ClusterClientInterface::class));
 
                     return $this->getClusterMock();
                 }
             );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
         );
     }
 
-    public function testConfigureClusterOnError()
+    public function testConfigureClusterOnError(): void
     {
         $object = $this->buildObject();
 
@@ -307,15 +295,15 @@ class   JobUnitTest extends TestCase
             ->expects($this->once())
             ->method('selectCluster')
             ->with($directory)
-            ->willThrowException(new \Exception());
+            ->willThrowException(new Exception());
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
         );
     }
 
-    public function testConfigureClusterOnErrorOnConfigure()
+    public function testConfigureClusterOnErrorOnConfigure(): void
     {
         $object = $this->buildObject();
 
@@ -329,35 +317,35 @@ class   JobUnitTest extends TestCase
             ->method('selectCluster')
             ->with($directory)
             ->willReturnCallback(
-                function ($c, PromiseInterface $p) {
-                    $p->fail(new \Exception());
+                function ($c, PromiseInterface $p): Cluster&MockObject {
+                    $p->fail(new Exception());
 
                     return $this->getClusterMock();
                 }
             );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
         );
     }
 
-    public function testExportToMeDataBadNormalizer()
+    public function testExportToMeDataBadNormalizer(): void
     {
-        $this->expectException(\TypeError::class);
-        $this->buildObject()->exportToMeData(new \stdClass(), []);
+        $this->expectException(TypeError::class);
+        $this->buildObject()->exportToMeData(new stdClass(), []);
     }
 
-    public function testExportToMeDataBadContext()
+    public function testExportToMeDataBadContext(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
             $this->createMock(EastNormalizerInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
-    public function testExportToMe()
+    public function testExportToMe(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -372,10 +360,10 @@ class   JobUnitTest extends TestCase
                 'images_repository' => $this->getImagesRegistryMock(),
                 'clusters' => [$this->getClusterMock()],
                 'variables' => ['foo' => 'bar', 'bar' => 'FOO'],
-                'history' => new History(null, 'foo', new \DateTimeImmutable('2018-05-01')),
+                'history' => new History(null, 'foo', new DateTimeImmutable('2018-05-01')),
             ]);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject()->exportToMeData(
                 $normalizer,
@@ -384,7 +372,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsOciNotDefined()
+    public function testUpdateVariablesInWithDefaultsOciNotDefined(): void
     {
         $ori = [
             'foo' => 'foo',
@@ -401,21 +389,21 @@ class   JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects($this->any())
+        $identity
             ->method('getConfigName')
             ->willReturn('fooName');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->method('getIdentity')->willReturn($identity);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject(imageRegistry: $imageRegistry, prefix: '')->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
-                        self::assertEquals(
+                    function (array $result): void {
+                        $this->assertEquals(
                             [
                                 'foo' => 'foo',
                                 'bar' => [
@@ -445,7 +433,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsOciAlreadyDefined()
+    public function testUpdateVariablesInWithDefaultsOciAlreadyDefined(): void
     {
         $ori = [
             'foo' => 'foo',
@@ -464,21 +452,21 @@ class   JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects($this->any())
+        $identity
             ->method('getConfigName')
             ->willReturn('fooName');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->method('getIdentity')->willReturn($identity);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject(imageRegistry: $imageRegistry)->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
-                        self::assertEquals(
+                    function (array $result): void {
+                        $this->assertEquals(
                             [
                                 'foo' => 'foo',
                                 'bar' => [
@@ -507,7 +495,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsOciConfigNameEmpty()
+    public function testUpdateVariablesInWithDefaultsOciConfigNameEmpty(): void
     {
         $ori = [
             'foo' => 'foo',
@@ -523,21 +511,21 @@ class   JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects($this->any())
+        $identity
             ->method('getConfigName')
             ->willReturn('');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->method('getIdentity')->willReturn($identity);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject(imageRegistry: $imageRegistry)->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
-                        self::assertEquals(
+                    function (array $result): void {
+                        $this->assertEquals(
                             [
                                 'foo' => 'foo',
                                 'bar' => [
@@ -564,7 +552,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsNotDefined()
+    public function testUpdateVariablesInWithDefaultsNotDefined(): void
     {
         $ori = [
             'foo' => 'foo',
@@ -581,15 +569,15 @@ class   JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects($this->any())
+        $identity
             ->method('getConfigName')
             ->willReturn('fooName');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->method('getIdentity')->willReturn($identity);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject(
                 defaults: ['foo' => 'bar'],
@@ -598,8 +586,8 @@ class   JobUnitTest extends TestCase
             )->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
-                        self::assertEquals(
+                    function (array $result): void {
+                        $this->assertEquals(
                             [
                                 'foo' => 'foo',
                                 'bar' => [
@@ -630,7 +618,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsAlreadyDefinedInJob()
+    public function testUpdateVariablesInWithDefaultsAlreadyDefinedInJob(): void
     {
         $ori = [
             'defaults' => [
@@ -653,15 +641,15 @@ class   JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects($this->any())
+        $identity
             ->method('getConfigName')
             ->willReturn('fooName');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->method('getIdentity')->willReturn($identity);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject(
                 defaults: [
@@ -676,8 +664,8 @@ class   JobUnitTest extends TestCase
             )->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
-                        self::assertEquals(
+                    function (array $result): void {
+                        $this->assertEquals(
                             [
                                 'foo' => 'foo',
                                 'bar' => [
@@ -712,7 +700,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithDefaultsConfigNameEmpty()
+    public function testUpdateVariablesInWithDefaultsConfigNameEmpty(): void
     {
         $ori = [
             'foo' => 'foo',
@@ -728,21 +716,21 @@ class   JobUnitTest extends TestCase
         ];
 
         $identity = $this->createMock(IdentityWithConfigNameInterface::class);
-        $identity->expects($this->any())
+        $identity
             ->method('getConfigName')
             ->willReturn('');
 
         $imageRegistry = $this->createMock(ImageRegistryInterface::class);
-        $imageRegistry->expects($this->any())->method('getApiUrl')->willReturn('foo');
-        $imageRegistry->expects($this->any())->method('getIdentity')->willReturn($identity);
+        $imageRegistry->method('getApiUrl')->willReturn('foo');
+        $imageRegistry->method('getIdentity')->willReturn($identity);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject(defaults: ['foo' => 'bar'], imageRegistry: $imageRegistry)->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
-                        self::assertEquals(
+                    function (array $result): void {
+                        $this->assertEquals(
                             [
                                 'foo' => 'foo',
                                 'bar' => [
@@ -769,7 +757,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithPrefix()
+    public function testUpdateVariablesInWithPrefix(): void
     {
         $ori = [
             'foo' => 'foo',
@@ -785,13 +773,13 @@ class   JobUnitTest extends TestCase
             ],
         ];
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject(prefix: 'a-prefix')->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
-                        self::assertEquals(
+                    function (array $result): void {
+                        $this->assertEquals(
                             [
                                 'foo' => 'foo',
                                 'bar' => [
@@ -819,17 +807,17 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInForEmpty()
+    public function testUpdateVariablesInForEmpty(): void
     {
         $ori = [];
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject()->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
-                        self::assertEquals(
+                    function (array $result): void {
+                        $this->assertEquals(
                             [
                                 'paas' => [
                                     'prefix' => 'bar',
@@ -847,7 +835,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testUpdateVariablesInWithNoKeyFound()
+    public function testUpdateVariablesInWithNoKeyFound(): void
     {
         $ori = [
             'foo' => 'foo',
@@ -856,46 +844,46 @@ class   JobUnitTest extends TestCase
             ],
         ];
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnit::class,
             $this->buildObject()->updateVariablesIn(
                 $ori,
                 new Promise(
-                    function (array $result) {
+                    function (array $result): void {
                         self::fail();
                     },
-                    function (Throwable $error) {
-                        self::assertInstanceOf(\DomainException::class, $error);
+                    function (Throwable $error): void {
+                        $this->assertInstanceOf(DomainException::class, $error);
                     }
                 )
             )
         );
     }
 
-    public function testRunWithExtra()
+    public function testRunWithExtra(): void
     {
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnitInterface::class,
-            $this->buildObject()->runWithExtra(function () {
+            $this->buildObject()->runWithExtra(function (): void {
                 self::fail('Must not be called if no extra');
             })
         );
 
         $extra = [];
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnitInterface::class,
-            $this->buildObject(['foo' => 'bar'])->runWithExtra(function ($e) use (&$extra) {
+            $this->buildObject(['foo' => 'bar'])->runWithExtra(function ($e) use (&$extra): void {
                 $extra = $e;
             })
         );
 
-        self::assertEquals(
+        $this->assertEquals(
             ['foo' => 'bar'],
             $extra
         );
     }
 
-    public function testPrepareQuotasWithoutQuotas()
+    public function testPrepareQuotasWithoutQuotas(): void
     {
         $factory = $this->createMock(QuotaFactory::class);
         $factory->expects($this->never())
@@ -906,13 +894,13 @@ class   JobUnitTest extends TestCase
             ->method('success')
             ->with([]);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnitInterface::class,
             $this->buildObject()->prepareQuotas($factory, $promise)
         );
     }
 
-    public function testPrepareQuotasWithQuotas()
+    public function testPrepareQuotasWithQuotas(): void
     {
         $factory = $this->createMock(QuotaFactory::class);
         $factory->expects($this->exactly(2))
@@ -929,7 +917,7 @@ class   JobUnitTest extends TestCase
                 ]
             );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             JobUnitInterface::class,
             $this->buildObject(
                 quotas: [
@@ -940,7 +928,7 @@ class   JobUnitTest extends TestCase
         );
     }
 
-    public function testFilteringConditionsWithoutAnyCondition()
+    public function testFilteringConditionsWithoutAnyCondition(): void
     {
         $values = [
             'paas' => [
@@ -967,14 +955,14 @@ class   JobUnitTest extends TestCase
             ->method('success')
             ->with($values);
 
-        $promise->expects($this->any())
+        $promise
             ->method('fail')
-            ->willReturnCallback(fn (Throwable $e) => throw $e);
+            ->willReturnCallback(fn (Throwable $e): PromiseInterface => throw $e);
 
         $this->buildObject()->filteringConditions($values, $promise);
     }
 
-    public function testFilteringConditionsWithErrorOnIs()
+    public function testFilteringConditionsWithErrorOnIs(): void
     {
         $values = [
             'paas' => [
@@ -1002,7 +990,7 @@ class   JobUnitTest extends TestCase
         $this->buildObject()->filteringConditions($values, $promise);
     }
 
-    public function testFilteringConditionsWithErrorIsNot()
+    public function testFilteringConditionsWithErrorIsNot(): void
     {
         $values = [
             'paas' => [
@@ -1030,7 +1018,7 @@ class   JobUnitTest extends TestCase
         $this->buildObject()->filteringConditions($values, $promise);
     }
 
-    public function testFilteringConditionsWithAllConditions()
+    public function testFilteringConditionsWithAllConditions(): void
     {
         $values = [
             'paas' => [
@@ -1087,9 +1075,9 @@ class   JobUnitTest extends TestCase
             ->method('success')
             ->with($expected);
 
-        $promise->expects($this->any())
+        $promise
             ->method('fail')
-            ->willReturnCallback(fn (Throwable $e) => throw $e);
+            ->willReturnCallback(fn (Throwable $e): PromiseInterface => throw $e);
 
         $this->buildObject(variables: [
             'ENV' => 'prod',
@@ -1098,7 +1086,7 @@ class   JobUnitTest extends TestCase
         ])->filteringConditions($values, $promise);
     }
 
-    public function testFilteringConditionsWithNestedCondition()
+    public function testFilteringConditionsWithNestedCondition(): void
     {
         $values = [
             'paas' => [
@@ -1170,9 +1158,9 @@ class   JobUnitTest extends TestCase
             ->method('success')
             ->with($expected);
 
-        $promise->expects($this->any())
+        $promise
             ->method('fail')
-            ->willReturnCallback(fn (Throwable $e) => throw $e);
+            ->willReturnCallback(fn (Throwable $e): PromiseInterface => throw $e);
 
         $this->buildObject(variables: ['ENV' => 'prod'])->filteringConditions($values, $promise);
     }

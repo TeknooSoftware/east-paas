@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -28,6 +28,9 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 use ArrayObject;
 use DI\Container;
 use DI\ContainerBuilder;
+use DomainException;
+use Exception;
+use stdClass;
 use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CronJobTranscriber;
@@ -49,16 +52,15 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ContainerTest extends TestCase
 {
     /**
-     * @return Container
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Kubernetes/di.php');
@@ -66,41 +68,32 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    public function testClientFactoryInterface()
+    public function testClientFactoryInterface(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
         $container->set('teknoo.east.paas.kubernetes.timeout', 30);
 
-        self::assertInstanceOf(
-            ClientFactoryInterface::class,
-            $factory = $container->get(ClientFactoryInterface::class)
-        );
+        $this->assertInstanceOf(ClientFactoryInterface::class, $factory = $container->get(ClientFactoryInterface::class));
 
-        self::assertInstanceOf(
-            KubClient::class,
-            $factory('foo', null)
-        );
+        $this->assertInstanceOf(KubClient::class, $factory('foo', null));
 
-        self::assertInstanceOf(
-            KubClient::class,
-            $factory(
-                'foo',
-                new ClusterCredentials(
+        $this->assertInstanceOf(KubClient::class, $factory(
+            'foo',
+            new ClusterCredentials(
                 'certBar',
                 'barFoo',
                 'fooBar',
                 'barFoo2',
                 'barBar'
-                )
             )
-        );
+        ));
 
         unset($factory);
     }
 
-    public function testClientFactoryInterfaceWithClient()
+    public function testClientFactoryInterfaceWithClient(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
@@ -110,60 +103,45 @@ class ContainerTest extends TestCase
             $this->createMock(ClientInterface::class),
         );
 
-        self::assertInstanceOf(
-            ClientFactoryInterface::class,
-            $factory = $container->get(ClientFactoryInterface::class)
-        );
+        $this->assertInstanceOf(ClientFactoryInterface::class, $factory = $container->get(ClientFactoryInterface::class));
 
-        self::assertInstanceOf(
-            KubClient::class,
-            $factory('foo', null)
-        );
+        $this->assertInstanceOf(KubClient::class, $factory('foo', null));
 
-        self::assertInstanceOf(
-            KubClient::class,
-            $factory(
-                'foo',
-                new ClusterCredentials(
+        $this->assertInstanceOf(KubClient::class, $factory(
+            'foo',
+            new ClusterCredentials(
                 'certBar',
                 'barFoo',
                 'fooBar',
                 'barFoo2',
                 'barBar'
-                )
             )
-        );
+        ));
 
         unset($factory);
     }
 
-    public function testClient()
+    public function testClient(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
         $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
 
-        self::assertInstanceOf(
-            Driver::class,
-            $container->get(Driver::class)
-        );
+        $this->assertInstanceOf(Driver::class, $container->get(Driver::class));
     }
 
-    public function testDirectory()
+    public function testDirectory(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
         $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
 
-        self::assertInstanceOf(
-            Directory::class,
-            $container->get(Directory::class)
-        );
+        $this->assertInstanceOf(Directory::class, $container->get(Directory::class));
     }
 
-    public function testIngressTranscriberBadClass()
+    public function testIngressTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
@@ -171,12 +149,12 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
         $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', []);
 
-        $container->set(IngressTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(IngressTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(IngressTranscriber::class);
     }
 
-    public function testIngressTranscriberWithEmptyAnnotations()
+    public function testIngressTranscriberWithEmptyAnnotations(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
@@ -184,25 +162,22 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
         $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', []);
 
-        self::assertInstanceOf(
-            IngressTranscriber::class,
-            $container->get(IngressTranscriber::class)
-        );
+        $this->assertInstanceOf(IngressTranscriber::class, $container->get(IngressTranscriber::class));
     }
 
-    public function testIngressTranscriberWithInvalidAnnotations()
+    public function testIngressTranscriberWithInvalidAnnotations(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
-        $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', new \stdClass());
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', new stdClass());
 
         $this->expectException(InvalidArgumentException::class);
         $container->get(IngressTranscriber::class);
     }
 
-    public function testIngressTranscriberWithFullAnnotations()
+    public function testIngressTranscriberWithFullAnnotations(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
@@ -210,26 +185,20 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
         $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', ['foo' => 'bar']);
 
-        self::assertInstanceOf(
-            IngressTranscriber::class,
-            $container->get(IngressTranscriber::class)
-        );
+        $this->assertInstanceOf(IngressTranscriber::class, $container->get(IngressTranscriber::class));
     }
 
-    public function testIngressTranscriberWithMissingAnnotations()
+    public function testIngressTranscriberWithMissingAnnotations(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
 
-        self::assertInstanceOf(
-            IngressTranscriber::class,
-            $container->get(IngressTranscriber::class)
-        );
+        $this->assertInstanceOf(IngressTranscriber::class, $container->get(IngressTranscriber::class));
     }
 
-    public function testIngressTranscriberWithIterableAnnotations()
+    public function testIngressTranscriberWithIterableAnnotations(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
@@ -237,170 +206,140 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
         $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', new ArrayObject(['foo' => 'bar']));
 
-        self::assertInstanceOf(
-            IngressTranscriber::class,
-            $container->get(IngressTranscriber::class)
-        );
+        $this->assertInstanceOf(IngressTranscriber::class, $container->get(IngressTranscriber::class));
     }
 
-    public function testDeploymentTranscriberBadClass()
+    public function testDeploymentTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(DeploymentTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(DeploymentTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(DeploymentTranscriber::class);
     }
 
-    public function testDeploymentTranscriber()
+    public function testDeploymentTranscriber(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.deployment.require_label', 'foo');
-        self::assertInstanceOf(
-            DeploymentTranscriber::class,
-            $container->get(DeploymentTranscriber::class)
-        );
+        $this->assertInstanceOf(DeploymentTranscriber::class, $container->get(DeploymentTranscriber::class));
     }
 
-    public function testCronJobTranscriberBadClass()
+    public function testCronJobTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(CronJobTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(CronJobTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(CronJobTranscriber::class);
     }
 
-    public function testCronJobTranscriber()
+    public function testCronJobTranscriber(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.cronjob.require_label', 'foo');
         $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
 
-        self::assertInstanceOf(
-            CronJobTranscriber::class,
-            $container->get(CronJobTranscriber::class)
-        );
+        $this->assertInstanceOf(CronJobTranscriber::class, $container->get(CronJobTranscriber::class));
     }
 
-    public function testJobTranscriberBadClass()
+    public function testJobTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(JobTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(JobTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(JobTranscriber::class);
     }
 
-    public function testJobTranscriber()
+    public function testJobTranscriber(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.job.require_label', 'foo');
         $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
 
-        self::assertInstanceOf(
-            JobTranscriber::class,
-            $container->get(JobTranscriber::class)
-        );
+        $this->assertInstanceOf(JobTranscriber::class, $container->get(JobTranscriber::class));
     }
 
-    public function testStatefulSetsTranscriberBadClass()
+    public function testStatefulSetsTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(StatefulSetsTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(StatefulSetsTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(StatefulSetsTranscriber::class);
     }
 
-    public function testStatefulSetsTranscriber()
+    public function testStatefulSetsTranscriber(): void
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.statefulSets.require_label', 'foo');
-        self::assertInstanceOf(
-            StatefulSetsTranscriber::class,
-            $container->get(StatefulSetsTranscriber::class)
-        );
+        $this->assertInstanceOf(StatefulSetsTranscriber::class, $container->get(StatefulSetsTranscriber::class));
     }
 
-    public function testSecretTranscriberBadClass()
+    public function testSecretTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(SecretTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(SecretTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(SecretTranscriber::class);
     }
 
-    public function testSecretTranscriber()
+    public function testSecretTranscriber(): void
     {
         $container = $this->buildContainer();
-        self::assertInstanceOf(
-            SecretTranscriber::class,
-            $container->get(SecretTranscriber::class)
-        );
+        $this->assertInstanceOf(SecretTranscriber::class, $container->get(SecretTranscriber::class));
     }
 
-    public function testConfigMapTranscriberBadClass()
+    public function testConfigMapTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(ConfigMapTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(ConfigMapTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(ConfigMapTranscriber::class);
     }
 
-    public function testConfigMapTranscriber()
+    public function testConfigMapTranscriber(): void
     {
         $container = $this->buildContainer();
-        self::assertInstanceOf(
-            ConfigMapTranscriber::class,
-            $container->get(ConfigMapTranscriber::class)
-        );
+        $this->assertInstanceOf(ConfigMapTranscriber::class, $container->get(ConfigMapTranscriber::class));
     }
 
-    public function testServiceTranscriberBadClass()
+    public function testServiceTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(ServiceTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(ServiceTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(ServiceTranscriber::class);
     }
 
-    public function testServiceTranscriber()
+    public function testServiceTranscriber(): void
     {
         $container = $this->buildContainer();
-        self::assertInstanceOf(
-            ServiceTranscriber::class,
-            $container->get(ServiceTranscriber::class)
-        );
+        $this->assertInstanceOf(ServiceTranscriber::class, $container->get(ServiceTranscriber::class));
     }
 
-    public function testNamespaceTranscriberBadClass()
+    public function testNamespaceTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(NamespaceTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(NamespaceTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(NamespaceTranscriber::class);
     }
 
-    public function testNamespaceTranscriber()
+    public function testNamespaceTranscriber(): void
     {
         $container = $this->buildContainer();
-        self::assertInstanceOf(
-            NamespaceTranscriber::class,
-            $container->get(NamespaceTranscriber::class)
-        );
+        $this->assertInstanceOf(NamespaceTranscriber::class, $container->get(NamespaceTranscriber::class));
     }
 
-    public function testVolumeTranscriberBadClass()
+    public function testVolumeTranscriberBadClass(): void
     {
         $container = $this->buildContainer();
-        $container->set(VolumeTranscriber::class . ':class', \stdClass::class);
-        $this->expectException(\DomainException::class);
+        $container->set(VolumeTranscriber::class . ':class', stdClass::class);
+        $this->expectException(DomainException::class);
         $container->get(VolumeTranscriber::class);
     }
 
-    public function testVolumeTranscriber()
+    public function testVolumeTranscriber(): void
     {
         $container = $this->buildContainer();
-        self::assertInstanceOf(
-            VolumeTranscriber::class,
-            $container->get(VolumeTranscriber::class)
-        );
+        $this->assertInstanceOf(VolumeTranscriber::class, $container->get(VolumeTranscriber::class));
     }
 }

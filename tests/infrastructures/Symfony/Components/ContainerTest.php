@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -27,6 +27,8 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony;
 
 use DI\Container;
 use DI\ContainerBuilder;
+use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -54,23 +56,20 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ContainerTest extends TestCase
 {
     /**
-     * @return Container
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(
             [
-                Executor::class => function () {
-                    return $this->createMock(Executor::class);
-                }
+                Executor::class => fn (): MockObject => $this->createMock(Executor::class)
             ],
         );
         $containerDefinition->addDefinitions(__DIR__.'/../../../../infrastructures/Symfony/Components/di.php');
@@ -78,7 +77,7 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    public function testDispatchJobInterface()
+    public function testDispatchJobInterface(): void
     {
         $container = $this->buildContainer();
         $container->set(
@@ -86,13 +85,10 @@ class ContainerTest extends TestCase
             $this->createMock(DispatchJob::class)
         );
 
-        self::assertInstanceOf(
-            DispatchJobInterface::class,
-            $container->get(DispatchJobInterface::class)
-        );
+        $this->assertInstanceOf(DispatchJobInterface::class, $container->get(DispatchJobInterface::class));
     }
 
-    public function testPropertyAccessorInterface()
+    public function testPropertyAccessorInterface(): void
     {
         $container = $this->buildContainer();
         $container->set(
@@ -100,13 +96,10 @@ class ContainerTest extends TestCase
             $this->createMock(SymfonyPropertyAccessor::class)
         );
 
-        self::assertInstanceOf(
-            PropertyAccessorInterface::class,
-            $container->get(PropertyAccessorInterface::class)
-        );
+        $this->assertInstanceOf(PropertyAccessorInterface::class, $container->get(PropertyAccessorInterface::class));
     }
 
-    public function testPropertyAccessor()
+    public function testPropertyAccessor(): void
     {
         $container = $this->buildContainer();
         $container->set(
@@ -114,98 +107,71 @@ class ContainerTest extends TestCase
             $this->createMock(SymfonyPropertyAccessor::class)
         );
 
-        self::assertInstanceOf(
-            PropertyAccessor::class,
-            $container->get(PropertyAccessor::class)
-        );
+        $this->assertInstanceOf(PropertyAccessor::class, $container->get(PropertyAccessor::class));
     }
 
-    public function testParser()
+    public function testParser(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            Parser::class,
-            $container->get(Parser::class)
-        );
+        $this->assertInstanceOf(Parser::class, $container->get(Parser::class));
     }
 
-    public function testYamlParserInterface()
+    public function testYamlParserInterface(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            YamlParserInterface::class,
-            $container->get(YamlParserInterface::class)
-        );
+        $this->assertInstanceOf(YamlParserInterface::class, $container->get(YamlParserInterface::class));
     }
 
-    public function testYamlParser()
+    public function testYamlParser(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            YamlParser::class,
-            $container->get(YamlParser::class)
-        );
+        $this->assertInstanceOf(YamlParser::class, $container->get(YamlParser::class));
     }
 
-    public function testDeserializerInterface()
+    public function testDeserializerInterface(): void
     {
         $container = $this->buildContainer();
         $container->set(Deserializer::class, $this->createMock(Deserializer::class));
 
-        self::assertInstanceOf(
-            DeserializerInterface::class,
-            $container->get(DeserializerInterface::class)
-        );
+        $this->assertInstanceOf(DeserializerInterface::class, $container->get(DeserializerInterface::class));
     }
 
-    public function testNormalizerInterface()
+    public function testNormalizerInterface(): void
     {
         $container = $this->buildContainer();
         $container->set(Normalizer::class, $this->createMock(Normalizer::class));
 
-        self::assertInstanceOf(
-            NormalizerInterface::class,
-            $container->get(NormalizerInterface::class)
-        );
+        $this->assertInstanceOf(NormalizerInterface::class, $container->get(NormalizerInterface::class));
     }
 
-    public function testSerializerInterface()
+    public function testSerializerInterface(): void
     {
         $container = $this->buildContainer();
         $container->set(Serializer::class, $this->createMock(Serializer::class));
 
-        self::assertInstanceOf(
-            SerializerInterface::class,
-            $container->get(SerializerInterface::class)
-        );
+        $this->assertInstanceOf(SerializerInterface::class, $container->get(SerializerInterface::class));
     }
 
-    public function testDisplayHistory()
+    public function testDisplayHistory(): void
     {
         $container = $this->buildContainer();
         $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
 
-        self::assertInstanceOf(
-            DisplayHistoryHandler::class,
-            $container->get(DisplayHistoryHandler::class)
-        );
+        $this->assertInstanceOf(DisplayHistoryHandler::class, $container->get(DisplayHistoryHandler::class));
     }
 
-    public function testDisplayResult()
+    public function testDisplayResult(): void
     {
         $container = $this->buildContainer();
         $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
 
-        self::assertInstanceOf(
-            DisplayResultHandler::class,
-            $container->get(DisplayResultHandler::class)
-        );
+        $this->assertInstanceOf(DisplayResultHandler::class, $container->get(DisplayResultHandler::class));
     }
 
-    public function testRunJobCommand()
+    public function testRunJobCommand(): void
     {
         $container = $this->buildContainer();
         $container->set(ServerRequestFactoryInterface::class, $this->createMock(ServerRequestFactoryInterface::class));
@@ -216,9 +182,6 @@ class ContainerTest extends TestCase
         $container->set(RunJobInterface::class . ':proxy', $this->createMock(RunJobInterface::class));
         $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
 
-        self::assertInstanceOf(
-            RunJobCommand::class,
-            $container->get(RunJobCommand::class)
-        );
+        $this->assertInstanceOf(RunJobCommand::class, $container->get(RunJobCommand::class));
     }
 }

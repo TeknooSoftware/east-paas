@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -62,7 +62,7 @@ use function is_callable;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class Job implements
@@ -143,7 +143,7 @@ class Job implements
     protected function listAssertions(): array
     {
         return [
-            (new Property(Terminated::class))
+            new Property(Terminated::class)
                 ->with('history', new IsInstanceOf(History::class))
                 ->with(
                     'history',
@@ -156,7 +156,7 @@ class Job implements
                     ),
                 ),
 
-            (new Property(Executing::class))
+            new Property(Executing::class)
                 ->with('project', new IsInstanceOf(Project::class))
                 ->with('environment', new IsInstanceOf(Environment::class))
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
@@ -174,7 +174,7 @@ class Job implements
                     )
                 ),
 
-            (new Property(Validating::class))
+            new Property(Validating::class)
                 ->with('project', new IsInstanceOf(Project::class))
                 ->with('environment', new IsInstanceOf(Environment::class))
                 ->with('sourceRepository', new IsInstanceOf(SourceRepositoryInterface::class))
@@ -182,7 +182,7 @@ class Job implements
                 ->with('clusters', new CountsMore(0))
                 ->with('history', new IsEmpty()),
 
-            (new Callback(Pending::class))
+            new Callback(Pending::class)
                 ->call(static function (Job $job, AssertionInterface $assertion): void {
                     $job->isNotInState(
                         [Validating::class, Executing::class, Terminated::class],

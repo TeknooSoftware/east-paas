@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
@@ -55,7 +56,7 @@ use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(StatefulSetsTranscriber::class)]
@@ -66,14 +67,14 @@ class StatefulSetsTranscriberTest extends TestCase
         return new StatefulSetsTranscriber();
     }
 
-    public function testRun()
+    public function testRun(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachPod')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -230,18 +231,18 @@ class StatefulSetsTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['statefulsets', [], $sfsRepo],
                 ['pods', [], $pRepo],
             ]);
 
-        $sfsRepo->expects($this->any())
+        $sfsRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $pRepo->expects($this->any())
+        $pRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -253,7 +254,7 @@ class StatefulSetsTranscriberTest extends TestCase
                 null,
             );
 
-        $pRepo->expects($this->any(3))
+        $pRepo
             ->method('find')
             ->willReturnOnConsecutiveCalls(
                 new PodCollection([new PodModel(['metadata' => ['name' => 'foo']])]),
@@ -268,27 +269,24 @@ class StatefulSetsTranscriberTest extends TestCase
         $promise->expects($this->exactly(3))->method('success')->with(['foo']);
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(StatefulSetsTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testRunWithOciRegistryConfigName()
+    public function testRunWithOciRegistryConfigName(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachPod')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -416,18 +414,18 @@ class StatefulSetsTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['statefulsets', [], $sfsRepo],
                 ['pods', [], $pRepo],
             ]);
 
-        $sfsRepo->expects($this->any())
+        $sfsRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $pRepo->expects($this->any())
+        $pRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -438,7 +436,7 @@ class StatefulSetsTranscriberTest extends TestCase
                 new Deployment(['metadata' => ['name' => 'foo']]),
             );
 
-        $pRepo->expects($this->any())
+        $pRepo
             ->method('find')
             ->willReturnOnConsecutiveCalls(
                 new PodCollection([
@@ -460,27 +458,24 @@ class StatefulSetsTranscriberTest extends TestCase
         $promise->expects($this->exactly(2))->method('success')->with(['foo']);
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(StatefulSetsTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testRunWithOciRegistryConfigNameAsReference()
+    public function testRunWithOciRegistryConfigNameAsReference(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachPod')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -608,18 +603,18 @@ class StatefulSetsTranscriberTest extends TestCase
             ->method('setNamespace')
             ->with('default_namespace');
 
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->willReturnMap([
                 ['statefulsets', [], $sfsRepo],
                 ['pods', [], $pRepo],
             ]);
 
-        $sfsRepo->expects($this->any())
+        $sfsRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
-        $pRepo->expects($this->any())
+        $pRepo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -630,7 +625,7 @@ class StatefulSetsTranscriberTest extends TestCase
                 new Deployment(['metadata' => ['name' => 'foo']]),
             );
 
-        $pRepo->expects($this->any())
+        $pRepo
             ->method('find')
             ->willReturnOnConsecutiveCalls(
                 new PodCollection([
@@ -652,27 +647,24 @@ class StatefulSetsTranscriberTest extends TestCase
         $promise->expects($this->exactly(2))->method('success')->with(['foo']);
         $promise->expects($this->never())->method('fail');
 
-        self::assertInstanceOf(
-            StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(StatefulSetsTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testErrorOnFetching()
+    public function testErrorOnFetching(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachPod')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -751,12 +743,12 @@ class StatefulSetsTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(StatefulSetRepository::class);
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->with('statefulsets')
             ->willReturn($repo);
 
-        $repo->expects($this->any())
+        $repo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -764,7 +756,7 @@ class StatefulSetsTranscriberTest extends TestCase
         $repo->expects($this->exactly(2))
             ->method('first')
             ->willReturnCallback(
-                function () use (&$call) {
+                function () use (&$call): null {
                     if (0 < $call++) {
                         throw new DomainException('foo');
                     }
@@ -781,27 +773,24 @@ class StatefulSetsTranscriberTest extends TestCase
         $promise->expects($this->once())->method('success')->with(['foo']);
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(StatefulSetsTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 
-    public function testError()
+    public function testError(): void
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachPod')
-            ->willReturnCallback(function (callable $callback) use ($cd) {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image1 = $image1->withRegistry('repository.teknoo.run');
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
@@ -860,12 +849,12 @@ class StatefulSetsTranscriberTest extends TestCase
             });
 
         $repo = $this->createMock(StatefulSetRepository::class);
-        $kubeClient->expects($this->any())
+        $kubeClient
             ->method('__call')
             ->with('statefulsets')
             ->willReturn($repo);
 
-        $repo->expects($this->any())
+        $repo
             ->method('setLabelSelector')
             ->willReturnSelf();
 
@@ -880,7 +869,7 @@ class StatefulSetsTranscriberTest extends TestCase
         $repo->expects($this->exactly(2))
             ->method('apply')
             ->willReturnCallback(
-                function () use (&$call) {
+                function () use (&$call): array {
                     if (0 < $call++) {
                         throw new DomainException('foo');
                     }
@@ -893,16 +882,13 @@ class StatefulSetsTranscriberTest extends TestCase
         $promise->expects($this->once())->method('success')->with(['foo']);
         $promise->expects($this->once())->method('fail');
 
-        self::assertInstanceOf(
-            StatefulSetsTranscriber::class,
-            $this->buildTranscriber()->transcribe(
-                compiledDeployment: $cd,
-                client: $kubeClient,
-                promise: $promise,
-                defaultsBag: $this->createMock(DefaultsBag::class),
-                namespace: 'default_namespace',
-                useHierarchicalNamespaces: false,
-            )
-        );
+        $this->assertInstanceOf(StatefulSetsTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createMock(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
     }
 }

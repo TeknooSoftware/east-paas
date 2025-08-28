@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,58 +19,56 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
-namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\SerializingNormalier;
+namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Normalizer;
 
+use Exception;
+use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer;
-use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\HistoryDenormalizer;
-use Teknoo\East\Paas\Object\History;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ExceptionNormalizer::class)]
 class ExceptionNormalizerTest extends TestCase
 {
-    public function buildNormalizer()
+    public function buildNormalizer(): \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer
     {
         return new ExceptionNormalizer();
     }
 
-    public function testSupportsNormalization()
+    public function testSupportsNormalization(): void
     {
-        self::assertFalse($this->buildNormalizer()->supportsNormalization(new \stdClass()));
-        self::assertTrue($this->buildNormalizer()->supportsNormalization(new \Exception()));
+        $this->assertFalse($this->buildNormalizer()->supportsNormalization(new stdClass()));
+        $this->assertTrue($this->buildNormalizer()->supportsNormalization(new Exception()));
     }
 
-    public function testNormalizeNotException()
+    public function testNormalizeNotException(): void
     {
-        $this->expectException(\LogicException::class);
-        $this->buildNormalizer()->normalize(new \stdClass());
+        $this->expectException(LogicException::class);
+        $this->buildNormalizer()->normalize(new stdClass());
     }
 
-    public function testNormalize()
+    public function testNormalize(): void
     {
-        self::assertEquals(
-            array(
-                'class' => 'Exception',
-                'message' => 'foo',
-                'code' => 123,
-                'file' => __FILE__,
-                'line' => 68,
-            ),
-            $this->buildNormalizer()->normalize(new \Exception('foo', 123))
-        );
+        $this->assertEquals([
+            'class' => 'Exception',
+            'message' => 'foo',
+            'code' => 123,
+            'file' => __FILE__,
+            'line' => 67,
+        ], $this->buildNormalizer()->normalize(new Exception('foo', 123)));
     }
 
-    public function testGetSupportedTypes()
+    public function testGetSupportedTypes(): void
     {
-        self::assertIsArray($this->buildNormalizer()->getSupportedTypes('array'));
+        $this->assertIsArray($this->buildNormalizer()->getSupportedTypes('array'));
     }
 }

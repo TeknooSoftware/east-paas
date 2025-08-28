@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -43,7 +43,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Running::class)]
@@ -51,27 +51,19 @@ use TypeError;
 #[CoversClass(Hook::class)]
 class HookTest extends TestCase
 {
-    /**
-     * @var ProcessFactoryInterface
-     */
-    private $processFactory;
+    private (MockObject&ProcessFactoryInterface)|null $processFactory = null;
 
-    /**
-     * @var Process
-     */
-    private $process;
+    private (MockObject&Process)|null $process = null;
 
     public function getProcessFactoryMock(bool $isSuccessFull = true): MockObject&ProcessFactoryInterface
     {
         if (!$this->processFactory instanceof ProcessFactoryInterface) {
             $this->processFactory = $this->createMock(ProcessFactoryInterface::class);
             $this->processFactory
-                ->expects($this->any())
                 ->method('__invoke')
                 ->willReturn($this->getProcessMock());
 
             $this->getProcessMock()
-                ->expects($this->any())
                 ->method('isSuccessFul')
                 ->willReturn($isSuccessFull);
         }
@@ -88,9 +80,6 @@ class HookTest extends TestCase
         return $this->process;
     }
 
-    /**
-     * @return Hook
-     */
     public function buildHook(): Hook
     {
         return new Hook(
@@ -99,7 +88,7 @@ class HookTest extends TestCase
         );
     }
 
-    public function testSetContextBadJobUnit()
+    public function testSetContextBadJobUnit(): void
     {
         $this->expectException(TypeError::class);
         $this->buildHook()->setContext(
@@ -108,7 +97,7 @@ class HookTest extends TestCase
         );
     }
 
-    public function testSetContextBadWorkspace()
+    public function testSetContextBadWorkspace(): void
     {
         $this->expectException(TypeError::class);
         $this->buildHook()->setContext(
@@ -117,9 +106,9 @@ class HookTest extends TestCase
         );
     }
 
-    public function testSetContext()
+    public function testSetContext(): void
     {
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $this->buildHook()->setContext(
                 $this->createMock(JobUnitInterface::class),
@@ -128,59 +117,59 @@ class HookTest extends TestCase
         );
     }
 
-    public function testSetPathBadPath()
+    public function testSetPathBadPath(): void
     {
         $this->expectException(TypeError::class);
         $this->buildHook()->setPath(new stdClass());
     }
 
-    public function testSetPath()
+    public function testSetPath(): void
     {
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $this->buildHook()->setPath('/foo')
         );
     }
 
-    public function testSetOptionsBadOptions()
+    public function testSetOptionsBadOptions(): void
     {
         $this->expectException(TypeError::class);
         $this->buildHook()->setOptions(new stdClass(), $this->createMock(PromiseInterface::class));
     }
 
-    public function testSetOptionsBadPromise()
+    public function testSetOptionsBadPromise(): void
     {
         $this->expectException(TypeError::class);
         $this->buildHook()->setOptions([], new stdClass());
     }
-    
-    public function testSetOptions()
+
+    public function testSetOptions(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $this->buildHook()->setOptions(['foo' => 'bar'], $promise)
         );
     }
 
-    public function testRunBadPromise()
+    public function testRunBadPromise(): void
     {
         $this->expectException(TypeError::class);
         $this->buildHook()->run(new stdClass());
     }
 
-    public function testRunWithSsh()
+    public function testRunWithSsh(): void
     {
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
         $workspace->expects($this->once())
             ->method('writeFile')
-            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace) {
-                self::assertEquals('private.key', $file->getName());
-                self::assertEquals('fooBar', $file->getContent());
-                self::assertEquals(Visibility::Private, $file->getVisibility());
+            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
+                $this->assertEquals('private.key', $file->getName());
+                $this->assertEquals('fooBar', $file->getContent());
+                $this->assertEquals(Visibility::Private, $file->getVisibility());
 
                 $return();
 
@@ -189,7 +178,7 @@ class HookTest extends TestCase
 
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
-            ->willReturnCallback(function (callable $callback) use ($workspace) {
+            ->willReturnCallback(function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
                 $callback('foo', 'bar');
 
                 return $workspace;
@@ -203,7 +192,7 @@ class HookTest extends TestCase
             ->expects($this->once())
             ->method('run');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setOptions(
                 [
@@ -215,12 +204,12 @@ class HookTest extends TestCase
             )
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setPath('foo')
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setContext(
                 $this->createMock(JobUnitInterface::class),
@@ -232,13 +221,13 @@ class HookTest extends TestCase
         $promise->expects($this->never())->method('fail');
         $promise->expects($this->once())->method('success');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook->run($promise)
         );
     }
 
-    public function testRunWithHttp()
+    public function testRunWithHttp(): void
     {
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
@@ -257,7 +246,7 @@ class HookTest extends TestCase
             ->expects($this->never())
             ->method('run');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setOptions(
                 [
@@ -268,12 +257,12 @@ class HookTest extends TestCase
             )
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setPath('foo')
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setContext(
                 $this->createMock(JobUnitInterface::class),
@@ -285,13 +274,13 @@ class HookTest extends TestCase
         $promise->expects($this->once())->method('fail');
         $promise->expects($this->never())->method('success');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook->run($promise)
         );
     }
 
-    public function testRunWithHttps()
+    public function testRunWithHttps(): void
     {
         $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
@@ -301,7 +290,7 @@ class HookTest extends TestCase
 
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
-            ->willReturnCallback(function (callable $callback) use ($workspace) {
+            ->willReturnCallback(function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
                 $callback('foo', 'bar');
 
                 return $workspace;
@@ -315,7 +304,7 @@ class HookTest extends TestCase
             ->expects($this->once())
             ->method('run');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setOptions(
                 [
@@ -326,12 +315,12 @@ class HookTest extends TestCase
             )
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setPath('foo')
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setContext(
                 $this->createMock(JobUnitInterface::class),
@@ -343,13 +332,13 @@ class HookTest extends TestCase
         $promise->expects($this->never())->method('fail');
         $promise->expects($this->once())->method('success');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook->run($promise)
         );
     }
 
-    public function testRunWithError()
+    public function testRunWithError(): void
     {
         $this->getProcessFactoryMock(false);
         $hook = $this->buildHook();
@@ -357,10 +346,10 @@ class HookTest extends TestCase
 
         $workspace->expects($this->once())
             ->method('writeFile')
-            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace) {
-                self::assertEquals('private.key', $file->getName());
-                self::assertEquals('fooBar', $file->getContent());
-                self::assertEquals(Visibility::Private, $file->getVisibility());
+            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
+                $this->assertEquals('private.key', $file->getName());
+                $this->assertEquals('fooBar', $file->getContent());
+                $this->assertEquals(Visibility::Private, $file->getVisibility());
 
                 $return();
 
@@ -369,7 +358,7 @@ class HookTest extends TestCase
 
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
-            ->willReturnCallback(function (callable $callback) use ($workspace) {
+            ->willReturnCallback(function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
                 $callback('foo', 'bar');
 
                 return $workspace;
@@ -383,7 +372,7 @@ class HookTest extends TestCase
             ->expects($this->once())
             ->method('run');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setOptions(
                 [
@@ -395,12 +384,12 @@ class HookTest extends TestCase
             )
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setPath('foo')
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setContext(
                 $this->createMock(JobUnitInterface::class),
@@ -412,17 +401,17 @@ class HookTest extends TestCase
         $promise->expects($this->once())->method('fail');
         $promise->expects($this->never())->method('success');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             Hook::class,
             $hook->run($promise)
         );
     }
 
-    public function testClone()
+    public function testClone(): void
     {
         $hook = $this->buildHook();
         $hook2 = clone $hook;
 
-        self::assertNotSame($hook, $hook2);
+        $this->assertNotSame($hook, $hook2);
     }
 }

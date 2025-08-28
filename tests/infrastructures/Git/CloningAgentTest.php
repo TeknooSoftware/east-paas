@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -50,7 +50,7 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Running::class)]
@@ -58,27 +58,19 @@ use TypeError;
 #[CoversClass(CloningAgent::class)]
 class CloningAgentTest extends TestCase
 {
-    /**
-     * @var ProcessFactoryInterface
-     */
-    private $processFactory;
+    private (MockObject&ProcessFactoryInterface) | null $processFactory = null;
 
-    /**
-     * @var Process
-     */
-    private $process;
+    private (MockObject&Process)|null $process = null;
 
     public function getProcessFactoryMock(bool $isSuccessFull = true): MockObject&ProcessFactoryInterface
     {
         if (!$this->processFactory instanceof ProcessFactoryInterface) {
             $this->processFactory = $this->createMock(ProcessFactoryInterface::class);
             $this->processFactory
-                ->expects($this->any())
                 ->method('__invoke')
                 ->willReturn($this->getProcessMock());
 
             $this->getProcessMock()
-                ->expects($this->any())
                 ->method('isSuccessFul')
                 ->willReturn($isSuccessFull);
         }
@@ -95,9 +87,6 @@ class CloningAgentTest extends TestCase
         return $this->process;
     }
 
-    /**
-     * @return CloningAgent
-     */
     public function buildAgent(): CloningAgent
     {
         return new CloningAgent(
@@ -106,7 +95,7 @@ class CloningAgentTest extends TestCase
         );
     }
 
-    public function testConfigureBadRepository()
+    public function testConfigureBadRepository(): void
     {
         $this->expectException(TypeError::class);
         $this->buildAgent()
@@ -116,7 +105,7 @@ class CloningAgentTest extends TestCase
             );
     }
 
-    public function testConfigureNotGitRepository()
+    public function testConfigureNotGitRepository(): void
     {
         $this->expectException(LogicException::class);
         $this->buildAgent()
@@ -126,7 +115,7 @@ class CloningAgentTest extends TestCase
             );
     }
 
-    public function testConfigureGitRepositoryWithNoIdentity()
+    public function testConfigureGitRepositoryWithNoIdentity(): void
     {
         $this->expectException(LogicException::class);
         $this->buildAgent()
@@ -136,12 +125,12 @@ class CloningAgentTest extends TestCase
             );
     }
 
-    public function testConfigureWithBadWorkspace()
+    public function testConfigureWithBadWorkspace(): void
     {
         $this->expectException(TypeError::class);
 
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(
+        $repository->method('getIdentity')->willReturn(
             $this->createMock(SshIdentity::class)
         );
 
@@ -155,11 +144,11 @@ class CloningAgentTest extends TestCase
     public function testConfigure(): void
     {
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(
+        $repository->method('getIdentity')->willReturn(
             $this->createMock(SshIdentity::class)
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $this->buildAgent()
                 ->configure(
@@ -169,16 +158,16 @@ class CloningAgentTest extends TestCase
         );
     }
 
-    public function testRunWithSSH()
+    public function testRunWithSSH(): void
     {
         $identity = $this->createMock(SshIdentity::class);
-        $identity->expects($this->any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
+        $identity->method('getPrivateKey')->willReturn($pk = 'fooBar');
 
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(
+        $repository->method('getIdentity')->willReturn(
             $identity
         );
-        $repository->expects($this->any())->method('getPullUrl')->willReturn(
+        $repository->method('getPullUrl')->willReturn(
             'git@foo:bar'
         );
 
@@ -187,11 +176,11 @@ class CloningAgentTest extends TestCase
 
         $workspace->expects($this->once())
             ->method('writeFile')
-            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace, $pk) {
-                self::assertEquals('private.key', $file->getName());
-                self::assertEquals('fooBar', $file->getContent());
-                self::assertEquals(Visibility::Private, $file->getVisibility());
-                
+            ->willReturnCallback(function (FileInterface $file, callable $return) use ($workspace, $pk): MockObject {
+                $this->assertEquals('private.key', $file->getName());
+                $this->assertEquals('fooBar', $file->getContent());
+                $this->assertEquals(Visibility::Private, $file->getVisibility());
+
                 $return('/foo/bar/private.key');
 
                 return $workspace;
@@ -201,7 +190,7 @@ class CloningAgentTest extends TestCase
             ->expects($this->once())
             ->method('setWorkingDirectory');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent = $agent->configure(
                 $repository,
@@ -212,24 +201,24 @@ class CloningAgentTest extends TestCase
         $workspace->expects($this->once())
             ->method('prepareRepository')
             ->willReturnCallback(
-                function () use ($agent, $workspace) {
+                function () use ($agent, $workspace): MockObject {
                     $agent->cloningIntoPath('/bar', '/foo');
 
                     return $workspace;
                 }
             );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent->run()
         );
     }
 
-    public function testRunWithHttps()
+    public function testRunWithHttps(): void
     {
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(null);
-        $repository->expects($this->any())->method('getPullUrl')->willReturn(
+        $repository->method('getIdentity')->willReturn(null);
+        $repository->method('getPullUrl')->willReturn(
             'https://foo.bar'
         );
 
@@ -241,7 +230,7 @@ class CloningAgentTest extends TestCase
 
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
-            ->willReturnCallback(function (callable $return) use ($workspace) {
+            ->willReturnCallback(function (callable $return) use ($workspace): MockObject {
                 $return('/foo/bar/repo', '/foo/bar/');
 
                 return $workspace;
@@ -251,7 +240,7 @@ class CloningAgentTest extends TestCase
             ->expects($this->once())
             ->method('setWorkingDirectory');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent = $agent->configure(
                 $repository,
@@ -262,39 +251,40 @@ class CloningAgentTest extends TestCase
         $workspace->expects($this->once())
             ->method('prepareRepository')
             ->willReturnCallback(
-                function () use ($agent, $workspace) {
+                function () use ($agent, $workspace): MockObject {
                     $agent->cloningIntoPath('/bar', '/foo');
 
                     return $workspace;
                 }
             );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent->run()
         );
     }
 
-    public function testRunWithGenerator()
+    public function testRunWithGenerator(): void
     {
         $this->expectException(RuntimeException::class);
 
         $agent = $this->buildAgent();
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent->run()
         );
     }
 
-    public function testRunWrongIdentityObject()
+    public function testRunWrongIdentityObject(): void
     {
         $this->expectException(LogicException::class);
 
-        $identity = $this->createMock(IdentityInterface::class);;
+        $identity = $this->createMock(IdentityInterface::class);
+        ;
 
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(
+        $repository->method('getIdentity')->willReturn(
             $identity
         );
 
@@ -314,7 +304,7 @@ class CloningAgentTest extends TestCase
             ->expects($this->never())
             ->method('run');
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent = $agent->configure(
                 $repository,
@@ -322,41 +312,41 @@ class CloningAgentTest extends TestCase
             )
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent->run()
         );
     }
 
-    public function testCloningIntoPathBadPath()
+    public function testCloningIntoPathBadPath(): void
     {
         $this->expectException(TypeError::class);
         $this->buildAgent()->cloningIntoPath(new DateTime());
     }
 
-    public function testCloningIntoPathWithGenerator()
+    public function testCloningIntoPathWithGenerator(): void
     {
         $this->expectException(RuntimeException::class);
 
         $agent = $this->buildAgent();
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent->cloningIntoPath($path = 'foo', 'bar')
         );
     }
 
-    public function testCloningIntoPathWithHttp()
+    public function testCloningIntoPathWithHttp(): void
     {
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(null);
-        $repository->expects($this->any())->method('getPullUrl')->willReturn(
+        $repository->method('getIdentity')->willReturn(null);
+        $repository->method('getPullUrl')->willReturn(
             'http://foo.bar'
         );
 
         $agent = $this->buildAgent();
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent = $agent->configure(
                 $repository,
@@ -368,17 +358,17 @@ class CloningAgentTest extends TestCase
         $agent->cloningIntoPath('foo', '/bar');
     }
 
-    public function testCloningIntoPathWithHttps()
+    public function testCloningIntoPathWithHttps(): void
     {
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(null);
-        $repository->expects($this->any())->method('getPullUrl')->willReturn(
+        $repository->method('getIdentity')->willReturn(null);
+        $repository->method('getPullUrl')->willReturn(
             'https://foo.bar'
         );
 
         $agent = $this->buildAgent();
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent = $agent->configure(
                 $repository,
@@ -386,28 +376,28 @@ class CloningAgentTest extends TestCase
             )
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent->cloningIntoPath('foo', '/bar')
         );
     }
 
-    public function testCloningIntoPathWithSSH()
+    public function testCloningIntoPathWithSSH(): void
     {
         $identity = $this->createMock(SshIdentity::class);
-        $identity->expects($this->any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
+        $identity->method('getPrivateKey')->willReturn($pk = 'fooBar');
 
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(
+        $repository->method('getIdentity')->willReturn(
             $identity
         );
-        $repository->expects($this->any())->method('getPullUrl')->willReturn(
+        $repository->method('getPullUrl')->willReturn(
             'git@foo.bar'
         );
 
         $agent = $this->buildAgent();
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent = $agent->configure(
                 $repository,
@@ -415,22 +405,22 @@ class CloningAgentTest extends TestCase
             )
         );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent->cloningIntoPath('foo', '/bar')
         );
     }
 
-    public function testCloningIntoPathErrorInExecution()
+    public function testCloningIntoPathErrorInExecution(): void
     {
         $identity = $this->createMock(SshIdentity::class);
-        $identity->expects($this->any())->method('getPrivateKey')->willReturn($pk = 'fooBar');
+        $identity->method('getPrivateKey')->willReturn($pk = 'fooBar');
 
         $repository = $this->createMock(GitRepository::class);
-        $repository->expects($this->any())->method('getIdentity')->willReturn(
+        $repository->method('getIdentity')->willReturn(
             $identity
         );
-        $repository->expects($this->any())->method('getPullUrl')->willReturn(
+        $repository->method('getPullUrl')->willReturn(
             $url = 'git@foo:bar'
         );
 
@@ -438,7 +428,7 @@ class CloningAgentTest extends TestCase
 
         $agent = $this->buildAgent();
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent = $agent->configure(
                 $repository,
@@ -447,17 +437,17 @@ class CloningAgentTest extends TestCase
         );
 
         $this->expectException(RuntimeException::class);
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             CloningAgentInterface::class,
             $agent->cloningIntoPath('foo', '/bar')
         );
     }
 
-    public function testClone()
+    public function testClone(): void
     {
         $agent = $this->buildAgent();
         $agent2 = clone $agent;
 
-        self::assertNotSame($agent, $agent2);
+        $this->assertNotSame($agent, $agent2);
     }
 }

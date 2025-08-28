@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -36,16 +36,15 @@ use Teknoo\East\Paas\Infrastructures\Laminas\Recipe\Step\Job\SendJob;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\ErrorFactory;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ContainerTest extends TestCase
 {
     /**
-     * @return Container
      * @throws \Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__.'/../../../infrastructures/Laminas/di.php');
@@ -53,48 +52,30 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    public function testErrorFactory()
+    public function testErrorFactory(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            ErrorFactory::class,
-            $container->get(ErrorFactory::class)
-        );
+        $this->assertInstanceOf(ErrorFactory::class, $container->get(ErrorFactory::class));
 
-        self::assertInstanceOf(
-            ErrorFactoryInterface::class,
-            $container->get(ErrorFactoryInterface::class)
-        );
+        $this->assertInstanceOf(ErrorFactoryInterface::class, $container->get(ErrorFactoryInterface::class));
     }
 
-    public function testSendHistory()
+    public function testSendHistory(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            SendHistory::class,
-            $container->get(SendHistory::class)
-        );
+        $this->assertInstanceOf(SendHistory::class, $container->get(SendHistory::class));
 
-        self::assertInstanceOf(
-            SendHistoryInterface::class,
-            $container->get(SendHistoryInterface::class)
-        );
+        $this->assertInstanceOf(SendHistoryInterface::class, $container->get(SendHistoryInterface::class));
     }
 
-    public function testSendJob()
+    public function testSendJob(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            SendJob::class,
-            $container->get(SendJob::class)
-        );
+        $this->assertInstanceOf(SendJob::class, $container->get(SendJob::class));
 
-        self::assertInstanceOf(
-            SendJobInterface::class,
-            $container->get(SendJobInterface::class)
-        );
+        $this->assertInstanceOf(SendJobInterface::class, $container->get(SendJobInterface::class));
     }
 }

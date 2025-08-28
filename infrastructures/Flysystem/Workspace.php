@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -58,7 +58,7 @@ use function substr;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class Workspace implements JobWorkspaceInterface, AutomatedInterface
@@ -109,10 +109,10 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
     protected function listAssertions(): array
     {
         return [
-            (new Property(Running::class))
+            new Property(Running::class)
                 ->with('job', new Property\IsNotEmpty()),
 
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('job', new Property\IsEmpty()),
         ];
     }
@@ -129,9 +129,7 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
     public function __clone()
     {
         $this->job = null;
-        if ($this->filesystem instanceof Filesystem) {
-            $this->filesystem = clone $this->filesystem;
-        }
+        $this->filesystem = clone $this->filesystem;
 
         $this->rand = null;
 

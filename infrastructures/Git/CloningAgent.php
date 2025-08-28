@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -63,7 +63,7 @@ use function str_starts_with;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class CloningAgent implements CloningAgentInterface, AutomatedInterface
@@ -109,14 +109,14 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     protected function listAssertions(): array
     {
         return [
-            (new Property(Running::class))
+            new Property(Running::class)
                 ->with('gitProcess', new Property\IsNotEmpty())
                 ->with('sourceRepository', new Property\IsNotEmpty())
                 ->with('workspace', new Property\IsNotEmpty()),
 
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('sourceRepository', new Property\IsEmpty()),
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('workspace', new Property\IsEmpty()),
         ];
     }
@@ -162,6 +162,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         if ($identity instanceof SshIdentity) {
             $that->sshIdentity = $identity;
         }
+
         $that->workspace = $workspace;
 
         $that->updateStates();
@@ -175,17 +176,17 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
 
         $sourceRepository = $this->getSourceRepository();
 
-        if (!str_starts_with($sourceRepository->getPullUrl(), 'http')) {
+        if (!str_starts_with((string) $sourceRepository->getPullUrl(), 'http')) {
             $workspace->writeFile(
                 new File($this->privateKeyFilename, Visibility::Private, $this->getSshIdentity()->getPrivateKey()),
-                function ($path): void {
-                    $this->gitProcess->setWorkingDirectory($path);
+                function (string $path): void {
+                    $this->gitProcess?->setWorkingDirectory($path);
                 }
             );
         } else {
             $workspace->runInRepositoryPath(
-                function ($repositoryPath, $path): void {
-                    $this->gitProcess->setWorkingDirectory($path);
+                function ($repositoryPath, string $path): void {
+                    $this->gitProcess?->setWorkingDirectory($path);
                 }
             );
         }
@@ -199,7 +200,8 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
     {
         $sourceRepository = $this->getSourceRepository();
 
-        $pullUrl = $sourceRepository->getPullUrl();
+        $pullUrl = (string) $sourceRepository->getPullUrl();
+
         if (str_starts_with($pullUrl, 'http:')) {
             throw new InvalidArgumentException(
                 'Error, the git client support only ssh and https protocol'
@@ -211,7 +213,7 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
             $pullUrl = $this->getSshIdentity()->getName() . '@' . array_pop($pullUrlParts);
         }
 
-        $this->gitProcess->setEnv([
+        $this->gitProcess?->setEnv([
             'GIT_SSH_COMMAND' => "ssh -i {$jobRootPath}{$this->privateKeyFilename} "
                 . "-o IdentitiesOnly=yes -o StrictHostKeyChecking=no",
             'JOB_CLONE_DESTINATION' => $jobRootPath . $repositoryFolder,
@@ -219,11 +221,11 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
             'JOB_BRANCH' => $sourceRepository->getDefaultBranch(),
         ]);
 
-        $this->gitProcess->run();
+        $this->gitProcess?->run();
 
-        if (!$this->gitProcess->isSuccessFul()) {
+        if (!$this->gitProcess?->isSuccessFul()) {
             throw new CloningErrorException(
-                "Error while initializing repository: {$this->gitProcess->getErrorOutput()}"
+                "Error while initializing repository: {$this->gitProcess?->getErrorOutput()}"
             );
         }
 

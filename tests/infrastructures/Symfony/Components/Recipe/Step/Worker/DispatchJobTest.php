@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,14 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -40,21 +41,15 @@ use Teknoo\East\Paas\Object\Project;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(DispatchJob::class)]
 class DispatchJobTest extends TestCase
 {
-    /**
-     * @var MessageBusInterface
-     */
-    private $messageBusInterface;
+    private (MessageBusInterface&MockObject)|null $messageBusInterface = null;
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|MessageBusInterface
-     */
-    public function getMessageBusInterfaceMock(): MessageBusInterface
+    public function getMessageBusInterfaceMock(): MessageBusInterface&MockObject
     {
         if (!$this->messageBusInterface instanceof MessageBusInterface) {
             $this->messageBusInterface = $this->createMock(MessageBusInterface::class);
@@ -71,12 +66,12 @@ class DispatchJobTest extends TestCase
         );
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
         $project = $this->createMock(Project::class);
-        $project->expects($this->any())->method('getId')->willReturn('foo');
+        $project->method('getId')->willReturn('foo');
         $job = $this->createMock(Job::class);
-        $job->expects($this->any())->method('getId')->willReturn('bar');
+        $job->method('getId')->willReturn('bar');
         $env = new Environment('prod');
 
         $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
@@ -85,25 +80,27 @@ class DispatchJobTest extends TestCase
             ->expects($this->once())
             ->method('dispatch')
             ->with($envelope = new Envelope(
-                new JobMessage('foo', 'prod', 'bar', $sJob), [
+                new JobMessage('foo', 'prod', 'bar', $sJob),
+                [
                 new Parameter('projectId', 'foo'),
                 new Parameter('envName', 'prod'),
                 new Parameter('jobId', 'bar')
-            ]))
+            ]
+            ))
             ->willReturn($envelope);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DispatchJob::class,
             $this->buildStep()($project, $env, $job, $sJob)
         );
     }
 
-    public function testInvokeWithEncryption()
+    public function testInvokeWithEncryption(): void
     {
         $project = $this->createMock(Project::class);
-        $project->expects($this->any())->method('getId')->willReturn('foo');
+        $project->method('getId')->willReturn('foo');
         $job = $this->createMock(Job::class);
-        $job->expects($this->any())->method('getId')->willReturn('bar');
+        $job->method('getId')->willReturn('bar');
         $env = new Environment('prod');
 
         $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
@@ -112,29 +109,31 @@ class DispatchJobTest extends TestCase
             ->expects($this->once())
             ->method('dispatch')
             ->with($envelope = new Envelope(
-                new JobMessage('foo', 'prod', 'bar', $sJob), [
+                new JobMessage('foo', 'prod', 'bar', $sJob),
+                [
                 new Parameter('projectId', 'foo'),
                 new Parameter('envName', 'prod'),
                 new Parameter('jobId', 'bar')
-            ]))
+            ]
+            ))
             ->willReturn($envelope);
 
 
         $encryption = $this->createMock(EncryptionInterface::class);
-        $encryption->expects($this->any())
+        $encryption
             ->method('encrypt')
             ->willReturnCallback(
                 function (
                     SensitiveContentInterface $message,
                     PromiseInterface $promise,
-                ) use ($encryption) {
+                ) use ($encryption): MockObject {
                     $promise->success($message);
 
                     return $encryption;
                 }
             );
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             DispatchJob::class,
             $this->buildStep($encryption)($project, $env, $job, $sJob)
         );

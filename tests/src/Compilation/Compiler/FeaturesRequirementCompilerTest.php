@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,14 +19,17 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
+use DomainException;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirement\Set;
 use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
@@ -37,7 +40,7 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(FeaturesRequirementCompiler::class)]
@@ -46,7 +49,7 @@ class FeaturesRequirementCompilerTest extends TestCase
     public function buildCompiler(): FeaturesRequirementCompiler
     {
         return new FeaturesRequirementCompiler([
-            new class implements ValidatorInterface {
+            new class () implements ValidatorInterface {
                 public function __invoke(Set $requirements): void
                 {
                     $requirements->validate('hello');
@@ -55,92 +58,77 @@ class FeaturesRequirementCompilerTest extends TestCase
         ]);
     }
 
-    public function testInvalidValidator()
+    public function testInvalidValidator(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        new FeaturesRequirementCompiler([new \stdClass()]);
+        $this->expectException(InvalidArgumentException::class);
+        new FeaturesRequirementCompiler([new stdClass()]);
     }
 
-    public function testAddValidator()
+    public function testAddValidator(): void
     {
-        self::assertInstanceOf(
-            FeaturesRequirementCompiler::class,
-            $this->buildCompiler()->addValidator(
-                new class implements ValidatorInterface {
-                    public function __invoke(Set $requirements): void
-                    {
-                        $requirements->validate('world');
-                    }
+        $this->assertInstanceOf(FeaturesRequirementCompiler::class, $this->buildCompiler()->addValidator(
+            new class () implements ValidatorInterface {
+                public function __invoke(Set $requirements): void
+                {
+                    $requirements->validate('world');
                 }
-            )
-        );
+            }
+        ));
     }
 
-    public function testCompileWithValidatedRequirements()
+    public function testCompileWithValidatedRequirements(): void
     {
         $compiler = $this->buildCompiler();
 
-        self::assertInstanceOf(
-            FeaturesRequirementCompiler::class,
-            $compiler->addValidator(
-                new class implements ValidatorInterface {
-                    public function __invoke(Set $requirements): void
-                    {
-                        $requirements->validate('world');
-                    }
+        $this->assertInstanceOf(FeaturesRequirementCompiler::class, $compiler->addValidator(
+            new class () implements ValidatorInterface {
+                public function __invoke(Set $requirements): void
+                {
+                    $requirements->validate('world');
                 }
-            )
-        );
+            }
+        ));
 
         $reqs = ['hello', 'world'];
-        self::assertInstanceOf(
-            FeaturesRequirementCompiler::class,
-            $compiler->compile(
-                $reqs,
-                $this->createMock(CompiledDeploymentInterface::class),
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(FeaturesRequirementCompiler::class, $compiler->compile(
+            $reqs,
+            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileWithEmptyRequirements()
+    public function testCompileWithEmptyRequirements(): void
     {
         $compiler = $this->buildCompiler();
 
         $reqs = [];
-        self::assertInstanceOf(
-            FeaturesRequirementCompiler::class,
-            $compiler->compile(
-                $reqs,
-                $this->createMock(CompiledDeploymentInterface::class),
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(FeaturesRequirementCompiler::class, $compiler->compile(
+            $reqs,
+            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileWithoutValidatedRequirements()
+    public function testCompileWithoutValidatedRequirements(): void
     {
         $compiler = $this->buildCompiler();
 
         $reqs = ['hello', 'world'];
 
-        $this->expectException(\DomainException::class);
-        self::assertInstanceOf(
-            FeaturesRequirementCompiler::class,
-            $compiler->compile(
-                $reqs,
-                $this->createMock(CompiledDeploymentInterface::class),
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->expectException(DomainException::class);
+        $this->assertInstanceOf(FeaturesRequirementCompiler::class, $compiler->compile(
+            $reqs,
+            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 }

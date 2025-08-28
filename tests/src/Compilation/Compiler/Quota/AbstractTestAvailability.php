@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -35,7 +35,7 @@ use Teknoo\East\Paas\Compilation\Compiler\Exception\ResourceWrongConfigurationEx
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 abstract class AbstractTestAvailability extends TestCase
@@ -58,62 +58,47 @@ abstract class AbstractTestAvailability extends TestCase
 
     abstract protected function getReserveValueCapacity(): string;
 
-    public function testConstructionErrorIfCapacityIsRelativeForNonSoft()
+    public function testConstructionErrorIfCapacityIsRelativeForNonSoft(): void
     {
         $this->expectException(QuotaWrongConfigurationException::class);
         $this->createAvailability('100%', '10', false);
     }
 
-    public function testConstructionNoErrorIfCapacityIsRelativeForNonSoft()
+    public function testConstructionNoErrorIfCapacityIsRelativeForNonSoft(): void
     {
-        self::assertInstanceOf(
-            AvailabilityInterface::class,
-            $this->createAvailability('100%', '10', true)
-        );
+        $this->assertInstanceOf(AvailabilityInterface::class, $this->createAvailability('100%', '10', true));
     }
 
-    public function testConstructionErrorIfRequiresCapacityIsRelativeForNonSoft()
+    public function testConstructionErrorIfRequiresCapacityIsRelativeForNonSoft(): void
     {
         $this->expectException(QuotaWrongConfigurationException::class);
         $this->createAvailability('100', '10%', false);
     }
 
-    public function testConstructionNoErrorIfRequiresCapacityIsRelativeForNonSoft()
+    public function testConstructionNoErrorIfRequiresCapacityIsRelativeForNonSoft(): void
     {
-        self::assertInstanceOf(
-            AvailabilityInterface::class,
-            $this->createAvailability('100', '10%', true)
-        );
+        $this->assertInstanceOf(AvailabilityInterface::class, $this->createAvailability('100', '10%', true));
     }
 
-    public function testConstructionErrorIfRequiresCapacityIsBiggerThanCapaciy()
+    public function testConstructionErrorIfRequiresCapacityIsBiggerThanCapaciy(): void
     {
         $this->expectException(QuotaWrongConfigurationException::class);
         $this->createAvailability($this->getSmallerCapacity(), $this->getDefaultCapacity(), false);
     }
 
-    public function testGetCapacity()
+    public function testGetCapacity(): void
     {
-        self::assertEquals(
-            $this->getDefaultCapacity(),
-            $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)->getCapacity(),
-        );
+        $this->assertEquals($this->getDefaultCapacity(), $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)->getCapacity());
     }
 
-    public function testGetRequire()
+    public function testGetRequire(): void
     {
-        self::assertEquals(
-            $this->getSmallerCapacity(),
-            $this->createAvailability($this->getDefaultCapacity(), $this->getSmallerCapacity(), false)->getRequires(),
-        );
+        $this->assertEquals($this->getSmallerCapacity(), $this->createAvailability($this->getDefaultCapacity(), $this->getSmallerCapacity(), false)->getRequires());
 
-        self::assertEquals(
-            $this->getDefaultCapacity(),
-            $this->createAvailability($this->getDefaultCapacity(), '', false)->getRequires(),
-        );
+        $this->assertEquals($this->getDefaultCapacity(), $this->createAvailability($this->getDefaultCapacity(), '', false)->getRequires());
     }
 
-    public function testUpdateWrongClass()
+    public function testUpdateWrongClass(): void
     {
         $this->expectException(QuotasNotCompliantException::class);
         $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)->update(
@@ -121,7 +106,7 @@ abstract class AbstractTestAvailability extends TestCase
         );
     }
 
-    public function testUpdateWithLargerCapacity()
+    public function testUpdateWithLargerCapacity(): void
     {
         $this->expectException(ResourceCapacityExceededException::class);
         $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)->update(
@@ -129,51 +114,30 @@ abstract class AbstractTestAvailability extends TestCase
         );
     }
 
-    public function testUpdate()
+    public function testUpdate(): void
     {
-        self::assertEquals(
-            $this->getSmallerCapacity(),
-            $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)->update(
-                $this->createAvailability($this->getSmallerCapacity(), $this->getSmallerCapacity(), false),
-            )->getCapacity()
-        );
+        $this->assertEquals($this->getSmallerCapacity(), $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)->update(
+            $this->createAvailability($this->getSmallerCapacity(), $this->getSmallerCapacity(), false),
+        )->getCapacity());
     }
 
-    public function testUpdateFromRelative()
+    public function testUpdateFromRelative(): void
     {
-        self::assertInstanceOf(
-            AvailabilityInterface::class,
-            $hard = $this->createAvailability($this->getDefaultCapacity(), $this->getSmallerCapacity(), false)
-        );
+        $this->assertInstanceOf(AvailabilityInterface::class, $hard = $this->createAvailability($this->getDefaultCapacity(), $this->getSmallerCapacity(), false));
 
-        self::assertInstanceOf(
-            AvailabilityInterface::class,
-            $soft = $this->createAvailability('50%', '25%', true)
-        );
+        $this->assertInstanceOf(AvailabilityInterface::class, $soft = $this->createAvailability('50%', '25%', true));
 
         $final = $hard->update($soft);
-        self::assertInstanceOf(
-            AvailabilityInterface::class,
-            $final,
-        );
+        $this->assertInstanceOf(AvailabilityInterface::class, $final);
 
-        self::assertNotSame(
-            $final,
-            $soft,
-        );
+        $this->assertNotSame($final, $soft);
 
-        self::assertEquals(
-            $this->getMiddleCapacity(),
-            $final->getCapacity(),
-        );
+        $this->assertEquals($this->getMiddleCapacity(), $final->getCapacity());
 
-        self::assertEquals(
-            $this->getQuarterCapacity(),
-            $final->getRequires(),
-        );
+        $this->assertEquals($this->getQuarterCapacity(), $final->getRequires());
     }
 
-    public function testReserveLimitSmallerThanRequire()
+    public function testReserveLimitSmallerThanRequire(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -188,7 +152,7 @@ abstract class AbstractTestAvailability extends TestCase
         );
     }
 
-    public function testReserveLimitBiggerThanCapacity()
+    public function testReserveLimitBiggerThanCapacity(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -203,7 +167,7 @@ abstract class AbstractTestAvailability extends TestCase
         );
     }
 
-    public function testReserveLimitBiggerThanCapacityWithSoftQuota()
+    public function testReserveLimitBiggerThanCapacityWithSoftQuota(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -218,43 +182,37 @@ abstract class AbstractTestAvailability extends TestCase
         );
     }
 
-    public function testReserve()
+    public function testReserve(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->once())
             ->method('add');
 
-        self::assertInstanceOf(
-            AvailabilityInterface::class,
-            $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)
-                ->reserve(
-                    require: $this->getReserveValueCapacity(),
-                    limit: $this->getReserveValueCapacity(),
-                    numberOfReplicas: 1,
-                    set: $set,
-                )
-        );
+        $this->assertInstanceOf(AvailabilityInterface::class, $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)
+            ->reserve(
+                require: $this->getReserveValueCapacity(),
+                limit: $this->getReserveValueCapacity(),
+                numberOfReplicas: 1,
+                set: $set,
+            ));
     }
 
-    public function testReservePourcent()
+    public function testReservePourcent(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->once())
             ->method('add');
 
-        self::assertInstanceOf(
-            AvailabilityInterface::class,
-            $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)
-                ->reserve(
-                    require: '5%',
-                    limit: '50%',
-                    numberOfReplicas: 1,
-                    set: $set,
-                )
-        );
+        $this->assertInstanceOf(AvailabilityInterface::class, $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)
+            ->reserve(
+                require: '5%',
+                limit: '50%',
+                numberOfReplicas: 1,
+                set: $set,
+            ));
     }
 
-    public function testReserveExceedPourcent()
+    public function testReserveExceedPourcent(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -270,7 +228,7 @@ abstract class AbstractTestAvailability extends TestCase
             );
     }
 
-    public function testReserveExceedPourcentWithSoftQuota()
+    public function testReserveExceedPourcentWithSoftQuota(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -286,7 +244,7 @@ abstract class AbstractTestAvailability extends TestCase
             );
     }
 
-    public function testReserveExceptionPourcentBiggerThan100()
+    public function testReserveExceptionPourcentBiggerThan100(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -302,7 +260,7 @@ abstract class AbstractTestAvailability extends TestCase
             );
     }
 
-    public function testReserveExceed()
+    public function testReserveExceed(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -318,7 +276,7 @@ abstract class AbstractTestAvailability extends TestCase
             );
     }
 
-    public function testReserveExceedForRequiresCapacity()
+    public function testReserveExceedForRequiresCapacity(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -334,7 +292,7 @@ abstract class AbstractTestAvailability extends TestCase
             );
     }
 
-    public function testReserveExceedForRequiresCapacityWithSoftQuota()
+    public function testReserveExceedForRequiresCapacityWithSoftQuota(): void
     {
         $set = $this->createMock(ResourceSet::class);
         $set->expects($this->never())
@@ -350,15 +308,12 @@ abstract class AbstractTestAvailability extends TestCase
             );
     }
 
-    public function testUpdateResource()
+    public function testUpdateResource(): void
     {
-        self::assertInstanceOf(
-            AvailabilityInterface::class,
-            $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)
-                ->updateResource(
-                    $this->createMock(AutomaticResource::class),
-                    100
-                ),
-        );
+        $this->assertInstanceOf(AvailabilityInterface::class, $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)
+            ->updateResource(
+                $this->createMock(AutomaticResource::class),
+                100
+            ));
     }
 }

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -35,7 +35,7 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(DefaultsCompiler::class)]
@@ -45,8 +45,7 @@ class DefaultsCompilerTest extends TestCase
         ?string $storageIdentifier,
         ?string $storageSize,
         ?string $defaultOciRegistryConfig,
-    ): DefaultsCompiler
-    {
+    ): DefaultsCompiler {
         return new DefaultsCompiler(
             storageIdentifier: $storageIdentifier,
             storageSize: $storageSize,
@@ -54,7 +53,7 @@ class DefaultsCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithoutAnyDefaults()
+    public function testCompileWithoutAnyDefaults(): void
     {
         $definitions = [];
 
@@ -64,20 +63,17 @@ class DefaultsCompilerTest extends TestCase
             ->with('oci-registry-config-name', null)
             ->willReturnSelf();
 
-        self::assertInstanceOf(
-            DefaultsCompiler::class,
-            $this->buildCompiler(null, null, null)->compile(
-                $definitions,
-                $this->createMock(CompiledDeploymentInterface::class),
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $bag,
-            )
-        );
+        $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler(null, null, null)->compile(
+            $definitions,
+            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $bag,
+        ));
     }
 
-    public function testCompileWithDefaultsFromConstructor()
+    public function testCompileWithDefaultsFromConstructor(): void
     {
         $definitions = [];
 
@@ -86,20 +82,17 @@ class DefaultsCompilerTest extends TestCase
             ->method('set')
             ->willReturnSelf();
 
-        self::assertInstanceOf(
-            DefaultsCompiler::class,
-            $this->buildCompiler('foo', 'foo', 'foo')->compile(
-                $definitions,
-                $this->createMock(CompiledDeploymentInterface::class),
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $bag,
-            )
-        );
+        $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler('foo', 'foo', 'foo')->compile(
+            $definitions,
+            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $bag,
+        ));
     }
 
-    public function testCompileWithoutCluster()
+    public function testCompileWithoutCluster(): void
     {
         $definitions = [
             'storage-provider' => 'bar',
@@ -112,20 +105,17 @@ class DefaultsCompilerTest extends TestCase
             ->method('set')
             ->willReturnSelf();
 
-        self::assertInstanceOf(
-            DefaultsCompiler::class,
-            $this->buildCompiler('foo', 'foo', 'foo')->compile(
-                $definitions,
-                $this->createMock(CompiledDeploymentInterface::class),
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $bag,
-            )
-        );
+        $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler('foo', 'foo', 'foo')->compile(
+            $definitions,
+            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $bag,
+        ));
     }
 
-    public function testCompileWithCluster()
+    public function testCompileWithCluster(): void
     {
         $definitions = [
             'storage-provider' => 'bar',
@@ -148,16 +138,13 @@ class DefaultsCompilerTest extends TestCase
             ->with('bar')
             ->willReturnSelf();
 
-        self::assertInstanceOf(
-            DefaultsCompiler::class,
-            $this->buildCompiler('foo', 'foo', 'foo')->compile(
-                $definitions,
-                $this->createMock(CompiledDeploymentInterface::class),
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $bag,
-            )
-        );
+        $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler('foo', 'foo', 'foo')->compile(
+            $definitions,
+            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $bag,
+        ));
     }
 }

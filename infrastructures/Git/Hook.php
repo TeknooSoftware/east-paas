@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -46,7 +46,7 @@ use Teknoo\States\Proxy\ProxyTrait;
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, ImmutableInterface
@@ -95,7 +95,7 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
     protected function listAssertions(): array
     {
         return [
-            (new Property(Running::class))
+            new Property(Running::class)
                 ->with('options', new Property\IsNotEmpty())
                 ->with('options', new Property\HasNotEmptyValueForKey('url'))
                 ->with('options', new Property\HasNotEmptyValueForKey('path'))
@@ -103,17 +103,17 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
                 ->with('jobUnit', new Property\IsNotEmpty())
                 ->with('workspace', new Property\IsNotEmpty()),
 
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('options', new Property\IsEmpty()),
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('options', new Property\HasEmptyValueForKey('url')),
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('options', new Property\HasEmptyValueForKey('path')),
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('path', new Property\IsEmpty()),
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('jobUnit', new Property\IsEmpty()),
-            (new Property(Generator::class))
+            new Property(Generator::class)
               ->with('workspace', new Property\IsEmpty()),
         ];
     }

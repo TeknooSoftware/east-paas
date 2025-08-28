@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -48,7 +48,7 @@ use Throwable;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class Cluster implements
@@ -103,21 +103,11 @@ class Cluster implements
         return $this;
     }
 
-    private function getNamespace(): string
-    {
-        return (string) $this->namespace;
-    }
-
     public function setNamespace(string $namespace): Cluster
     {
         $this->namespace = $namespace;
 
         return $this;
-    }
-
-    private function hasHierarchicalNamespaces(): bool
-    {
-        return $this->useHierarchicalNamespaces;
     }
 
     public function useHierarchicalNamespaces(bool $hierarchicalNamespaces): Cluster
@@ -127,21 +117,11 @@ class Cluster implements
         return $this;
     }
 
-    private function getType(): ?string
-    {
-        return $this->type;
-    }
-
     public function setType(?string $type): Cluster
     {
         $this->type = $type;
 
         return $this;
-    }
-
-    private function getAddress(): string
-    {
-        return (string) $this->address;
     }
 
     public function setAddress(string $address): Cluster
@@ -151,20 +131,10 @@ class Cluster implements
         return $this;
     }
 
-    private function getIdentity(): ?IdentityInterface
-    {
-        return $this->identity;
-    }
-
     public function setIdentity(IdentityInterface $identity): Cluster
     {
         $this->identity = $identity;
         return $this;
-    }
-
-    private function getEnvironment(): ?Environment
-    {
-        return $this->environment;
     }
 
     public function setEnvironment(Environment $environment): Cluster
@@ -195,7 +165,7 @@ class Cluster implements
 
     public function prepareJobForEnvironment(Job $job, Environment $environment): self
     {
-        $embeddedEnv = $this->getEnvironment();
+        $embeddedEnv = $this->environment;
         if (!$embeddedEnv instanceof Environment) {
             return $this;
         }
@@ -232,12 +202,12 @@ class Cluster implements
             '@class' => self::class,
             'id' => $this->getId(),
             'name' => $this->getName(),
-            'namespace' => $this->getNamespace(),
-            'use_hierarchical_namespaces' => $this->hasHierarchicalNamespaces(),
-            'type' => $this->getType(),
-            'address' => $this->getAddress(),
-            'identity' => $this->getIdentity(),
-            'environment' => $this->getEnvironment(),
+            'namespace' => $this->namespace,
+            'use_hierarchical_namespaces' => $this->useHierarchicalNamespaces,
+            'type' => $this->type,
+            'address' => $this->address,
+            'identity' => $this->identity,
+            'environment' => $this->environment,
             'locked' => $this->isLocked(),
         ]);
 
@@ -254,7 +224,7 @@ class Cluster implements
     ): self {
         /** @var Promise<DefaultsBag, DefaultsBag, mixed> $defaultsBagPromise */
         $defaultsBagPromise = new Promise(
-            fn (DefaultsBag $defaultsBag) => $defaultsBag,
+            fn (DefaultsBag $defaultsBag): DefaultsBag => $defaultsBag,
             fn (#[SensitiveParameter] Throwable $error) => throw $error,
         );
         $defaultsBagPromise->setDefaultResult(new DefaultsBag());
@@ -266,7 +236,7 @@ class Cluster implements
 
         /** @var DefaultsBag $defaultsBag */
         $defaultsBag = $defaultsBagPromise->fetchResult();
-        $clientsDirectory->require((string) $this->getType(), $defaultsBag, $this, $promise);
+        $clientsDirectory->require((string) $this->type, $defaultsBag, $this, $promise);
 
         return $this;
     }
@@ -282,11 +252,11 @@ class Cluster implements
         try {
             $promise->success(
                 $client->configure(
-                    url: $this->getAddress(),
-                    identity: $this->getIdentity(),
+                    url: (string) $this->address,
+                    identity: $this->identity,
                     defaultsBag: $resolver,
-                    namespace: $this->getNamespace(),
-                    useHierarchicalNamespaces: $this->hasHierarchicalNamespaces(),
+                    namespace: (string) $this->namespace,
+                    useHierarchicalNamespaces: $this->useHierarchicalNamespaces,
                 )
             );
         } catch (Throwable $error) {

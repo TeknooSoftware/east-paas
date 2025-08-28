@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -36,21 +36,15 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureImagesBuilder;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ConfigureImagesBuilder::class)]
 class ConfigureImagesBuilderTest extends TestCase
 {
-    /**
-     * @var ImageBuilder
-     */
-    private $builder;
+    private (ImageBuilder&MockObject)|null $builder = null;
 
-    /**
-     * @return ImageBuilder|MockObject
-     */
-    public function getBuilderMock(): ImageBuilder
+    public function getBuilderMock(): ImageBuilder&MockObject
     {
         if (!$this->builder instanceof ImageBuilder) {
             $this->builder = $this->createMock(ImageBuilder::class);
@@ -66,7 +60,7 @@ class ConfigureImagesBuilderTest extends TestCase
         );
     }
 
-    public function testInvokeBadJob()
+    public function testInvokeBadJob(): void
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
@@ -76,7 +70,7 @@ class ConfigureImagesBuilderTest extends TestCase
         );
     }
 
-    public function testInvokeBadClient()
+    public function testInvokeBadClient(): void
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
@@ -86,7 +80,7 @@ class ConfigureImagesBuilderTest extends TestCase
         );
     }
 
-    public function testInvokeBadManager()
+    public function testInvokeBadManager(): void
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
@@ -96,7 +90,7 @@ class ConfigureImagesBuilderTest extends TestCase
         );
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
         $job = $this->createMock(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
@@ -106,32 +100,29 @@ class ConfigureImagesBuilderTest extends TestCase
             ->method('updateWorkPlan')
             ->with([ImageBuilder::class => $this->getBuilderMock()]);
 
-        $job->expects($this->any())
+        $job
             ->method('configureImageBuilder')
             ->willReturnCallback(
-                function ($builder, PromiseInterface $promise) use ($job) {
+                function (ImageBuilder $builder, PromiseInterface $promise) use ($job): MockObject {
                     $promise->success(clone $builder);
 
                     return $job;
                 }
             );
 
-        self::assertInstanceOf(
-            ConfigureImagesBuilder::class,
-            ($this->buildStep())($job, $client, $manager)
-        );
+        $this->assertInstanceOf(ConfigureImagesBuilder::class, ($this->buildStep())($job, $client, $manager));
     }
 
-    public function testInvokeOnError()
+    public function testInvokeOnError(): void
     {
         $job = $this->createMock(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
-        $job->expects($this->any())
+        $job
             ->method('configureImageBuilder')
             ->willReturnCallback(
-                function ($builder, PromiseInterface $promise) use ($job) {
+                function (ImageBuilder $builder, PromiseInterface $promise) use ($job): MockObject {
                     $promise->fail(new \Exception());
 
                     return $job;
@@ -144,9 +135,6 @@ class ConfigureImagesBuilderTest extends TestCase
         $manager->expects($this->once())
             ->method('error');
 
-        self::assertInstanceOf(
-            ConfigureImagesBuilder::class,
-            ($this->buildStep())($job, $client, $manager)
-        );
+        $this->assertInstanceOf(ConfigureImagesBuilder::class, ($this->buildStep())($job, $client, $manager));
     }
 }

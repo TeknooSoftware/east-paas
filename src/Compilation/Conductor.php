@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -58,7 +58,7 @@ use function str_replace;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class Conductor implements ConductorInterface, AutomatedInterface
@@ -70,9 +70,11 @@ class Conductor implements ConductorInterface, AutomatedInterface
         AutomatedTrait::updateStates insteadof ProxyTrait;
     }
 
-    private const CONFIG_PAAS = '[paas]';
-    private const CONFIG_KEY_VERSION = 'version';
-    private const CONFIG_KEY_PREFIX = 'prefix';
+    private const string CONFIG_PAAS = '[paas]';
+
+    private const string CONFIG_KEY_VERSION = 'version';
+
+    private const string CONFIG_KEY_PREFIX = 'prefix';
 
     private JobUnitInterface $job;
 
@@ -84,7 +86,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
     private array $configuration = [];
 
     /**
-     * @param array<string, array<string, CompilerInterface>> $compilers
+     * @param array<string, array<string, CompilerInterface>|null> $compilers
      */
     public function __construct(
         private readonly CompiledDeploymentFactoryInterface $factory,
@@ -118,13 +120,13 @@ class Conductor implements ConductorInterface, AutomatedInterface
     protected function listAssertions(): array
     {
         return [
-            (new Property(Running::class))
+            new Property(Running::class)
                 ->with('job', new Property\IsNotEmpty())
                 ->with('workspace', new Property\IsNotEmpty()),
 
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('job', new Property\IsEmpty()),
-            (new Property(Generator::class))
+            new Property(Generator::class)
                 ->with('workspace', new Property\IsEmpty()),
         ];
     }
@@ -165,6 +167,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
             $parsedPromise = new Promise(
                 onSuccess: function (array $result): array {
+                    /** @var string $version */
                     $version = str_replace('.0', '', ($result['paas'][self::CONFIG_KEY_VERSION] ?? 'v1.1'));
                     if (!isset($this->compilers[$version])) {
                         throw new UnsupportedVersion("Unsupported PaaS version {$version}", 400);

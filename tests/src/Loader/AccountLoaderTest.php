@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,23 +19,25 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Loader;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Common\Contracts\DBSource\RepositoryInterface;
 use Teknoo\East\Common\Contracts\Loader\LoaderInterface;
 use Teknoo\East\Paas\Contracts\DbSource\Repository\AccountRepositoryInterface;
 use Teknoo\East\Paas\Loader\AccountLoader;
 use Teknoo\East\Paas\Object\Account;
+use Teknoo\States\Proxy\Exception\StateNotFound;
 use Teknoo\Tests\East\Common\Loader\LoaderTestTrait;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(AccountLoader::class)]
@@ -43,15 +45,9 @@ class AccountLoaderTest extends TestCase
 {
     use LoaderTestTrait;
 
-    /**
-     * @var RepositoryInterface
-     */
-    private $repository;
+    private (RepositoryInterface&MockObject)|null $repository = null;
 
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|RepositoryInterface
-     */
-    public function getRepositoryMock(): RepositoryInterface
+    public function getRepositoryMock(): RepositoryInterface&MockObject
     {
         if (!$this->repository instanceof RepositoryInterface) {
             $this->repository = $this->createMock(AccountRepositoryInterface::class);
@@ -60,37 +56,28 @@ class AccountLoaderTest extends TestCase
         return $this->repository;
     }
 
-    /**
-     * @return LoaderInterface|TypeLoader
-     */
-    public function buildLoader(): LoaderInterface
+    public function buildLoader(): LoaderInterface&AccountLoader
     {
         $repository = $this->getRepositoryMock();
         return new AccountLoader($repository);
     }
 
-    /**
-     * @return LoaderInterface|TypeLoader
-     */
-    public function buildLoaderWithBadCollectionImplementation(): LoaderInterface
+    public function buildLoaderWithBadCollectionImplementation(): LoaderInterface&AccountLoader
     {
         $repository = $this->getRepositoryMock();
-        return new class($repository) extends TypeLoader {
+        return new class ($repository) extends AccountLoader {
             protected function prepareQuery(
                 array &$criteria,
                 ?array $order,
                 ?int $limit,
                 ?int $offset
-            ) {
+            ): array {
                 return [];
             }
         };
     }
 
-    /**
-     * @return LoaderInterface|AccountLoader
-     */
-    public function buildLoaderWithNotCollectionImplemented(): LoaderInterface
+    public function buildLoaderWithNotCollectionImplemented(): LoaderInterface&AccountLoader
     {
         $repository = $this->getRepositoryMock();
         return new AccountLoader($repository);
@@ -98,7 +85,7 @@ class AccountLoaderTest extends TestCase
 
     /**
      * @return Account
-     * @throws \Teknoo\States\Proxy\Exception\StateNotFound
+     * @throws StateNotFound
      */
     public function getEntity()
     {

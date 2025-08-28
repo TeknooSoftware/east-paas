@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,13 +19,14 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
@@ -36,7 +37,7 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(ImageCompiler::class)]
@@ -76,27 +77,24 @@ class ImageCompilerTest extends TestCase
         ];
     }
 
-    public function testCompileWithoutDefinitions()
+    public function testCompileWithoutDefinitions(): void
     {
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addBuildable');
 
-        self::assertInstanceOf(
-            ImageCompiler::class,
-            $this->buildCompiler()->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(ImageCompiler::class, $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompile()
+    public function testCompile(): void
     {
         $definitions = $this->getDefinitionsArray();
         $builder = $this->buildCompiler();
@@ -104,19 +102,19 @@ class ImageCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->exactly(2))
             ->method('addBuildable')
-            ->willReturnCallback(function (BuildableInterface $buildable) use ($compiledDeployment) {
+            ->willReturnCallback(function (BuildableInterface $buildable) use ($compiledDeployment): MockObject {
                 if ('foo' === $buildable->getName()) {
-                    self::assertEquals('/foo/images/bar', $buildable->getPath());
+                    $this->assertEquals('/foo/images/bar', $buildable->getPath());
                 } else {
-                    self::assertEquals('/library/php-fpm/7.4/', $buildable->getPath());
+                    $this->assertEquals('/library/php-fpm/7.4/', $buildable->getPath());
                 }
 
                 return $compiledDeployment;
             });
 
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $workspace->expects($this->any())->method('runInRepositoryPath')->willReturnCallback(
-            static function (callable $callback) use ($workspace) {
+        $workspace->method('runInRepositoryPath')->willReturnCallback(
+            static function (callable $callback) use ($workspace): MockObject {
                 $callback('/foo');
                 return $workspace;
             }
@@ -124,16 +122,13 @@ class ImageCompilerTest extends TestCase
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
-        self::assertInstanceOf(
-            ImageCompiler::class,
-            $builder->compile(
-                $definitions,
-                $compiledDeployment,
-                $workspace,
-                $jobUnit,
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(ImageCompiler::class, $builder->compile(
+            $definitions,
+            $compiledDeployment,
+            $workspace,
+            $jobUnit,
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 }

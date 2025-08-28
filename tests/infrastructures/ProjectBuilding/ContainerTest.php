@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -39,16 +39,15 @@ use Teknoo\East\Paas\Infrastructures\ProjectBuilding\PipHook;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\SfConsoleHook;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ContainerTest extends TestCase
 {
     /**
-     * @return Container
      * @throws \Exception
      */
-    protected function buildContainer() : Container
+    protected function buildContainer(): Container
     {
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(__DIR__ . '/../../../infrastructures/ProjectBuilding/di.php');
@@ -56,18 +55,12 @@ class ContainerTest extends TestCase
         return $containerDefinition->build();
     }
 
-    public function testProcessFactoryInterface()
+    public function testProcessFactoryInterface(): void
     {
         $container = $this->buildContainer();
 
-        self::assertInstanceOf(
-            ProcessFactoryInterface::class,
-            $factory = $container->get(ProcessFactoryInterface::class)
-        );
+        $this->assertInstanceOf(ProcessFactoryInterface::class, $factory = $container->get(ProcessFactoryInterface::class));
 
-        self::assertInstanceOf(
-            Process::class,
-            $factory(['foo'], 'bar', 60),
-        );
+        $this->assertInstanceOf(Process::class, $factory(['foo'], 'bar', 60));
     }
 }

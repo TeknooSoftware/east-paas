@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -32,38 +32,32 @@ use Teknoo\East\Paas\Compilation\CompiledDeploymentFactory;
 use Teknoo\East\Paas\Compilation\Exception\UnsupportedVersion;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(CompiledDeploymentFactory::class)]
 class CompiledDeploymentFactoryTest extends TestCase
 {
-    public function testInvalidClass()
+    public function testInvalidClass(): void
     {
         $this->expectException(\RuntimeException::class);
         new CompiledDeploymentFactory('foo', ['v1' => 'bar']);
     }
 
-    public function testBuild()
+    public function testBuild(): void
     {
-        self::assertInstanceOf(
-            CompiledDeployment::class,
-            (new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar']))
-                ->build(1, 'prefix', 'foo')
-        );
+        $this->assertInstanceOf(CompiledDeployment::class, new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar'])
+            ->build(1, 'prefix', 'foo'));
     }
 
-    public function testGetSchema()
+    public function testGetSchema(): void
     {
-        self::assertEquals(
-            'bar',
-            (new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar']))->getSchema('v1')
-        );
+        $this->assertEquals('bar', new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar'])->getSchema('v1'));
     }
 
-    public function testGetSchemaInvalidVersion()
+    public function testGetSchemaInvalidVersion(): void
     {
         $this->expectException(UnsupportedVersion::class);
-        (new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar']))->getSchema('v2');
+        new CompiledDeploymentFactory(CompiledDeployment::class, ['v1' => 'bar'])->getSchema('v2');
     }
 }

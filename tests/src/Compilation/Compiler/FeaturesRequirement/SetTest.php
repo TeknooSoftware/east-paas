@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -31,50 +31,35 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirement\Set;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Set::class)]
 class SetTest extends TestCase
 {
-    public function testValidate()
+    public function testValidate(): void
     {
         $set = new Set(['foo' => true, 'bar' => true]);
 
-        self::assertInstanceOf(
-            Set::class,
-            $set->validate('foo'),
-        );
+        $this->assertInstanceOf(Set::class, $set->validate('foo'));
 
-        self::assertInstanceOf(
-            Set::class,
-            $set->validate('foo'),
-        );
+        $this->assertInstanceOf(Set::class, $set->validate('foo'));
 
-        self::assertInstanceOf(
-            Set::class,
-            $set->validate('hello'),
-        );
+        $this->assertInstanceOf(Set::class, $set->validate('hello'));
     }
 
-    public function testCheckIfAllRequirementsAreValidatedAllValidated()
+    public function testCheckIfAllRequirementsAreValidatedAllValidated(): void
     {
         $set = new Set(['foo' => true, 'bar' => true]);
 
-        self::assertInstanceOf(
-            Set::class,
-            $set->validate('foo')->validate('bar')->checkIfAllRequirementsAreValidated()
-        );
+        $this->assertInstanceOf(Set::class, $set->validate('foo')->validate('bar')->checkIfAllRequirementsAreValidated());
     }
 
-    public function testCheckIfAllRequirementsAreValidatedNotAllValidated()
+    public function testCheckIfAllRequirementsAreValidatedNotAllValidated(): void
     {
         $set = new Set(['foo' => true, 'bar' => true]);
 
-        self::assertInstanceOf(
-            Set::class,
-            $set->validate('foo'),
-        );
+        $this->assertInstanceOf(Set::class, $set->validate('foo'));
 
         $this->expectException(DomainException::class);
         $set->checkIfAllRequirementsAreValidated();

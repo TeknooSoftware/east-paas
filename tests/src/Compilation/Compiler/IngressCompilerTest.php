@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -38,7 +38,7 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(IngressCompiler::class)]
@@ -110,27 +110,24 @@ class IngressCompilerTest extends TestCase
         ];
     }
 
-    public function testCompileWithoutDefinitions()
+    public function testCompileWithoutDefinitions(): void
     {
         $definitions = [];
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addIngress');
 
-        self::assertInstanceOf(
-            IngressCompiler::class,
-            $this->buildCompiler()->compile(
-                $definitions,
-                $compiledDeployment,
-                $this->createMock(JobWorkspaceInterface::class),
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(IngressCompiler::class, $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createMock(JobWorkspaceInterface::class),
+            $this->createMock(JobUnitInterface::class),
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompilationWithTls()
+    public function testCompilationWithTls(): void
     {
         $definitions = $this->getDefinitionsArray();
         $builder = $this->buildCompiler();
@@ -142,20 +139,17 @@ class IngressCompilerTest extends TestCase
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
-        self::assertInstanceOf(
-            IngressCompiler::class,
-            $builder->compile(
-                $definitions,
-                $compiledDeployment,
-                $workspace,
-                $jobUnit,
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(IngressCompiler::class, $builder->compile(
+            $definitions,
+            $compiledDeployment,
+            $workspace,
+            $jobUnit,
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompilationWithoutTls()
+    public function testCompilationWithoutTls(): void
     {
         $definitions = $this->getDefinitionsArray();
         unset($definitions['demo']['tls']);
@@ -169,20 +163,17 @@ class IngressCompilerTest extends TestCase
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
 
-        self::assertInstanceOf(
-            IngressCompiler::class,
-            $builder->compile(
-                $definitions,
-                $compiledDeployment,
-                $workspace,
-                $jobUnit,
-                $this->createMock(ResourceManager::class),
-                $this->createMock(DefaultsBag::class),
-            )
-        );
+        $this->assertInstanceOf(IngressCompiler::class, $builder->compile(
+            $definitions,
+            $compiledDeployment,
+            $workspace,
+            $jobUnit,
+            $this->createMock(ResourceManager::class),
+            $this->createMock(DefaultsBag::class),
+        ));
     }
 
-    public function testCompileWithWrongExtends()
+    public function testCompileWithWrongExtends(): void
     {
         $definitions = [
             'demo' => [
@@ -206,7 +197,7 @@ class IngressCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithNonExistantExtends()
+    public function testCompileWithNonExistantExtends(): void
     {
         $definitions = [
             'demo' => [
@@ -230,7 +221,7 @@ class IngressCompilerTest extends TestCase
         );
     }
 
-    public function testCompileWithExtends()
+    public function testCompileWithExtends(): void
     {
         $definitions = [
             'demo' => [
@@ -250,40 +241,34 @@ class IngressCompilerTest extends TestCase
         ];
         $builder = $this->buildCompiler();
 
-        self::assertInstanceOf(
-            IngressCompiler::class,
-            $builder->extends(
-                $definitions,
-            )
-        );
-
-        self::assertEquals(
+        $this->assertInstanceOf(IngressCompiler::class, $builder->extends(
             $definitions,
-            [
-                'demo' => [
-                    'extends' => 'foo-ext',
-                    'host' => 'demo2-paas.teknoo.software',
-                    'tls' => [
-                        'cert' => 'foo',
-                        'key' => 'bar',
-                    ],
+        ));
+
+        $this->assertEquals($definitions, [
+            'demo' => [
+                'extends' => 'foo-ext',
+                'host' => 'demo2-paas.teknoo.software',
+                'tls' => [
+                    'cert' => 'foo',
+                    'key' => 'bar',
                 ],
-                'demo-secure' => [
-                    'host' => 'demo-paas.teknoo.software',
-                    'extends' => 'foo-ext',
-                    'tls' => [
-                        'cert' => 'foo',
-                        'key' => 'bar',
-                    ],
+            ],
+            'demo-secure' => [
+                'host' => 'demo-paas.teknoo.software',
+                'extends' => 'foo-ext',
+                'tls' => [
+                    'cert' => 'foo',
+                    'key' => 'bar',
                 ],
-                'demo3-secure' => [
-                    'host' => 'demo-paas3.teknoo.software',
-                    'tls' => [
-                        'cert' => 'foo',
-                        'key' => 'bar',
-                    ],
+            ],
+            'demo3-secure' => [
+                'host' => 'demo-paas3.teknoo.software',
+                'tls' => [
+                    'cert' => 'foo',
+                    'key' => 'bar',
                 ],
-            ]
-        );
+            ],
+        ]);
     }
 }

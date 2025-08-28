@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -29,11 +29,12 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Laminas\Response\History;
 use Teknoo\East\Paas\Object\History as BaseHistory;
+
 use function json_decode;
 use function json_encode;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(History::class)]
@@ -53,94 +54,61 @@ class HistoryTest extends TestCase
         );
     }
 
-    public function testToString()
+    public function testToString(): void
     {
-        self::assertEquals(
-            'foo',
-            (string) $this->build()
-        );
+        $this->assertEquals('foo', (string) $this->build());
     }
 
-    public function testToJson()
+    public function testToJson(): void
     {
-        self::assertEquals(
-            [
-                'message' => 'foo',
-                'date' => '2021-06-25 00:00:00 UTC',
-                'is_final' => false,
-                'extra' => [],
-                'previous' => null,
-                'serial_number' => 123,
-            ],
-            json_decode(
-                json_encode(
-                    $this->build(),
-                    JSON_THROW_ON_ERROR
-                ),
-                true,
-                512,
+        $this->assertEquals([
+            'message' => 'foo',
+            'date' => '2021-06-25 00:00:00 UTC',
+            'is_final' => false,
+            'extra' => [],
+            'previous' => null,
+            'serial_number' => 123,
+        ], json_decode(
+            json_encode(
+                $this->build(),
                 JSON_THROW_ON_ERROR
-            )
-        );
+            ),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        ));
     }
 
-    public function testGetHistory()
+    public function testGetHistory(): void
     {
-        self::assertInstanceOf(
-            BaseHistory::class,
-            $this->build()->getHistory()
-        );
+        $this->assertInstanceOf(BaseHistory::class, $this->build()->getHistory());
     }
 
-    public function testGetStatusCode()
+    public function testGetStatusCode(): void
     {
-        self::assertEquals(
-            200,
-            $this->build()->getStatusCode()
-        );
+        $this->assertEquals(200, $this->build()->getStatusCode());
     }
 
-    public function testGetReasonPhrase()
+    public function testGetReasonPhrase(): void
     {
-        self::assertEquals(
-            'foo',
-            $this->build()->getReasonPhrase()
-        );
+        $this->assertEquals('foo', $this->build()->getReasonPhrase());
     }
 
-    public function testWithStatus()
+    public function testWithStatus(): void
     {
         $response1 = $this->build();
         $response2 = $response1->withStatus(201, 'bar');
 
-        self::assertNotSame(
-            $response1,
-            $response2
-        );
+        $this->assertNotSame($response1, $response2);
 
-        self::assertInstanceOf(
-            History::class,
-            $response2
-        );
+        $this->assertInstanceOf(History::class, $response2);
 
-        self::assertEquals(
-            200,
-            $response1->getStatusCode()
-        );
+        $this->assertEquals(200, $response1->getStatusCode());
 
-        self::assertEquals(
-            'foo',
-            $response1->getReasonPhrase()
-        );
+        $this->assertEquals('foo', $response1->getReasonPhrase());
 
-        self::assertEquals(
-            201,
-            $response2->getStatusCode()
-        );
+        $this->assertEquals(201, $response2->getStatusCode());
 
-        self::assertEquals(
-            'bar',
-            $response2->getReasonPhrase()
-        );
+        $this->assertEquals('bar', $response2->getReasonPhrase());
     }
 }

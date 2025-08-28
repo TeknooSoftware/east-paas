@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -48,7 +48,7 @@ use Teknoo\States\Exception\MethodNotImplemented;
 use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Running::class)]
@@ -56,14 +56,11 @@ use TypeError;
 #[CoversClass(Driver::class)]
 class DriverTest extends TestCase
 {
-    private ?ClientFactoryInterface $clientFactory = null;
+    private (ClientFactoryInterface&MockObject)|null $clientFactory = null;
 
-    private ?TranscriberCollectionInterface $transcribers = null;
+    private (TranscriberCollectionInterface&MockObject)|null $transcribers = null;
 
-    /**
-     * @return ClientFactoryInterface|MockObject
-     */
-    private function getClientFactory(): ?ClientFactoryInterface
+    private function getClientFactory(): ClientFactoryInterface&MockObject
     {
         if (!$this->clientFactory instanceof ClientFactoryInterface) {
             $this->clientFactory = $this->createMock(ClientFactoryInterface::class);
@@ -72,10 +69,7 @@ class DriverTest extends TestCase
         return $this->clientFactory;
     }
 
-    /**
-     * @return TranscriberCollectionInterface|MockObject
-     */
-    private function getTranscriberCollection(): ?TranscriberCollectionInterface
+    private function getTranscriberCollection(): TranscriberCollectionInterface&MockObject
     {
         if (!$this->transcribers instanceof TranscriberCollectionInterface) {
             $this->transcribers = $this->createMock(TranscriberCollectionInterface::class);
@@ -92,7 +86,7 @@ class DriverTest extends TestCase
         );
     }
 
-    public function testConfigureWrongUrl()
+    public function testConfigureWrongUrl(): void
     {
         $this->expectException(TypeError::class);
         $this->buildClient()->configure(
@@ -104,7 +98,7 @@ class DriverTest extends TestCase
         );
     }
 
-    public function testConfigureWrongAuth()
+    public function testConfigureWrongAuth(): void
     {
         $this->expectException(TypeError::class);
         $this->buildClient()->configure(
@@ -116,7 +110,7 @@ class DriverTest extends TestCase
         );
     }
 
-    public function testConfigureIdentityNotSupported()
+    public function testConfigureIdentityNotSupported(): void
     {
         $this->expectException(RuntimeException::class);
         $this->buildClient()->configure(
@@ -128,21 +122,18 @@ class DriverTest extends TestCase
         );
     }
 
-    public function testConfigure()
+    public function testConfigure(): void
     {
-        self::assertInstanceOf(
-            Driver::class,
-            $this->buildClient()->configure(
-                'foo',
-                $this->createMock(ClusterCredentials::class),
-                $this->createMock(DefaultsBag::class),
-                'namespace',
-                false,
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $this->buildClient()->configure(
+            'foo',
+            $this->createMock(ClusterCredentials::class),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
+        ));
     }
 
-    public function testDeployWithoutConfiguration()
+    public function testDeployWithoutConfiguration(): void
     {
         $this->getTranscriberCollection()
             ->expects($this->never())
@@ -154,16 +145,13 @@ class DriverTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client->deploy(
-                $this->createMock(CompiledDeploymentInterface::class),
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client->deploy(
+            $this->createMock(CompiledDeploymentInterface::class),
+            $promise
+        ));
     }
 
-    public function testDeployWithConfiguration()
+    public function testDeployWithConfiguration(): void
     {
         $c0 = $this->createMock(NamespaceTranscriber::class);
         $c0->expects($this->once())->method('setDriver')->willReturnSelf();
@@ -178,39 +166,32 @@ class DriverTest extends TestCase
         $c4->expects($this->never())->method('transcribe');
 
         $this->getTranscriberCollection()
-            ->expects($this->any())
             ->method('getIterator')
-            ->willReturnCallback(function () use ($c0, $c1, $c2, $c3, $c4) {
+            ->willReturnCallback(function () use ($c0, $c1, $c2, $c3, $c4): \Traversable {
                 yield from [$c0, $c1, $c2, $c3, $c4];
             });
 
         $client = $this->buildClient();
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client = $client->configure(
-                'foo',
-                $this->createMock(ClusterCredentials::class),
-                $this->createMock(DefaultsBag::class),
-                'namespace',
-                false,
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client = $client->configure(
+            'foo',
+            $this->createMock(ClusterCredentials::class),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
+        ));
 
         $promise = $this->createMock(PromiseInterface::class);
 
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client->deploy(
-                $cd,
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client->deploy(
+            $cd,
+            $promise
+        ));
     }
 
-    public function testUpdateNamespaceWithNoConfiguration()
+    public function testUpdateNamespaceWithNoConfiguration(): void
     {
         $client = $this->buildClient();
 
@@ -220,30 +201,24 @@ class DriverTest extends TestCase
         );
     }
 
-    public function testUpdateNamespace()
+    public function testUpdateNamespace(): void
     {
         $client = $this->buildClient();
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client = $client->configure(
-                'foo',
-                $this->createMock(ClusterCredentials::class),
-                $this->createMock(DefaultsBag::class),
-                'namespace',
-                false,
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client = $client->configure(
+            'foo',
+            $this->createMock(ClusterCredentials::class),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
+        ));
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client->updateNamespace(
-                'foo'
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client->updateNamespace(
+            'foo'
+        ));
     }
 
-    public function testDeployWithConfigurationException()
+    public function testDeployWithConfigurationException(): void
     {
         $c1 = $this->createMock(DeploymentInterface::class);
         $c1->expects($this->once())->method('transcribe')->willReturnCallback(
@@ -251,7 +226,7 @@ class DriverTest extends TestCase
                 CompiledDeploymentInterface $compiledDeployment,
                 KubernetesClient $client,
                 PromiseInterface $promise
-            ) {
+            ): void {
                 $promise->fail(new RuntimeException('foo'));
             }
         );
@@ -263,40 +238,33 @@ class DriverTest extends TestCase
         $c4->expects($this->never())->method('transcribe');
 
         $this->getTranscriberCollection()
-            ->expects($this->any())
             ->method('getIterator')
-            ->willReturnCallback(function () use ($c1, $c2, $c3, $c4) {
+            ->willReturnCallback(function () use ($c1, $c2, $c3, $c4): \Traversable {
                 yield from [$c1, $c2, $c3, $c4];
             });
 
         $client = $this->buildClient();
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client = $client->configure(
-                'foo',
-                $this->createMock(ClusterCredentials::class),
-                $this->createMock(DefaultsBag::class),
-                'namespace',
-                false,
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client = $client->configure(
+            'foo',
+            $this->createMock(ClusterCredentials::class),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
+        ));
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('fail');
 
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client->deploy(
-                $cd,
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client->deploy(
+            $cd,
+            $promise
+        ));
     }
 
-    public function testExposeWithoutConfiguration()
+    public function testExposeWithoutConfiguration(): void
     {
         $this->getTranscriberCollection()
             ->expects($this->never())
@@ -308,16 +276,13 @@ class DriverTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client->expose(
-                $this->createMock(CompiledDeploymentInterface::class),
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client->expose(
+            $this->createMock(CompiledDeploymentInterface::class),
+            $promise
+        ));
     }
 
-    public function testExposeWithConfiguration()
+    public function testExposeWithConfiguration(): void
     {
         $c1 = $this->createMock(DeploymentInterface::class);
         $c1->expects($this->never())->method('transcribe');
@@ -329,39 +294,32 @@ class DriverTest extends TestCase
         $c4->expects($this->once())->method('transcribe');
 
         $this->getTranscriberCollection()
-            ->expects($this->any())
             ->method('getIterator')
-            ->willReturnCallback(function () use ($c1, $c2, $c3, $c4) {
+            ->willReturnCallback(function () use ($c1, $c2, $c3, $c4): \Traversable {
                 yield from [$c1, $c2, $c3, $c4];
             });
 
         $client = $this->buildClient();
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client = $client->configure(
-                'foo',
-                $this->createMock(ClusterCredentials::class),
-                $this->createMock(DefaultsBag::class),
-                'namespace',
-                false,
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client = $client->configure(
+            'foo',
+            $this->createMock(ClusterCredentials::class),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
+        ));
 
         $promise = $this->createMock(PromiseInterface::class);
 
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client->expose(
-                $cd,
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client->expose(
+            $cd,
+            $promise
+        ));
     }
 
-    public function testExposeWithConfigurationException()
+    public function testExposeWithConfigurationException(): void
     {
         $c1 = $this->createMock(DeploymentInterface::class);
         $c1->expects($this->never())->method('transcribe');
@@ -373,7 +331,7 @@ class DriverTest extends TestCase
                 CompiledDeploymentInterface $compiledDeployment,
                 KubernetesClient $client,
                 PromiseInterface $promise
-            ) {
+            ): void {
                 $promise->fail(new RuntimeException('foo'));
             }
         );
@@ -381,37 +339,29 @@ class DriverTest extends TestCase
         $c4->expects($this->never())->method('transcribe');
 
         $this->getTranscriberCollection()
-            ->expects($this->any())
             ->method('getIterator')
-            ->willReturnCallback(function () use ($c1, $c2, $c3, $c4) {
+            ->willReturnCallback(function () use ($c1, $c2, $c3, $c4): \Traversable {
                 yield from [$c1, $c2, $c3, $c4];
             });
 
         $client = $this->buildClient();
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client = $client->configure(
-                'foo',
-                $this->createMock(ClusterCredentials::class),
-                $this->createMock(DefaultsBag::class),
-                'namespace',
-                false,
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client = $client->configure(
+            'foo',
+            $this->createMock(ClusterCredentials::class),
+            $this->createMock(DefaultsBag::class),
+            'namespace',
+            false,
+        ));
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('fail');
 
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        self::assertInstanceOf(
-            Driver::class,
-            $client->expose(
-                $cd,
-                $promise
-            )
-        );
+        $this->assertInstanceOf(Driver::class, $client->expose(
+            $cd,
+            $promise
+        ));
     }
 }
-

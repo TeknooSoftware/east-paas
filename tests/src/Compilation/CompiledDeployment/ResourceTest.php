@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -30,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Resource::class)]
@@ -45,27 +45,18 @@ class ResourceTest extends TestCase
         );
     }
 
-    public function testGetType()
+    public function testGetType(): void
     {
-        self::assertEquals(
-            'cpu',
-            $this->buildObject()->getType(),
-        );
+        $this->assertEquals('cpu', $this->buildObject()->getType());
     }
 
-    public function testGetRequire()
+    public function testGetRequire(): void
     {
-        self::assertEquals(
-            '100m',
-            $this->buildObject()->getRequire(),
-        );
+        $this->assertEquals('100m', $this->buildObject()->getRequire());
     }
 
-    public function testGetLimit()
+    public function testGetLimit(): void
     {
-        self::assertEquals(
-            '500m',
-            $this->buildObject()->getLimit(),
-        );
+        $this->assertEquals('500m', $this->buildObject()->getLimit());
     }
 }

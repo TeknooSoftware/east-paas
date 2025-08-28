@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -71,65 +71,116 @@ use function trim;
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class PodCompiler implements CompilerInterface, ExtenderInterface
 {
     use MergeTrait;
 
-    private const KEY_ADD = 'add';
-    private const KEY_COMMAND = 'command';
-    private const KEY_CONTAINERS = 'containers';
-    private const KEY_EXTENDS = 'extends';
-    private const KEY_FAILURE = 'failure';
-    private const KEY_FROM = 'from';
-    private const KEY_FROM_MAP = 'from-map';
-    private const KEY_FROM_MAPS = 'from-maps';
-    private const KEY_FROM_SECRET = 'from-secret';
-    private const KEY_FROM_SECRETS = 'from-secrets';
-    private const KEY_FS_GROUP = 'fs-group';
-    private const KEY_HEALTHCHECK = 'healthcheck';
-    private const KEY_HTTP = 'http';
-    private const KEY_IMAGE = 'image';
-    private const KEY_IMPORT_MAPS = 'import-maps';
-    private const KEY_IMPORT_SECRETS = 'import-secrets';
-    private const KEY_INITIAL_DELAY_SCDS = 'initial-delay-seconds';
-    private const KEY_IS_SECURE = 'is-secure';
-    private const KEY_LIMIT = 'limit';
-    private const KEY_LISTEN = 'listen';
-    private const KEY_MAX_UNAVAILABLE_PODS = 'max-unavailable-pods';
-    private const KEY_MAX_UPGRADING_PODS = 'max-upgrading-pods';
-    private const KEY_MOUNT_PATH = 'mount-path';
-    private const KEY_VOLUME_NAME = 'name';
-    private const KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
-    private const KEY_PATH = 'path';
-    private const KEY_PERIOD_SCDS = 'period-seconds';
-    private const KEY_PERSISTENT = 'persistent';
-    private const KEY_PORT = 'port';
-    private const KEY_PROBE = 'probe';
-    private const KEY_REPLICAS = 'replicas';
-    private const KEY_REQUIRE = 'require';
-    private const KEY_REQUIRES = 'requires';
-    private const KEY_RESET_ON_DEPLOYMENT = 'reset-on-deployment';
-    private const KEY_RESOURCES = 'resources';
-    private const KEY_SECURITY = 'security';
-    private const KEY_STORAGE_IDENTIFIER = 'storage-provider';
-    private const KEY_STORAGE_SIZE = 'storage-size';
-    private const KEY_STRATEGY = 'strategy';
-    private const KEY_SUCCESS = 'success';
-    private const KEY_TCP = 'tcp';
-    private const KEY_THRESHOLD = 'threshold';
-    private const KEY_TYPE = 'type';
-    private const KEY_UPGRADE = 'upgrade';
-    private const KEY_VARIABLES = 'variables';
-    private const KEY_VERSION = 'version';
-    private const KEY_VOLUMES = 'volumes';
-    private const KEY_WRITABLES = 'writables';
-    private const KEY_WRITE_MANY = 'write-many';
-    private const KEY_RESTART_POLICY = 'restart-policy';
-    private const VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
-    private const VALUE_LATEST = 'latest';
+    private const string KEY_ADD = 'add';
+
+    private const string KEY_COMMAND = 'command';
+
+    private const string KEY_CONTAINERS = 'containers';
+
+    private const string KEY_EXTENDS = 'extends';
+
+    private const string KEY_FAILURE = 'failure';
+
+    private const string KEY_FROM = 'from';
+
+    private const string KEY_FROM_MAP = 'from-map';
+
+    private const string KEY_FROM_MAPS = 'from-maps';
+
+    private const string KEY_FROM_SECRET = 'from-secret';
+
+    private const string KEY_FROM_SECRETS = 'from-secrets';
+
+    private const string KEY_FS_GROUP = 'fs-group';
+
+    private const string KEY_HEALTHCHECK = 'healthcheck';
+
+    private const string KEY_HTTP = 'http';
+
+    private const string KEY_IMAGE = 'image';
+
+    private const string KEY_IMPORT_MAPS = 'import-maps';
+
+    private const string KEY_IMPORT_SECRETS = 'import-secrets';
+
+    private const string KEY_INITIAL_DELAY_SCDS = 'initial-delay-seconds';
+
+    private const string KEY_IS_SECURE = 'is-secure';
+
+    private const string KEY_LIMIT = 'limit';
+
+    private const string KEY_LISTEN = 'listen';
+
+    private const string KEY_MAX_UNAVAILABLE_PODS = 'max-unavailable-pods';
+
+    private const string KEY_MAX_UPGRADING_PODS = 'max-upgrading-pods';
+
+    private const string KEY_MOUNT_PATH = 'mount-path';
+
+    private const string KEY_VOLUME_NAME = 'name';
+
+    private const string KEY_OCI_REGISTRY_CONFIG_NAME = 'oci-registry-config-name';
+
+    private const string KEY_PATH = 'path';
+
+    private const string KEY_PERIOD_SCDS = 'period-seconds';
+
+    private const string KEY_PERSISTENT = 'persistent';
+
+    private const string KEY_PORT = 'port';
+
+    private const string KEY_PROBE = 'probe';
+
+    private const string KEY_REPLICAS = 'replicas';
+
+    private const string KEY_REQUIRE = 'require';
+
+    private const string KEY_REQUIRES = 'requires';
+
+    private const string KEY_RESET_ON_DEPLOYMENT = 'reset-on-deployment';
+
+    private const string KEY_RESOURCES = 'resources';
+
+    private const string KEY_SECURITY = 'security';
+
+    private const string KEY_STORAGE_IDENTIFIER = 'storage-provider';
+
+    private const string KEY_STORAGE_SIZE = 'storage-size';
+
+    private const string KEY_STRATEGY = 'strategy';
+
+    private const string KEY_SUCCESS = 'success';
+
+    private const string KEY_TCP = 'tcp';
+
+    private const string KEY_THRESHOLD = 'threshold';
+
+    private const string KEY_TYPE = 'type';
+
+    private const string KEY_UPGRADE = 'upgrade';
+
+    private const string KEY_VARIABLES = 'variables';
+
+    private const string KEY_VERSION = 'version';
+
+    private const string KEY_VOLUMES = 'volumes';
+
+    private const string KEY_WRITABLES = 'writables';
+
+    private const string KEY_WRITE_MANY = 'write-many';
+
+    private const string KEY_RESTART_POLICY = 'restart-policy';
+
+    private const string VALUE_DEFAULT_LOCAL_PATH_IN_VOLUME = '/volume';
+
+    private const string VALUE_LATEST = 'latest';
 
     /**
      * @param array<string, array<string, mixed>> $podsLibrary
@@ -225,7 +276,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 
     /**
      * @param array<string, mixed> $volumes
-     * @param array<string, EmbeddedVolumeImage> $embeddedVolumes
+     * @param array<string, EmbeddedVolumeImage|VolumeInterface> $embeddedVolumes
      * @param array<string, VolumeInterface> $containerVolumes
      */
     private function processVolumes(
@@ -294,7 +345,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                 volumeFrom: $volumeFrom,
                 mountPath: $mountPath,
                 promise: $promise = new Promise(
-                    static fn (VolumeInterface $volume) => $volume,
+                    static fn (VolumeInterface $volume): VolumeInterface => $volume,
                     static fn (#[SensitiveParameter] Throwable $error): never => throw $error,
                 ),
             );
@@ -390,6 +441,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         try {
             $ociKey = self::KEY_OCI_REGISTRY_CONFIG_NAME;
 
+            $promise->allowReuse();
             foreach ($definitions as $nameSet => &$podsList) {
                 $containers = [];
                 $isStateless = true;
@@ -401,7 +453,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                     $containerVolumes = [];
                     $embeddedVolumes = [];
 
-                    $containerHashName = substr(hash('sha256', $name), 0, 5);
+                    $containerHashName = substr(hash('sha256', (string) $name), 0, 5);
 
                     $hashName = trim(implode('-', [$parentHashName, $podHashName, $containerHashName]), '-');
 
@@ -460,6 +512,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                         if (!empty($probe[self::KEY_TCP][self::KEY_PORT])) {
                             $port = (int)$probe[self::KEY_TCP][self::KEY_PORT];
                         }
+
                         if (!empty($probe[self::KEY_HTTP][self::KEY_PORT])) {
                             $port = (int)$probe[self::KEY_HTTP][self::KEY_PORT];
                         }
@@ -502,13 +555,14 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                         name: $name,
                         image: $image,
                         version: $version,
-                        listen: (array)array_map(intval(...), (array)($config[self::KEY_LISTEN] ?? [])),
+                        listen: array_map(intval(...), (array)($config[self::KEY_LISTEN] ?? [])),
                         volumes: $containerVolumes,
                         variables: $variables,
                         healthCheck: $healthCheck,
                         resources: $resourceSet,
                     );
                 }
+
                 unset($config);
 
                 $fsGroup = null;
@@ -565,7 +619,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             resourceManager: $resourceManager,
             defaultsBag: $defaultsBag,
             promise: new Promise(
-                fn (Pod $pod) => $compiledDeployment->addPod($pod->getName(), $pod),
+                fn (Pod $pod): CompiledDeploymentInterface => $compiledDeployment->addPod($pod->getName(), $pod),
                 fn (#[SensitiveParameter] Throwable $error): never => throw $error,
             ),
         );

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -33,7 +33,7 @@ use Teknoo\East\Paas\Object\SshIdentity;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(SshIdentity::class)]
@@ -41,45 +41,33 @@ class SshIdentityTest extends TestCase
 {
     use ObjectTestTrait;
 
-    /**
-     * @return SshIdentity
-     */
     public function buildObject(): SshIdentity
     {
         return new SshIdentity('fooName', 'barFoo');
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        self::assertEquals(
-            'fooName',
-            $this->generateObjectPopulated()->getName()
-        );
+        $this->assertEquals('fooName', $this->generateObjectPopulated()->getName());
     }
 
-    public function testToString()
+    public function testToString(): void
     {
-        self::assertEquals(
-            'fooName',
-            (string) $this->generateObjectPopulated()
-        );
+        $this->assertEquals('fooName', (string) $this->generateObjectPopulated());
     }
 
-    public function testGetPrivateKey()
+    public function testGetPrivateKey(): void
     {
-        self::assertEquals(
-            'barFoo',
-            $this->generateObjectPopulated()->getPrivateKey()
-        );
+        $this->assertEquals('barFoo', $this->generateObjectPopulated()->getPrivateKey());
     }
 
-    public function testExportToMeDataBadNormalizer()
+    public function testExportToMeDataBadNormalizer(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->exportToMeData(new \stdClass(), []);
     }
 
-    public function testExportToMeDataBadContext()
+    public function testExportToMeDataBadContext(): void
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->exportToMeData(
@@ -88,7 +76,7 @@ class SshIdentityTest extends TestCase
         );
     }
 
-    public function testExportToMe()
+    public function testExportToMe(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -100,16 +88,13 @@ class SshIdentityTest extends TestCase
                 'private_key' => 'barFoo',
             ]);
 
-        self::assertInstanceOf(
-            SshIdentity::class,
-            $this->buildObject()->setId('123')->exportToMeData(
-                $normalizer,
-                ['foo' => 'bar']
-            )
-        );
+        $this->assertInstanceOf(SshIdentity::class, $this->buildObject()->setId('123')->exportToMeData(
+            $normalizer,
+            ['foo' => 'bar']
+        ));
     }
 
-    public function testExportToMeApi()
+    public function testExportToMeApi(): void
     {
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
@@ -120,23 +105,17 @@ class SshIdentityTest extends TestCase
                 'name' => 'fooName',
             ]);
 
-        self::assertInstanceOf(
-            SshIdentity::class,
-            $this->buildObject()->setId('123')->exportToMeData(
-                $normalizer,
-                ['groups' => 'api']
-            )
-        );
+        $this->assertInstanceOf(SshIdentity::class, $this->buildObject()->setId('123')->exportToMeData(
+            $normalizer,
+            ['groups' => 'api']
+        ));
     }
 
-    public function testSetExportConfiguration()
+    public function testSetExportConfiguration(): void
     {
         SshIdentity::setExportConfiguration($conf = ['name' => ['all']]);
         $rc = new ReflectionClass(SshIdentity::class);
 
-        self::assertEquals(
-            $conf,
-            $rc->getStaticPropertyValue('exportConfigurations'),
-        );
+        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
     }
 }

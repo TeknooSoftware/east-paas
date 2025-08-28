@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -19,15 +19,17 @@ declare(strict_types=1);
  *
  * @link        https://teknoo.software/east-collection/paas Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -37,20 +39,18 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\DispatchHistoryInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
+use TypeError;
 
 /**
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(BuildImages::class)]
 class BuildImagesTest extends TestCase
 {
-    private ?DispatchHistoryInterface $dispatchHistory = null;
+    private (DispatchHistoryInterface&MockObject)|null $dispatchHistory = null;
 
-    /**
-     * @return DispatchHistoryInterface|MockObject
-     */
-    public function getDispatchHistoryMock(): DispatchHistoryInterface
+    public function getDispatchHistoryMock(): DispatchHistoryInterface&MockObject
     {
         if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
             $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
@@ -66,12 +66,12 @@ class BuildImagesTest extends TestCase
         );
     }
 
-    public function testInvokeBadBuilder()
+    public function testInvokeBadBuilder(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(CompiledDeploymentInterface::class),
             $this->createMock(JobWorkspaceInterface::class),
             'foo',
@@ -82,13 +82,13 @@ class BuildImagesTest extends TestCase
         );
     }
 
-    public function testInvokeBadCompiledDeployment()
+    public function testInvokeBadCompiledDeployment(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(JobWorkspaceInterface::class),
             'foo',
             'bar',
@@ -98,14 +98,14 @@ class BuildImagesTest extends TestCase
         );
     }
 
-    public function testInvokeBadJobWorkspace()
+    public function testInvokeBadJobWorkspace(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
             $this->createMock(CompiledDeploymentInterface::class),
-            new \stdClass(),
+            new stdClass(),
             'foo',
             'bar',
             $this->createMock(JobUnitInterface::class),
@@ -115,9 +115,9 @@ class BuildImagesTest extends TestCase
     }
 
 
-    public function testInvokeBadJobUnit()
+    public function testInvokeBadJobUnit(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
@@ -125,15 +125,15 @@ class BuildImagesTest extends TestCase
             $this->createMock(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(ClientInterface::class),
             $this->createMock(ManagerInterface::class)
         );
     }
 
-    public function testInvokeBadClient()
+    public function testInvokeBadClient(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
@@ -142,14 +142,14 @@ class BuildImagesTest extends TestCase
             'foo',
             'bar',
             $this->createMock(JobUnitInterface::class),
-            new \stdClass(),
+            new stdClass(),
             $this->createMock(ManagerInterface::class)
         );
     }
 
-    public function testInvokeBadManager()
+    public function testInvokeBadManager(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
 
         ($this->buildStep())(
             $this->createMock(ImageBuilder::class),
@@ -159,11 +159,11 @@ class BuildImagesTest extends TestCase
             'bar',
             $this->createMock(JobUnitInterface::class),
             $this->createMock(ClientInterface::class),
-            new \stdClass()
+            new stdClass()
         );
     }
 
-    public function testInvoke()
+    public function testInvoke(): void
     {
         $imageBuilder = $this->createMock(ImageBuilder::class);
         $compileDep = $this->createMock(CompiledDeploymentInterface::class);
@@ -175,7 +175,7 @@ class BuildImagesTest extends TestCase
         $imageBuilder->expects($this->once())
             ->method('buildImages')
             ->willReturnCallback(
-                static function ($compiledDeployment, $root, PromiseInterface $promise) use ($imageBuilder) {
+                static function ($compiledDeployment, $root, PromiseInterface $promise) use ($imageBuilder): \PHPUnit\Framework\MockObject\MockObject {
                     $promise->success('fooBar');
 
                     return $imageBuilder;
@@ -185,7 +185,7 @@ class BuildImagesTest extends TestCase
         $jobWorkspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                static function (callable $callback) use ($jobWorkspace) {
+                static function (callable $callback) use ($jobWorkspace): \PHPUnit\Framework\MockObject\MockObject {
                     $callback('/foo/bar');
 
                     return $jobWorkspace;
@@ -200,22 +200,19 @@ class BuildImagesTest extends TestCase
             ->with($project, $env, $jobUnit->getId(), BuildImages::class . ':Result')
             ->willReturnSelf();
 
-        self::assertInstanceOf(
-            BuildImages::class,
-            ($this->buildStep())(
-                $imageBuilder,
-                $compileDep,
-                $jobWorkspace,
-                $project,
-                $env,
-                $jobUnit,
-                $client,
-                $manager
-            )
-        );
+        $this->assertInstanceOf(BuildImages::class, ($this->buildStep())(
+            $imageBuilder,
+            $compileDep,
+            $jobWorkspace,
+            $project,
+            $env,
+            $jobUnit,
+            $client,
+            $manager
+        ));
     }
 
-    public function testInvokeOnError()
+    public function testInvokeOnError(): void
     {
         $imageBuilder = $this->createMock(ImageBuilder::class);
         $compileDep = $this->createMock(CompiledDeploymentInterface::class);
@@ -227,8 +224,8 @@ class BuildImagesTest extends TestCase
         $imageBuilder->expects($this->once())
             ->method('buildImages')
             ->willReturnCallback(
-                static function ($compiledDeployment, $root, PromiseInterface $promise) use ($imageBuilder) {
-                    $promise->fail(new \Exception());
+                static function ($compiledDeployment, $root, PromiseInterface $promise) use ($imageBuilder): \PHPUnit\Framework\MockObject\MockObject {
+                    $promise->fail(new Exception());
 
                     return $imageBuilder;
                 }
@@ -237,7 +234,7 @@ class BuildImagesTest extends TestCase
         $jobWorkspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                static function (callable $callback) use ($jobWorkspace) {
+                static function (callable $callback) use ($jobWorkspace): \PHPUnit\Framework\MockObject\MockObject {
                     $callback('/foo/bar');
 
                     return $jobWorkspace;
@@ -253,18 +250,15 @@ class BuildImagesTest extends TestCase
         $manager->expects($this->once())
             ->method('error');
 
-        self::assertInstanceOf(
-            BuildImages::class,
-            ($this->buildStep())(
-                $imageBuilder,
-                $compileDep,
-                $jobWorkspace,
-                'foo',
-                'bar',
-                $jobUnit,
-                $client,
-                $manager
-            )
-        );
+        $this->assertInstanceOf(BuildImages::class, ($this->buildStep())(
+            $imageBuilder,
+            $compileDep,
+            $jobWorkspace,
+            'foo',
+            'bar',
+            $jobUnit,
+            $client,
+            $manager
+        ));
     }
 }
