@@ -86,6 +86,8 @@ class Exposing
             ),
         );
 
+        $promise->allowReuse();
+
         /** @var DriverInterface $client */
         foreach ($clustersClients as $client) {
             $client->expose($compiledDeployment, $promise);

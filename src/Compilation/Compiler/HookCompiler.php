@@ -87,7 +87,7 @@ class HookCompiler implements CompilerInterface
                         static function (#[SensitiveParameter] Throwable $error): never {
                             throw $error;
                         }
-                    )
+                    )->allowReuse(),
                 );
 
                 $compiledDeployment->addHook($name . ':' . $hookName, $hook);

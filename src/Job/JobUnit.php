@@ -180,6 +180,8 @@ class JobUnit implements JobUnitInterface
                 onFail: static fn (#[SensitiveParameter] Throwable $error) => throw $error,
             );
 
+            $clusterPromise->allowReuse();
+
             foreach ($this->clusters as $cluster) {
                 $cluster->selectCluster($clientsDirectory, $compiledDeployment, $clusterPromise);
             }

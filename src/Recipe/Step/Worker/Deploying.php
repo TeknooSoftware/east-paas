@@ -87,6 +87,8 @@ class Deploying
             ),
         );
 
+        $promise->allowReuse();
+
         /** @var DriverInterface $client */
         foreach ($clustersClients as $client) {
             $client->deploy($compiledDeployment, $promise);

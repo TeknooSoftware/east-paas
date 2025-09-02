@@ -120,7 +120,7 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
                         $pods[$pod->getName()] = $pod;
                     },
                     fn (Throwable $throwable) => throw $throwable,
-                ),
+                )->allowReuse(),
                 parentHashName: $hashName
             );
 

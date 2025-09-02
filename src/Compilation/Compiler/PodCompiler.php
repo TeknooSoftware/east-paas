@@ -347,7 +347,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                 promise: $promise = new Promise(
                     static fn (VolumeInterface $volume): VolumeInterface => $volume,
                     static fn (#[SensitiveParameter] Throwable $error): never => throw $error,
-                ),
+                )->allowReuse(),
             );
             $containerVolumes[(string) $volumeName] = $promise->fetchResultIfCalled();
         }
@@ -621,7 +621,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
             promise: new Promise(
                 fn (Pod $pod): CompiledDeploymentInterface => $compiledDeployment->addPod($pod->getName(), $pod),
                 fn (#[SensitiveParameter] Throwable $error): never => throw $error,
-            ),
+            )->allowReuse(),
         );
 
         return $this;

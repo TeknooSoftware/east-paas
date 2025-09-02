@@ -227,6 +227,7 @@ class Cluster implements
             fn (DefaultsBag $defaultsBag): DefaultsBag => $defaultsBag,
             fn (#[SensitiveParameter] Throwable $error) => throw $error,
         );
+        $defaultsBagPromise->allowReuse();
         $defaultsBagPromise->setDefaultResult(new DefaultsBag());
 
         $compiledDeployment->compileDefaultsBags(

@@ -76,6 +76,8 @@ class HookingDeployment
             onFail: static fn (#[SensitiveParameter] Throwable $error) => throw $error,
         );
 
+        $promise->allowReuse();
+
         $workspace->runInRepositoryPath(
             static function (string $path) use ($compiledDeployment, $promise, $jobUnit, $workspace, $manager): void {
                 try {
