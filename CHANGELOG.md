@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.0.1] - 2025-08-11
+### Stable Release
+- Fix PHPStan issues
+
 ## [5.0.0] - 2025-08-28
 ### Stable Release
 - Drop support of PHP 8.3

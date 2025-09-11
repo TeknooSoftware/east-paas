@@ -17,6 +17,9 @@ parameters:
             message: '#Cannot cast iterable#'
             path: infrastructures/ProjectBuilding/
         -
+            message: '#Possibly invalid array key type mixe#'
+            path:   infrastructures/ProjectBuilding/AbstractHook.php
+        -
             message: '#Cannot cast array#'
             path: infrastructures/ProjectBuilding/AbstractHook.php
         -
@@ -74,7 +77,7 @@ parameters:
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
             path:  src/Object/Job.php
         -
-            message: '#Cannot access an offset on iterable#'
+            message: '# does not accept iterable#'
             path:  src/Object/Job.php
         -
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
@@ -88,4 +91,7 @@ parameters:
         -
             message: '#mixed#'
             path:  */di.php
+        -
+            message: '#Parameter \#6 \$compilers#'
+            path:  src/di.php
         -   '#[a-zA-Z\\]+ but returns [a-zA-Z\\]+\|null#'
