@@ -1,4 +1,8 @@
 parameters:
+    level: max
+    paths:
+        - src/
+        - infrastructures/
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
