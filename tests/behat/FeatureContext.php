@@ -32,9 +32,9 @@ use Behat\Hook\BeforeScenario;
 use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
+use DI\Container as DiContainer;
 use DateTime;
 use DateTimeZone;
-use DI\Container as DiContainer;
 use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
@@ -43,7 +43,6 @@ use Doctrine\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use JsonException;
-use phpseclib3\Crypt\RSA;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\Generator\Generator;
@@ -63,19 +62,19 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Teknoo\DI\SymfonyBridge\DIBridgeBundle;
+use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
 use Teknoo\East\Common\Object\User;
-use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
-use Teknoo\East\Foundation\Time\DatesService;
 use Teknoo\East\FoundationBundle\EastFoundationBundle;
+use Teknoo\East\Foundation\Time\DatesService;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
-use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirement\Set;
 use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
+use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirement\Set;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Compilation\FeaturesRequirement\ValidatorInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
@@ -107,20 +106,23 @@ use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\Model;
-use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 use Traversable;
+use phpseclib3\Crypt\RSA;
 
 use function base64_encode;
 use function dirname;
+use function ceil;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
 use function is_readable;
 use function json_decode;
 use function json_encode;
+use function microtime;
 use function preg_replace;
 use function random_int;
 use function round;
@@ -135,6 +137,7 @@ use function var_export;
  */
 class FeatureContext implements Context
 {
+    
     private ?KernelInterface $kernel = null;
 
     private ?Container $sfContainer = null;
@@ -235,9 +238,28 @@ class FeatureContext implements Context
 
     private static bool $CDCompared = false;
 
-    public function __construct()
-    {
+    public readonly int $loopCountToWait;
+
+    public function __construct(
+        int $timeoutSeconds,
+    ) {
         include_once __DIR__ . '/../../tests/fakeQuery.php';
+
+        //Calibrates the number needed to simulate operations that are too long using str_repeat. Depending on the
+        // machines, str_repeat can take more or less time and tests may fail.
+        $t0 = microtime(true);
+        for ($i = 0; $i < 100; $i++) {
+            $x = str_repeat('x', self::STR_REPEAT_FOR_SIMULATION);
+        }
+        $t1 = microtime(true);
+        $duration = ($t1 - $t0) / 100;
+
+        if (0.0 === $duration) {
+            $duration = 1;
+        }
+
+        $timeoutMicroSecond = $timeoutSeconds * 1000000;
+        $this->loopCountToWait = (int) (ceil($timeoutMicroSecond / $duration));
     }
 
     /**
@@ -447,9 +469,8 @@ class FeatureContext implements Context
             public function persist($object): void
             {
                 if ($this->context->slowDb) {
-                    $expectedTime = time() + 25;
-                    while (time() < $expectedTime) {
-                        $x = str_repeat('x', 100000);
+                    for ($i = 0; $i <= $this->context->loopCountToWait; ++$i) {
+                        $x = str_repeat('x', $this->context::STR_REPEAT_FOR_SIMULATION);
                     }
                 }
             }
@@ -1586,9 +1607,8 @@ EOF,
                 PromiseInterface $promise
             ): BuilderInterface {
                 if ($this->context->slowBuilder) {
-                    $expectedTime = time() + 25;
-                    while (time() < $expectedTime) {
-                        $x = str_repeat('x', 100000);
+                    for ($i = 0; $i <= $this->context->loopCountToWait; ++$i) {
+                        $x = str_repeat('x', $this->context::STR_REPEAT_FOR_SIMULATION);
                     }
                 }
 
@@ -1677,9 +1697,8 @@ EOF,
             ->willReturnCallback(
                 function (): true {
                     if ($this->slowBuilder) {
-                        $expectedTime = time() + 25;
-                        while (time() < $expectedTime) {
-                            $x = str_repeat('x', 100000);
+                        for ($i = 0; $i <= $this->loopCountToWait; ++$i) {
+                            $x = str_repeat('x', self::STR_REPEAT_FOR_SIMULATION);
                         }
                     }
 

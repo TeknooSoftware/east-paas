@@ -3,4 +3,5 @@ default:
   suites:
     default:
       contexts:
-        - Teknoo\Tests\East\Paas\Behat\FeatureContext: ~
+        -   Teknoo\Tests\East\Paas\Behat\FeatureContext:
+              timeoutSeconds: 25
