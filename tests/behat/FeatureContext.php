@@ -137,6 +137,7 @@ use function var_export;
  */
 class FeatureContext implements Context
 {
+    public const int STR_REPEAT_FOR_SIMULATION = 100000;
     
     private ?KernelInterface $kernel = null;
 
