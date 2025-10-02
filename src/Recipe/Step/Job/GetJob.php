@@ -59,7 +59,7 @@ class GetJob
                 $manager->updateWorkPlan([Job::class => $job]);
             },
             onFail: static fn (#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
-                throw new DomainException(
+                new DomainException(
                     'teknoo.east.paas.error.recipe.job.not_found',
                     404,
                     $error

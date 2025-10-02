@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
+use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -94,7 +95,7 @@ class GetJobTest extends TestCase
         $client = $this->createMock(ClientInterface::class);
 
         $jobId = 'dev';
-        $exception = new \DomainException();
+        $exception = new DomainException();
 
         $this->getJobLoaderMock()
             ->expects($this->once())
@@ -109,7 +110,11 @@ class GetJobTest extends TestCase
         $manager->expects($this->never())
             ->method('updateWorkPlan');
 
-        $this->expectException(\DomainException::class);
+        $manager->expects($this->once())
+            ->method('error')
+            ->with(
+                $this->isInstanceOf(DomainException::class)
+            );
 
         $this->assertInstanceOf(
             GetJob::class,

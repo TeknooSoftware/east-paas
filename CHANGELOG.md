@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.0.2] - 2025-10-02
+### Stable Release
+- Fix exception thrown instead passed to manager via error in `GetJob`
+
 ## [5.0.1] - 2025-08-11
 ### Stable Release
 - Fix PHPStan issues
