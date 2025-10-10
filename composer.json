@@ -43,7 +43,7 @@
         "roave/security-advisories": "dev-latest",
         "phpunit/phpunit": "^12.3.7",
         "squizlabs/php_codesniffer": "^4",
-        "phpstan/phpstan": "^2.1.22",
+        "phpstan/phpstan": "^2.1.31",
         "phpstan/extension-installer": "^1.4.3",
         "symfony/property-access": "^6.4.24||^7.3",
         "nikic/php-parser": "^5.6.1",

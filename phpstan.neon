@@ -6,9 +6,6 @@ parameters:
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
-            message: '#is never assigne#'
-            path: infrastructures/Git/Hook.php
-        -
             message: '#DefaultsBag\|null given#'
             path: infrastructures/Kubernetes/
         -
