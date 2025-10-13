@@ -51,7 +51,7 @@ class Job implements
     use MessageTrait;
 
     /**
-     * @param array<string, mixed> $headers
+     * @param array<non-empty-string, array<string>|string> $headers
      */
     public function __construct(
         private int $statusCode,

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.0.3] - 2025-10-13
+### Stable Release
+- Fix issue with PHPStorm and laminas/laminas-diactoros
+
 ## [5.0.2] - 2025-10-02
 ### Stable Release
 - Fix exception thrown instead passed to manager via error in `GetJob`

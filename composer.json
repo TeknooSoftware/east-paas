@@ -55,7 +55,7 @@
         "guzzlehttp/guzzle": "^7.10",
         "guzzlehttp/promises": "^2.3",
         "guzzlehttp/psr7": "^2.7.1",
-        "laminas/laminas-diactoros": "^3.6",
+        "laminas/laminas-diactoros": "^3.8",
         "league/flysystem": "^3.30",
         "league/flysystem-local": "^3.30",
         "league/mime-type-detection": "^1.16",
