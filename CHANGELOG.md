@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.0.4] - 2025-10-14
+### Stable Release
+- Fix typo alogirthm to algorithm
+
 ## [5.0.3] - 2025-10-13
 ### Stable Release
 - Fix issue with PHPStorm and laminas/laminas-diactoros

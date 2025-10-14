@@ -59,7 +59,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey,
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -87,7 +87,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $privateKey->getPublicKey(),
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -124,7 +124,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $privateKey->getPublicKey(),
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -183,7 +183,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey,
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -239,7 +239,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey,
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -269,7 +269,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey,
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -301,7 +301,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey,
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -333,7 +333,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey,
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -365,7 +365,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey,
-            alogirthm: '',
+            algorithm: '',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -396,7 +396,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey = $privateKey->getPublicKey(),
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -436,7 +436,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey,
             publicKey: $publicKey = $privateKey->getPublicKey(),
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);
@@ -500,7 +500,7 @@ class EncryptionTest extends TestCase
         $service = new Encryption(
             privateKey: $privateKey2,
             publicKey: $publicKey = $privateKey->getPublicKey(),
-            alogirthm: 'rsa',
+            algorithm: 'rsa',
         );
 
         $content = $this->createMock(SensitiveContentInterface::class);

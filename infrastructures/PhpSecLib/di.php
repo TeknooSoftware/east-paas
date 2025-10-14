@@ -92,7 +92,7 @@ return [
             return new Encryption(
                 publicKey: $publicKey,
                 privateKey: $privateKey,
-                alogirthm: $algo->value,
+                algorithm: $algo->value,
             );
         } catch (Throwable $error) {
             throw new DIException(

@@ -55,7 +55,7 @@ class Encryption implements EncryptionInterface
     public function __construct(
         private readonly PublicKey $publicKey,
         private readonly ?PrivateKey $privateKey,
-        private readonly string $alogirthm,
+        private readonly string $algorithm,
     ) {
     }
 
@@ -123,7 +123,7 @@ class Encryption implements EncryptionInterface
 
         $promise->success($data->cloneWith(
             content: $encryptedContent,
-            encryptionAlgorithm: $this->alogirthm,
+            encryptionAlgorithm: $this->algorithm,
         ));
 
         return $this;
@@ -142,10 +142,10 @@ class Encryption implements EncryptionInterface
             return $this;
         }
 
-        if ($this->alogirthm !== ($algo = $data->getEncryptionAlgorithm())) {
+        if ($this->algorithm !== ($algo = $data->getEncryptionAlgorithm())) {
             if (empty($algo)) {
                 $content = "This agent requires encryption in content, but this content is not encrypted";
-            } elseif (empty($this->alogirthm)) {
+            } elseif (empty($this->algorithm)) {
                 $content = "This agent does not support encryption in content, but this content is encrypted";
             } else {
                 $content = "$algo is not supported by this current configuration of this encryption service";
