@@ -43,6 +43,7 @@ use Teknoo\East\Paas\Object\Job\Pending;
 use Teknoo\East\Paas\Object\Job\Terminated;
 use Teknoo\East\Paas\Object\Job\Validating;
 use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
+use Teknoo\States\Attributes\StateClass;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Callback;
 use Teknoo\States\Automated\Assertion\Property;
@@ -65,6 +66,10 @@ use function is_callable;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Executing::class)]
+#[StateClass(Pending::class)]
+#[StateClass(Terminated::class)]
+#[StateClass(Validating::class)]
 class Job implements
     IdentifiedObjectInterface,
     AutomatedInterface,
@@ -77,9 +82,7 @@ class Job implements
     use GroupsTrait;
     use ExportConfigurationsTrait;
     use VisitableTrait;
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     protected ?Project $project = null;
 
@@ -193,19 +196,6 @@ class Job implements
                         }
                     );
                 }),
-        ];
-    }
-
-    /**
-     * @return array<string>
-     */
-    protected static function statesListDeclaration(): array
-    {
-        return [
-            Executing::class,
-            Pending::class,
-            Terminated::class,
-            Validating::class,
         ];
     }
 

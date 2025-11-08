@@ -41,6 +41,7 @@ use Teknoo\East\Paas\Object\Exception\MissingAccountException;
 use Teknoo\East\Paas\Object\Project\Draft;
 use Teknoo\East\Paas\Object\Project\Executable;
 use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
+use Teknoo\States\Attributes\StateClass;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
 use Teknoo\States\Automated\Assertion\Callback;
@@ -62,6 +63,8 @@ use const PHP_INT_MAX;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Draft::class)]
+#[StateClass(Executable::class)]
 class Project implements
     IdentifiedObjectInterface,
     AutomatedInterface,
@@ -75,9 +78,7 @@ class Project implements
     use GroupsTrait;
     use ExportConfigurationsTrait;
     use VisitableTrait;
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     protected ?string $name = null;
 
@@ -116,17 +117,6 @@ class Project implements
     ) {
         $this->initializeStateProxy();
         $this->updateStates();
-    }
-
-    /**
-     * @return array<string>
-     */
-    protected static function statesListDeclaration(): array
-    {
-        return [
-            Draft::class,
-            Executable::class,
-        ];
     }
 
     /**

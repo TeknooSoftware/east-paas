@@ -40,7 +40,11 @@ class CreateNewJob
 {
     public function __invoke(ManagerInterface $manager): self
     {
-        $manager->updateWorkPlan(['job' => new Job()]);
+        $job = new Job();
+        $manager->updateWorkPlan([
+            'job' => $job,
+            Job::class => $job,
+        ]);
 
         return $this;
     }

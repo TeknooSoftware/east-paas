@@ -40,14 +40,15 @@ use Teknoo\East\Paas\Object\SshIdentity;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Workspace\File;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\States\Automated\Assertion\AssertionInterface;
-use Teknoo\States\Automated\Assertion\Property;
+use Teknoo\States\Attributes\Assertion\Property;
+use Teknoo\States\Attributes\StateClass;
+use Teknoo\States\Automated\Assertion\Property\IsEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
 
 use function array_pop;
-use function count;
 use function explode;
 use function is_object;
 use function sprintf;
@@ -66,13 +67,27 @@ use function str_starts_with;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Generator::class)]
+#[StateClass(Running::class)]
+#[Property(
+    Running::class,
+    ['gitProcess', IsNotEmpty::class],
+    ['sourceRepository', IsNotEmpty::class],
+    ['workspace', IsNotEmpty::class],
+)]
+#[Property(
+    Generator::class,
+    ['sourceRepository', IsEmpty::class],
+)]
+#[Property(
+    Generator::class,
+    ['workspace', IsEmpty::class],
+)]
 class CloningAgent implements CloningAgentInterface, AutomatedInterface
 {
     use ImmutableTrait;
     use ProxyTrait;
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     private ?Process $gitProcess = null;
 
@@ -90,35 +105,6 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
 
         $this->initializeStateProxy();
         $this->updateStates();
-    }
-
-    /**
-     * @return array<string>
-     */
-    public static function statesListDeclaration(): array
-    {
-        return [
-            Generator::class,
-            Running::class,
-        ];
-    }
-
-    /**
-     * @return array<AssertionInterface>
-     */
-    protected function listAssertions(): array
-    {
-        return [
-            new Property(Running::class)
-                ->with('gitProcess', new Property\IsNotEmpty())
-                ->with('sourceRepository', new Property\IsNotEmpty())
-                ->with('workspace', new Property\IsNotEmpty()),
-
-            new Property(Generator::class)
-                ->with('sourceRepository', new Property\IsEmpty()),
-            new Property(Generator::class)
-                ->with('workspace', new Property\IsEmpty()),
-        ];
     }
 
     public function __clone()

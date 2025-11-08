@@ -42,8 +42,10 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
-use Teknoo\States\Automated\Assertion\AssertionInterface;
-use Teknoo\States\Automated\Assertion\Property;
+use Teknoo\States\Attributes\Assertion\Property;
+use Teknoo\States\Attributes\StateClass;
+use Teknoo\States\Automated\Assertion\Property\IsEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
@@ -69,12 +71,25 @@ use function random_bytes;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Generator::class)]
+#[StateClass(Running::class)]
+#[Property(
+    Running::class,
+    ['projectId', IsNotEmpty::class],
+    ['url', IsNotEmpty::class],
+)]
+#[Property(
+    Generator::class,
+    ['projectId', IsEmpty::class],
+)]
+#[Property(
+    Generator::class,
+    ['url', IsEmpty::class],
+)]
 class ImageWrapper implements BuilderInterface, AutomatedInterface
 {
     use ProxyTrait;
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     private ?string $projectId = null;
 
@@ -100,32 +115,6 @@ class ImageWrapper implements BuilderInterface, AutomatedInterface
 
         $this->initializeStateProxy();
         $this->updateStates();
-    }
-
-    /**
-     * @return array<string>
-     */
-    public static function statesListDeclaration(): array
-    {
-        return [
-            Generator::class,
-            Running::class,
-        ];
-    }
-
-    /**
-     * @return array<AssertionInterface>
-     */
-    protected function listAssertions(): array
-    {
-        return [
-            new Property(Running::class)
-                ->with('projectId', new Property\IsNotEmpty())
-                ->with('url', new Property\IsNotEmpty()),
-
-            new Property(Generator::class)
-                ->with('url', new Property\IsEmpty()),
-        ];
     }
 
     public function configure(string $projectId, string $url, ?IdentityInterface $auth): BuilderInterface

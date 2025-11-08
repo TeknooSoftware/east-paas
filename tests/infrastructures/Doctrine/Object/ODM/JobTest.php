@@ -27,17 +27,21 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Doctrine\Object\ODM;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
-use PHPUnit\Framework\TestCase;
+use Teknoo\States\Exception\StateNotFound;
+use Teknoo\Tests\East\Paas\Object\JobTest as BaseTest;
 
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Job::class)]
-class JobTest extends TestCase
+class JobTest extends BaseTest
 {
-    public function testStatesListDeclaration(): void
+    /**
+     * @throws StateNotFound
+     */
+    public function buildObject(): Job
     {
-        $this->assertIsArray(Job::statesListDeclaration());
+        return new Job();
     }
 }

@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM;
 
-use Override;
 use Teknoo\East\Paas\Object\Job as BaseJob;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Doctrine\StandardTrait;
@@ -44,11 +43,5 @@ class Job extends BaseJob
     use AutomatedTrait;
     use StandardTrait {
         AutomatedTrait::updateStates insteadof StandardTrait;
-    }
-
-    #[Override]
-    public static function statesListDeclaration(): array
-    {
-        return [];
     }
 }

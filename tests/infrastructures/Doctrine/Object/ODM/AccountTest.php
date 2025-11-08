@@ -27,17 +27,21 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Doctrine\Object\ODM;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
-use PHPUnit\Framework\TestCase;
+use Teknoo\States\Proxy\Exception\StateNotFound;
+use Teknoo\Tests\East\Paas\Object\AccountTest as BaseTest;
 
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Account::class)]
-class AccountTest extends TestCase
+class AccountTest extends BaseTest
 {
-    public function testStatesListDeclaration(): void
+    /**
+     * @throws StateNotFound
+     */
+    public function buildObject(): Account
     {
-        $this->assertIsArray(Account::statesListDeclaration());
+        return new Account();
     }
 }

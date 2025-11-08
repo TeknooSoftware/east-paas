@@ -40,8 +40,8 @@ use Teknoo\East\Paas\Contracts\Object\Account\AccountAwareInterface;
 use Teknoo\East\Paas\Object\Account\Active;
 use Teknoo\East\Paas\Object\Account\Inactive;
 use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
-use Teknoo\States\Automated\Assertion\AssertionInterface;
-use Teknoo\States\Automated\Assertion\Property;
+use Teknoo\States\Attributes\Assertion\Property;
+use Teknoo\States\Attributes\StateClass;
 use Teknoo\States\Automated\Assertion\Property\IsEmpty;
 use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
 use Teknoo\States\Automated\AutomatedInterface;
@@ -56,6 +56,10 @@ use Teknoo\States\Proxy\ProxyTrait;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Active::class)]
+#[StateClass(Inactive::class)]
+#[Property(Active::class, ['name', IsNotEmpty::class])]
+#[Property(Inactive::class, ['name', IsEmpty::class])]
 class Account implements
     IdentifiedObjectInterface,
     TimestampableInterface,
@@ -72,9 +76,7 @@ class Account implements
     use VisitableTrait {
         VisitableTrait::runVisit as realRunVisit;
     }
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     protected ?string $name = null;
 
@@ -114,30 +116,6 @@ class Account implements
     {
         $this->initializeStateProxy();
         $this->updateStates();
-    }
-
-    /**
-     * @return array<string>
-     */
-    protected static function statesListDeclaration(): array
-    {
-        return [
-            Active::class,
-            Inactive::class,
-        ];
-    }
-
-    /**
-     * @return array<AssertionInterface>
-     */
-    protected function listAssertions(): array
-    {
-        return [
-            new Property(Active::class)
-                ->with('name', new IsNotEmpty()),
-            new Property(Inactive::class)
-                ->with('name', new IsEmpty()),
-        ];
     }
 
     private function getName(): string
