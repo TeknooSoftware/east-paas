@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Git;
 
 use SensitiveParameter;
-use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Infrastructures\Git\Contracts\ProcessFactoryInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookAwareInterface;
@@ -37,8 +36,12 @@ use Teknoo\East\Paas\Infrastructures\Git\Hook\Generator;
 use Teknoo\East\Paas\Infrastructures\Git\Hook\Running;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
-use Teknoo\States\Automated\Assertion\AssertionInterface;
-use Teknoo\States\Automated\Assertion\Property;
+use Teknoo\States\Attributes\Assertion\Property;
+use Teknoo\States\Attributes\StateClass;
+use Teknoo\States\Automated\Assertion\Property\HasEmptyValueForKey;
+use Teknoo\States\Automated\Assertion\Property\HasNotEmptyValueForKey;
+use Teknoo\States\Automated\Assertion\Property\IsEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
@@ -49,13 +52,28 @@ use Teknoo\States\Proxy\ProxyTrait;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Generator::class)]
+#[StateClass(Running::class)]
+#[Property(
+    Running::class,
+    ['options', IsNotEmpty::class],
+    ['options', HasNotEmptyValueForKey::class, 'url'],
+    ['options', HasNotEmptyValueForKey::class, 'path'],
+    ['path', IsNotEmpty::class],
+    ['jobUnit', IsNotEmpty::class],
+    ['workspace', IsNotEmpty::class],
+)]
+#[Property(Generator::class, ['options', IsEmpty::class])]
+#[Property(Generator::class, ['options', HasEmptyValueForKey::class, 'url'])]
+#[Property(Generator::class, ['options', HasEmptyValueForKey::class, 'path'])]
+#[Property(Generator::class, ['path', IsEmpty::class])]
+#[Property(Generator::class, ['jobUnit', IsEmpty::class])]
+#[Property(Generator::class, ['workspace', IsEmpty::class])]
 class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, ImmutableInterface
 {
     use ImmutableTrait;
     use ProxyTrait;
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     private ?string $path = null;
 
@@ -76,46 +94,6 @@ class Hook implements HookInterface, HookAwareInterface, AutomatedInterface, Imm
 
         $this->initializeStateProxy();
         $this->updateStates();
-    }
-
-    /**
-     * @return array<string>
-     */
-    public static function statesListDeclaration(): array
-    {
-        return [
-          Generator::class,
-          Running::class,
-        ];
-    }
-
-    /**
-     * @return array<AssertionInterface>
-     */
-    protected function listAssertions(): array
-    {
-        return [
-            new Property(Running::class)
-                ->with('options', new Property\IsNotEmpty())
-                ->with('options', new Property\HasNotEmptyValueForKey('url'))
-                ->with('options', new Property\HasNotEmptyValueForKey('path'))
-                ->with('path', new Property\IsNotEmpty())
-                ->with('jobUnit', new Property\IsNotEmpty())
-                ->with('workspace', new Property\IsNotEmpty()),
-
-            new Property(Generator::class)
-                ->with('options', new Property\IsEmpty()),
-            new Property(Generator::class)
-                ->with('options', new Property\HasEmptyValueForKey('url')),
-            new Property(Generator::class)
-                ->with('options', new Property\HasEmptyValueForKey('path')),
-            new Property(Generator::class)
-                ->with('path', new Property\IsEmpty()),
-            new Property(Generator::class)
-                ->with('jobUnit', new Property\IsEmpty()),
-            new Property(Generator::class)
-              ->with('workspace', new Property\IsEmpty()),
-        ];
     }
 
     public function __clone()

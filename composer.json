@@ -34,10 +34,10 @@
         "php-di/php-di": "^7.1.1",
         "psr/http-client": "^1.0.3",
         "teknoo/immutable": "^3.0.21",
-        "teknoo/states": "^7",
-        "teknoo/recipe": "^7.1",
+        "teknoo/states": "^7.1",
+        "teknoo/recipe": "^7.2",
         "teknoo/east-foundation": "^9",
-        "teknoo/east-common": "^4"
+        "teknoo/east-common": "^4.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -118,7 +118,7 @@
             "Teknoo\\Tests\\East\\Paas\\": "tests/src/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\ProjectBuilding\\": "tests/infrastructures/ProjectBuilding/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Image\\": "tests/infrastructures/Image/",
-            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Doctrine\\\\": "tests/infrastructures/Doctrine/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Doctrine\\": "tests/infrastructures/Doctrine/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Flysystem\\": "tests/infrastructures/Flysystem/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Git\\": "tests/infrastructures/Git/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Kubernetes\\": "tests/infrastructures/Kubernetes/",

@@ -65,10 +65,21 @@ class AccountTest extends TestCase
         return new Account();
     }
 
-    public function testStatesListDeclaration(): void
+    protected function tearDown(): void
     {
-        $rf = new ReflectionMethod(Account::class, 'statesListDeclaration');
-        $this->assertIsArray($rf->getClosure()());
+        parent::tearDown();
+
+        Account::setExportConfiguration(
+            [
+                '@class' => ['default', 'api', 'digest', 'crud'],
+                'id' => ['default', 'api', 'digest', 'crud'],
+                'name' => ['default', 'api', 'digest', 'crud'],
+                'namespace' => ['default', 'admin'],
+                'prefixNamespace' => ['admin'],
+                'quota' => ['default', 'admin'],
+                'users' => ['admin'],
+            ]
+        );
     }
 
     public function testGetName(): void
@@ -484,10 +495,16 @@ class AccountTest extends TestCase
                 'namespace' => null,
             ]);
 
-        $this->assertInstanceOf(Account::class, $this->buildObject()->setId('123')->setName('fooName')->exportToMeData(
-            $normalizer,
-            ['foo' => 'bar']
-        ));
+        $this->assertInstanceOf(
+            Account::class,
+            $this->buildObject()
+                ->setId('123')
+                ->setName('fooName')
+                ->exportToMeData(
+                    $normalizer,
+                    ['foo' => 'bar']
+                )
+        );
     }
 
     public function testSetExportConfiguration(): void

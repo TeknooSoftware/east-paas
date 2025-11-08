@@ -37,8 +37,10 @@ use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\States\Automated\Assertion\AssertionInterface;
-use Teknoo\States\Automated\Assertion\Property;
+use Teknoo\States\Attributes\Assertion\Property;
+use Teknoo\States\Attributes\StateClass;
+use Teknoo\States\Automated\Assertion\Property\IsEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
@@ -61,13 +63,21 @@ use function substr;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Generator::class)]
+#[StateClass(Running::class)]
+#[Property(
+    Running::class,
+    ['job', IsNotEmpty::class],
+)]
+#[Property(
+    Generator::class,
+    ['job', IsEmpty::class],
+)]
 class Workspace implements JobWorkspaceInterface, AutomatedInterface
 {
     use ImmutableTrait;
     use ProxyTrait;
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     private ?JobUnitInterface $job = null;
 
@@ -90,31 +100,6 @@ class Workspace implements JobWorkspaceInterface, AutomatedInterface
 
         $this->initializeStateProxy();
         $this->updateStates();
-    }
-
-    /**
-     * @return array<string>
-     */
-    public static function statesListDeclaration(): array
-    {
-        return [
-            Generator::class,
-            Running::class,
-        ];
-    }
-
-    /**
-     * @return array<AssertionInterface>
-     */
-    protected function listAssertions(): array
-    {
-        return [
-            new Property(Running::class)
-                ->with('job', new Property\IsNotEmpty()),
-
-            new Property(Generator::class)
-                ->with('job', new Property\IsEmpty()),
-        ];
     }
 
     public function __destruct()

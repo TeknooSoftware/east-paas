@@ -45,10 +45,4 @@ class Project extends BaseProject
     use StandardTrait {
         AutomatedTrait::updateStates insteadof StandardTrait;
     }
-
-    #[Override]
-    public static function statesListDeclaration(): array
-    {
-        return [];
-    }
 }

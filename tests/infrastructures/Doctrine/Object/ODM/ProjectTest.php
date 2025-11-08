@@ -26,18 +26,23 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Doctrine\Object\ODM;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
-use PHPUnit\Framework\TestCase;
+use Teknoo\States\Exception\StateNotFound;
+use Teknoo\Tests\East\Paas\Object\ProjectTest as BaseTest;
 
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 #[CoversClass(Project::class)]
-class ProjectTest extends TestCase
+class ProjectTest extends BaseTest
 {
-    public function testStatesListDeclaration(): void
+    /**
+     * @throws StateNotFound
+     */
+    public function buildObject(): Project
     {
-        $this->assertIsArray(Project::statesListDeclaration());
+        return new Project($this->createMock(Account::class));
     }
 }

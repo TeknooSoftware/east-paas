@@ -49,7 +49,11 @@ class CreateNewJobTest extends TestCase
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->with(['job' => new Job()]);
+            ->with($this->callback(
+                function (array $plan) {
+                    return $plan['job'] instanceof Job && $plan[Job::class] instanceof Job;
+                }
+            ));
 
         $this->assertInstanceOf(CreateNewJob::class, $this->buildStep()($manager));
     }

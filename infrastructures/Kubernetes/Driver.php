@@ -37,8 +37,11 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver\Running;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Teknoo\States\Automated\Assertion\AssertionInterface;
-use Teknoo\States\Automated\Assertion\Property;
+use Teknoo\States\Attributes\Assertion\Property;
+use Teknoo\States\Attributes\StateClass;
+use Teknoo\States\Automated\Assertion\Property\IsEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotNull;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
@@ -56,12 +59,23 @@ use Teknoo\States\Proxy\ProxyTrait;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Generator::class)]
+#[StateClass(Running::class)]
+#[Property(
+    Running::class,
+    ['master', IsNotEmpty::class],
+    ['defaultsBag', IsNotEmpty::class],
+    ['namespace', IsNotEmpty::class],
+    ['useHierarchicalNamespaces', IsNotNull::class],
+)]
+#[Property(
+    Generator::class,
+    ['master', IsEmpty::class]
+)]
 class Driver implements DriverInterface, AutomatedInterface
 {
     use ProxyTrait;
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     private ?string $master = null;
 
@@ -82,33 +96,6 @@ class Driver implements DriverInterface, AutomatedInterface
     ) {
         $this->initializeStateProxy();
         $this->updateStates();
-    }
-
-    /**
-     * @return array<string>
-     */
-    public static function statesListDeclaration(): array
-    {
-        return [
-            Generator::class,
-            Running::class,
-        ];
-    }
-
-    /**
-     * @return array<AssertionInterface>
-     */
-    protected function listAssertions(): array
-    {
-        return [
-            new Property(Running::class)
-                ->with('master', new Property\IsNotEmpty())
-                ->with('defaultsBag', new Property\IsNotEmpty())
-                ->with('namespace', new Property\IsNotEmpty())
-                ->with('useHierarchicalNamespaces', new Property\IsNotNull()),
-            new Property(Generator::class)
-                ->with('master', new Property\IsEmpty())
-        ];
     }
 
     public function configure(

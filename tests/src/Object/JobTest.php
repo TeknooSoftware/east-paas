@@ -78,10 +78,26 @@ class JobTest extends TestCase
         return new Job();
     }
 
-    public function testStatesListDeclaration(): void
+    protected function tearDown(): void
     {
-        $rf = new ReflectionMethod(Job::class, 'statesListDeclaration');
-        $this->assertIsArray($rf->getClosure()());
+        parent::tearDown();
+
+        Job::setExportConfiguration(
+            [
+                '@class' => ['default', 'api', 'digest'],
+                'id' => ['default', 'api', 'digest'],
+                'project' => ['default', 'api', 'digest'],
+                'environment' => ['default', 'api', 'digest'],
+                'prefix' => ['default', 'api'],
+                'source_repository' => ['default', 'api'],
+                'images_repository' => ['default', 'api'],
+                'clusters' => ['default', 'api'],
+                'history' => ['default', 'api'],
+                'extra' => ['default', 'api'],
+                'defaults' => ['default', 'api'],
+                'quotas' => ['default', 'api'],
+            ]
+        );
     }
 
     /**

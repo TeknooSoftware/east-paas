@@ -70,10 +70,22 @@ class ProjectTest extends TestCase
         return new Project($this->createMock(Account::class));
     }
 
-    public function testStatesListDeclaration(): void
+    protected function tearDown(): void
     {
-        $rf = new ReflectionMethod(Project::class, 'statesListDeclaration');
-        $this->assertIsArray($rf->getClosure()());
+        parent::tearDown();
+
+        Project::setExportConfiguration(
+            [
+                '@class' => ['default', 'api', 'digest', 'crud'],
+                'id' => ['default', 'api', 'digest', 'crud'],
+                'account' => ['crud'],
+                'name' => ['default', 'api', 'digest', 'crud'],
+                'prefix' => ['crud'],
+                'sourceRepository' => ['crud'],
+                'imagesRegistry' => ['crud'],
+                'clusters' => ['crud'],
+            ]
+        );
     }
 
     public function testConstructor(): void
@@ -568,6 +580,8 @@ class ProjectTest extends TestCase
 
     public function testExportToMeCrud(): void
     {
+        $project = $this->buildObject();
+
         $normalizer = $this->createMock(EastNormalizerInterface::class);
         $normalizer->expects($this->once())
             ->method('injectData')
@@ -575,17 +589,23 @@ class ProjectTest extends TestCase
                 '@class' => Project::class,
                 'id' => '123',
                 'name' => 'fooName',
-                'account' => $this->createMock(Account::class),
+                'account' => $project->getAccount(),
                 'prefix' => '',
                 'sourceRepository' => null,
                 'imagesRegistry' => null,
                 'clusters' => [],
             ]);
 
-        $this->assertInstanceOf(Project::class, $this->buildObject()->setId('123')->setName('fooName')->exportToMeData(
-            $normalizer,
-            ['groups' => 'crud']
-        ));
+        $this->assertInstanceOf(
+            Project::class,
+            $project
+                ->setId('123')
+                ->setName('fooName')
+                ->exportToMeData(
+                    $normalizer,
+                    ['groups' => 'crud']
+                )
+        );
     }
 
     public function testSetExportConfiguration(): void

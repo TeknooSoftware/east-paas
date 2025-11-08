@@ -42,8 +42,10 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\East\Paas\Parser\YamlTrait;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Parser\YamlValidator;
-use Teknoo\States\Automated\Assertion\AssertionInterface;
-use Teknoo\States\Automated\Assertion\Property;
+use Teknoo\States\Attributes\Assertion\Property;
+use Teknoo\States\Attributes\StateClass;
+use Teknoo\States\Automated\Assertion\Property\IsEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
@@ -61,14 +63,27 @@ use function str_replace;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[StateClass(Generator::class)]
+#[StateClass(Running::class)]
+#[Property(
+    Running::class,
+    ['job', IsNotEmpty::class],
+    ['workspace', IsNotEmpty::class]
+)]
+#[Property(
+    Generator::class,
+    ['job', IsEmpty::class],
+)]
+#[Property(
+    Generator::class,
+    ['workspace', IsEmpty::class],
+)]
 class Conductor implements ConductorInterface, AutomatedInterface
 {
     use YamlTrait;
     use ArrayTrait;
     use ProxyTrait;
-    use AutomatedTrait {
-        AutomatedTrait::updateStates insteadof ProxyTrait;
-    }
+    use AutomatedTrait;
 
     private const string CONFIG_PAAS = '[paas]';
 
@@ -101,34 +116,6 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
         $this->initializeStateProxy();
         $this->updateStates();
-    }
-
-    /**
-     * @return array<string>
-     */
-    public static function statesListDeclaration(): array
-    {
-        return [
-            Generator::class,
-            Running::class,
-        ];
-    }
-
-    /**
-     * @return array<AssertionInterface>
-     */
-    protected function listAssertions(): array
-    {
-        return [
-            new Property(Running::class)
-                ->with('job', new Property\IsNotEmpty())
-                ->with('workspace', new Property\IsNotEmpty()),
-
-            new Property(Generator::class)
-                ->with('job', new Property\IsEmpty()),
-            new Property(Generator::class)
-                ->with('workspace', new Property\IsEmpty()),
-        ];
     }
 
     public function configure(JobUnitInterface $job, JobWorkspaceInterface $workspace): ConductorInterface
