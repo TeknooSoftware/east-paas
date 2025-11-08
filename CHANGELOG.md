@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.1.0] - 2025-11-08
+### Stable Release
+- Upgrade to Teknoo State 7.1
+- Upgrade to Teknoo Recipe 7.2
+- Clean Stated classes
+
 ## [5.0.4] - 2025-10-14
 ### Stable Release
 - Fix typo alogirthm to algorithm
