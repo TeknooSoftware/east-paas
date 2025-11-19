@@ -51,7 +51,7 @@ class TeknooEastPaasExtension extends Extension
         $configuration = new Configuration();
         $this->processConfiguration($configuration, $configs);
 
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../config'));
         $loader->load('services.components.yaml');
         $loader->load('services.end_points.yaml');
         $loader->load('services.admin.yaml');
