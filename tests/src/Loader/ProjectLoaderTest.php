@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Loader;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Common\Contracts\DBSource\RepositoryInterface;
 use Teknoo\East\Common\Contracts\Loader\LoaderInterface;
@@ -46,12 +47,16 @@ class ProjectLoaderTest extends TestCase
 {
     use LoaderTestTrait;
 
-    private (RepositoryInterface&MockObject)|null $repository = null;
+    private (RepositoryInterface&Stub)|(RepositoryInterface&MockObject)|null $repository = null;
 
-    public function getRepositoryMock(): RepositoryInterface&MockObject
+    public function getRepositoryMock(bool $stub = false): (RepositoryInterface&Stub)|(RepositoryInterface&MockObject)
     {
         if (!$this->repository instanceof RepositoryInterface) {
-            $this->repository = $this->createMock(ProjectRepositoryInterface::class);
+            if ($stub) {
+                $this->repository = $this->createStub(ProjectRepositoryInterface::class);
+            } else {
+                $this->repository = $this->createMock(ProjectRepositoryInterface::class);
+            }
         }
 
         return $this->repository;
@@ -59,13 +64,13 @@ class ProjectLoaderTest extends TestCase
 
     public function buildLoader(): LoaderInterface&ProjectLoader
     {
-        $repository = $this->getRepositoryMock();
+        $repository = $this->getRepositoryMock(true);
         return new ProjectLoader($repository);
     }
 
     public function buildLoaderWithBadCollectionImplementation(): LoaderInterface&ProjectLoader
     {
-        $repository = $this->getRepositoryMock();
+        $repository = $this->getRepositoryMock(true);
         return new class ($repository) extends ProjectLoader {
             protected function prepareQuery(
                 array &$criteria,
@@ -80,7 +85,7 @@ class ProjectLoaderTest extends TestCase
 
     public function buildLoaderWithNotCollectionImplemented(): LoaderInterface&ProjectLoader
     {
-        $repository = $this->getRepositoryMock();
+        $repository = $this->getRepositoryMock(true);
         return new ProjectLoader($repository);
     }
 

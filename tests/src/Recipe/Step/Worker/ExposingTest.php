@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -45,12 +46,16 @@ use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
 #[CoversClass(Exposing::class)]
 class ExposingTest extends TestCase
 {
-    private (DispatchHistoryInterface&MockObject)|null $dispatchHistory = null;
+    private (DispatchHistoryInterface&MockObject)|(DispatchHistoryInterface&Stub)|null $dispatchHistory = null;
 
-    public function getDispatchHistoryMock(): DispatchHistoryInterface&MockObject
+    public function getDispatchHistoryMock(bool $stub = false): (DispatchHistoryInterface&Stub)|(DispatchHistoryInterface&MockObject)
     {
         if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
-            $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+            if ($stub) {
+                $this->dispatchHistory = $this->createStub(DispatchHistoryInterface::class);
+            } else {
+                $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+            }
         }
 
         return $this->dispatchHistory;
@@ -59,19 +64,19 @@ class ExposingTest extends TestCase
     public function buildStep(): Exposing
     {
         return new Exposing(
-            $this->getDispatchHistoryMock(),
+            $this->getDispatchHistoryMock(true),
         );
     }
 
     public function testInvoke(): void
     {
-        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
-        $collection = $this->createMock(Collection::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $eastClient =  $this->createMock(EastClient::class);
-        $manager = $this->createMock(ManagerInterface::class);
+        $compileDep = $this->createStub(CompiledDeploymentInterface::class);
+        $collection = $this->createStub(Collection::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $eastClient =  $this->createStub(EastClient::class);
+        $manager = $this->createStub(ManagerInterface::class);
 
-        $client = $this->createMock(DriverInterface::class);
+        $client = $this->createStub(DriverInterface::class);
         $collection
             ->method('getIterator')
             ->willReturnCallback(function () use ($client): \Traversable {
@@ -81,7 +86,7 @@ class ExposingTest extends TestCase
         $client
             ->method('expose')
             ->willReturnCallback(
-                static function (\Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface $compiledExposment, PromiseInterface $promise) use ($client): \PHPUnit\Framework\MockObject\MockObject {
+                static function (CompiledDeploymentInterface $compiledExposment, PromiseInterface $promise) use ($client): MockObject|Stub {
                     $promise->success(['foo' => 'bar']);
 
                     return $client;
@@ -109,13 +114,13 @@ class ExposingTest extends TestCase
 
     public function testInvokeOnError(): void
     {
-        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
-        $collection = $this->createMock(Collection::class);
-        $eastClient =  $this->createMock(EastClient::class);
+        $compileDep = $this->createStub(CompiledDeploymentInterface::class);
+        $collection = $this->createStub(Collection::class);
+        $eastClient =  $this->createStub(EastClient::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
-        $client = $this->createMock(DriverInterface::class);
+        $client = $this->createStub(DriverInterface::class);
         $collection
             ->method('getIterator')
             ->willReturnCallback(function () use ($client): \Traversable {
@@ -125,7 +130,7 @@ class ExposingTest extends TestCase
         $client
             ->method('expose')
             ->willReturnCallback(
-                static function (\Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface $compiledExposment, PromiseInterface $promise) use ($client): \PHPUnit\Framework\MockObject\MockObject {
+                static function (CompiledDeploymentInterface $compiledExposment, PromiseInterface $promise) use ($client): MockObject|Stub {
                     $promise->fail(new \Exception());
 
                     return $client;

@@ -42,7 +42,7 @@ class SetTimeLimitTest extends TestCase
 {
     public function buildStep(): SetTimeLimit
     {
-        $mock = $this->createMock(TimeoutServiceInterface::class);
+        $mock = $this->createStub(TimeoutServiceInterface::class);
         return new SetTimeLimit(
             $mock,
             5 * 60

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\ImageCompiler;
@@ -87,10 +88,10 @@ class ImageCompilerTest extends TestCase
         $this->assertInstanceOf(ImageCompiler::class, $this->buildCompiler()->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -102,7 +103,7 @@ class ImageCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->exactly(2))
             ->method('addBuildable')
-            ->willReturnCallback(function (BuildableInterface $buildable) use ($compiledDeployment): MockObject {
+            ->willReturnCallback(function (BuildableInterface $buildable) use ($compiledDeployment): MockObject|Stub {
                 if ('foo' === $buildable->getName()) {
                     $this->assertEquals('/foo/images/bar', $buildable->getPath());
                 } else {
@@ -112,23 +113,23 @@ class ImageCompilerTest extends TestCase
                 return $compiledDeployment;
             });
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
         $workspace->method('runInRepositoryPath')->willReturnCallback(
-            static function (callable $callback) use ($workspace): MockObject {
+            static function (callable $callback) use ($workspace): MockObject|Stub {
                 $callback('/foo');
                 return $workspace;
             }
         );
 
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->assertInstanceOf(ImageCompiler::class, $builder->compile(
             $definitions,
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 }

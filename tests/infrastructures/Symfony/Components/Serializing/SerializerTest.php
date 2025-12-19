@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use stdClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Serializer;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -43,12 +44,16 @@ use TypeError;
 #[CoversClass(Serializer::class)]
 class SerializerTest extends TestCase
 {
-    private (SymfonySerializerInterface&MockObject)|null $serializer = null;
+    private (SymfonySerializerInterface&MockObject)|(SymfonySerializerInterface&Stub)|null $serializer = null;
 
-    private function getSfSerializerMock(): SymfonySerializerInterface&MockObject
+    private function getSfSerializerMock(bool $stub = false): (SymfonySerializerInterface&Stub)|(SymfonySerializerInterface&MockObject)
     {
         if (!$this->serializer instanceof SymfonySerializerInterface) {
-            $this->serializer = $this->createMock(SymfonySerializerInterface::class);
+            if ($stub) {
+                $this->serializer = $this->createStub(SymfonySerializerInterface::class);
+            } else {
+                $this->serializer = $this->createMock(SymfonySerializerInterface::class);
+            }
         }
 
         return $this->serializer;
@@ -57,7 +62,7 @@ class SerializerTest extends TestCase
     public function buildSerializer(): Serializer
     {
         return new Serializer(
-            $this->getSfSerializerMock()
+            $this->getSfSerializerMock(true)
         );
     }
 
@@ -78,7 +83,7 @@ class SerializerTest extends TestCase
         $this->buildSerializer()->serialize(
             new stdClass(),
             new stdClass(),
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
             []
         );
     }
@@ -89,7 +94,7 @@ class SerializerTest extends TestCase
         $this->buildSerializer()->serialize(
             new stdClass(),
             'foo',
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
             new stdClass()
         );
     }
@@ -100,7 +105,7 @@ class SerializerTest extends TestCase
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        $this->getSfSerializerMock()
+        $this->getSfSerializerMock(true)
             ->method('serialize')
             ->willReturn('foo');
 
@@ -118,7 +123,7 @@ class SerializerTest extends TestCase
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $this->getSfSerializerMock()
+        $this->getSfSerializerMock(true)
             ->method('serialize')
             ->willThrowException(new Exception('foo'));
 

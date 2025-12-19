@@ -45,6 +45,6 @@ class ClusterRepositoryTest extends TestCase
      */
     public function buildRepository(): RepositoryInterface
     {
-        return new ClusterRepository($this->getDoctrineObjectRepositoryMock());
+        return new ClusterRepository($this->getDoctrineObjectRepositoryMock(true));
     }
 }

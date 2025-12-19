@@ -72,10 +72,10 @@ class VolumeCompilerTest extends TestCase
         $this->assertInstanceOf(VolumeCompiler::class, $this->buildCompiler()->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -87,16 +87,16 @@ class VolumeCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->once())->method('addVolume');
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->assertInstanceOf(VolumeCompiler::class, $builder->compile(
             $definitions,
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 }

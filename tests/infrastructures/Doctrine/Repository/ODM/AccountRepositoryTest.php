@@ -45,6 +45,6 @@ class AccountRepositoryTest extends TestCase
      */
     public function buildRepository(): RepositoryInterface
     {
-        return new AccountRepository($this->getDoctrineObjectRepositoryMock());
+        return new AccountRepository($this->getDoctrineObjectRepositoryMock(true));
     }
 }

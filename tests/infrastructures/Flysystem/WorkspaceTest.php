@@ -31,6 +31,7 @@ use League\Flysystem\DirectoryListing;
 use League\Flysystem\StorageAttributes;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use ReflectionProperty;
 use RuntimeException;
 use stdClass;
@@ -60,23 +61,31 @@ use function strpos;
 #[CoversClass(Workspace::class)]
 class WorkspaceTest extends TestCase
 {
-    private (Filesystem&MockObject)|null $filesystem = null;
+    private (Filesystem&MockObject)|(Filesystem&Stub)|null $filesystem = null;
 
-    private (JobUnitInterface&MockObject)|null $job = null;
+    private (JobUnitInterface&MockObject)|(JobUnitInterface&Stub)|null $job = null;
 
-    public function getFilesystemMock(): Filesystem&MockObject
+    public function getFilesystemMock(bool $stub = false): (Filesystem&Stub)|(Filesystem&MockObject)
     {
         if (!$this->filesystem instanceof Filesystem) {
-            $this->filesystem = $this->createMock(Filesystem::class);
+            if ($stub) {
+                $this->filesystem = $this->createStub(Filesystem::class);
+            } else {
+                $this->filesystem = $this->createMock(Filesystem::class);
+            }
         }
 
         return $this->filesystem;
     }
 
-    public function getJobMock(): JobUnitInterface&MockObject
+    public function getJobMock(bool $stub = false): (JobUnitInterface&Stub)|(JobUnitInterface&MockObject)
     {
         if (!$this->job instanceof JobUnitInterface) {
-            $this->job = $this->createMock(JobUnitInterface::class);
+            if ($stub) {
+                $this->job = $this->createStub(JobUnitInterface::class);
+            } else {
+                $this->job = $this->createMock(JobUnitInterface::class);
+            }
         }
 
         return $this->job;
@@ -85,7 +94,7 @@ class WorkspaceTest extends TestCase
     public function buildJobWorkspace($root = '/path/root'): Workspace
     {
         return new Workspace(
-            $this->getFilesystemMock(),
+            $this->getFilesystemMock(true),
             $root,
             '.paas.yaml',
         );
@@ -99,7 +108,7 @@ class WorkspaceTest extends TestCase
 
     public function testSetJob(): void
     {
-        $this->assertInstanceOf(JobWorkspaceInterface::class, $this->buildJobWorkspace()->setJob($this->getJobMock()));
+        $this->assertInstanceOf(JobWorkspaceInterface::class, $this->buildJobWorkspace()->setJob($this->getJobMock(true)));
     }
 
     public function testWriteFileBadFile(): void
@@ -111,19 +120,19 @@ class WorkspaceTest extends TestCase
     public function testWriteFileBadCallable(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildJobWorkspace()->writeFile($this->createMock(FileInterface::class), new stdClass());
+        $this->buildJobWorkspace()->writeFile($this->createStub(FileInterface::class), new stdClass());
     }
 
     public function testWriteFileWithAGenerator(): void
     {
         $this->expectException(RuntimeException::class);
 
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('getName')->willReturn($name = 'foo');
         $file->method('getContent')->willReturn($content = 'bar');
         $file->method('getVisibility')->willReturn($v = Visibility::Private);
 
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
@@ -135,12 +144,12 @@ class WorkspaceTest extends TestCase
 
     public function testWriteFileNotCallable(): void
     {
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('getName')->willReturn($name = 'foo');
         $file->method('getContent')->willReturn($content = 'bar');
         $file->method('getVisibility')->willReturn($v = Visibility::Private);
 
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
@@ -158,12 +167,12 @@ class WorkspaceTest extends TestCase
 
     public function testWriteFileWithCallable(): void
     {
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('getName')->willReturn($name = 'foo');
         $file->method('getContent')->willReturn($content = 'bar');
         $file->method('getVisibility')->willReturn($v = Visibility::Private);
 
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
@@ -185,12 +194,12 @@ class WorkspaceTest extends TestCase
 
     public function testWriteFileWithCallableWithRootWithSlash(): void
     {
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('getName')->willReturn($name = 'foo');
         $file->method('getContent')->willReturn($content = 'bar');
         $file->method('getVisibility')->willReturn($v = Visibility::Private);
 
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
@@ -220,7 +229,7 @@ class WorkspaceTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
@@ -233,7 +242,7 @@ class WorkspaceTest extends TestCase
 
     public function testPrepareRepository(): void
     {
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
@@ -259,21 +268,21 @@ class WorkspaceTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
-        $conductor = $this->createMock(ConductorInterface::class);
+        $conductor = $this->createStub(ConductorInterface::class);
 
         $this->buildJobWorkspace()->loadDeploymentIntoConductor(
             $conductor,
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
     public function testLoadDeploymentIntoConductor(): void
     {
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
@@ -296,17 +305,17 @@ class WorkspaceTest extends TestCase
 
         $this->buildJobWorkspace()->setJob($this->getJobMock())->loadDeploymentIntoConductor(
             $conductor,
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
     public function testClone(): void
     {
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
-        $workspace = $this->buildJobWorkspace()->setJob($this->getJobMock());
+        $workspace = $this->buildJobWorkspace()->setJob($this->getJobMock(true));
         $workspace2 = clone $workspace;
 
         $rp = new ReflectionProperty(Workspace::class, 'job');
@@ -319,7 +328,7 @@ class WorkspaceTest extends TestCase
         $this->expectException(TypeError::class);
         $this->buildJobWorkspace()->hasDirectory(
             new stdClass(),
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -338,10 +347,10 @@ class WorkspaceTest extends TestCase
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        $this->getFilesystemMock()
+        $this->getFilesystemMock(true)
             ->method('listContents')
             ->with($path = 'foo')
-            ->willReturn(new DirectoryListing(new ArrayIterator([$this->createMock(StorageAttributes::class)])));
+            ->willReturn(new DirectoryListing(new ArrayIterator([$this->createStub(StorageAttributes::class)])));
 
         $this->assertInstanceOf(Workspace::class, $this->buildJobWorkspace()->hasDirectory($path, $promise));
     }
@@ -352,7 +361,7 @@ class WorkspaceTest extends TestCase
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail')->with($this->callback(fn ($e): bool => $e instanceof DomainException));
 
-        $this->getFilesystemMock()
+        $this->getFilesystemMock(true)
             ->method('listContents')
             ->with($path = 'foo')
             ->willReturn(new DirectoryListing(new ArrayIterator([])));
@@ -376,11 +385,11 @@ class WorkspaceTest extends TestCase
             $called = true;
         };
 
-        $this->getJobMock()
+        $this->getJobMock(true)
             ->method('getId')
             ->willReturn('fooBar');
 
-        $this->assertInstanceOf(Workspace::class, $this->buildJobWorkspace()->setJob($this->getJobMock())->runInRepositoryPath($callback));
+        $this->assertInstanceOf(Workspace::class, $this->buildJobWorkspace()->setJob($this->getJobMock(true))->runInRepositoryPath($callback));
 
         $this->assertTrue($called);
     }
@@ -400,7 +409,7 @@ class WorkspaceTest extends TestCase
             ->expects($this->once())
             ->method('deleteDirectory');
 
-        $this->assertInstanceOf(Workspace::class, $this->buildJobWorkspace()->setJob($this->getJobMock())->clean());
+        $this->assertInstanceOf(Workspace::class, $this->buildJobWorkspace()->setJob($this->getJobMock(true))->clean());
     }
 
     public function testCleanException(): void
@@ -414,7 +423,7 @@ class WorkspaceTest extends TestCase
             ->method('deleteDirectory')
             ->willThrowException(new RuntimeException('test'));
 
-        $object = $this->buildJobWorkspace()->setJob($this->getJobMock());
+        $object = $this->buildJobWorkspace()->setJob($this->getJobMock(true));
         unset($object);
     }
 }

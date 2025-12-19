@@ -100,7 +100,7 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
         $container->set(
             'teknoo.east.paas.kubernetes.http.client',
-            $this->createMock(ClientInterface::class),
+            $this->createStub(ClientInterface::class),
         );
 
         $this->assertInstanceOf(ClientFactoryInterface::class, $factory = $container->get(ClientFactoryInterface::class));
@@ -126,7 +126,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
-        $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
+        $container->set(SleepServiceInterface::class, $this->createStub(SleepServiceInterface::class));
 
         $this->assertInstanceOf(Driver::class, $container->get(Driver::class));
     }
@@ -136,7 +136,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
         $container->set('teknoo.east.paas.kubernetes.ssl.verify', true);
-        $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
+        $container->set(SleepServiceInterface::class, $this->createStub(SleepServiceInterface::class));
 
         $this->assertInstanceOf(Directory::class, $container->get(Directory::class));
     }
@@ -236,7 +236,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.cronjob.require_label', 'foo');
-        $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
+        $container->set(SleepServiceInterface::class, $this->createStub(SleepServiceInterface::class));
 
         $this->assertInstanceOf(CronJobTranscriber::class, $container->get(CronJobTranscriber::class));
     }
@@ -253,7 +253,7 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $container->set('teknoo.east.paas.kubernetes.job.require_label', 'foo');
-        $container->set(SleepServiceInterface::class, $this->createMock(SleepServiceInterface::class));
+        $container->set(SleepServiceInterface::class, $this->createStub(SleepServiceInterface::class));
 
         $this->assertInstanceOf(JobTranscriber::class, $container->get(JobTranscriber::class));
     }

@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use stdClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Deserializer;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -42,12 +43,16 @@ use TypeError;
 #[CoversClass(Deserializer::class)]
 class DeserializerTest extends TestCase
 {
-    private (SymfonySerializerInterface&MockObject)|null $serializer = null;
+    private (SymfonySerializerInterface&MockObject)|(SymfonySerializerInterface&Stub)|null $serializer = null;
 
-    private function getSfSerializerMock(): SymfonySerializerInterface&MockObject
+    private function getSfSerializerMock(bool $stub = false): (SymfonySerializerInterface&Stub)|(SymfonySerializerInterface&MockObject)
     {
         if (!$this->serializer instanceof SymfonySerializerInterface) {
-            $this->serializer = $this->createMock(SymfonySerializerInterface::class);
+            if ($stub) {
+                $this->serializer = $this->createStub(SymfonySerializerInterface::class);
+            } else {
+                $this->serializer = $this->createMock(SymfonySerializerInterface::class);
+            }
         }
 
         return $this->serializer;
@@ -56,7 +61,7 @@ class DeserializerTest extends TestCase
     public function buildDeserializer(): Deserializer
     {
         return new Deserializer(
-            $this->getSfSerializerMock()
+            $this->getSfSerializerMock(true)
         );
     }
 
@@ -67,7 +72,7 @@ class DeserializerTest extends TestCase
             new stdClass(),
             'foo',
             'bar',
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
             []
         );
     }
@@ -79,7 +84,7 @@ class DeserializerTest extends TestCase
             'foo',
             new stdClass(),
             'bar',
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
             []
         );
     }
@@ -91,7 +96,7 @@ class DeserializerTest extends TestCase
             'foo',
             'bar',
             new stdClass(),
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
             []
         );
     }
@@ -115,7 +120,7 @@ class DeserializerTest extends TestCase
             'foo',
             'bar',
             'foo',
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
             new stdClass()
         );
     }
@@ -126,7 +131,7 @@ class DeserializerTest extends TestCase
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        $this->getSfSerializerMock()
+        $this->getSfSerializerMock(true)
             ->method('deserialize')
             ->willReturn(['foo' => 'bar']);
 
@@ -145,7 +150,7 @@ class DeserializerTest extends TestCase
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $this->getSfSerializerMock()
+        $this->getSfSerializerMock(true)
             ->method('deserialize')
             ->willThrowException(new Exception('foo'));
 

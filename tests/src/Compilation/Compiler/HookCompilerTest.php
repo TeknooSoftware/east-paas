@@ -62,7 +62,7 @@ class HookCompilerTest extends TestCase
 
         $definitions = $this->getDefinitionsArray();
 
-        $hook = $this->createMock(HookInterface::class);
+        $hook = $this->createStub(HookInterface::class);
 
         $hookCompiler = new HookCompiler(
             [
@@ -76,10 +76,10 @@ class HookCompilerTest extends TestCase
         $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -89,10 +89,10 @@ class HookCompilerTest extends TestCase
 
         $definitions = $this->getDefinitionsArray();
 
-        $hook = $this->createMock(HookInterface::class);
+        $hook = $this->createStub(HookInterface::class);
         $hook
             ->method('setOptions')
-            ->willReturnCallback(function (array $options, PromiseInterface $promise) use ($hook): MockObject {
+            ->willReturnCallback(function (array $options, PromiseInterface $promise) use ($hook): MockObject|Stub {
                 $promise->fail(new Exception());
 
                 return $hook;
@@ -110,10 +110,10 @@ class HookCompilerTest extends TestCase
         $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -121,7 +121,7 @@ class HookCompilerTest extends TestCase
     {
         $definitions = $this->getDefinitionsArray();
 
-        $hook = $this->createMock(HookInterface::class);
+        $hook = $this->createStub(HookInterface::class);
         $hook
             ->method('setOptions')
             ->willReturnSelf();
@@ -138,10 +138,10 @@ class HookCompilerTest extends TestCase
         $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -150,7 +150,7 @@ class HookCompilerTest extends TestCase
         $definitions = [];
         $hookCompiler = new HookCompiler(
             new ArrayIterator([
-                'composer' => $this->createMock(HookInterface::class)
+                'composer' => $this->createStub(HookInterface::class)
             ])
         );
 
@@ -160,10 +160,10 @@ class HookCompilerTest extends TestCase
         $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -171,7 +171,7 @@ class HookCompilerTest extends TestCase
     {
         $definitions = $this->getDefinitionsArray();
 
-        $hook = $this->createMock(HookInterface::class);
+        $hook = $this->createStub(HookInterface::class);
         $hook
             ->method('setOptions')
             ->willReturnSelf();
@@ -188,10 +188,10 @@ class HookCompilerTest extends TestCase
         $this->assertInstanceOf(HookCompiler::class, $hookCompiler->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 }

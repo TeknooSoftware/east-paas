@@ -27,8 +27,9 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use ArrayIterator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -77,21 +78,22 @@ class ClusterTypeTest extends TestCase
 
     public function testConfigureOptions(): void
     {
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->configureOptions(
-            $this->createMock(OptionsResolver::class)
-        ));
+        $this->buildForm()->configureOptions(
+            $this->createStub(OptionsResolver::class)
+        );
+        $this->assertTrue(true);
     }
 
     public function testBuildFormSubmittedWithLocked(): void
     {
-        $builder = $this->createMock(FormBuilderInterface::class);
+        $builder = $this->createStub(FormBuilderInterface::class);
 
         $object = $this->getObject();
         $object->setLocked(true);
 
         $builder
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): \PHPUnit\Framework\MockObject\MockObject {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): MockObject|Stub {
                 $children = [];
                 foreach ($this->getFormArray() as $name => $value) {
                     $mock = $this->createMock(FormInterface::class);
@@ -105,19 +107,20 @@ class ClusterTypeTest extends TestCase
                 return $builder;
             });
 
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, $this->getOptions()));
+        $this->buildForm()->buildForm($builder, $this->getOptions());
+        $this->assertTrue(true);
     }
 
     public function testBuildFormSubmittedWithUnLockedAndNotAllowedToLock(): void
     {
-        $builder = $this->createMock(FormBuilderInterface::class);
+        $builder = $this->createStub(FormBuilderInterface::class);
 
         $object = $this->getObject();
         $object->setLocked(false);
 
         $builder
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): \PHPUnit\Framework\MockObject\MockObject {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): MockObject|Stub {
                 $children = [];
                 foreach ($this->getFormArray() as $name => $value) {
                     $mock = $this->createMock(FormInterface::class);
@@ -136,19 +139,20 @@ class ClusterTypeTest extends TestCase
                 return $builder;
             });
 
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, $this->getOptions()));
+        $this->buildForm()->buildForm($builder, $this->getOptions());
+        $this->assertTrue(true);
     }
 
     public function testBuildFormSubmittedWithUnLockedAndAllowedToLock(): void
     {
-        $builder = $this->createMock(FormBuilderInterface::class);
+        $builder = $this->createStub(FormBuilderInterface::class);
 
         $object = $this->getObject();
         $object->setLocked(false);
 
         $builder
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): \PHPUnit\Framework\MockObject\MockObject {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): MockObject|Stub {
                 $children = [];
                 foreach ($this->getFormArray() as $name => $value) {
                     $mock = $this->createMock(FormInterface::class);
@@ -162,31 +166,32 @@ class ClusterTypeTest extends TestCase
                 return $builder;
             });
 
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, [
+        $this->buildForm()->buildForm($builder, [
             'allowEditingOfLocked' => true,
-        ]));
+        ]);
+        $this->assertTrue(true);
     }
 
     public function testSetAsReadOnlyForLockedWithoutAllowing(): void
     {
-        $builder = $this->createMock(FormBuilderInterface::class);
+        $builder = $this->createStub(FormBuilderInterface::class);
 
         $builder
             ->method('addEventListener')
-            ->willReturnCallback(function (string $name, callable $callable) use ($builder): \PHPUnit\Framework\MockObject\MockObject {
-                $config = $this->createMock(FormConfigInterface::class);
+            ->willReturnCallback(function (string $name, callable $callable) use ($builder): MockObject|Stub {
+                $config = $this->createStub(FormConfigInterface::class);
                 $config
                     ->method('getType')
                     ->willReturn(
-                        $this->createMock(ResolvedFormTypeInterface::class)
+                        $this->createStub(ResolvedFormTypeInterface::class)
                     );
 
-                $form1 = $this->createMock(Form::class);
+                $form1 = $this->createStub(Form::class);
                 $form1
                     ->method('getConfig')
                     ->willReturn($config);
 
-                $form2 = $this->createMock(Form::class);
+                $form2 = $this->createStub(Form::class);
                 $form2
                     ->method('getConfig')
                     ->willReturn($config);
@@ -217,23 +222,24 @@ class ClusterTypeTest extends TestCase
                 return $builder;
             });
 
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, [
+        $this->buildForm()->buildForm($builder, [
             'allowEditingOfLocked' => false,
-        ]));
+        ]);
+        $this->assertTrue(true);
     }
 
     public function testNoSetAsReadOnlyForLockedWithAllowing(): void
     {
-        $builder = $this->createMock(FormBuilderInterface::class);
+        $builder = $this->createStub(FormBuilderInterface::class);
 
         $builder
             ->method('addEventListener')
-            ->willReturnCallback(function (string $name, callable $callable) use ($builder): \PHPUnit\Framework\MockObject\MockObject {
-                $config = $this->createMock(FormConfigInterface::class);
+            ->willReturnCallback(function (string $name, callable $callable) use ($builder): MockObject|Stub {
+                $config = $this->createStub(FormConfigInterface::class);
                 $config
                     ->method('getType')
                     ->willReturn(
-                        $this->createMock(ResolvedFormTypeInterface::class)
+                        $this->createStub(ResolvedFormTypeInterface::class)
                     );
 
                 $form = $this->createMock(Form::class);
@@ -257,23 +263,24 @@ class ClusterTypeTest extends TestCase
                 return $builder;
             });
 
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, [
+        $this->buildForm()->buildForm($builder, [
             'allowEditingOfLocked' => true,
-        ]));
+        ]);
+        $this->assertTrue(true);
     }
 
     public function testNoSetAsReadOnlyForUnlockedWithAllowing(): void
     {
-        $builder = $this->createMock(FormBuilderInterface::class);
+        $builder = $this->createStub(FormBuilderInterface::class);
 
         $builder
             ->method('addEventListener')
-            ->willReturnCallback(function (string $name, callable $callable) use ($builder): \PHPUnit\Framework\MockObject\MockObject {
-                $config = $this->createMock(FormConfigInterface::class);
+            ->willReturnCallback(function (string $name, callable $callable) use ($builder): MockObject|Stub {
+                $config = $this->createStub(FormConfigInterface::class);
                 $config
                     ->method('getType')
                     ->willReturn(
-                        $this->createMock(ResolvedFormTypeInterface::class)
+                        $this->createStub(ResolvedFormTypeInterface::class)
                     );
 
                 $form = $this->createMock(Form::class);
@@ -297,8 +304,9 @@ class ClusterTypeTest extends TestCase
                 return $builder;
             });
 
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, [
+        $this->buildForm()->buildForm($builder, [
             'allowEditingOfLocked' => false,
-        ]));
+        ]);
+        $this->assertTrue(true);
     }
 }

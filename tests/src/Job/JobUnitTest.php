@@ -30,6 +30,7 @@ use DomainException;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
@@ -65,29 +66,37 @@ use TypeError;
 #[CoversClass(JobUnit::class)]
 class JobUnitTest extends TestCase
 {
-    private (SourceRepositoryInterface&MockObject)|null $sourceRepository = null;
+    private (SourceRepositoryInterface&MockObject)|(SourceRepositoryInterface&Stub)|null $sourceRepository = null;
 
-    private (ImageRegistryInterface&MockObject)|null $imagesRegistry = null;
+    private (ImageRegistryInterface&MockObject)|(ImageRegistryInterface&Stub)|null $imagesRegistry = null;
 
-    private (Cluster&MockObject)|null $cluster = null;
+    private (Cluster&MockObject)|(Cluster&Stub)|null $cluster = null;
 
-    public function getSourceRepositoryMock(): SourceRepositoryInterface&MockObject
+    public function getSourceRepositoryMock(bool $stub = false): (SourceRepositoryInterface&Stub)|(SourceRepositoryInterface&MockObject)
     {
         if (!$this->sourceRepository instanceof SourceRepositoryInterface) {
-            $this->sourceRepository = $this->createMock(SourceRepositoryInterface::class);
+            if ($stub) {
+                $this->sourceRepository = $this->createStub(SourceRepositoryInterface::class);
+            } else {
+                $this->sourceRepository = $this->createMock(SourceRepositoryInterface::class);
+            }
         }
 
         return $this->sourceRepository;
     }
 
-    public function getImagesRegistryMock(): ImageRegistryInterface&MockObject
+    public function getImagesRegistryMock(bool $stub = false): (ImageRegistryInterface&MockObject)|(ImageRegistryInterface&Stub)
     {
         if (!$this->imagesRegistry instanceof ImageRegistryInterface) {
-            $this->imagesRegistry = $this->createMock(ImageRegistryInterface::class);
+            if ($stub) {
+                $this->imagesRegistry = $this->createStub(ImageRegistryInterface::class);
+            } else {
+                $this->imagesRegistry = $this->createMock(ImageRegistryInterface::class);
+            }
 
             $this->imagesRegistry->method('getApiUrl')->willReturn('foo');
             $this->imagesRegistry->method('getIdentity')->willReturn(
-                $this->createMock(IdentityInterface::class)
+                $this->createStub(IdentityInterface::class)
             );
         }
 
@@ -95,10 +104,14 @@ class JobUnitTest extends TestCase
     }
 
 
-    public function getClusterMock(): Cluster&MockObject
+    public function getClusterMock(bool $stub = false): (Cluster&Stub)|(Cluster&MockObject)
     {
         if (!$this->cluster instanceof Cluster) {
-            $this->cluster = $this->createMock(Cluster::class);
+            if ($stub) {
+                $this->cluster = $this->createStub(Cluster::class);
+            } else {
+                $this->cluster = $this->createMock(Cluster::class);
+            }
         }
 
         return $this->cluster;
@@ -121,9 +134,9 @@ class JobUnitTest extends TestCase
             projectResume: ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
             environment: new Environment('foo'),
             prefix: $prefix,
-            sourceRepository: $this->getSourceRepositoryMock(),
-            imagesRegistry: $imageRegistry ?? $this->getImagesRegistryMock(),
-            clusters: [$this->getClusterMock()],
+            sourceRepository: $this->getSourceRepositoryMock(true),
+            imagesRegistry: $imageRegistry ?? $this->getImagesRegistryMock(true),
+            clusters: [$this->getClusterMock(true)],
             variables: $variables,
             history: new History(null, 'foo', new DateTimeImmutable('2018-05-01')),
             extra: $extra,
@@ -176,7 +189,7 @@ class JobUnitTest extends TestCase
         $object = $this->buildObject();
 
         $agent = $this->createMock(CloningAgentInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
@@ -196,7 +209,7 @@ class JobUnitTest extends TestCase
         $object = $this->buildObject();
 
         $agent = $this->createMock(CloningAgentInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
@@ -257,9 +270,7 @@ class JobUnitTest extends TestCase
 
     public function testConfigureClusterOnSuccess(): void
     {
-        $object = $this->buildObject();
-
-        $directory = $this->createMock(Directory::class);
+        $directory = $this->createStub(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
@@ -269,24 +280,23 @@ class JobUnitTest extends TestCase
             ->method('selectCluster')
             ->with($directory)
             ->willReturnCallback(
-                function ($c, CompiledDeploymentInterface $cd, PromiseInterface $p): Cluster&MockObject {
-                    $p->success($this->createMock(ClusterClientInterface::class));
+                function ($c, CompiledDeploymentInterface $cd, PromiseInterface $p): (Cluster&MockObject)|(Cluster&Stub) {
+                    $p->success($this->createStub(ClusterClientInterface::class));
 
                     return $this->getClusterMock();
                 }
             );
 
+        $object = $this->buildObject();
         $this->assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
+            $object->configureCluster($directory, $promise, $this->createStub(CompiledDeploymentInterface::class))
         );
     }
 
     public function testConfigureClusterOnError(): void
     {
-        $object = $this->buildObject();
-
-        $directory = $this->createMock(Directory::class);
+        $directory = $this->createStub(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
@@ -297,17 +307,16 @@ class JobUnitTest extends TestCase
             ->with($directory)
             ->willThrowException(new Exception());
 
+        $object = $this->buildObject();
         $this->assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
+            $object->configureCluster($directory, $promise, $this->createStub(CompiledDeploymentInterface::class))
         );
     }
 
     public function testConfigureClusterOnErrorOnConfigure(): void
     {
-        $object = $this->buildObject();
-
-        $directory = $this->createMock(Directory::class);
+        $directory = $this->createStub(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
@@ -317,16 +326,17 @@ class JobUnitTest extends TestCase
             ->method('selectCluster')
             ->with($directory)
             ->willReturnCallback(
-                function ($c, PromiseInterface $p): Cluster&MockObject {
+                function ($c, PromiseInterface $p): (Cluster&MockObject)|(Cluster&Stub) {
                     $p->fail(new Exception());
 
                     return $this->getClusterMock();
                 }
             );
 
+        $object = $this->buildObject();
         $this->assertInstanceOf(
             JobUnit::class,
-            $object->configureCluster($directory, $promise, $this->createMock(CompiledDeploymentInterface::class))
+            $object->configureCluster($directory, $promise, $this->createStub(CompiledDeploymentInterface::class))
         );
     }
 
@@ -340,7 +350,7 @@ class JobUnitTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
-            $this->createMock(EastNormalizerInterface::class),
+            $this->createStub(EastNormalizerInterface::class),
             new stdClass()
         );
     }
@@ -356,9 +366,9 @@ class JobUnitTest extends TestCase
                 'project' => ['@class' => Project::class,'id' => 'bar', 'name' => 'h€llo Ba$r'],
                 'environment' => new Environment('foo'),
                 'prefix' => 'bar',
-                'source_repository' => $this->getSourceRepositoryMock(),
-                'images_repository' => $this->getImagesRegistryMock(),
-                'clusters' => [$this->getClusterMock()],
+                'source_repository' => $this->getSourceRepositoryMock(true),
+                'images_repository' => $this->getImagesRegistryMock(true),
+                'clusters' => [$this->getClusterMock(true)],
                 'variables' => ['foo' => 'bar', 'bar' => 'FOO'],
                 'history' => new History(null, 'foo', new DateTimeImmutable('2018-05-01')),
             ]);
@@ -388,12 +398,12 @@ class JobUnitTest extends TestCase
             ],
         ];
 
-        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity = $this->createStub(IdentityWithConfigNameInterface::class);
         $identity
             ->method('getConfigName')
             ->willReturn('fooName');
 
-        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry = $this->createStub(ImageRegistryInterface::class);
         $imageRegistry->method('getApiUrl')->willReturn('foo');
         $imageRegistry->method('getIdentity')->willReturn($identity);
 
@@ -451,12 +461,12 @@ class JobUnitTest extends TestCase
             ],
         ];
 
-        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity = $this->createStub(IdentityWithConfigNameInterface::class);
         $identity
             ->method('getConfigName')
             ->willReturn('fooName');
 
-        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry = $this->createStub(ImageRegistryInterface::class);
         $imageRegistry->method('getApiUrl')->willReturn('foo');
         $imageRegistry->method('getIdentity')->willReturn($identity);
 
@@ -510,12 +520,12 @@ class JobUnitTest extends TestCase
             ],
         ];
 
-        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity = $this->createStub(IdentityWithConfigNameInterface::class);
         $identity
             ->method('getConfigName')
             ->willReturn('');
 
-        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry = $this->createStub(ImageRegistryInterface::class);
         $imageRegistry->method('getApiUrl')->willReturn('foo');
         $imageRegistry->method('getIdentity')->willReturn($identity);
 
@@ -568,12 +578,12 @@ class JobUnitTest extends TestCase
             ],
         ];
 
-        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity = $this->createStub(IdentityWithConfigNameInterface::class);
         $identity
             ->method('getConfigName')
             ->willReturn('fooName');
 
-        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry = $this->createStub(ImageRegistryInterface::class);
         $imageRegistry->method('getApiUrl')->willReturn('foo');
         $imageRegistry->method('getIdentity')->willReturn($identity);
 
@@ -640,12 +650,12 @@ class JobUnitTest extends TestCase
             ],
         ];
 
-        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity = $this->createStub(IdentityWithConfigNameInterface::class);
         $identity
             ->method('getConfigName')
             ->willReturn('fooName');
 
-        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry = $this->createStub(ImageRegistryInterface::class);
         $imageRegistry->method('getApiUrl')->willReturn('foo');
         $imageRegistry->method('getIdentity')->willReturn($identity);
 
@@ -715,12 +725,12 @@ class JobUnitTest extends TestCase
             ],
         ];
 
-        $identity = $this->createMock(IdentityWithConfigNameInterface::class);
+        $identity = $this->createStub(IdentityWithConfigNameInterface::class);
         $identity
             ->method('getConfigName')
             ->willReturn('');
 
-        $imageRegistry = $this->createMock(ImageRegistryInterface::class);
+        $imageRegistry = $this->createStub(ImageRegistryInterface::class);
         $imageRegistry->method('getApiUrl')->willReturn('foo');
         $imageRegistry->method('getIdentity')->willReturn($identity);
 
@@ -905,7 +915,7 @@ class JobUnitTest extends TestCase
         $factory = $this->createMock(QuotaFactory::class);
         $factory->expects($this->exactly(2))
             ->method('create')
-            ->willReturn($availabilitty = $this->createMock(AvailabilityInterface::class));
+            ->willReturn($availabilitty = $this->createStub(AvailabilityInterface::class));
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())

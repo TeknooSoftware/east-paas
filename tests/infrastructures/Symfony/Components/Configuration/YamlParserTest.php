@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use stdClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\YamlParser;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Parser;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -42,12 +43,16 @@ use TypeError;
 #[CoversClass(YamlParser::class)]
 class YamlParserTest extends TestCase
 {
-    private (Parser&MockObject)|null $parser = null;
+    private (Parser&MockObject)|(Parser&Stub)|null $parser = null;
 
-    private function getParserMock(): Parser&MockObject
+    private function getParserMock(bool $stub = false): (Parser&Stub)|(Parser&MockObject)
     {
         if (!$this->parser instanceof Parser) {
-            $this->parser = $this->createMock(Parser::class);
+            if ($stub) {
+                $this->parser = $this->createStub(Parser::class);
+            } else {
+                $this->parser = $this->createMock(Parser::class);
+            }
         }
 
         return $this->parser;
@@ -56,14 +61,14 @@ class YamlParserTest extends TestCase
     public function buildParser(): YamlParser
     {
         return new YamlParser(
-            $this->getParserMock()
+            $this->getParserMock(true)
         );
     }
 
     public function testParseBadValue(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildParser()->parse(new stdClass(), $this->createMock(PromiseInterface::class), 1);
+        $this->buildParser()->parse(new stdClass(), $this->createStub(PromiseInterface::class), 1);
     }
 
     public function testParseBadPromise(): void
@@ -75,7 +80,7 @@ class YamlParserTest extends TestCase
     public function testParseBadFlag(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildParser()->parse('foo', $this->createMock(PromiseInterface::class), new stdClass());
+        $this->buildParser()->parse('foo', $this->createStub(PromiseInterface::class), new stdClass());
     }
 
     public function testParseGood(): void
@@ -84,7 +89,7 @@ class YamlParserTest extends TestCase
         $promise->expects($this->once())->method('success')->with(['foo' => 'bar']);
         $promise->expects($this->never())->method('fail');
 
-        $this->getParserMock()
+        $this->getParserMock(true)
             ->method('parse')
             ->willReturn(['foo' => 'bar']);
 
@@ -102,7 +107,7 @@ class YamlParserTest extends TestCase
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $this->getParserMock()
+        $this->getParserMock(true)
             ->method('parse')
             ->willThrowException(new Exception('foo bar'));
 

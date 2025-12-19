@@ -44,7 +44,7 @@ class QuotaCompilerTest extends TestCase
 {
     public function buildCompiler(): QuotaCompiler
     {
-        $factory = $this->createMock(Factory::class);
+        $factory = $this->createStub(Factory::class);
 
         return new QuotaCompiler($factory);
     }
@@ -76,11 +76,11 @@ class QuotaCompilerTest extends TestCase
 
         $this->assertInstanceOf(QuotaCompiler::class, $this->buildCompiler()->compile(
             $definitions,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
             $manager,
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -94,11 +94,11 @@ class QuotaCompilerTest extends TestCase
 
         $this->assertInstanceOf(QuotaCompiler::class, $this->buildCompiler()->compile(
             $definitions,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
             $manager,
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 }

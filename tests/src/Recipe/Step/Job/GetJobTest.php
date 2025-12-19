@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -43,12 +44,16 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(GetJob::class)]
 class GetJobTest extends TestCase
 {
-    private (JobLoader&MockObject)|null $jobLoader = null;
+    private (JobLoader&MockObject)|(JobLoader&Stub)|null $jobLoader = null;
 
-    public function getJobLoaderMock(): JobLoader&MockObject
+    public function getJobLoaderMock(bool $stub = false): (JobLoader&Stub)|(JobLoader&MockObject)
     {
         if (!$this->jobLoader instanceof JobLoader) {
-            $this->jobLoader = $this->createMock(JobLoader::class);
+            if ($stub) {
+                $this->jobLoader = $this->createStub(JobLoader::class);
+            } else {
+                $this->jobLoader = $this->createMock(JobLoader::class);
+            }
         }
 
         return $this->jobLoader;
@@ -57,15 +62,15 @@ class GetJobTest extends TestCase
     public function buildStep(): GetJob
     {
         return new GetJob(
-            $this->getJobLoaderMock(),
+            $this->getJobLoaderMock(true),
         );
     }
 
     public function testInvoke(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
-        $job = $this->createMock(Job::class);
+        $client = $this->createStub(ClientInterface::class);
+        $job = $this->createStub(Job::class);
 
         $jobId = 'dev';
 
@@ -92,7 +97,7 @@ class GetJobTest extends TestCase
     public function testInvokeFailureOnJobLoading(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $jobId = 'dev';
         $exception = new DomainException();

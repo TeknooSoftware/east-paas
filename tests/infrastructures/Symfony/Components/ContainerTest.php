@@ -29,6 +29,7 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -69,7 +70,7 @@ class ContainerTest extends TestCase
         $containerDefinition = new ContainerBuilder();
         $containerDefinition->addDefinitions(
             [
-                Executor::class => fn (): MockObject => $this->createMock(Executor::class)
+                Executor::class => fn (): Stub => $this->createStub(Executor::class)
             ],
         );
         $containerDefinition->addDefinitions(__DIR__.'/../../../../infrastructures/Symfony/Components/di.php');
@@ -82,7 +83,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(
             DispatchJob::class,
-            $this->createMock(DispatchJob::class)
+            $this->createStub(DispatchJob::class)
         );
 
         $this->assertInstanceOf(DispatchJobInterface::class, $container->get(DispatchJobInterface::class));
@@ -93,7 +94,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(
             'teknoo.east.paas.symfony.property_accessor',
-            $this->createMock(SymfonyPropertyAccessor::class)
+            $this->createStub(SymfonyPropertyAccessor::class)
         );
 
         $this->assertInstanceOf(PropertyAccessorInterface::class, $container->get(PropertyAccessorInterface::class));
@@ -104,7 +105,7 @@ class ContainerTest extends TestCase
         $container = $this->buildContainer();
         $container->set(
             'teknoo.east.paas.symfony.property_accessor',
-            $this->createMock(SymfonyPropertyAccessor::class)
+            $this->createStub(SymfonyPropertyAccessor::class)
         );
 
         $this->assertInstanceOf(PropertyAccessor::class, $container->get(PropertyAccessor::class));
@@ -134,7 +135,7 @@ class ContainerTest extends TestCase
     public function testDeserializerInterface(): void
     {
         $container = $this->buildContainer();
-        $container->set(Deserializer::class, $this->createMock(Deserializer::class));
+        $container->set(Deserializer::class, $this->createStub(Deserializer::class));
 
         $this->assertInstanceOf(DeserializerInterface::class, $container->get(DeserializerInterface::class));
     }
@@ -142,7 +143,7 @@ class ContainerTest extends TestCase
     public function testNormalizerInterface(): void
     {
         $container = $this->buildContainer();
-        $container->set(Normalizer::class, $this->createMock(Normalizer::class));
+        $container->set(Normalizer::class, $this->createStub(Normalizer::class));
 
         $this->assertInstanceOf(NormalizerInterface::class, $container->get(NormalizerInterface::class));
     }
@@ -150,7 +151,7 @@ class ContainerTest extends TestCase
     public function testSerializerInterface(): void
     {
         $container = $this->buildContainer();
-        $container->set(Serializer::class, $this->createMock(Serializer::class));
+        $container->set(Serializer::class, $this->createStub(Serializer::class));
 
         $this->assertInstanceOf(SerializerInterface::class, $container->get(SerializerInterface::class));
     }
@@ -158,7 +159,7 @@ class ContainerTest extends TestCase
     public function testDisplayHistory(): void
     {
         $container = $this->buildContainer();
-        $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
+        $container->set(EncryptionInterface::class, $this->createStub(EncryptionInterface::class));
 
         $this->assertInstanceOf(DisplayHistoryHandler::class, $container->get(DisplayHistoryHandler::class));
     }
@@ -166,7 +167,7 @@ class ContainerTest extends TestCase
     public function testDisplayResult(): void
     {
         $container = $this->buildContainer();
-        $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
+        $container->set(EncryptionInterface::class, $this->createStub(EncryptionInterface::class));
 
         $this->assertInstanceOf(DisplayResultHandler::class, $container->get(DisplayResultHandler::class));
     }
@@ -174,13 +175,13 @@ class ContainerTest extends TestCase
     public function testRunJobCommand(): void
     {
         $container = $this->buildContainer();
-        $container->set(ServerRequestFactoryInterface::class, $this->createMock(ServerRequestFactoryInterface::class));
-        $container->set(StreamFactoryInterface::class, $this->createMock(StreamFactoryInterface::class));
-        $container->set(MessageFactoryInterface::class, $this->createMock(MessageFactoryInterface::class));
-        $container->set(DatesService::class, $this->createMock(DatesService::class));
-        $container->set(NormalizerInterface::class, $this->createMock(NormalizerInterface::class));
-        $container->set(RunJobInterface::class . ':proxy', $this->createMock(RunJobInterface::class));
-        $container->set(EncryptionInterface::class, $this->createMock(EncryptionInterface::class));
+        $container->set(ServerRequestFactoryInterface::class, $this->createStub(ServerRequestFactoryInterface::class));
+        $container->set(StreamFactoryInterface::class, $this->createStub(StreamFactoryInterface::class));
+        $container->set(MessageFactoryInterface::class, $this->createStub(MessageFactoryInterface::class));
+        $container->set(DatesService::class, $this->createStub(DatesService::class));
+        $container->set(NormalizerInterface::class, $this->createStub(NormalizerInterface::class));
+        $container->set(RunJobInterface::class . ':proxy', $this->createStub(RunJobInterface::class));
+        $container->set(EncryptionInterface::class, $this->createStub(EncryptionInterface::class));
 
         $this->assertInstanceOf(RunJobCommand::class, $container->get(RunJobCommand::class));
     }

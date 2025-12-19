@@ -53,7 +53,7 @@ class ErrorFactoryTest extends TestCase
         $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
-                function ($error) use ($client): MockObject {
+                function ($error) use ($client): MockObject|Stub {
                     $this->assertInstanceOf(Error::class, $error);
                     $this->assertEquals('foo', $error->getReasonPhrase());
                     return $client;
@@ -76,7 +76,7 @@ class ErrorFactoryTest extends TestCase
         $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
-                function ($error) use ($client): MockObject {
+                function ($error) use ($client): MockObject|Stub {
                     $this->assertInstanceOf(Error::class, $error);
                     $this->assertEquals('bar', $error->getReasonPhrase());
                     return $client;
@@ -99,7 +99,7 @@ class ErrorFactoryTest extends TestCase
         $client->expects($this->once())
             ->method('acceptResponse')
             ->willReturnCallback(
-                function ($error) use ($client): MockObject {
+                function ($error) use ($client): MockObject|Stub {
                     $this->assertInstanceOf(Error::class, $error);
                     $this->assertEquals('bar', $error->getReasonPhrase());
                     return $client;

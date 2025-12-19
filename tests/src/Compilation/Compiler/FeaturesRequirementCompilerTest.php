@@ -92,11 +92,11 @@ class FeaturesRequirementCompilerTest extends TestCase
         $reqs = ['hello', 'world'];
         $this->assertInstanceOf(FeaturesRequirementCompiler::class, $compiler->compile(
             $reqs,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -107,11 +107,11 @@ class FeaturesRequirementCompilerTest extends TestCase
         $reqs = [];
         $this->assertInstanceOf(FeaturesRequirementCompiler::class, $compiler->compile(
             $reqs,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -124,11 +124,11 @@ class FeaturesRequirementCompilerTest extends TestCase
         $this->expectException(DomainException::class);
         $this->assertInstanceOf(FeaturesRequirementCompiler::class, $compiler->compile(
             $reqs,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 }

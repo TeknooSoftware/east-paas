@@ -50,7 +50,7 @@ class EnvironmentType extends AbstractType
      * @param FormBuilderInterface<Environment> $builder
      * @param array<string, mixed> $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options): self
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -83,18 +83,14 @@ class EnvironmentType extends AbstractType
                 );
             }
         });
-
-        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver): self
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
         $resolver->setDefaults([
             'data_class' => Environment::class,
         ]);
-
-        return $this;
     }
 }

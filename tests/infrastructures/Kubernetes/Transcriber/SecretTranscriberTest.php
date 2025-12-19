@@ -58,7 +58,7 @@ class SecretTranscriberTest extends TestCase
 
         $cd->expects($this->once())
             ->method('foreachSecret')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'a-prefix');
                 $callback(new Secret('foo2', 'map', ['foo' => 'bar'], 'tls'), 'a-prefix');
                 $callback(new Secret('foo3', 'map', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . base64_encode('bar')]], 'foo'), 'a-prefix');
@@ -98,7 +98,7 @@ class SecretTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
@@ -106,12 +106,12 @@ class SecretTranscriberTest extends TestCase
 
     public function testError(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachSecret')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(new Secret('foo', 'map', ['foo' => 'bar']), 'a-prefix');
                 return $cd;
             });
@@ -134,7 +134,7 @@ class SecretTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));

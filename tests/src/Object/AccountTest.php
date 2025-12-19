@@ -226,7 +226,7 @@ class AccountTest extends TestCase
     public function testSetProjects(): void
     {
         $object = $this->buildObject();
-        $this->assertInstanceOf($object::class, $object->setProjects([new Project($this->createMock(Account::class))]));
+        $this->assertInstanceOf($object::class, $object->setProjects([new Project($this->createStub(Account::class))]));
     }
 
     public function testSetProjectsExceptionOnBadArgument(): void
@@ -277,8 +277,8 @@ class AccountTest extends TestCase
 
     public function testCanIPrepareNewJobInactive(): void
     {
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
+        $job = $this->createStub(Job::class);
+        $env = $this->createStub(Environment::class);
 
         $project = $this->createMock(Project::class);
         $project->expects($this->never())->method('__call')->with('configure');
@@ -291,8 +291,8 @@ class AccountTest extends TestCase
     public function testCanIPrepareNewJobInactiveBadProject(): void
     {
         $this->expectException(TypeError::class);
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
+        $job = $this->createStub(Job::class);
+        $env = $this->createStub(Environment::class);
 
         $this->buildObject()->canIPrepareNewJob(new stdClass(), $job, new DateTime('2018-05-01'), $env);
     }
@@ -300,8 +300,8 @@ class AccountTest extends TestCase
     public function testCanIPrepareNewJobInactiveBadJob(): void
     {
         $this->expectException(TypeError::class);
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
+        $project = $this->createStub(Project::class);
+        $env = $this->createStub(Environment::class);
 
         $this->buildObject()->canIPrepareNewJob($project, new stdClass(), new DateTime('2018-05-01'), $env);
     }
@@ -309,17 +309,17 @@ class AccountTest extends TestCase
     public function testCanIPrepareNewJobInactiveBadDate(): void
     {
         $this->expectException(TypeError::class);
-        $project = $this->createMock(Project::class);
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
+        $project = $this->createStub(Project::class);
+        $job = $this->createStub(Job::class);
+        $env = $this->createStub(Environment::class);
 
         $this->buildObject()->canIPrepareNewJob($project, $job, new stdClass(), $env);
     }
 
     public function testCanIPrepareNewJobActive(): void
     {
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
+        $job = $this->createStub(Job::class);
+        $env = $this->createStub(Environment::class);
 
         $project = $this->createMock(Project::class);
         $project->expects($this->once())->method('__call')->with(
@@ -342,8 +342,8 @@ class AccountTest extends TestCase
 
     public function testCanIPrepareNewJobActiveWithQuota(): void
     {
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
+        $job = $this->createStub(Job::class);
+        $env = $this->createStub(Environment::class);
 
         $project = $this->createMock(Project::class);
         $project->expects($this->once())->method('__call')
@@ -368,8 +368,8 @@ class AccountTest extends TestCase
     public function testCanIPrepareNewJobActiveBadProject(): void
     {
         $this->expectException(TypeError::class);
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
+        $job = $this->createStub(Job::class);
+        $env = $this->createStub(Environment::class);
 
         $this->buildObject()
             ->setName('foo')
@@ -379,8 +379,8 @@ class AccountTest extends TestCase
     public function testCanIPrepareNewJobActiveBadJob(): void
     {
         $this->expectException(TypeError::class);
-        $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
+        $project = $this->createStub(Project::class);
+        $env = $this->createStub(Environment::class);
 
         $this->buildObject()
             ->setName('foo')
@@ -390,9 +390,9 @@ class AccountTest extends TestCase
     public function testCanIPrepareNewJobActiveBadDate(): void
     {
         $this->expectException(TypeError::class);
-        $project = $this->createMock(Project::class);
-        $job = $this->createMock(Job::class);
-        $env = $this->createMock(Environment::class);
+        $project = $this->createStub(Project::class);
+        $job = $this->createStub(Job::class);
+        $env = $this->createStub(Environment::class);
 
         $this->buildObject()
             ->setName('foo')
@@ -402,8 +402,8 @@ class AccountTest extends TestCase
     public function testCanIPrepareNewJobActiveBadEnv(): void
     {
         $this->expectException(TypeError::class);
-        $project = $this->createMock(Project::class);
-        $job = $this->createMock(Job::class);
+        $project = $this->createStub(Project::class);
+        $job = $this->createStub(Job::class);
 
         $this->buildObject()
             ->setName('foo')
@@ -412,7 +412,7 @@ class AccountTest extends TestCase
 
     public function testVerifyAccessToUserInactive(): void
     {
-        $user = $this->createMock(BaseUser::class);
+        $user = $this->createStub(BaseUser::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('fail');
         $promise->expects($this->never())->method('success');
@@ -422,7 +422,7 @@ class AccountTest extends TestCase
 
     public function testVerifyAccessToUserActiveNotIn(): void
     {
-        $user = $this->createMock(BaseUser::class);
+        $user = $this->createStub(BaseUser::class);
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('fail');
         $promise->expects($this->never())->method('success');
@@ -435,7 +435,7 @@ class AccountTest extends TestCase
 
     public function testVerifyAccessToUserActiveIn(): void
     {
-        $user = $this->createMock(BaseUser::class);
+        $user = $this->createStub(BaseUser::class);
         $user->method('getId')->willReturn('foo');
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
@@ -478,7 +478,7 @@ class AccountTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
-            $this->createMock(EastNormalizerInterface::class),
+            $this->createStub(EastNormalizerInterface::class),
             new stdClass()
         );
     }

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\EastPaasBundle\Subscriber;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\Subscriber\CommandSubscriber;
 use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler;
@@ -41,45 +42,61 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHa
 #[CoversClass(CommandSubscriber::class)]
 class CommandSubscriberTest extends TestCase
 {
-    private (DisplayHistoryHandler&MockObject)|null $stepDisplayHistory = null;
+    private (DisplayHistoryHandler&MockObject)|(DisplayHistoryHandler&Stub)|null $stepDisplayHistory = null;
 
-    private (DisplayResultHandler&MockObject)|null $stepDisplayResult = null;
+    private (DisplayResultHandler&MockObject)|(DisplayResultHandler&Stub)|null $stepDisplayResult = null;
 
-    private (HistorySentHandler&MockObject)|null $historyForwarder = null;
+    private (HistorySentHandler&MockObject)|(HistorySentHandler&Stub)|null $historyForwarder = null;
 
-    private (JobDoneHandler&MockObject)|null $jobForwarder = null;
+    private (JobDoneHandler&MockObject)|(JobDoneHandler&Stub)|null $jobForwarder = null;
 
-    public function getStepDisplayHistory(): DisplayHistoryHandler&MockObject
+    public function getStepDisplayHistory(bool $stub = false): (DisplayHistoryHandler&Stub)|(DisplayHistoryHandler&MockObject)
     {
         if (!$this->stepDisplayHistory instanceof DisplayHistoryHandler) {
-            $this->stepDisplayHistory = $this->createMock(DisplayHistoryHandler::class);
+            if ($stub) {
+                $this->stepDisplayHistory = $this->createStub(DisplayHistoryHandler::class);
+            } else {
+                $this->stepDisplayHistory = $this->createMock(DisplayHistoryHandler::class);
+            }
         }
 
         return $this->stepDisplayHistory;
     }
 
-    public function getStepDisplayResult(): DisplayResultHandler&MockObject
+    public function getStepDisplayResult(bool $stub = false): (DisplayResultHandler&Stub)|(DisplayResultHandler&MockObject)
     {
         if (!$this->stepDisplayResult instanceof DisplayResultHandler) {
-            $this->stepDisplayResult = $this->createMock(DisplayResultHandler::class);
+            if ($stub) {
+                $this->stepDisplayResult = $this->createStub(DisplayResultHandler::class);
+            } else {
+                $this->stepDisplayResult = $this->createMock(DisplayResultHandler::class);
+            }
         }
 
         return $this->stepDisplayResult;
     }
 
-    public function getHistoryForwarder(): HistorySentHandler&MockObject
+    public function getHistoryForwarder(bool $stub = false): (HistorySentHandler&Stub)|(HistorySentHandler&MockObject)
     {
         if (!$this->historyForwarder instanceof HistorySentHandler) {
-            $this->historyForwarder = $this->createMock(HistorySentHandler::class);
+            if ($stub) {
+                $this->historyForwarder = $this->createStub(HistorySentHandler::class);
+            } else {
+                $this->historyForwarder = $this->createMock(HistorySentHandler::class);
+            }
         }
 
         return $this->historyForwarder;
     }
 
-    public function getJobForwarder(): JobDoneHandler&MockObject
+    public function getJobForwarder(bool $stub = false): (JobDoneHandler&Stub)|(JobDoneHandler&MockObject)
     {
         if (!$this->jobForwarder instanceof JobDoneHandler) {
-            $this->jobForwarder = $this->createMock(JobDoneHandler::class);
+            if ($stub) {
+                $this->jobForwarder = $this->createStub(JobDoneHandler::class);
+            } else {
+                $this->jobForwarder = $this->createMock(JobDoneHandler::class);
+            }
         }
 
         return $this->jobForwarder;
@@ -88,10 +105,10 @@ class CommandSubscriberTest extends TestCase
     private function buildConfiguration(): CommandSubscriber
     {
         return new CommandSubscriber(
-            $this->getStepDisplayHistory(),
-            $this->getStepDisplayResult(),
-            $this->getHistoryForwarder(),
-            $this->getJobForwarder()
+            $this->getStepDisplayHistory(true),
+            $this->getStepDisplayResult(true),
+            $this->getHistoryForwarder(true),
+            $this->getJobForwarder(true)
         );
     }
 

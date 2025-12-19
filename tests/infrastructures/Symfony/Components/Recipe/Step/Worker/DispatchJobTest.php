@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -47,12 +48,16 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(DispatchJob::class)]
 class DispatchJobTest extends TestCase
 {
-    private (MessageBusInterface&MockObject)|null $messageBusInterface = null;
+    private (MessageBusInterface&MockObject)|(MessageBusInterface&Stub)|null $messageBusInterface = null;
 
-    public function getMessageBusInterfaceMock(): MessageBusInterface&MockObject
+    public function getMessageBusInterfaceMock(bool $stub = false): (MessageBusInterface&Stub)|(MessageBusInterface&MockObject)
     {
         if (!$this->messageBusInterface instanceof MessageBusInterface) {
-            $this->messageBusInterface = $this->createMock(MessageBusInterface::class);
+            if ($stub) {
+                $this->messageBusInterface = $this->createStub(MessageBusInterface::class);
+            } else {
+                $this->messageBusInterface = $this->createMock(MessageBusInterface::class);
+            }
         }
 
         return $this->messageBusInterface;
@@ -61,16 +66,16 @@ class DispatchJobTest extends TestCase
     public function buildStep(?EncryptionInterface $encryption = null): DispatchJob
     {
         return new DispatchJob(
-            bus: $this->getMessageBusInterfaceMock(),
+            bus: $this->getMessageBusInterfaceMock(true),
             encryption: $encryption,
         );
     }
 
     public function testInvoke(): void
     {
-        $project = $this->createMock(Project::class);
+        $project = $this->createStub(Project::class);
         $project->method('getId')->willReturn('foo');
-        $job = $this->createMock(Job::class);
+        $job = $this->createStub(Job::class);
         $job->method('getId')->willReturn('bar');
         $env = new Environment('prod');
 
@@ -97,9 +102,9 @@ class DispatchJobTest extends TestCase
 
     public function testInvokeWithEncryption(): void
     {
-        $project = $this->createMock(Project::class);
+        $project = $this->createStub(Project::class);
         $project->method('getId')->willReturn('foo');
-        $job = $this->createMock(Job::class);
+        $job = $this->createStub(Job::class);
         $job->method('getId')->willReturn('bar');
         $env = new Environment('prod');
 
@@ -119,14 +124,14 @@ class DispatchJobTest extends TestCase
             ->willReturn($envelope);
 
 
-        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption = $this->createStub(EncryptionInterface::class);
         $encryption
             ->method('encrypt')
             ->willReturnCallback(
                 function (
                     SensitiveContentInterface $message,
                     PromiseInterface $promise,
-                ) use ($encryption): MockObject {
+                ) use ($encryption): MockObject|Stub {
                     $promise->success($message);
 
                     return $encryption;

@@ -53,7 +53,7 @@ class DirectoryTest extends TestCase
 
         $this->buildDirectory()->register(
             new stdClass(),
-            $this->createMock(DriverInterface::class)
+            $this->createStub(DriverInterface::class)
         );
     }
 
@@ -71,7 +71,7 @@ class DirectoryTest extends TestCase
     {
         $this->assertInstanceOf(Directory::class, $this->buildDirectory()->register(
             'foo',
-            $this->createMock(DriverInterface::class)
+            $this->createStub(DriverInterface::class)
         ));
     }
 
@@ -81,8 +81,8 @@ class DirectoryTest extends TestCase
 
         $this->buildDirectory()->require(
             new stdClass(),
-            $this->createMock(Cluster::class),
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(Cluster::class),
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -93,7 +93,7 @@ class DirectoryTest extends TestCase
         $this->buildDirectory()->require(
             'foo',
             new stdClass(),
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -103,7 +103,7 @@ class DirectoryTest extends TestCase
 
         $this->buildDirectory()->require(
             'foo',
-            $this->createMock(Cluster::class),
+            $this->createStub(Cluster::class),
             new stdClass()
         );
     }
@@ -114,7 +114,7 @@ class DirectoryTest extends TestCase
 
         $this->assertInstanceOf(Directory::class, $directory->register(
             'foo',
-            $this->createMock(DriverInterface::class)
+            $this->createStub(DriverInterface::class)
         ));
 
         $cluster = $this->createMock(Cluster::class);
@@ -126,7 +126,7 @@ class DirectoryTest extends TestCase
 
         $this->assertInstanceOf(Directory::class, $directory->require(
             'bar',
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(DefaultsBag::class),
             $cluster,
             $promise
         ));
@@ -138,7 +138,7 @@ class DirectoryTest extends TestCase
 
         $this->assertInstanceOf(Directory::class, $directory->register(
             'foo',
-            $this->createMock(DriverInterface::class)
+            $this->createStub(DriverInterface::class)
         ));
 
         $cluster = $this->createMock(Cluster::class);
@@ -150,7 +150,7 @@ class DirectoryTest extends TestCase
 
         $this->assertInstanceOf(Directory::class, $directory->require(
             'foo',
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(DefaultsBag::class),
             $cluster,
             $promise
         ));

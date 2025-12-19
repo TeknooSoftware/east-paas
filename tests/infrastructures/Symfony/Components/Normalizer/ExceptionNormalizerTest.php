@@ -39,7 +39,7 @@ use Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer;
 #[CoversClass(ExceptionNormalizer::class)]
 class ExceptionNormalizerTest extends TestCase
 {
-    public function buildNormalizer(): \Teknoo\East\Paas\Infrastructures\Symfony\Normalizer\ExceptionNormalizer
+    public function buildNormalizer(): ExceptionNormalizer
     {
         return new ExceptionNormalizer();
     }

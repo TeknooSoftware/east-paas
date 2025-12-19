@@ -151,7 +151,7 @@ class ClusterTest extends TestCase
      */
     public function testSetProject(): void
     {
-        $argument = new Project($this->createMock(Account::class));
+        $argument = new Project($this->createStub(Account::class));
 
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->setProject($argument));
@@ -227,7 +227,7 @@ class ClusterTest extends TestCase
     {
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->setEnvironment(
-            $argument = $this->createMock(Environment::class)
+            $argument = $this->createStub(Environment::class)
         ));
 
         $form = $this->createMock(FormInterface::class);
@@ -246,7 +246,7 @@ class ClusterTest extends TestCase
 
     public function testGetIdentity(): void
     {
-        $argument = $this->createMock(IdentityInterface::class);
+        $argument = $this->createStub(IdentityInterface::class);
         $object = $this->generateObjectPopulated(['identity' => $argument]);
 
         $form = $this->createMock(FormInterface::class);
@@ -259,7 +259,7 @@ class ClusterTest extends TestCase
 
     public function testSetIdentity(): void
     {
-        $argument = $this->createMock(IdentityInterface::class);
+        $argument = $this->createStub(IdentityInterface::class);
 
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->setIdentity($argument));
@@ -318,7 +318,7 @@ class ClusterTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
-            $this->createMock(EastNormalizerInterface::class),
+            $this->createStub(EastNormalizerInterface::class),
             new stdClass()
         );
     }
@@ -336,8 +336,8 @@ class ClusterTest extends TestCase
                 'use_hierarchical_namespaces' => true,
                 'type' => 'fooType',
                 'address' => 'fooAddress',
-                'identity' => ($identity = $this->createMock(IdentityInterface::class)),
-                'environment' => ($environment = $this->createMock(Environment::class)),
+                'identity' => ($identity = $this->createStub(IdentityInterface::class)),
+                'environment' => ($environment = $this->createStub(Environment::class)),
                 'locked' => true,
             ]);
 
@@ -391,13 +391,13 @@ class ClusterTest extends TestCase
     public function testPrepareJobForEnvironmentBadJob(): void
     {
         $this->expectException(Throwable::class);
-        $this->buildObject()->prepareJobForEnvironment(new stdClass(), $this->createMock(Environment::class));
+        $this->buildObject()->prepareJobForEnvironment(new stdClass(), $this->createStub(Environment::class));
     }
 
     public function testPrepareJobForEnvironmentBadEnv(): void
     {
         $this->expectException(Throwable::class);
-        $this->buildObject()->prepareJobForEnvironment($this->createMock(Job::class), new stdClass());
+        $this->buildObject()->prepareJobForEnvironment($this->createStub(Job::class), new stdClass());
     }
 
     public function testSelectClusterBadDirectory(): void
@@ -405,7 +405,7 @@ class ClusterTest extends TestCase
         $this->expectException(TypeError::class);
         $this->buildObject()->selectCluster(
             new stdClass(),
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -414,14 +414,14 @@ class ClusterTest extends TestCase
         $this->expectException(TypeError::class);
 
         $this->buildObject()->selectCluster(
-            $this->createMock(Directory::class),
+            $this->createStub(Directory::class),
             new stdClass()
         );
     }
 
     public function testSelectCluster(): void
     {
-        $directory = $this->createMock(Directory::class);
+        $directory = $this->createStub(Directory::class);
         $promise = $this->createMock(PromiseInterface::class);
 
         $promise->expects($this->never())->method('success');
@@ -431,13 +431,13 @@ class ClusterTest extends TestCase
             [
                 'address' => $address = 'fooBar',
                 'type' => 'foo',
-                'identity' => $identity = $this->createMock(IdentityInterface::class),
+                'identity' => $identity = $this->createStub(IdentityInterface::class),
             ]
         );
 
         $this->assertInstanceOf(Cluster::class, $cluster->selectCluster(
             $directory,
-            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
             $promise
         ));
     }
@@ -447,8 +447,8 @@ class ClusterTest extends TestCase
         $this->expectException(TypeError::class);
         $this->buildObject()->configureCluster(
             new stdClass(),
-            $this->createMock(DefaultsBag::class),
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(DefaultsBag::class),
+            $this->createStub(PromiseInterface::class),
         );
     }
 
@@ -457,8 +457,8 @@ class ClusterTest extends TestCase
         $this->expectException(TypeError::class);
 
         $this->buildObject()->configureCluster(
-            $this->createMock(DriverInterface::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(DriverInterface::class),
+            $this->createStub(DefaultsBag::class),
             new stdClass(),
         );
     }
@@ -471,7 +471,7 @@ class ClusterTest extends TestCase
         $cluster = $this->generateObjectPopulated(
             [
                 'address' => $address = 'fooBar',
-                'identity' => $identity = $this->createMock(IdentityInterface::class),
+                'identity' => $identity = $this->createStub(IdentityInterface::class),
             ]
         );
 
@@ -485,7 +485,7 @@ class ClusterTest extends TestCase
 
         $this->assertInstanceOf(Cluster::class, $cluster->configureCluster(
             $client,
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(DefaultsBag::class),
             $promise
         ));
     }
@@ -498,7 +498,7 @@ class ClusterTest extends TestCase
         $cluster = $this->generateObjectPopulated(
             [
                 'address' => $address = 'fooBar',
-                'identity' => $identity = $this->createMock(IdentityInterface::class),
+                'identity' => $identity = $this->createStub(IdentityInterface::class),
             ]
         );
 
@@ -512,7 +512,7 @@ class ClusterTest extends TestCase
 
         $this->assertInstanceOf(Cluster::class, $cluster->configureCluster(
             $client,
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(DefaultsBag::class),
             $promise
         ));
     }

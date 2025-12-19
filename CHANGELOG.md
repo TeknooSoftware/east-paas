@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.1.1] - 2025-12-19
+### Stable Release
+- Fix bc break introduced into patch of phpstan and phpunit
+- Support PHPStan 2.1.33+
+- Support PHPUnit 12.5.1+
+
 ## [5.1.0] - 2025-11-08
 ### Stable Release
 - Upgrade to Teknoo State 7.1

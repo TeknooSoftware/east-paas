@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use stdClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessor as SymfonyPropertyAccessor;
 use TypeError;
@@ -40,12 +41,16 @@ use TypeError;
 #[CoversClass(PropertyAccessor::class)]
 class PropertyAccessorTest extends TestCase
 {
-    private (SymfonyPropertyAccessor&MockObject)|null $propertyAccessor = null;
+    private (SymfonyPropertyAccessor&MockObject)|(SymfonyPropertyAccessor&Stub)|null $propertyAccessor = null;
 
-    private function getPropertyAccessor(): SymfonyPropertyAccessor&MockObject
+    private function getPropertyAccessor(bool $stub = false): (SymfonyPropertyAccessor&Stub)|(SymfonyPropertyAccessor&MockObject)
     {
         if (!$this->propertyAccessor instanceof SymfonyPropertyAccessor) {
-            $this->propertyAccessor = $this->createMock(SymfonyPropertyAccessor::class);
+            if ($stub) {
+                $this->propertyAccessor = $this->createStub(SymfonyPropertyAccessor::class);
+            } else {
+                $this->propertyAccessor = $this->createMock(SymfonyPropertyAccessor::class);
+            }
         }
 
         return $this->propertyAccessor;
@@ -54,7 +59,7 @@ class PropertyAccessorTest extends TestCase
     public function buildAccessor(): PropertyAccessor
     {
         return new PropertyAccessor(
-            $this->getPropertyAccessor()
+            $this->getPropertyAccessor(true)
         );
     }
 

@@ -52,7 +52,7 @@ class ProjectType extends AbstractType
      * @param FormBuilderInterface<Project> $builder
      * @param array<string, mixed> $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options): self
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -115,11 +115,9 @@ class ProjectType extends AbstractType
                 $data->setClusters($forms['clusters']->getData());
             }
         });
-
-        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver): self
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -130,7 +128,5 @@ class ProjectType extends AbstractType
             'data_class' => Project::class,
             'allowEditingOfLocked' => false,
         ]);
-
-        return $this;
     }
 }

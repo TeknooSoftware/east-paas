@@ -52,8 +52,8 @@ class AddHistoryTest extends TestCase
         $this->expectException(TypeError::class);
         $this->buildStep()->__invoke(
             new stdClass(),
-            $this->createMock(History::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(History::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -61,9 +61,9 @@ class AddHistoryTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildStep()->__invoke(
-            $this->createMock(Job::class),
+            $this->createStub(Job::class),
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -71,8 +71,8 @@ class AddHistoryTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildStep()->__invoke(
-            $this->createMock(Job::class),
-            $this->createMock(History::class),
+            $this->createStub(Job::class),
+            $this->createStub(History::class),
             new stdClass()
         );
     }
@@ -80,13 +80,13 @@ class AddHistoryTest extends TestCase
     public function testInvoke(): void
     {
         $job = $this->createMock(Job::class);
-        $history = $this->createMock(History::class);
+        $history = $this->createStub(History::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $job->expects($this->once())
             ->method('addFromHistory')
             ->with($history)
-            ->willReturnCallback(function (History $h, callable $f) use ($job): MockObject {
+            ->willReturnCallback(function (History $h, callable $f) use ($job): MockObject|Stub {
                 $f($h);
 
                 return $job;

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -42,12 +43,16 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(SerializeJob::class)]
 class SerializeJobTest extends TestCase
 {
-    private (SerializerInterface&MockObject)|null $serializerInterface = null;
+    private (SerializerInterface&MockObject)|(SerializerInterface&Stub)|null $serializerInterface = null;
 
-    public function getSerializerInterfaceMock(): SerializerInterface&MockObject
+    public function getSerializerInterfaceMock(bool $stub = false): (SerializerInterface&Stub)|(SerializerInterface&MockObject)
     {
         if (!$this->serializerInterface instanceof SerializerInterface) {
-            $this->serializerInterface = $this->createMock(SerializerInterface::class);
+            if ($stub) {
+                $this->serializerInterface = $this->createStub(SerializerInterface::class);
+            } else {
+                $this->serializerInterface = $this->createMock(SerializerInterface::class);
+            }
         }
 
         return $this->serializerInterface;
@@ -56,13 +61,13 @@ class SerializeJobTest extends TestCase
     public function buildStep(): SerializeJob
     {
         return new SerializeJob(
-            $this->getSerializerInterfaceMock(),
+            $this->getSerializerInterfaceMock(true),
         );
     }
 
     public function testInvoke(): void
     {
-        $job = $this->createMock(Job::class);
+        $job = $this->createStub(Job::class);
 
         $sJob = \json_encode($job, JSON_THROW_ON_ERROR);
 
@@ -76,7 +81,7 @@ class SerializeJobTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ) use ($sJob): SerializerInterface&MockObject {
+                ) use ($sJob): (SerializerInterface&MockObject)|(SerializerInterface&Stub) {
                     $promise->success($sJob);
 
                     return $this->getSerializerInterfaceMock();
@@ -89,7 +94,7 @@ class SerializeJobTest extends TestCase
             ->with(['jobSerialized' => $sJob])
             ->willReturnSelf();
 
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $this->assertInstanceOf(
             SerializeJob::class,
@@ -99,7 +104,7 @@ class SerializeJobTest extends TestCase
 
     public function testInvokeOnError(): void
     {
-        $job = $this->createMock(Job::class);
+        $job = $this->createStub(Job::class);
 
         $this->getSerializerInterfaceMock()
             ->expects($this->once())
@@ -111,7 +116,7 @@ class SerializeJobTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ): SerializerInterface&MockObject {
+                ): (SerializerInterface&MockObject)|(SerializerInterface&Stub) {
                     $promise->fail(new \Exception());
 
                     return $this->getSerializerInterfaceMock();
@@ -121,7 +126,7 @@ class SerializeJobTest extends TestCase
         $chef = $this->createMock(ManagerInterface::class);
         $chef->expects($this->never())->method('updateWorkPlan');
 
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $chef->expects($this->once())
             ->method('error');

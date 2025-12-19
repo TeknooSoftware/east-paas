@@ -56,7 +56,7 @@ class CompileDeploymentTest extends TestCase
 
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(ConductorInterface::class)
+            $this->createStub(ConductorInterface::class)
         );
     }
 
@@ -65,7 +65,7 @@ class CompileDeploymentTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(ManagerInterface::class),
+            $this->createStub(ManagerInterface::class),
             new stdClass()
         );
     }
@@ -73,9 +73,9 @@ class CompileDeploymentTest extends TestCase
     public function testInvoke(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
         $conductor = $this->createMock(ConductorInterface::class);
-        $compiled = $this->createMock(CompiledDeploymentInterface::class);
+        $compiled = $this->createStub(CompiledDeploymentInterface::class);
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
@@ -84,7 +84,7 @@ class CompileDeploymentTest extends TestCase
         $conductor->expects($this->once())
             ->method('compileDeployment')
             ->willReturnCallback(
-                function (PromiseInterface $promise) use ($conductor, $compiled): MockObject {
+                function (PromiseInterface $promise) use ($conductor, $compiled): MockObject|Stub {
                     $promise->success($compiled);
 
                     return $conductor;
@@ -101,14 +101,14 @@ class CompileDeploymentTest extends TestCase
     public function testInvokeOnError(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
         $conductor = $this->createMock(ConductorInterface::class);
-        $compiled = $this->createMock(CompiledDeploymentInterface::class);
+        $compiled = $this->createStub(CompiledDeploymentInterface::class);
 
         $conductor->expects($this->once())
             ->method('compileDeployment')
             ->willReturnCallback(
-                function (PromiseInterface $promise) use ($conductor, $compiled): MockObject {
+                function (PromiseInterface $promise) use ($conductor, $compiled): MockObject|Stub {
                     $promise->fail(new Exception());
 
                     return $conductor;

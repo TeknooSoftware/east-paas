@@ -45,7 +45,7 @@ class SendHistoryTest extends TestCase
 
         $this->assertInstanceOf(SendHistory::class, (new SendHistory())(
             $client,
-            $this->createMock(History::class),
+            $this->createStub(History::class),
         ));
     }
 }

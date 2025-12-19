@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Plan;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Recipe\Plan\NewProjectEndPoint;
 use Teknoo\East\Common\Contracts\Recipe\Step\FormHandlingInterface;
@@ -51,141 +52,151 @@ class NewProjectEndPointTest extends TestCase
 {
     use BasePlanTestTrait;
 
-    private ?RecipeInterface $recipe = null;
+    private (RecipeInterface&Stub)|(RecipeInterface&MockObject)|null $recipe = null;
 
-    private ?LoadObject $loadObject = null;
+    private (LoadObject&Stub)|(LoadObject&MockObject)|null $loadObject = null;
 
-    private ?ObjectAccessControlInterface $objectAccessControl = null;
+    private (ObjectAccessControlInterface&Stub)|(ObjectAccessControlInterface&MockObject)|null $objectAccessControl = null;
 
-    private ?FormHandlingInterface $formHandling = null;
+    private (FormHandlingInterface&Stub)|(FormHandlingInterface&MockObject)|null $formHandling = null;
 
-    private ?CreateObject $createObject = null;
+    private (CreateObject&Stub)|(CreateObject&MockObject)|null $createObject = null;
 
-    private ?FormProcessingInterface $formProcessing = null;
+    private (FormProcessingInterface&Stub)|(FormProcessingInterface&MockObject)|null $formProcessing = null;
 
-    private ?SaveObject $saveObject = null;
+    private (SaveObject&Stub)|(SaveObject&MockObject)|null $saveObject = null;
 
-    private ?RedirectClientInterface $redirectClient = null;
+    private (RedirectClientInterface&Stub)|(RedirectClientInterface&MockObject)|null $redirectClient = null;
 
-    private ?RenderFormInterface $renderForm = null;
+    private (RenderFormInterface&Stub)|(RenderFormInterface&MockObject)|null $renderForm = null;
 
-    private ?RenderError $renderError = null;
+    private (RenderError&Stub)|(RenderError&MockObject)|null $renderError = null;
 
-    /**
-     * @return RecipeInterface|MockObject
-     */
-    public function getRecipe(): RecipeInterface
+    public function getRecipe(bool $stub = false): (RecipeInterface&Stub)|(RecipeInterface&MockObject)
     {
-        if (null === $this->recipe) {
-            $this->recipe = $this->createMock(RecipeInterface::class);
+        if (!$this->recipe instanceof RecipeInterface) {
+            if ($stub) {
+                $this->recipe = $this->createStub(RecipeInterface::class);
+            } else {
+                $this->recipe = $this->createMock(RecipeInterface::class);
+            }
         }
 
         return $this->recipe;
     }
 
-    /**
-     * @return LoadObject|MockObject
-     */
-    public function getLoadObject(): LoadObject
+    public function getLoadObject(bool $stub = false): (LoadObject&Stub)|(LoadObject&MockObject)
     {
-        if (null === $this->loadObject) {
-            $this->loadObject = $this->createMock(LoadObject::class);
+        if (!$this->loadObject instanceof LoadObject) {
+            if ($stub) {
+                $this->loadObject = $this->createStub(LoadObject::class);
+            } else {
+                $this->loadObject = $this->createMock(LoadObject::class);
+            }
         }
 
         return $this->loadObject;
     }
 
-    /**
-     * @return ObjectAccessControlInterface|MockObject
-     */
-    public function getObjectAccessControl(): ObjectAccessControlInterface
+    public function getObjectAccessControl(bool $stub = false): (ObjectAccessControlInterface&Stub)|(ObjectAccessControlInterface&MockObject)
     {
-        if (null === $this->objectAccessControl) {
-            $this->objectAccessControl = $this->createMock(ObjectAccessControlInterface::class);
+        if (!$this->objectAccessControl instanceof ObjectAccessControlInterface) {
+            if ($stub) {
+                $this->objectAccessControl = $this->createStub(ObjectAccessControlInterface::class);
+            } else {
+                $this->objectAccessControl = $this->createMock(ObjectAccessControlInterface::class);
+            }
         }
 
         return $this->objectAccessControl;
     }
 
-    /**
-     * @return FormHandlingInterface|MockObject
-     */
-    public function getFormHandling(): FormHandlingInterface
+    public function getFormHandling(bool $stub = false): (FormHandlingInterface&Stub)|(FormHandlingInterface&MockObject)
     {
-        if (null === $this->formHandling) {
-            $this->formHandling = $this->createMock(FormHandlingInterface::class);
+        if (!$this->formHandling instanceof FormHandlingInterface) {
+            if ($stub) {
+                $this->formHandling = $this->createStub(FormHandlingInterface::class);
+            } else {
+                $this->formHandling = $this->createMock(FormHandlingInterface::class);
+            }
         }
 
         return $this->formHandling;
     }
 
-    /**
-     * @return CreateObject|MockObject
-     */
-    public function getCreateObject(): CreateObject
+    public function getCreateObject(bool $stub = false): (CreateObject&Stub)|(CreateObject&MockObject)
     {
-        if (null === $this->createObject) {
-            $this->createObject = $this->createMock(CreateObject::class);
+        if (!$this->createObject instanceof CreateObject) {
+            if ($stub) {
+                $this->createObject = $this->createStub(CreateObject::class);
+            } else {
+                $this->createObject = $this->createMock(CreateObject::class);
+            }
         }
 
         return $this->createObject;
     }
 
-    /**
-     * @return FormProcessingInterface|MockObject
-     */
-    public function getFormProcessing(): FormProcessingInterface
+    public function getFormProcessing(bool $stub = false): (FormProcessingInterface&Stub)|(FormProcessingInterface&MockObject)
     {
-        if (null === $this->formProcessing) {
-            $this->formProcessing = $this->createMock(FormProcessingInterface::class);
+        if (!$this->formProcessing instanceof FormProcessingInterface) {
+            if ($stub) {
+                $this->formProcessing = $this->createStub(FormProcessingInterface::class);
+            } else {
+                $this->formProcessing = $this->createMock(FormProcessingInterface::class);
+            }
         }
 
         return $this->formProcessing;
     }
 
-    /**
-     * @return SaveObject|MockObject
-     */
-    public function getSaveObject(): SaveObject
+    public function getSaveObject(bool $stub = false): (SaveObject&Stub)|(SaveObject&MockObject)
     {
-        if (null === $this->saveObject) {
-            $this->saveObject = $this->createMock(SaveObject::class);
+        if (!$this->saveObject instanceof SaveObject) {
+            if ($stub) {
+                $this->saveObject = $this->createStub(SaveObject::class);
+            } else {
+                $this->saveObject = $this->createMock(SaveObject::class);
+            }
         }
 
         return $this->saveObject;
     }
 
-    /**
-     * @return RedirectClientInterface|MockObject
-     */
-    public function getRedirectClient(): RedirectClientInterface
+    public function getRedirectClient(bool $stub = false): (RedirectClientInterface&Stub)|(RedirectClientInterface&MockObject)
     {
-        if (null === $this->redirectClient) {
-            $this->redirectClient = $this->createMock(RedirectClientInterface::class);
+        if (!$this->redirectClient instanceof RedirectClientInterface) {
+            if ($stub) {
+                $this->redirectClient = $this->createStub(RedirectClientInterface::class);
+            } else {
+                $this->redirectClient = $this->createMock(RedirectClientInterface::class);
+            }
         }
 
         return $this->redirectClient;
     }
 
-    /**
-     * @return RenderFormInterface|MockObject
-     */
-    public function getRenderForm(): RenderFormInterface
+    public function getRenderForm(bool $stub = false): (RenderFormInterface&Stub)|(RenderFormInterface&MockObject)
     {
-        if (null === $this->renderForm) {
-            $this->renderForm = $this->createMock(RenderFormInterface::class);
+        if (!$this->renderForm instanceof RenderFormInterface) {
+            if ($stub) {
+                $this->renderForm = $this->createStub(RenderFormInterface::class);
+            } else {
+                $this->renderForm = $this->createMock(RenderFormInterface::class);
+            }
         }
 
         return $this->renderForm;
     }
 
-    /**
-     * @return RenderError|MockObject
-     */
-    public function getRenderError(): RenderError
+    public function getRenderError(bool $stub = false): (RenderError&Stub)|(RenderError&MockObject)
     {
-        if (null === $this->renderError) {
-            $this->renderError = $this->createMock(RenderError::class);
+        if (!$this->renderError instanceof RenderError) {
+            if ($stub) {
+                $this->renderError = $this->createStub(RenderError::class);
+            } else {
+                $this->renderError = $this->createMock(RenderError::class);
+            }
         }
 
         return $this->renderError;
@@ -194,16 +205,16 @@ class NewProjectEndPointTest extends TestCase
     public function buildPlan(): NewProjectEndPoint
     {
         return new NewProjectEndPoint(
-            $this->getRecipe(),
-            $this->getLoadObject(),
-            $this->getObjectAccessControl(),
-            $this->getCreateObject(),
-            $this->getFormHandling(),
-            $this->getFormProcessing(),
-            $this->getSaveObject(),
-            $this->getRedirectClient(),
-            $this->getRenderForm(),
-            $this->getRenderError(),
+            $this->getRecipe(true),
+            $this->getLoadObject(true),
+            $this->getObjectAccessControl(true),
+            $this->getCreateObject(true),
+            $this->getFormHandling(true),
+            $this->getFormProcessing(true),
+            $this->getSaveObject(true),
+            $this->getRedirectClient(true),
+            $this->getRenderForm(true),
+            $this->getRenderError(true),
         );
     }
 }

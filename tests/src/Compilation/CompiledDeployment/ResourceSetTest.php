@@ -43,9 +43,9 @@ class ResourceSetTest extends TestCase
     {
         return new ResourceSet(
             resources: [
-                $this->createMock(Resource::class),
-                $this->createMock(Resource::class),
-                $this->createMock(Resource::class),
+                $this->createStub(Resource::class),
+                $this->createStub(Resource::class),
+                $this->createStub(Resource::class),
             ]
         );
     }
@@ -53,9 +53,9 @@ class ResourceSetTest extends TestCase
     public function testGetIterator(): void
     {
         $this->assertEquals([
-            $this->createMock(Resource::class),
-            $this->createMock(Resource::class),
-            $this->createMock(Resource::class),
+            $this->createStub(Resource::class),
+            $this->createStub(Resource::class),
+            $this->createStub(Resource::class),
         ], iterator_to_array($this->buildObject()));
     }
 
@@ -67,7 +67,7 @@ class ResourceSetTest extends TestCase
     public function testAdd(): void
     {
         $object = $this->buildObject();
-        $object->add($this->createMock(Resource::class));
+        $object->add($this->createStub(Resource::class));
 
         $this->assertCount(4, $object);
     }

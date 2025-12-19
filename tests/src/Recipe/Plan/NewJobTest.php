@@ -58,20 +58,20 @@ class NewJobTest extends TestCase
     public function buildPlan(): PlanInterface
     {
         return new NewJob(
-            $this->createMock(RecipeInterface::class),
-            $this->createMock(Ping::class),
-            $this->createMock(SetTimeLimit::class),
-            $this->createMock(GetProject::class),
-            $this->createMock(GetEnvironment::class),
-            $this->createMock(GetVariables::class),
-            $this->createMock(CreateNewJob::class),
-            $this->createMock(PrepareJob::class),
-            $this->createMock(SaveJob::class),
-            $this->createMock(SerializeJob::class),
-            $this->createMock(DispatchJobInterface::class),
-            $this->createMock(SendJobInterface::class),
-            $this->createMock(UnsetTimeLimit::class),
-            $this->createMock(DispatchError::class),
+            $this->createStub(RecipeInterface::class),
+            $this->createStub(Ping::class),
+            $this->createStub(SetTimeLimit::class),
+            $this->createStub(GetProject::class),
+            $this->createStub(GetEnvironment::class),
+            $this->createStub(GetVariables::class),
+            $this->createStub(CreateNewJob::class),
+            $this->createStub(PrepareJob::class),
+            $this->createStub(SaveJob::class),
+            $this->createStub(SerializeJob::class),
+            $this->createStub(DispatchJobInterface::class),
+            $this->createStub(SendJobInterface::class),
+            $this->createStub(UnsetTimeLimit::class),
+            $this->createStub(DispatchError::class),
         );
     }
 }

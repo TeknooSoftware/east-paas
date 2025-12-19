@@ -45,7 +45,7 @@ class ImageRegistryTest extends TestCase
 
     public function buildObject(): ImageRegistry
     {
-        return new ImageRegistry('fooBar', $this->createMock(IdentityInterface::class));
+        return new ImageRegistry('fooBar', $this->createStub(IdentityInterface::class));
     }
 
     public function testGetApiUrl(): void
@@ -68,7 +68,7 @@ class ImageRegistryTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
-            $this->createMock(EastNormalizerInterface::class),
+            $this->createStub(EastNormalizerInterface::class),
             new stdClass()
         );
     }
@@ -82,7 +82,7 @@ class ImageRegistryTest extends TestCase
                 '@class' => ImageRegistry::class,
                 'id' => '123',
                 'api_url' => 'fooBar',
-                'identity' => $this->createMock(IdentityInterface::class),
+                'identity' => $this->createStub(IdentityInterface::class),
             ]);
 
         $this->assertInstanceOf(ImageRegistry::class, $this->buildObject()->setId('123')->exportToMeData(

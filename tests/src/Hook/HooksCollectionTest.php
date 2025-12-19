@@ -40,8 +40,8 @@ class HooksCollectionTest extends TestCase
     public function testGetIterator(): void
     {
         $collection = new HooksCollection([
-            $this->createMock(HookInterface::class),
-            $this->createMock(HookInterface::class),
+            $this->createStub(HookInterface::class),
+            $this->createStub(HookInterface::class),
         ]);
 
         $count = 0;

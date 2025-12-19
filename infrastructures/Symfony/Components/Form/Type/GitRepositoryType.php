@@ -50,7 +50,7 @@ class GitRepositoryType extends AbstractType
      * @param FormBuilderInterface<GitRepository> $builder
      * @param array<string, mixed> $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options): self
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -89,11 +89,9 @@ class GitRepositoryType extends AbstractType
                 );
             }
         });
-
-        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver): self
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -101,7 +99,5 @@ class GitRepositoryType extends AbstractType
             'data_class' => GitRepository::class,
             'empty_data' => null,
         ]);
-
-        return $this;
     }
 }

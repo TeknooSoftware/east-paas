@@ -56,18 +56,18 @@ class AddHistoryTest extends TestCase
     public function buildPlan(): PlanInterface
     {
         return new AddHistory(
-            $this->createMock(RecipeInterface::class),
-            $this->createMock(Ping::class),
-            $this->createMock(SetTimeLimit::class),
-            $this->createMock(ReceiveHistory::class),
-            $this->createMock(DeserializeHistory::class),
-            $this->createMock(GetProject::class),
-            $this->createMock(GetJob::class),
-            $this->createMock(StepAddHistory::class),
-            $this->createMock(SaveJob::class),
-            $this->createMock(SendHistoryInterface::class),
-            $this->createMock(UnsetTimeLimit::class),
-            $this->createMock(DispatchError::class),
+            $this->createStub(RecipeInterface::class),
+            $this->createStub(Ping::class),
+            $this->createStub(SetTimeLimit::class),
+            $this->createStub(ReceiveHistory::class),
+            $this->createStub(DeserializeHistory::class),
+            $this->createStub(GetProject::class),
+            $this->createStub(GetJob::class),
+            $this->createStub(StepAddHistory::class),
+            $this->createStub(SaveJob::class),
+            $this->createStub(SendHistoryInterface::class),
+            $this->createStub(UnsetTimeLimit::class),
+            $this->createStub(DispatchError::class),
         );
     }
 }

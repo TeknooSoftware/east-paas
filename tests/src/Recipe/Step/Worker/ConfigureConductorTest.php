@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -43,12 +44,16 @@ use TypeError;
 #[CoversClass(ConfigureConductor::class)]
 class ConfigureConductorTest extends TestCase
 {
-    private (ConductorInterface&MockObject)|null $conductor = null;
+    private (ConductorInterface&MockObject)|(ConductorInterface&Stub)|null $conductor = null;
 
-    public function getConductorMock(): ConductorInterface&MockObject
+    public function getConductorMock(bool $stub = false): (ConductorInterface&Stub)|(ConductorInterface&MockObject)
     {
         if (!$this->conductor instanceof ConductorInterface) {
-            $this->conductor = $this->createMock(ConductorInterface::class);
+            if ($stub) {
+                $this->conductor = $this->createStub(ConductorInterface::class);
+            } else {
+                $this->conductor = $this->createMock(ConductorInterface::class);
+            }
         }
 
         return $this->conductor;
@@ -56,7 +61,7 @@ class ConfigureConductorTest extends TestCase
 
     public function buildStep(): ConfigureConductor
     {
-        return new ConfigureConductor($this->getConductorMock());
+        return new ConfigureConductor($this->getConductorMock(true));
     }
 
     public function testInvokeBadJob(): void
@@ -64,8 +69,8 @@ class ConfigureConductorTest extends TestCase
         $this->expectException(TypeError::class);
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -73,9 +78,9 @@ class ConfigureConductorTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -83,16 +88,16 @@ class ConfigureConductorTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             new stdClass()
         );
     }
 
     public function testInvoke(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $this->getConductorMock()->expects($this->once())

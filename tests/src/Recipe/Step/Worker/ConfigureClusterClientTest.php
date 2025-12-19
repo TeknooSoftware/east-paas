@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Foundation\Client\ClientInterface as EastClient;
@@ -47,12 +48,16 @@ use TypeError;
 #[CoversClass(ConfigureClusterClient::class)]
 class ConfigureClusterClientTest extends TestCase
 {
-    private (Directory&MockObject)|null $clients = null;
+    private (Directory&MockObject)|(Directory&Stub)|null $clients = null;
 
-    public function getClientsMock(): Directory&MockObject
+    public function getClientsMock(bool $stub = false): (Directory&Stub)|(Directory&MockObject)
     {
         if (!$this->clients instanceof Directory) {
-            $this->clients = $this->createMock(Directory::class);
+            if ($stub) {
+                $this->clients = $this->createStub(Directory::class);
+            } else {
+                $this->clients = $this->createMock(Directory::class);
+            }
         }
 
         return $this->clients;
@@ -61,7 +66,7 @@ class ConfigureClusterClientTest extends TestCase
     public function buildStep(): ConfigureClusterClient
     {
         return new ConfigureClusterClient(
-            $this->getClientsMock(),
+            $this->getClientsMock(true),
         );
     }
 
@@ -70,8 +75,8 @@ class ConfigureClusterClientTest extends TestCase
         $this->expectException(TypeError::class);
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(EastClient::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(EastClient::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -79,9 +84,9 @@ class ConfigureClusterClientTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -89,45 +94,45 @@ class ConfigureClusterClientTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(EastClient::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(EastClient::class),
             new stdClass()
         );
     }
 
     public function testInvoke(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(EastClient::class);
+        $client = $this->createStub(EastClient::class);
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->with([Collection::class => $this->createMock(Collection::class)]);
+            ->with([Collection::class => $this->createStub(Collection::class)]);
 
         $job
             ->method('configureCluster')
             ->willReturnCallback(
-                function (Directory $client, PromiseInterface $promise) use ($job): MockObject {
-                    $promise->success($this->createMock(Collection::class));
+                function (Directory $client, PromiseInterface $promise) use ($job): MockObject|Stub {
+                    $promise->success($this->createStub(Collection::class));
 
                     return $job;
                 }
             );
 
-        $this->assertInstanceOf(ConfigureClusterClient::class, ($this->buildStep())($job, $client, $manager, $this->createMock(CompiledDeploymentInterface::class)));
+        $this->assertInstanceOf(ConfigureClusterClient::class, ($this->buildStep())($job, $client, $manager, $this->createStub(CompiledDeploymentInterface::class)));
     }
 
     public function testInvokeOnError(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(EastClient::class);
+        $client = $this->createStub(EastClient::class);
 
         $job
             ->method('configureCluster')
             ->willReturnCallback(
-                function (Directory $client, PromiseInterface $promise) use ($job): MockObject {
+                function (Directory $client, PromiseInterface $promise) use ($job): MockObject|Stub {
                     $promise->fail(new Exception());
 
                     return $job;
@@ -140,6 +145,6 @@ class ConfigureClusterClientTest extends TestCase
         $manager->expects($this->once())
             ->method('error');
 
-        $this->assertInstanceOf(ConfigureClusterClient::class, ($this->buildStep())($job, $client, $manager, $this->createMock(CompiledDeploymentInterface::class)));
+        $this->assertInstanceOf(ConfigureClusterClient::class, ($this->buildStep())($job, $client, $manager, $this->createStub(CompiledDeploymentInterface::class)));
     }
 }

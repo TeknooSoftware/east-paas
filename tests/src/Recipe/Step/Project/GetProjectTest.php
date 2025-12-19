@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Project;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -42,12 +43,16 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(GetProject::class)]
 class GetProjectTest extends TestCase
 {
-    private (ProjectLoader&MockObject)|null $projectLoader = null;
+    private (ProjectLoader&MockObject)|(ProjectLoader&Stub)|null $projectLoader = null;
 
-    public function getProjectLoaderMock(): ProjectLoader&MockObject
+    public function getProjectLoaderMock(bool $stub = false): (ProjectLoader&Stub)|(ProjectLoader&MockObject)
     {
         if (!$this->projectLoader instanceof ProjectLoader) {
-            $this->projectLoader = $this->createMock(ProjectLoader::class);
+            if ($stub) {
+                $this->projectLoader = $this->createStub(ProjectLoader::class);
+            } else {
+                $this->projectLoader = $this->createMock(ProjectLoader::class);
+            }
         }
 
         return $this->projectLoader;
@@ -56,15 +61,15 @@ class GetProjectTest extends TestCase
     public function buildStep(): GetProject
     {
         return new GetProject(
-            $this->getProjectLoaderMock(),
+            $this->getProjectLoaderMock(true),
         );
     }
 
     public function testInvoke(): void
     {
         $chef = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
-        $project = $this->createMock(Project::class);
+        $client = $this->createStub(ClientInterface::class);
+        $project = $this->createStub(Project::class);
 
         $projectId = 'dev';
 
@@ -91,7 +96,7 @@ class GetProjectTest extends TestCase
     public function testInvokeFailureOnProjectLoading(): void
     {
         $chef = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $projectId = 'dev';
         $exception = new \DomainException();

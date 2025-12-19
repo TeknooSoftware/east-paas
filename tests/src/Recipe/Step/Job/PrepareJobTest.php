@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -44,12 +45,16 @@ use Teknoo\Tests\East\Paas\ErrorFactory;
 #[CoversClass(PrepareJob::class)]
 class PrepareJobTest extends TestCase
 {
-    private (DatesService&MockObject)|null $dateTimeService = null;
+    private (DatesService&MockObject)|(DatesService&Stub)|null $dateTimeService = null;
 
-    private function getDateTimeServiceMock(): DatesService&MockObject
+    private function getDateTimeServiceMock(bool $stub = false): (DatesService&Stub)|(DatesService&MockObject)
     {
         if (!$this->dateTimeService instanceof DatesService) {
-            $this->dateTimeService = $this->createMock(DatesService::class);
+            if ($stub) {
+                $this->dateTimeService = $this->createStub(DatesService::class);
+            } else {
+                $this->dateTimeService = $this->createMock(DatesService::class);
+            }
         }
 
         return $this->dateTimeService;
@@ -58,7 +63,7 @@ class PrepareJobTest extends TestCase
     public function buildStep(): PrepareJob
     {
         return new PrepareJob(
-            $this->getDateTimeServiceMock(),
+            $this->getDateTimeServiceMock(true),
             new ErrorFactory(),
         );
     }
@@ -66,12 +71,12 @@ class PrepareJobTest extends TestCase
     public function testInvoke(): void
     {
         $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
-        $job = $this->createMock(Job::class);
+        $env = $this->createStub(Environment::class);
+        $job = $this->createStub(Job::class);
 
-        $this->getDateTimeServiceMock()
+        $this->getDateTimeServiceMock(true)
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
+            ->willReturnCallback(function (callable $callback): (DatesService&MockObject)|(DatesService&Stub) {
                 $callback(new \DateTime('2018-08-01'));
 
                 return $this->getDateTimeServiceMock();
@@ -96,12 +101,12 @@ class PrepareJobTest extends TestCase
     public function testInvokeErrorJobNotRunnable(): void
     {
         $project = $this->createMock(Project::class);
-        $env = $this->createMock(Environment::class);
+        $env = $this->createStub(Environment::class);
         $job = new Job();
 
-        $this->getDateTimeServiceMock()
+        $this->getDateTimeServiceMock(true)
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
+            ->willReturnCallback(function (callable $callback): (DatesService&MockObject)|(DatesService&Stub) {
                 $callback(new \DateTime('2018-08-01'));
 
                 return $this->getDateTimeServiceMock();

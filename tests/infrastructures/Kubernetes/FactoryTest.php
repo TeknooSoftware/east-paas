@@ -165,7 +165,7 @@ class FactoryTest extends TestCase
             'bar'
         );
 
-        $client = $factory('foo', $credential, $this->createMock(RepositoryRegistry::class));
+        $client = $factory('foo', $credential, $this->createStub(RepositoryRegistry::class));
 
         $this->assertInstanceOf(KubClient::class, $client);
 

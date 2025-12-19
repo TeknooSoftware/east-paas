@@ -45,6 +45,6 @@ class JobRepositoryTest extends TestCase
      */
     public function buildRepository(): RepositoryInterface
     {
-        return new JobRepository($this->getDoctrineObjectRepositoryMock());
+        return new JobRepository($this->getDoctrineObjectRepositoryMock(true));
     }
 }
