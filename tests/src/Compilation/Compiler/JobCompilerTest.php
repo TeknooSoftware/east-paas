@@ -29,6 +29,7 @@ use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
@@ -50,12 +51,16 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(JobCompiler::class)]
 class JobCompilerTest extends TestCase
 {
-    private (PodCompiler&MockObject)|null $podCompiler = null;
+    private (PodCompiler&MockObject)|(PodCompiler&Stub)|null $podCompiler = null;
 
-    private function getPodCompiler(): PodCompiler&MockObject
+    private function getPodCompiler(bool $stub = false): (PodCompiler&Stub)|(PodCompiler&MockObject)
     {
-        if (null === $this->podCompiler) {
-            $this->podCompiler = $this->createMock(PodCompiler::class);
+        if (!$this->podCompiler instanceof PodCompiler) {
+            if ($stub) {
+                $this->podCompiler = $this->createStub(PodCompiler::class);
+            } else {
+                $this->podCompiler = $this->createMock(PodCompiler::class);
+            }
         }
 
         return $this->podCompiler;
@@ -64,7 +69,7 @@ class JobCompilerTest extends TestCase
     public function buildCompiler(): JobCompiler
     {
         return new JobCompiler(
-            $this->getPodCompiler(),
+            $this->getPodCompiler(true),
             [
                 'foo-ext' => [
                     'is-parallel' => true,
@@ -135,8 +140,8 @@ class JobCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addJob');
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionCode(400);
@@ -145,8 +150,8 @@ class JobCompilerTest extends TestCase
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         );
     }
 
@@ -171,8 +176,8 @@ class JobCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addJob');
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->getPodCompiler()
             ->method('processSetOfPods')
@@ -184,8 +189,8 @@ class JobCompilerTest extends TestCase
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,
                     PromiseInterface $promise,
-                ): PodCompiler&MockObject {
-                    $pod = $this->createMock(Pod::class);
+                ): (PodCompiler&MockObject)|(PodCompiler&Stub) {
+                    $pod = $this->createStub(Pod::class);
                     $pod->method('getName')->willReturn('foo');
                     $promise->success($pod);
                     return $this->getPodCompiler();
@@ -199,8 +204,8 @@ class JobCompilerTest extends TestCase
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         );
     }
 
@@ -226,8 +231,8 @@ class JobCompilerTest extends TestCase
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->never())->method('addJob');
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->getPodCompiler()
             ->method('processSetOfPods')
@@ -239,8 +244,8 @@ class JobCompilerTest extends TestCase
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,
                     PromiseInterface $promise,
-                ): PodCompiler&MockObject {
-                    $pod = $this->createMock(Pod::class);
+                ): (PodCompiler&MockObject)|(PodCompiler&Stub) {
+                    $pod = $this->createStub(Pod::class);
                     $pod->method('getName')->willReturn('foo');
                     $promise->success($pod);
                     return $this->getPodCompiler();
@@ -254,8 +259,8 @@ class JobCompilerTest extends TestCase
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         );
     }
 
@@ -271,23 +276,22 @@ class JobCompilerTest extends TestCase
         $this->assertInstanceOf(JobCompiler::class, $this->buildCompiler()->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
     public function testCompile(): void
     {
         $definitions = $this->getDefinitionsArray();
-        $builder = $this->buildCompiler();
 
         $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
         $compiledDeployment->expects($this->exactly(4))->method('addJob');
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->getPodCompiler()
             ->expects($this->exactly(4))
@@ -300,21 +304,22 @@ class JobCompilerTest extends TestCase
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,
                     PromiseInterface $promise,
-                ): PodCompiler&MockObject {
-                    $pod = $this->createMock(Pod::class);
+                ): (PodCompiler&MockObject)|(PodCompiler&Stub) {
+                    $pod = $this->createStub(Pod::class);
                     $pod->method('getName')->willReturn('foo');
                     $promise->success($pod);
                     return $this->getPodCompiler();
                 }
             );
 
+        $builder = $this->buildCompiler();
         $this->assertInstanceOf(JobCompiler::class, $builder->compile(
             $definitions,
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 

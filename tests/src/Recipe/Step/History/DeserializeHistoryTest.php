@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\History;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Foundation\Client\ClientInterface;
@@ -45,12 +46,16 @@ use TypeError;
 #[CoversClass(DeserializeHistory::class)]
 class DeserializeHistoryTest extends TestCase
 {
-    private (DeserializerInterface&MockObject)|null $deserializer = null;
+    private (DeserializerInterface&MockObject)|(DeserializerInterface&Stub)|null $deserializer = null;
 
-    public function getDeserializer(): DeserializerInterface&MockObject
+    public function getDeserializer(bool $stub = false): (DeserializerInterface&Stub)|(DeserializerInterface&MockObject)
     {
         if (!$this->deserializer instanceof DeserializerInterface) {
-            $this->deserializer = $this->createMock(DeserializerInterface::class);
+            if ($stub) {
+                $this->deserializer = $this->createStub(DeserializerInterface::class);
+            } else {
+                $this->deserializer = $this->createMock(DeserializerInterface::class);
+            }
         }
 
         return $this->deserializer;
@@ -59,7 +64,7 @@ class DeserializeHistoryTest extends TestCase
     public function buildStep(): DeserializeHistory
     {
         return new DeserializeHistory(
-            $this->getDeserializer(),
+            $this->getDeserializer(true),
         );
     }
 
@@ -68,7 +73,7 @@ class DeserializeHistoryTest extends TestCase
         $this->expectException(TypeError::class);
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -83,9 +88,9 @@ class DeserializeHistoryTest extends TestCase
 
     public function testInvoke(): void
     {
-        $history = $this->createMock(History::class);
+        $history = $this->createStub(History::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $this->getDeserializer()
             ->expects($this->once())
@@ -98,7 +103,7 @@ class DeserializeHistoryTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ) use ($history): DeserializerInterface&MockObject {
+                ) use ($history): (DeserializerInterface&MockObject)|(DeserializerInterface&Stub) {
                     $promise->success($history);
 
                     return $this->getDeserializer();
@@ -119,7 +124,7 @@ class DeserializeHistoryTest extends TestCase
     public function testInvokeErrorInDeserialization(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $error = new Exception('fooBar');
         $this->getDeserializer()
@@ -133,7 +138,7 @@ class DeserializeHistoryTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ) use ($error): DeserializerInterface&MockObject {
+                ) use ($error): (DeserializerInterface&MockObject)|(DeserializerInterface&Stub) {
                     $promise->fail($error);
 
                     return $this->getDeserializer();

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Loader;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Common\Contracts\DBSource\RepositoryInterface;
 use Teknoo\East\Common\Contracts\Loader\LoaderInterface;
@@ -45,12 +46,16 @@ class AccountLoaderTest extends TestCase
 {
     use LoaderTestTrait;
 
-    private (RepositoryInterface&MockObject)|null $repository = null;
+    private (RepositoryInterface&Stub)|(RepositoryInterface&MockObject)|null $repository = null;
 
-    public function getRepositoryMock(): RepositoryInterface&MockObject
+    public function getRepositoryMock(bool $stub = false): (RepositoryInterface&Stub)|(RepositoryInterface&MockObject)
     {
         if (!$this->repository instanceof RepositoryInterface) {
-            $this->repository = $this->createMock(AccountRepositoryInterface::class);
+            if ($stub) {
+                $this->repository = $this->createStub(AccountRepositoryInterface::class);
+            } else {
+                $this->repository = $this->createMock(AccountRepositoryInterface::class);
+            }
         }
 
         return $this->repository;
@@ -58,13 +63,13 @@ class AccountLoaderTest extends TestCase
 
     public function buildLoader(): LoaderInterface&AccountLoader
     {
-        $repository = $this->getRepositoryMock();
+        $repository = $this->getRepositoryMock(true);
         return new AccountLoader($repository);
     }
 
     public function buildLoaderWithBadCollectionImplementation(): LoaderInterface&AccountLoader
     {
-        $repository = $this->getRepositoryMock();
+        $repository = $this->getRepositoryMock(true);
         return new class ($repository) extends AccountLoader {
             protected function prepareQuery(
                 array &$criteria,
@@ -79,7 +84,7 @@ class AccountLoaderTest extends TestCase
 
     public function buildLoaderWithNotCollectionImplemented(): LoaderInterface&AccountLoader
     {
-        $repository = $this->getRepositoryMock();
+        $repository = $this->getRepositoryMock(true);
         return new AccountLoader($repository);
     }
 

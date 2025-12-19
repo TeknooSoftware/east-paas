@@ -47,7 +47,7 @@ class ContainerTest extends TestCase
             listen: [80],
             volumes: ['foo', 'bar'],
             variables: ['bar' => 'foo'],
-            healthCheck: $this->createMock(HealthCheck::class),
+            healthCheck: $this->createStub(HealthCheck::class),
             resources: new ResourceSet(),
         );
     }

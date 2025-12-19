@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Recipe\Step\History;
 use DateTime;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Symfony\Component\Messenger\Envelope;
@@ -47,34 +48,46 @@ use TypeError;
 #[CoversClass(DispatchHistory::class)]
 class DispatchHistoryTest extends TestCase
 {
-    private (DatesService&MockObject)|null $dateTimeService = null;
+    private (DatesService&MockObject)|(DatesService&Stub)|null $dateTimeService = null;
 
-    private (MessageBusInterface&MockObject)|null $bus = null;
+    private (MessageBusInterface&MockObject)|(MessageBusInterface&Stub)|null $bus = null;
 
-    private (SerialGenerator&MockObject)|null $generator = null;
+    private (SerialGenerator&MockObject)|(SerialGenerator&Stub)|null $generator = null;
 
-    public function getDateTimeServiceMock(): DatesService&MockObject
+    public function getDateTimeServiceMock(bool $stub = false): (DatesService&Stub)|(DatesService&MockObject)
     {
         if (!$this->dateTimeService instanceof DatesService) {
-            $this->dateTimeService = $this->createMock(DatesService::class);
+            if ($stub) {
+                $this->dateTimeService = $this->createStub(DatesService::class);
+            } else {
+                $this->dateTimeService = $this->createMock(DatesService::class);
+            }
         }
 
         return $this->dateTimeService;
     }
 
-    public function getMessageBusMock(): MessageBusInterface&MockObject
+    public function getMessageBusMock(bool $stub = false): (MessageBusInterface&Stub)|(MessageBusInterface&MockObject)
     {
         if (!$this->bus instanceof MessageBusInterface) {
-            $this->bus = $this->createMock(MessageBusInterface::class);
+            if ($stub) {
+                $this->bus = $this->createStub(MessageBusInterface::class);
+            } else {
+                $this->bus = $this->createMock(MessageBusInterface::class);
+            }
         }
 
         return $this->bus;
     }
 
-    public function getSerialGeneratorMock(): SerialGenerator&MockObject
+    public function getSerialGeneratorMock(bool $stub = false): (SerialGenerator&MockObject)|(SerialGenerator&Stub)
     {
         if (!$this->generator instanceof SerialGenerator) {
-            $this->generator = $this->createMock(SerialGenerator::class);
+            if ($stub) {
+                $this->generator = $this->createStub(SerialGenerator::class);
+            } else {
+                $this->generator = $this->createMock(SerialGenerator::class);
+            }
 
             $this->generator
                 ->method('getNewSerialNumber')
@@ -87,9 +100,9 @@ class DispatchHistoryTest extends TestCase
     public function buildStep(?EncryptionInterface $encryption = null): DispatchHistory
     {
         return new DispatchHistory(
-            dateTimeService: $this->getDateTimeServiceMock(),
-            bus: $this->getMessageBusMock(),
-            generator: $this->getSerialGeneratorMock(),
+            dateTimeService: $this->getDateTimeServiceMock(true),
+            bus: $this->getMessageBusMock(true),
+            generator: $this->getSerialGeneratorMock(true),
             preferRealDate: false,
             encryption: $encryption,
         );
@@ -103,12 +116,12 @@ class DispatchHistoryTest extends TestCase
 
     public function testInvoke(): void
     {
-        $this->getDateTimeServiceMock()
+        $this->getDateTimeServiceMock(true)
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
+            ->willReturnCallback(function (callable $callback): (DatesService&MockObject)|(DatesService&Stub) {
                 $callback(new DateTime('2018-08-01'));
 
-                return $this->getDateTimeServiceMock();
+                return $this->getDateTimeServiceMock(true);
             });
 
         $this->getMessageBusMock()
@@ -124,12 +137,12 @@ class DispatchHistoryTest extends TestCase
 
     public function testInvokeWithEncryption(): void
     {
-        $this->getDateTimeServiceMock()
+        $this->getDateTimeServiceMock(true)
             ->method('passMeTheDate')
-            ->willReturnCallback(function (callable $callback): DatesService&MockObject {
+            ->willReturnCallback(function (callable $callback): (DatesService&MockObject)|(DatesService&Stub) {
                 $callback(new DateTime('2018-08-01'));
 
-                return $this->getDateTimeServiceMock();
+                return $this->getDateTimeServiceMock(true);
             });
 
         $this->getMessageBusMock()
@@ -137,14 +150,14 @@ class DispatchHistoryTest extends TestCase
             ->method('dispatch')
             ->willReturn(new Envelope(new stdClass()));
 
-        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption = $this->createStub(EncryptionInterface::class);
         $encryption
             ->method('encrypt')
             ->willReturnCallback(
                 function (
                     SensitiveContentInterface $message,
                     PromiseInterface $promise,
-                ) use ($encryption): MockObject {
+                ) use ($encryption): MockObject|Stub {
                     $promise->success($message);
 
                     return $encryption;

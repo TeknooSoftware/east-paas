@@ -102,7 +102,7 @@ abstract class AbstractTestAvailability extends TestCase
     {
         $this->expectException(QuotasNotCompliantException::class);
         $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)->update(
-            $this->createMock(AvailabilityInterface::class),
+            $this->createStub(AvailabilityInterface::class),
         );
     }
 
@@ -312,7 +312,7 @@ abstract class AbstractTestAvailability extends TestCase
     {
         $this->assertInstanceOf(AvailabilityInterface::class, $this->createAvailability($this->getDefaultCapacity(), $this->getDefaultCapacity(), false)
             ->updateResource(
-                $this->createMock(AutomaticResource::class),
+                $this->createStub(AutomaticResource::class),
                 100
             ));
     }

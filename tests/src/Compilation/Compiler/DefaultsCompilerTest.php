@@ -65,10 +65,10 @@ class DefaultsCompilerTest extends TestCase
 
         $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler(null, null, null)->compile(
             $definitions,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
             $bag,
         ));
     }
@@ -84,10 +84,10 @@ class DefaultsCompilerTest extends TestCase
 
         $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler('foo', 'foo', 'foo')->compile(
             $definitions,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
             $bag,
         ));
     }
@@ -107,10 +107,10 @@ class DefaultsCompilerTest extends TestCase
 
         $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler('foo', 'foo', 'foo')->compile(
             $definitions,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
             $bag,
         ));
     }
@@ -140,10 +140,10 @@ class DefaultsCompilerTest extends TestCase
 
         $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler('foo', 'foo', 'foo')->compile(
             $definitions,
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
             $bag,
         ));
     }

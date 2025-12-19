@@ -58,7 +58,7 @@ class ConfigMapTranscriberTest extends TestCase
 
         $cd->expects($this->once())
             ->method('foreachMap')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(new Map('foo', ['foo' => 'bar']), 'a-prefix');
                 $callback(new Map('foo2', ['foo' => 'bar']), 'a-prefix');
                 $callback(new Map('foo3', ['foo1' => ['foo1' => 'bar', 'foo2' => 'base64:' . base64_encode('bar')]]), 'a-prefix');
@@ -89,7 +89,7 @@ class ConfigMapTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
@@ -97,12 +97,12 @@ class ConfigMapTranscriberTest extends TestCase
 
     public function testError(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachMap')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(new Map('foo', ['foo' => 'bar']), 'a-prefix');
                 return $cd;
             });
@@ -125,7 +125,7 @@ class ConfigMapTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));

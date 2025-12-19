@@ -43,6 +43,6 @@ class ProjectTest extends BaseTest
      */
     public function buildObject(): Project
     {
-        return new Project($this->createMock(Account::class));
+        return new Project($this->createStub(Account::class));
     }
 }

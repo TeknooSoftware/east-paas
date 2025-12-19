@@ -51,9 +51,9 @@ class ReadDeploymentConfigurationTest extends TestCase
     public function testInvoke(): void
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $conductor = $this->createMock(ConductorInterface::class);
-        $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(EastClient::class);
+        $conductor = $this->createStub(ConductorInterface::class);
+        $manager = $this->createStub(ManagerInterface::class);
+        $client = $this->createStub(EastClient::class);
 
         $workspace->expects($this->once())
             ->method('loadDeploymentIntoConductor')
@@ -70,15 +70,15 @@ class ReadDeploymentConfigurationTest extends TestCase
     public function testInvokeOnError(): void
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $conductor = $this->createMock(ConductorInterface::class);
+        $conductor = $this->createStub(ConductorInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(EastClient::class);
+        $client = $this->createStub(EastClient::class);
 
         $workspace->expects($this->once())
             ->method('loadDeploymentIntoConductor')
             ->with($conductor)
             ->willReturnCallback(
-                function ($conductor, PromiseInterface $promise) use ($workspace): MockObject {
+                function ($conductor, PromiseInterface $promise) use ($workspace): MockObject|Stub {
                     $promise->fail(new Exception());
 
                     return $workspace;
@@ -102,15 +102,15 @@ class ReadDeploymentConfigurationTest extends TestCase
     public function testInvokeOnErrorWithMessage(): void
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $conductor = $this->createMock(ConductorInterface::class);
+        $conductor = $this->createStub(ConductorInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(EastClient::class);
+        $client = $this->createStub(EastClient::class);
 
         $workspace->expects($this->once())
             ->method('loadDeploymentIntoConductor')
             ->with($conductor)
             ->willReturnCallback(
-                function ($conductor, PromiseInterface $promise) use ($workspace): MockObject {
+                function ($conductor, PromiseInterface $promise) use ($workspace): MockObject|Stub {
                     $promise->fail(new Exception('foo', 400));
 
                     return $workspace;

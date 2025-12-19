@@ -109,10 +109,10 @@ class ServiceCompilerTest extends TestCase
         $this->assertInstanceOf(ServiceCompiler::class, $this->buildCompiler()->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -126,7 +126,7 @@ class ServiceCompilerTest extends TestCase
             ->expects($this->exactly(3))
             ->method('addService')
             ->willReturnCallback(
-                function () use ($compiledDeployment): MockObject {
+                function () use ($compiledDeployment): MockObject|Stub {
                     $args = func_get_args();
                     $expectedArgs1 = [
                         'php-react',
@@ -169,16 +169,16 @@ class ServiceCompilerTest extends TestCase
                 }
             );
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->assertInstanceOf(ServiceCompiler::class, $builder->compile(
             $definitions,
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 

@@ -40,8 +40,8 @@ class CollectionTest extends TestCase
     public function testGetIterator(): void
     {
         $collection = new Collection([
-            $this->createMock(DriverInterface::class),
-            $this->createMock(DriverInterface::class),
+            $this->createStub(DriverInterface::class),
+            $this->createStub(DriverInterface::class),
         ]);
 
         $count = 0;

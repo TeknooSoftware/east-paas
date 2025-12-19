@@ -52,7 +52,7 @@ class SshIdentityType extends AbstractType
      * @param FormBuilderInterface<SshIdentity> $builder
      * @param array<string, mixed> $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options): self
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -114,11 +114,9 @@ class SshIdentityType extends AbstractType
                 }
             }
         );
-
-        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver): self
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -126,7 +124,5 @@ class SshIdentityType extends AbstractType
             'data_class' => SshIdentity::class,
             'empty_data' => null,
         ]);
-
-        return $this;
     }
 }

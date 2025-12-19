@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Compilation;
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;
@@ -62,22 +63,26 @@ use TypeError;
 #[CoversClass(Conductor::class)]
 class ConductorTest extends TestCase
 {
-    private (CompiledDeploymentFactoryInterface&MockObject)|null $factory = null;
+    private (CompiledDeploymentFactoryInterface&MockObject)|(CompiledDeploymentFactoryInterface&Stub)|null $factory = null;
 
-    private (PropertyAccessorInterface&MockObject)|null $propertyAccessor = null;
+    private (PropertyAccessorInterface&MockObject)|(PropertyAccessorInterface&Stub)|null $propertyAccessor = null;
 
-    private (YamlParserInterface&MockObject)|null $parser = null;
+    private (YamlParserInterface&MockObject)|(YamlParserInterface&Stub)|null $parser = null;
 
-    private (YamlValidator&MockObject)|null $validator = null;
+    private (YamlValidator&MockObject)|(YamlValidator&Stub)|null $validator = null;
 
-    private (ResourceFactory&MockObject)|null $resourceFactory = null;
+    private (ResourceFactory&MockObject)|(ResourceFactory&Stub)|null $resourceFactory = null;
 
-    public function getCompiledDeploymentFactory(): CompiledDeploymentFactoryInterface&MockObject
+    public function getCompiledDeploymentFactory(bool $stub = false): (CompiledDeploymentFactoryInterface&MockObject)|(CompiledDeploymentFactoryInterface&Stub)
     {
         if (!$this->factory instanceof CompiledDeploymentFactoryInterface) {
-            $this->factory = $this->createMock(CompiledDeploymentFactoryInterface::class);
+            if ($stub) {
+                $this->factory = $this->createStub(CompiledDeploymentFactoryInterface::class);
+            } else {
+                $this->factory = $this->createMock(CompiledDeploymentFactoryInterface::class);
+            }
 
-            $cd = $this->createMock(CompiledDeploymentInterface::class);
+            $cd = $this->createStub(CompiledDeploymentInterface::class);
             $cd
                 ->method('getVersion')
                 ->willReturn(1.0);
@@ -94,37 +99,53 @@ class ConductorTest extends TestCase
         return $this->factory;
     }
 
-    public function getPropertyAccessorMock(): PropertyAccessorInterface&MockObject
+    public function getPropertyAccessorMock(bool $stub = false): (PropertyAccessorInterface&Stub)|(PropertyAccessorInterface&MockObject)
     {
         if (!$this->propertyAccessor instanceof PropertyAccessorInterface) {
-            $this->propertyAccessor = $this->createMock(PropertyAccessorInterface::class);
+            if ($stub) {
+                $this->propertyAccessor = $this->createStub(PropertyAccessorInterface::class);
+            } else {
+                $this->propertyAccessor = $this->createMock(PropertyAccessorInterface::class);
+            }
         }
 
         return $this->propertyAccessor;
     }
 
-    public function getYamlParser(): YamlParserInterface&MockObject
+    public function getYamlParser(bool $stub = false): (YamlParserInterface&Stub)|(YamlParserInterface&MockObject)
     {
         if (!$this->parser instanceof YamlParserInterface) {
-            $this->parser = $this->createMock(YamlParserInterface::class);
+            if ($stub) {
+                $this->parser = $this->createStub(YamlParserInterface::class);
+            } else {
+                $this->parser = $this->createMock(YamlParserInterface::class);
+            }
         }
 
         return $this->parser;
     }
 
-    public function getYamlValidator(): YamlValidator&MockObject
+    public function getYamlValidator(bool $stub = false): (YamlValidator&Stub)|(YamlValidator&MockObject)
     {
         if (!$this->validator instanceof YamlValidator) {
-            $this->validator = $this->createMock(YamlValidator::class);
+            if ($stub) {
+                $this->validator = $this->createStub(YamlValidator::class);
+            } else {
+                $this->validator = $this->createMock(YamlValidator::class);
+            }
         }
 
         return $this->validator;
     }
 
-    public function getResourceFactory(): ResourceFactory&MockObject
+    public function getResourceFactory(bool $stub = false): (ResourceFactory&Stub)|(ResourceFactory&MockObject)
     {
         if (!$this->resourceFactory instanceof YamlValidator) {
-            $this->resourceFactory = $this->createMock(ResourceFactory::class);
+            if ($stub) {
+                $this->resourceFactory = $this->createStub(ResourceFactory::class);
+            } else {
+                $this->resourceFactory = $this->createMock(ResourceFactory::class);
+            }
         }
 
         return $this->resourceFactory;
@@ -135,7 +156,7 @@ class ConductorTest extends TestCase
     ): Conductor {
         if (empty($compilers)) {
             $compilers = [
-                '[secrets]' => $this->createMock(CompilerInterface::class),
+                '[secrets]' => $this->createStub(CompilerInterface::class),
                 '[services]' => new class () implements CompilerInterface, ExtenderInterface {
                     public function compile(
                         array &$definitions,
@@ -155,16 +176,16 @@ class ConductorTest extends TestCase
                         return $this;
                     }
                 },
-                '[volumes]' => $this->createMock(CompilerInterface::class),
+                '[volumes]' => $this->createStub(CompilerInterface::class),
             ];
         }
 
         return new Conductor(
-            $this->getCompiledDeploymentFactory(),
-            $this->getPropertyAccessorMock(),
-            $this->getYamlParser(),
-            $this->getYamlValidator(),
-            $this->getResourceFactory(),
+            $this->getCompiledDeploymentFactory(true),
+            $this->getPropertyAccessorMock(true),
+            $this->getYamlParser(true),
+            $this->getYamlValidator(true),
+            $this->getResourceFactory(true),
             [
                 'v1' => $compilers,
                 'v1.1' => $compilers,
@@ -178,7 +199,7 @@ class ConductorTest extends TestCase
 
         $this->buildConductor()->configure(
             new stdClass(),
-            $this->createMock(JobWorkspaceInterface::class)
+            $this->createStub(JobWorkspaceInterface::class)
         );
     }
 
@@ -187,7 +208,7 @@ class ConductorTest extends TestCase
         $this->expectException(TypeError::class);
 
         $this->buildConductor()->configure(
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass()
         );
     }
@@ -196,8 +217,8 @@ class ConductorTest extends TestCase
     {
         $conductor = $this->buildConductor();
         $newConductor = $conductor->configure(
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(JobWorkspaceInterface::class)
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(JobWorkspaceInterface::class)
         );
 
         $this->assertInstanceOf(Conductor::class, $newConductor);
@@ -211,7 +232,7 @@ class ConductorTest extends TestCase
 
         $this->buildConductor()->configure(
             new stdClass(),
-            $this->createMock(JobWorkspaceInterface::class)
+            $this->createStub(JobWorkspaceInterface::class)
         );
     }
 
@@ -220,7 +241,7 @@ class ConductorTest extends TestCase
         $this->expectException(TypeError::class);
 
         $this->buildConductor()->configure(
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass(),
         );
     }
@@ -380,7 +401,7 @@ EOF;
         $jobUnit = $this->createMock(JobUnitInterface::class);
         $conductor = $this->buildConductor();
 
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
@@ -393,7 +414,7 @@ EOF;
         $jobUnit
             ->method('filteringConditions')
             ->willReturnCallback(
-                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $promise->success($configuration);
 
                     return $jobUnit;
@@ -434,17 +455,17 @@ EOF;
         $promise->expects($this->never())->method('fail');
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
 
         $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
 
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
                     $promise->success($result);
 
-                    return $this->getYamlParser();
+                    return $this->getYamlParser(true);
                 }
             );
 
@@ -465,7 +486,7 @@ EOF;
             ->method('updateVariablesIn')
             ->with($result)
             ->willReturnCallback(
-                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $result['image']['foo']['path'] = '/image/foo';
                     $promise->success($result);
 
@@ -495,24 +516,24 @@ EOF;
         $promise->expects($this->never())->method('fail');
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
 
         $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
 
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
                     $promise->success($result);
 
-                    return $this->getYamlParser();
+                    return $this->getYamlParser(true);
                 }
             );
 
         $jobUnit->expects($this->once())
             ->method('filteringConditions')
             ->willReturnCallback(
-                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $promise->success($configuration);
 
                     return $jobUnit;
@@ -533,7 +554,7 @@ EOF;
             ->method('updateVariablesIn')
             ->with($result)
             ->willReturnCallback(
-                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $result['image']['foo']['path'] = '/image/foo';
                     $promise->success($result);
 
@@ -559,18 +580,18 @@ EOF;
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
 
         $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
 
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise): YamlParserInterface {
                     $promise->fail(new RuntimeException('foo'));
 
-                    return $this->getYamlParser();
+                    return $this->getYamlParser(true);
                 }
             );
 
@@ -592,25 +613,23 @@ EOF;
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
 
-        $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
-
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise): YamlParserInterface {
                     $promise->success($configuration);
 
-                    return $this->getYamlParser();
+                    return $this->getYamlParser(true);
                 }
             );
 
         $jobUnit
             ->method('filteringConditions')
             ->willReturnCallback(
-                function (array $configuration, PromiseInterface $promise) use ($jobUnit): YamlValidator {
+                function (array $configuration, PromiseInterface $promise): YamlValidator {
                     $promise->fail(new RuntimeException('error'));
 
                     return $this->getYamlValidator();
@@ -621,6 +640,7 @@ EOF;
             ->expects($this->never())
             ->method('validate');
 
+        $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
         $this->assertInstanceOf(ConductorInterface::class, $conductor->prepare(
             $yaml,
             $promise
@@ -639,25 +659,25 @@ EOF;
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
 
         $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
 
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise): YamlParserInterface {
                     $promise->success($configuration);
 
-                    return $this->getYamlParser();
+                    return $this->getYamlParser(true);
                 }
             );
 
         $jobUnit
             ->method('filteringConditions')
             ->willReturnCallback(
-                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $promise->success($configuration);
 
                     return $jobUnit;
@@ -695,24 +715,24 @@ EOF;
         $promise->expects($this->once())->method('fail');
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
 
         $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
 
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
                     $promise->success($result);
 
-                    return $this->getYamlParser();
+                    return $this->getYamlParser(true);
                 }
             );
 
         $jobUnit
             ->method('filteringConditions')
             ->willReturnCallback(
-                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $promise->success($configuration);
 
                     return $jobUnit;
@@ -733,7 +753,7 @@ EOF;
             ->method('updateVariablesIn')
             ->with($result)
             ->willReturnCallback(
-                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $promise->fail(new DomainException('foo'));
 
                     return $jobUnit;
@@ -771,16 +791,16 @@ EOF;
         $promise->expects($this->once())->method('fail');
 
         $jobUnit = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
 
         $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
                     $promise->success($result);
 
-                    return $this->getYamlParser();
+                    return $this->getYamlParser(true);
                 }
             );
 
@@ -797,7 +817,7 @@ EOF;
                 }
             );
 
-        $this->getPropertyAccessorMock()
+        $this->getPropertyAccessorMock(true)
             ->method('getValue')
             ->willReturnCallback(
                 function (array $array, string $propertyPath, callable $callback, $default = null): PropertyAccessorInterface {
@@ -852,10 +872,10 @@ EOF;
             $jobUnit->expects($this->once())
                 ->method('prepareQuotas')
                 ->willReturnCallback(
-                    function (QuotaFactory $factory, PromiseInterface $promise) use ($jobUnit): MockObject {
+                    function (QuotaFactory $factory, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                         $promise->success([
-                            'cpu' => $this->createMock(AvailabilityInterface::class),
-                            'memory' => $this->createMock(AvailabilityInterface::class),
+                            'cpu' => $this->createStub(AvailabilityInterface::class),
+                            'memory' => $this->createStub(AvailabilityInterface::class),
                         ]);
 
                         return $jobUnit;
@@ -863,27 +883,27 @@ EOF;
                 );
         }
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
 
         $conductor = ($conductor ?? $this->buildConductor())->configure($jobUnit, $workspace);
 
         $jobUnit
             ->method('filteringConditions')
             ->willReturnCallback(
-                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $promise->success($configuration);
 
                     return $jobUnit;
                 }
             );
 
-        $this->getYamlParser()
+        $this->getYamlParser(true)
             ->method('parse')
             ->willReturnCallback(
                 function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
                     $promise->success($result);
 
-                    return $this->getYamlParser();
+                    return $this->getYamlParser(true);
                 }
             );
 
@@ -897,7 +917,7 @@ EOF;
                 }
             );
 
-        $this->getPropertyAccessorMock()
+        $this->getPropertyAccessorMock(true)
             ->method('getValue')
             ->willReturnCallback(
                 function (array $array, string $propertyPath, callable $callback, $default = null): PropertyAccessorInterface {
@@ -921,7 +941,7 @@ EOF;
             ->method('updateVariablesIn')
             ->with($result)
             ->willReturnCallback(
-                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject {
+                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
                     $promise->success($result);
 
                     return $jobUnit;
@@ -973,15 +993,15 @@ EOF;
     {
         $result = $this->getResultArray();
 
-        $compiler = $this->createMock(CompilerInterface::class);
+        $compiler = $this->createStub(CompilerInterface::class);
         $compiler->method('compile')->willThrowException(new RuntimeException('error'));
 
         $conductor = new Conductor(
-            $this->getCompiledDeploymentFactory(),
-            $this->getPropertyAccessorMock(),
-            $this->getYamlParser(),
-            $this->getYamlValidator(),
-            $this->getResourceFactory(),
+            $this->getCompiledDeploymentFactory(true),
+            $this->getPropertyAccessorMock(true),
+            $this->getYamlParser(true),
+            $this->getYamlValidator(true),
+            $this->getResourceFactory(true),
             [
                 'v1' => [
                     '[secrets]' => $compiler,

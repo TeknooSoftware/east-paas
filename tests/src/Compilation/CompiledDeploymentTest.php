@@ -78,7 +78,7 @@ class CompiledDeploymentTest extends TestCase
     public function testSetDefaultBags(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->setDefaultBags(
-            $this->createMock(DefaultsBag::class)
+            $this->createStub(DefaultsBag::class)
         ));
     }
 
@@ -91,7 +91,7 @@ class CompiledDeploymentTest extends TestCase
     public function testAddBuildable(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->addBuildable(
-            $this->createMock(BuildableInterface::class)
+            $this->createStub(BuildableInterface::class)
         ));
     }
 
@@ -100,7 +100,7 @@ class CompiledDeploymentTest extends TestCase
         $this->expectException(TypeError::class);
         $this->buildObject()->updateBuildable(
             new stdClass(),
-            $this->createMock(BuildableInterface::class)
+            $this->createStub(BuildableInterface::class)
         );
     }
 
@@ -108,7 +108,7 @@ class CompiledDeploymentTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->updateBuildable(
-            $this->createMock(BuildableInterface::class),
+            $this->createStub(BuildableInterface::class),
             new stdClass()
         );
     }
@@ -116,8 +116,8 @@ class CompiledDeploymentTest extends TestCase
     public function testupdateBuildable(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->updateBuildable(
-            $this->createMock(BuildableInterface::class),
-            $this->createMock(BuildableInterface::class)
+            $this->createStub(BuildableInterface::class),
+            $this->createStub(BuildableInterface::class)
         ));
     }
 
@@ -130,14 +130,14 @@ class CompiledDeploymentTest extends TestCase
     public function testAddHookWrongHookName(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildObject()->addHook(new stdClass(), $this->createMock(HookInterface::class));
+        $this->buildObject()->addHook(new stdClass(), $this->createStub(HookInterface::class));
     }
 
     public function testAddHook(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->addHook(
             'foo',
-            $this->createMock(HookInterface::class)
+            $this->createStub(HookInterface::class)
         ));
     }
 
@@ -150,14 +150,14 @@ class CompiledDeploymentTest extends TestCase
     public function testAddVolumeWrongVolumeName(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildObject()->addVolume(new stdClass(), $this->createMock(Volume::class));
+        $this->buildObject()->addVolume(new stdClass(), $this->createStub(Volume::class));
     }
 
     public function testAddVolume(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->addVolume(
             'foo',
-            $this->createMock(Volume::class)
+            $this->createStub(Volume::class)
         ));
     }
 
@@ -167,7 +167,7 @@ class CompiledDeploymentTest extends TestCase
         $this->buildObject()->importVolume(
             new stdClass(),
             'foo',
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -177,7 +177,7 @@ class CompiledDeploymentTest extends TestCase
         $this->buildObject()->importVolume(
             'foo',
             new stdClass(),
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -231,7 +231,7 @@ class CompiledDeploymentTest extends TestCase
 
     public function testImportVolumeBadType(): void
     {
-        $volume = $this->createMock(VolumeInterface::class);
+        $volume = $this->createStub(VolumeInterface::class);
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success')->with($volume);
@@ -256,14 +256,14 @@ class CompiledDeploymentTest extends TestCase
     public function testAddServiceWrongServiceName(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildObject()->addService(new stdClass(), $this->createMock(Service::class));
+        $this->buildObject()->addService(new stdClass(), $this->createStub(Service::class));
     }
 
     public function testAddService(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->addService(
             'foo',
-            $this->createMock(Service::class)
+            $this->createStub(Service::class)
         ));
     }
 
@@ -276,14 +276,14 @@ class CompiledDeploymentTest extends TestCase
     public function testAddSecretWrongSecretName(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildObject()->addSecret(new stdClass(), $this->createMock(Secret::class));
+        $this->buildObject()->addSecret(new stdClass(), $this->createStub(Secret::class));
     }
 
     public function testAddSecret(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->addSecret(
             'foo',
-            $this->createMock(Secret::class)
+            $this->createStub(Secret::class)
         ));
     }
 
@@ -296,14 +296,14 @@ class CompiledDeploymentTest extends TestCase
     public function testAddMapWrongMapName(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildObject()->addMap(new stdClass(), $this->createMock(Map::class));
+        $this->buildObject()->addMap(new stdClass(), $this->createStub(Map::class));
     }
 
     public function testAddMap(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->addMap(
             'foo',
-            $this->createMock(Map::class)
+            $this->createStub(Map::class)
         ));
     }
 
@@ -316,14 +316,14 @@ class CompiledDeploymentTest extends TestCase
     public function testAddIngressWrongIngressName(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildObject()->addIngress(new stdClass(), $this->createMock(Ingress::class));
+        $this->buildObject()->addIngress(new stdClass(), $this->createStub(Ingress::class));
     }
 
     public function testAddIngress(): void
     {
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->addIngress(
             'foo',
-            $this->createMock(Ingress::class)
+            $this->createStub(Ingress::class)
         ));
     }
 
@@ -336,7 +336,7 @@ class CompiledDeploymentTest extends TestCase
     public function testAddPodWrongContainerName(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildObject()->addPod(new stdClass(), $this->createMock(Pod::class));
+        $this->buildObject()->addPod(new stdClass(), $this->createStub(Pod::class));
     }
 
     public function testAddPod(): void
@@ -355,8 +355,8 @@ class CompiledDeploymentTest extends TestCase
                         [80],
                         [],
                         [],
-                        $this->createMock(CompiledDeployment\HealthCheck::class),
-                        $this->createMock(CompiledDeployment\ResourceSet::class)
+                        $this->createStub(CompiledDeployment\HealthCheck::class),
+                        $this->createStub(CompiledDeployment\ResourceSet::class)
                     )
                 ])
             )
@@ -370,8 +370,8 @@ class CompiledDeploymentTest extends TestCase
                         [80],
                         [],
                         [],
-                        $this->createMock(CompiledDeployment\HealthCheck::class),
-                        $this->createMock(CompiledDeployment\ResourceSet::class)
+                        $this->createStub(CompiledDeployment\HealthCheck::class),
+                        $this->createStub(CompiledDeployment\ResourceSet::class)
                     )
                 ])
             ));
@@ -390,12 +390,12 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->addHook(
             'foo1',
-            $this->createMock(HookInterface::class)
+            $this->createStub(HookInterface::class)
         );
 
         $cd->addHook(
             'foo2',
-            $this->createMock(HookInterface::class)
+            $this->createStub(HookInterface::class)
         );
 
         $count = 0;
@@ -448,8 +448,8 @@ class CompiledDeploymentTest extends TestCase
                             'foo3' => new Volume('foo3', [], 'bar', '/mount')
                         ],
                         [],
-                        $this->createMock(CompiledDeployment\HealthCheck::class),
-                        $this->createMock(CompiledDeployment\ResourceSet::class),
+                        $this->createStub(CompiledDeployment\HealthCheck::class),
+                        $this->createStub(CompiledDeployment\ResourceSet::class),
                     )
                 ]
             )
@@ -502,8 +502,8 @@ class CompiledDeploymentTest extends TestCase
                                     'foo3' => new Volume('foo3', [], 'bar', '/mount')
                                 ],
                                 [],
-                                $this->createMock(CompiledDeployment\HealthCheck::class),
-                                $this->createMock(CompiledDeployment\ResourceSet::class),
+                                $this->createStub(CompiledDeployment\HealthCheck::class),
+                                $this->createStub(CompiledDeployment\ResourceSet::class),
                             )
                         ]
                     )
@@ -533,8 +533,8 @@ class CompiledDeploymentTest extends TestCase
                             'foo4' => new Volume('foo4', [], 'bar', '/mount')
                         ],
                         [],
-                        $this->createMock(CompiledDeployment\HealthCheck::class),
-                        $this->createMock(CompiledDeployment\ResourceSet::class),
+                        $this->createStub(CompiledDeployment\HealthCheck::class),
+                        $this->createStub(CompiledDeployment\ResourceSet::class),
                     )
                 ]
             )
@@ -587,8 +587,8 @@ class CompiledDeploymentTest extends TestCase
                                     'foo3' => new Volume('foo3', [], 'bar', '/mount')
                                 ],
                                 [],
-                                $this->createMock(CompiledDeployment\HealthCheck::class),
-                                $this->createMock(CompiledDeployment\ResourceSet::class),
+                                $this->createStub(CompiledDeployment\HealthCheck::class),
+                                $this->createStub(CompiledDeployment\ResourceSet::class),
                             )
                         ]
                     )
@@ -647,8 +647,8 @@ class CompiledDeploymentTest extends TestCase
                     [80],
                     [],
                     [],
-                    $this->createMock(CompiledDeployment\HealthCheck::class),
-                    $this->createMock(CompiledDeployment\ResourceSet::class),
+                    $this->createStub(CompiledDeployment\HealthCheck::class),
+                    $this->createStub(CompiledDeployment\ResourceSet::class),
                 )
             ])
         );
@@ -663,8 +663,8 @@ class CompiledDeploymentTest extends TestCase
                     [80],
                     [],
                     [],
-                    $this->createMock(CompiledDeployment\HealthCheck::class),
-                    $this->createMock(CompiledDeployment\ResourceSet::class),
+                    $this->createStub(CompiledDeployment\HealthCheck::class),
+                    $this->createStub(CompiledDeployment\ResourceSet::class),
                 )
             ])
         );
@@ -682,8 +682,8 @@ class CompiledDeploymentTest extends TestCase
                         [80],
                         [],
                         [],
-                        $this->createMock(HealthCheck::class),
-                        $this->createMock(ResourceSet::class),
+                        $this->createStub(HealthCheck::class),
+                        $this->createStub(ResourceSet::class),
                     )
                 ]
             )
@@ -750,8 +750,8 @@ class CompiledDeploymentTest extends TestCase
                             'foo' => $foo
                         ],
                         [],
-                        $this->createMock(HealthCheck::class),
-                        $this->createMock(ResourceSet::class),
+                        $this->createStub(HealthCheck::class),
+                        $this->createStub(ResourceSet::class),
                     ),
                     new Container(
                         'foo2',
@@ -764,8 +764,8 @@ class CompiledDeploymentTest extends TestCase
                             'foo' => $foo
                         ],
                         [],
-                        $this->createMock(HealthCheck::class),
-                        $this->createMock(ResourceSet::class),
+                        $this->createStub(HealthCheck::class),
+                        $this->createStub(ResourceSet::class),
                     )
                 ]
             )
@@ -791,8 +791,8 @@ class CompiledDeploymentTest extends TestCase
                             'p1' => new PersistentVolume('p1', '/mnt', 'foo', '/mount'),
                         ],
                         [],
-                        $this->createMock(HealthCheck::class),
-                        $this->createMock(ResourceSet::class),
+                        $this->createStub(HealthCheck::class),
+                        $this->createStub(ResourceSet::class),
                     )
                 ]
             )
@@ -813,8 +813,8 @@ class CompiledDeploymentTest extends TestCase
                         ],
                         [],
                         [],
-                        $this->createMock(HealthCheck::class),
-                        $this->createMock(ResourceSet::class),
+                        $this->createStub(HealthCheck::class),
+                        $this->createStub(ResourceSet::class),
                     )
                 ]
             )
@@ -893,8 +893,8 @@ class CompiledDeploymentTest extends TestCase
                                     'foo' => $foo
                                 ],
                                 [],
-                                $this->createMock(HealthCheck::class),
-                                $this->createMock(ResourceSet::class),
+                                $this->createStub(HealthCheck::class),
+                                $this->createStub(ResourceSet::class),
                             ),
                             new Container(
                                 'foo2',
@@ -907,8 +907,8 @@ class CompiledDeploymentTest extends TestCase
                                     'foo' => $foo
                                 ],
                                 [],
-                                $this->createMock(HealthCheck::class),
-                                $this->createMock(ResourceSet::class),
+                                $this->createStub(HealthCheck::class),
+                                $this->createStub(ResourceSet::class),
                             )
                         ]
                     )
@@ -943,8 +943,8 @@ class CompiledDeploymentTest extends TestCase
                                 ],
                                 [],
                                 [],
-                                $this->createMock(HealthCheck::class),
-                                $this->createMock(ResourceSet::class),
+                                $this->createStub(HealthCheck::class),
+                                $this->createStub(ResourceSet::class),
                             )
                         ]
                     ),
@@ -992,12 +992,12 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->addService(
             'foo1',
-            $this->createMock(Service::class)
+            $this->createStub(Service::class)
         );
 
         $cd->addService(
             'foo2',
-            $this->createMock(Service::class)
+            $this->createStub(Service::class)
         );
 
         $count = 0;
@@ -1023,12 +1023,12 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->addSecret(
             'foo1',
-            $this->createMock(Secret::class)
+            $this->createStub(Secret::class)
         );
 
         $cd->addSecret(
             'foo2',
-            $this->createMock(Secret::class)
+            $this->createStub(Secret::class)
         );
 
         $count = 0;
@@ -1054,12 +1054,12 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->addMap(
             'foo1',
-            $this->createMock(Map::class)
+            $this->createStub(Map::class)
         );
 
         $cd->addMap(
             'foo2',
-            $this->createMock(Map::class)
+            $this->createStub(Map::class)
         );
 
         $count = 0;
@@ -1085,12 +1085,12 @@ class CompiledDeploymentTest extends TestCase
 
         $cd->addIngress(
             'foo1',
-            $this->createMock(Ingress::class)
+            $this->createStub(Ingress::class)
         );
 
         $cd->addIngress(
             'foo2',
-            $this->createMock(Ingress::class)
+            $this->createStub(Ingress::class)
         );
 
         $count = 0;
@@ -1115,7 +1115,7 @@ class CompiledDeploymentTest extends TestCase
         $cd = $this->buildObject();
 
         $cd->setDefaultBags(
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(DefaultsBag::class),
         );
 
         $count = 0;

@@ -52,8 +52,8 @@ class GetVariablesTest extends TestCase
     public function testInvokeNotJson(): void
     {
         $chef = $this->createMock(ManagerInterface::class);
-        $message = $this->createMock(MessageInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $message = $this->createStub(MessageInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $message->method('getHeader')->willReturn(['html']);
 
@@ -67,8 +67,8 @@ class GetVariablesTest extends TestCase
     public function testInvokeJson(): void
     {
         $chef = $this->createMock(ManagerInterface::class);
-        $message = $this->createMock(MessageInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $message = $this->createStub(MessageInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $message->method('getHeader')->willReturn(['application/json']);
         $message->method('getBody')->willReturn(

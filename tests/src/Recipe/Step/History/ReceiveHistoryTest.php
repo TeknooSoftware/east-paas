@@ -51,7 +51,7 @@ class ReceiveHistoryTest extends TestCase
         $this->expectException(TypeError::class);
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -59,7 +59,7 @@ class ReceiveHistoryTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(MessageInterface::class),
+            $this->createStub(MessageInterface::class),
             new stdClass()
         );
     }

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11;
 
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
@@ -40,45 +41,61 @@ use Psr\Http\Message\UriInterface;
  */
 trait RequestTestTrait
 {
-    private (UriFactoryInterface&MockObject)|null $uriFactory = null;
+    private (UriFactoryInterface&MockObject)|(UriFactoryInterface&Stub)|null $uriFactory = null;
 
-    private (RequestFactoryInterface&MockObject)|null $requestFactory = null;
+    private (RequestFactoryInterface&MockObject)|(RequestFactoryInterface&Stub)|null $requestFactory = null;
 
-    private (StreamFactoryInterface&MockObject)|null $streamFactory = null;
+    private (StreamFactoryInterface&MockObject)|(StreamFactoryInterface&Stub)|null $streamFactory = null;
 
-    private (ClientInterface&MockObject)|null $client = null;
+    private (ClientInterface&MockObject)|(ClientInterface&Stub)|null $client = null;
 
-    public function getUriFactoryInterfaceMock(): UriFactoryInterface&MockObject
+    public function getUriFactoryInterfaceMock(bool $stub = false): (UriFactoryInterface&Stub)|(UriFactoryInterface&MockObject)
     {
         if (!$this->uriFactory instanceof UriFactoryInterface) {
-            $this->uriFactory = $this->createMock(UriFactoryInterface::class);
+            if ($stub) {
+                $this->uriFactory = $this->createStub(UriFactoryInterface::class);
+            } else {
+                $this->uriFactory = $this->createMock(UriFactoryInterface::class);
+            }
         }
 
         return $this->uriFactory;
     }
 
-    public function getRequestFactoryInterfaceMock(): RequestFactoryInterface&MockObject
+    public function getRequestFactoryInterfaceMock(bool $stub = false): (RequestFactoryInterface&Stub)|(RequestFactoryInterface&MockObject)
     {
         if (!$this->requestFactory instanceof RequestFactoryInterface) {
-            $this->requestFactory = $this->createMock(RequestFactoryInterface::class);
+            if ($stub) {
+                $this->requestFactory = $this->createStub(RequestFactoryInterface::class);
+            } else {
+                $this->requestFactory = $this->createMock(RequestFactoryInterface::class);
+            }
         }
 
         return $this->requestFactory;
     }
 
-    public function getStreamFactoryInterfaceMock(): StreamFactoryInterface&MockObject
+    public function getStreamFactoryInterfaceMock(bool $stub = false): (StreamFactoryInterface&Stub)|(StreamFactoryInterface&MockObject)
     {
         if (!$this->streamFactory instanceof StreamFactoryInterface) {
-            $this->streamFactory = $this->createMock(StreamFactoryInterface::class);
+            if ($stub) {
+                $this->streamFactory = $this->createStub(StreamFactoryInterface::class);
+            } else {
+                $this->streamFactory = $this->createMock(StreamFactoryInterface::class);
+            }
         }
 
         return $this->streamFactory;
     }
 
-    public function getClientInterfaceMock(): ClientInterface&MockObject
+    public function getClientInterfaceMock(bool $stub = false): (ClientInterface&Stub)|(ClientInterface&MockObject)
     {
         if (!$this->client instanceof ClientInterface) {
-            $this->client = $this->createMock(ClientInterface::class);
+            if ($stub) {
+                $this->client = $this->createStub(ClientInterface::class);
+            } else {
+                $this->client = $this->createMock(ClientInterface::class);
+            }
         }
 
         return $this->client;
@@ -86,30 +103,25 @@ trait RequestTestTrait
 
     private function doTest($object, $class, $argument): void
     {
-        $this->getUriFactoryInterfaceMock()
-            ->expects($this->any())
+        $this->getUriFactoryInterfaceMock(true)
             ->method('createUri')
-            ->willReturn($this->createMock(UriInterface::class));
+            ->willReturn($this->createStub(UriInterface::class));
 
-        $request = $this->createMock(RequestInterface::class);
+        $request = $this->createStub(RequestInterface::class);
 
-        $request->expects($this->any())
-            ->method('withAddedHeader')
+        $request->method('withAddedHeader')
             ->willReturnSelf();
 
-        $request->expects($this->any())
-            ->method('withBody')
+        $request->method('withBody')
             ->willReturnSelf($request);
 
-        $this->getRequestFactoryInterfaceMock()
-            ->expects($this->any())
+        $this->getRequestFactoryInterfaceMock(true)
             ->method('createRequest')
             ->willReturn($request);
 
-        $this->getStreamFactoryInterfaceMock()
-            ->expects($this->any())
+        $this->getStreamFactoryInterfaceMock(true)
             ->method('createStream')
-            ->willReturn($this->createMock(StreamInterface::class));
+            ->willReturn($this->createStub(StreamInterface::class));
 
         $this->getClientInterfaceMock()
             ->expects($this->once())

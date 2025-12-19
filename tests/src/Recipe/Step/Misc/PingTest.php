@@ -39,7 +39,7 @@ class PingTest extends TestCase
 {
     public function buildStep(): Ping
     {
-        return new Ping($this->createMock(PingServiceInterface::class));
+        return new Ping($this->createStub(PingServiceInterface::class));
     }
 
     public function testInvoke(): void

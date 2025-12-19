@@ -27,8 +27,9 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Form\Type;
 
 use ArrayIterator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -66,14 +67,15 @@ class SshIdentityTypeTest extends TestCase
 
     public function testConfigureOptions(): void
     {
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->configureOptions(
-            $this->createMock(OptionsResolver::class)
-        ));
+        $this->buildForm()->configureOptions(
+            $this->createStub(OptionsResolver::class)
+        );
+        $this->assertTrue(true);
     }
 
     public function testDataMapperWithSecureData(): void
     {
-        $builder = $this->createMock(FormBuilderInterface::class);
+        $builder = $this->createStub(FormBuilderInterface::class);
 
         $object = new SshIdentity(
             name: 'fooBar',
@@ -82,7 +84,7 @@ class SshIdentityTypeTest extends TestCase
 
         $builder
             ->method('setDataMapper')
-            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): \PHPUnit\Framework\MockObject\MockObject {
+            ->willReturnCallback(function (DataMapperInterface $dataMapper) use ($builder, $object): MockObject|Stub {
                 $children = [];
                 $formArray = $this->getFormArray();
                 $formArray['privateKey'] = '';
@@ -103,6 +105,7 @@ class SshIdentityTypeTest extends TestCase
                 return $builder;
             });
 
-        $this->assertInstanceOf(AbstractType::class, $this->buildForm()->buildForm($builder, []));
+        $this->buildForm()->buildForm($builder, []);
+        $this->assertTrue(true);
     }
 }

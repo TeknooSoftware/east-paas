@@ -43,7 +43,7 @@ class TranscriberCollectionTest extends TestCase
     {
         $this->assertInstanceOf(TranscriberCollection::class, new TranscriberCollection()->add(
             1,
-            $this->createMock(TranscriberInterface::class)
+            $this->createStub(TranscriberInterface::class)
         ));
     }
 
@@ -51,9 +51,9 @@ class TranscriberCollectionTest extends TestCase
     {
         $collection = new TranscriberCollection();
 
-        $c1 = $this->createMock(TranscriberInterface::class);
-        $c2 = $this->createMock(TranscriberInterface::class);
-        $c3 = $this->createMock(TranscriberInterface::class);
+        $c1 = $this->createStub(TranscriberInterface::class);
+        $c2 = $this->createStub(TranscriberInterface::class);
+        $c3 = $this->createStub(TranscriberInterface::class);
 
         $collection->add(2, $c1);
         $collection->add(1, $c2);

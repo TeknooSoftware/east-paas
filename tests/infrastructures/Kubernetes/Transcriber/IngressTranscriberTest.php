@@ -57,7 +57,7 @@ class IngressTranscriberTest extends TestCase
 
         $cd->expects($this->once())
             ->method('foreachIngress')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(
                     new Ingress(
                         'foo1',
@@ -116,7 +116,7 @@ class IngressTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
@@ -124,12 +124,12 @@ class IngressTranscriberTest extends TestCase
 
     public function testError(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachIngress')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(
                     new Ingress(
                         'foo1',
@@ -188,7 +188,7 @@ class IngressTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));

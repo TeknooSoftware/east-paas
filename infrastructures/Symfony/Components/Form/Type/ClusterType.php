@@ -67,7 +67,7 @@ class ClusterType extends AbstractType
      * @param FormBuilderInterface<Cluster> $builder
      * @param array<string, mixed> $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options): self
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $allowEditingOfLocked = $options['allowEditingOfLocked'] ?? false;
 
@@ -201,11 +201,9 @@ class ClusterType extends AbstractType
                 }
             }
         });
-
-        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver): self
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -216,7 +214,5 @@ class ClusterType extends AbstractType
             'data_class' => Cluster::class,
             'allowEditingOfLocked' => false,
         ]);
-
-        return $this;
     }
 }

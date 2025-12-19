@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Foundation\Client\ClientInterface;
@@ -48,12 +49,16 @@ use TypeError;
 #[CoversClass(BuildVolumes::class)]
 class BuildVolumesTest extends TestCase
 {
-    private (DispatchHistoryInterface&MockObject)|null $dispatchHistory = null;
+    private (DispatchHistoryInterface&MockObject)|(DispatchHistoryInterface&Stub)|null $dispatchHistory = null;
 
-    public function getDispatchHistoryMock(): DispatchHistoryInterface&MockObject
+    public function getDispatchHistoryMock(bool $stub = false): (DispatchHistoryInterface&Stub)|(DispatchHistoryInterface&MockObject)
     {
         if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
-            $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+            if ($stub) {
+                $this->dispatchHistory = $this->createStub(DispatchHistoryInterface::class);
+            } else {
+                $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+            }
         }
 
         return $this->dispatchHistory;
@@ -62,7 +67,7 @@ class BuildVolumesTest extends TestCase
     public function buildStep(): BuildVolumes
     {
         return new BuildVolumes(
-            $this->getDispatchHistoryMock(),
+            $this->getDispatchHistoryMock(true),
         );
     }
 
@@ -72,13 +77,13 @@ class BuildVolumesTest extends TestCase
 
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -87,14 +92,14 @@ class BuildVolumesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(VolumeBuilder::class),
+            $this->createStub(VolumeBuilder::class),
             new stdClass(),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -103,14 +108,14 @@ class BuildVolumesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(VolumeBuilder::class),
-            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createStub(VolumeBuilder::class),
+            $this->createStub(CompiledDeploymentInterface::class),
             new stdClass(),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -119,14 +124,14 @@ class BuildVolumesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(VolumeBuilder::class),
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(VolumeBuilder::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
             new stdClass(),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -135,14 +140,14 @@ class BuildVolumesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(VolumeBuilder::class),
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(VolumeBuilder::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -151,13 +156,13 @@ class BuildVolumesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(VolumeBuilder::class),
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(VolumeBuilder::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
             new stdClass()
         );
     }
@@ -165,16 +170,16 @@ class BuildVolumesTest extends TestCase
     public function testInvoke(): void
     {
         $volumeBuilder = $this->createMock(VolumeBuilder::class);
-        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
+        $compileDep = $this->createStub(CompiledDeploymentInterface::class);
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $client =  $this->createMock(ClientInterface::class);
-        $manager = $this->createMock(ManagerInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $client =  $this->createStub(ClientInterface::class);
+        $manager = $this->createStub(ManagerInterface::class);
 
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                static function (callable $callback) use ($workspace): MockObject {
+                static function (callable $callback) use ($workspace): MockObject|Stub {
                     $callback('/foo/bar');
 
                     return $workspace;
@@ -184,7 +189,7 @@ class BuildVolumesTest extends TestCase
         $volumeBuilder->expects($this->once())
             ->method('buildVolumes')
             ->willReturnCallback(
-                static function ($compiledDeployment, $root, PromiseInterface $promise) use ($volumeBuilder): MockObject {
+                static function ($compiledDeployment, $root, PromiseInterface $promise) use ($volumeBuilder): MockObject|Stub {
                     $promise->success('fooBar');
 
                     return $volumeBuilder;
@@ -214,16 +219,16 @@ class BuildVolumesTest extends TestCase
     public function testInvokeOnError(): void
     {
         $volumeBuilder = $this->createMock(VolumeBuilder::class);
-        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
+        $compileDep = $this->createStub(CompiledDeploymentInterface::class);
         $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $client =  $this->createMock(ClientInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $client =  $this->createStub(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                static function (callable $callback) use ($workspace): MockObject {
+                static function (callable $callback) use ($workspace): MockObject|Stub {
                     $callback('/foo/bar');
 
                     return $workspace;
@@ -233,7 +238,7 @@ class BuildVolumesTest extends TestCase
         $volumeBuilder->expects($this->once())
             ->method('buildVolumes')
             ->willReturnCallback(
-                static function ($compiledDeployment, $root, PromiseInterface $promise) use ($volumeBuilder): MockObject {
+                static function ($compiledDeployment, $root, PromiseInterface $promise) use ($volumeBuilder): MockObject|Stub {
                     $promise->fail(new Exception());
 
                     return $volumeBuilder;

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -42,12 +43,16 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(DeserializeJob::class)]
 class DeserializeJobTest extends TestCase
 {
-    private (DeserializerInterface&MockObject)|null $deserializer = null;
+    private (DeserializerInterface&MockObject)|(DeserializerInterface&Stub)|null $deserializer = null;
 
-    public function getDeserializer(): DeserializerInterface&MockObject
+    public function getDeserializer(bool $stub = false): (DeserializerInterface&Stub)|(DeserializerInterface&MockObject)
     {
         if (!$this->deserializer instanceof DeserializerInterface) {
-            $this->deserializer = $this->createMock(DeserializerInterface::class);
+            if ($stub) {
+                $this->deserializer = $this->createStub(DeserializerInterface::class);
+            } else {
+                $this->deserializer = $this->createMock(DeserializerInterface::class);
+            }
         }
 
         return $this->deserializer;
@@ -56,7 +61,7 @@ class DeserializeJobTest extends TestCase
     public function buildStep(): DeserializeJob
     {
         return new DeserializeJob(
-            $this->getDeserializer(),
+            $this->getDeserializer(true),
             ['foo' => 'bar'],
         );
     }
@@ -66,7 +71,7 @@ class DeserializeJobTest extends TestCase
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -81,9 +86,9 @@ class DeserializeJobTest extends TestCase
 
     public function testInvoke(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $this->getDeserializer()
             ->expects($this->once())
@@ -96,7 +101,7 @@ class DeserializeJobTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ) use ($job): DeserializerInterface&MockObject {
+                ) use ($job): (DeserializerInterface&MockObject)|(DeserializerInterface&Stub) {
                     $promise->success($job);
 
                     return $this->getDeserializer();
@@ -116,16 +121,16 @@ class DeserializeJobTest extends TestCase
 
     public function testInvokeWithExtra(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
         $job->method('runWithExtra')->willReturnCallback(
-            function (callable $callback) use ($job): MockObject {
+            function (callable $callback) use ($job): MockObject|Stub {
                 $callback(['foo' => 'bar']);
 
                 return $job;
             }
         );
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $this->getDeserializer()
             ->expects($this->once())
@@ -138,7 +143,7 @@ class DeserializeJobTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ) use ($job): DeserializerInterface&MockObject {
+                ) use ($job): (DeserializerInterface&MockObject)|(DeserializerInterface&Stub) {
                     $promise->success($job);
 
                     return $this->getDeserializer();
@@ -167,7 +172,7 @@ class DeserializeJobTest extends TestCase
     public function testInvokeErrorInDeserialization(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $error = new \Exception('fooBar');
         $this->getDeserializer()
@@ -182,7 +187,7 @@ class DeserializeJobTest extends TestCase
                     string $format,
                     PromiseInterface $promise,
                     array $context = []
-                ) use ($error): DeserializerInterface&MockObject {
+                ) use ($error): (DeserializerInterface&MockObject)|(DeserializerInterface&Stub) {
                     $promise->fail($error);
 
                     return $this->getDeserializer();

@@ -58,7 +58,7 @@ class ServiceTranscriberTest extends TestCase
 
         $cd->expects($this->once())
             ->method('foreachService')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(
                     new Service('foo', 'foo', [80 => 8080], Transport::Udp, false),
                     'a-prefix',
@@ -103,7 +103,7 @@ class ServiceTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
@@ -111,11 +111,11 @@ class ServiceTranscriberTest extends TestCase
 
     public function testError(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachService')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(
                     new Service('foo', 'foo', [80 => 8080], Transport::Tcp, false),
                     'a-prefix',
@@ -161,7 +161,7 @@ class ServiceTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));

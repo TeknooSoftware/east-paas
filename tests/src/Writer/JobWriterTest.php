@@ -44,7 +44,11 @@ class JobWriterTest extends TestCase
 
     public function buildWriter(bool $preferRealDateOnUpdate = false): WriterInterface
     {
-        return new JobWriter(manager: $this->getObjectManager(), preferRealDateOnUpdate: $preferRealDateOnUpdate);
+        return new JobWriter(
+            manager: $this->getObjectManager(true),
+            datesService: $this->getDatesServiceMock(true),
+            preferRealDateOnUpdate: $preferRealDateOnUpdate,
+        );
     }
 
     /**
@@ -53,6 +57,6 @@ class JobWriterTest extends TestCase
      */
     public function getObject()
     {
-        return new Job($this->createMock(Project::class));
+        return new Job($this->createStub(Project::class));
     }
 }

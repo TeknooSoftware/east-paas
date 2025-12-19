@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Git;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use ReflectionProperty;
 use stdClass;
 use Symfony\Component\Process\Process;
@@ -51,19 +52,19 @@ use TypeError;
 #[CoversClass(Hook::class)]
 class HookTest extends TestCase
 {
-    private (MockObject&ProcessFactoryInterface)|null $processFactory = null;
+    private (ProcessFactoryInterface&MockObject)|(ProcessFactoryInterface&Stub)|null $processFactory = null;
 
-    private (MockObject&Process)|null $process = null;
+    private (Process&MockObject)|(Process&Stub)|null $process = null;
 
-    public function getProcessFactoryMock(bool $isSuccessFull = true): MockObject&ProcessFactoryInterface
+    public function getProcessFactoryMock(bool $isSuccessFull = true): (ProcessFactoryInterface&MockObject)|(ProcessFactoryInterface&Stub)
     {
         if (!$this->processFactory instanceof ProcessFactoryInterface) {
-            $this->processFactory = $this->createMock(ProcessFactoryInterface::class);
+            $this->processFactory = $this->createStub(ProcessFactoryInterface::class);
             $this->processFactory
                 ->method('__invoke')
-                ->willReturn($this->getProcessMock());
+                ->willReturn($this->getProcessMock(true));
 
-            $this->getProcessMock()
+            $this->getProcessMock(true)
                 ->method('isSuccessFul')
                 ->willReturn($isSuccessFull);
         }
@@ -71,10 +72,14 @@ class HookTest extends TestCase
         return $this->processFactory;
     }
 
-    public function getProcessMock(): MockObject&Process
+    public function getProcessMock(bool $stub = false): (Process&MockObject)|(Process&Stub)
     {
         if (!$this->process instanceof Process) {
-            $this->process = $this->createMock(Process::class);
+            if ($stub) {
+                $this->process = $this->createStub(Process::class);
+            } else {
+                $this->process = $this->createMock(Process::class);
+            }
         }
 
         return $this->process;
@@ -83,7 +88,7 @@ class HookTest extends TestCase
     public function buildHook(): Hook
     {
         return new Hook(
-            $this->getProcessFactoryMock(),
+            $this->getProcessFactoryMock(true),
             'private.key',
         );
     }
@@ -93,7 +98,7 @@ class HookTest extends TestCase
         $this->expectException(TypeError::class);
         $this->buildHook()->setContext(
             new stdClass(),
-            $this->createMock(JobWorkspaceInterface::class)
+            $this->createStub(JobWorkspaceInterface::class)
         );
     }
 
@@ -101,7 +106,7 @@ class HookTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildHook()->setContext(
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass()
         );
     }
@@ -111,8 +116,8 @@ class HookTest extends TestCase
         $this->assertInstanceOf(
             Hook::class,
             $this->buildHook()->setContext(
-                $this->createMock(JobUnitInterface::class),
-                $this->createMock(JobWorkspaceInterface::class)
+                $this->createStub(JobUnitInterface::class),
+                $this->createStub(JobWorkspaceInterface::class)
             )
         );
     }
@@ -134,7 +139,7 @@ class HookTest extends TestCase
     public function testSetOptionsBadOptions(): void
     {
         $this->expectException(TypeError::class);
-        $this->buildHook()->setOptions(new stdClass(), $this->createMock(PromiseInterface::class));
+        $this->buildHook()->setOptions(new stdClass(), $this->createStub(PromiseInterface::class));
     }
 
     public function testSetOptionsBadPromise(): void
@@ -145,7 +150,7 @@ class HookTest extends TestCase
 
     public function testSetOptions(): void
     {
-        $promise = $this->createMock(PromiseInterface::class);
+        $promise = $this->createStub(PromiseInterface::class);
 
         $this->assertInstanceOf(
             Hook::class,
@@ -161,7 +166,6 @@ class HookTest extends TestCase
 
     public function testRunWithSsh(): void
     {
-        $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
         $workspace->expects($this->once())
@@ -192,6 +196,7 @@ class HookTest extends TestCase
             ->expects($this->once())
             ->method('run');
 
+        $hook = $this->buildHook();
         $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setOptions(
@@ -200,7 +205,7 @@ class HookTest extends TestCase
                     'key' => 'fooBar',
                     'path' => '/bar'
                 ],
-                $this->createMock(PromiseInterface::class)
+                $this->createStub(PromiseInterface::class)
             )
         );
 
@@ -212,7 +217,7 @@ class HookTest extends TestCase
         $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setContext(
-                $this->createMock(JobUnitInterface::class),
+                $this->createStub(JobUnitInterface::class),
                 $workspace
             )
         );
@@ -229,7 +234,6 @@ class HookTest extends TestCase
 
     public function testRunWithHttp(): void
     {
-        $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
         $workspace->expects($this->never())
@@ -246,6 +250,7 @@ class HookTest extends TestCase
             ->expects($this->never())
             ->method('run');
 
+        $hook = $this->buildHook();
         $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setOptions(
@@ -253,7 +258,7 @@ class HookTest extends TestCase
                     'url' => 'http://foo.bar',
                     'path' => '/bar'
                 ],
-                $this->createMock(PromiseInterface::class)
+                $this->createStub(PromiseInterface::class)
             )
         );
 
@@ -265,7 +270,7 @@ class HookTest extends TestCase
         $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setContext(
-                $this->createMock(JobUnitInterface::class),
+                $this->createStub(JobUnitInterface::class),
                 $workspace
             )
         );
@@ -282,7 +287,6 @@ class HookTest extends TestCase
 
     public function testRunWithHttps(): void
     {
-        $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
         $workspace->expects($this->never())
@@ -304,6 +308,7 @@ class HookTest extends TestCase
             ->expects($this->once())
             ->method('run');
 
+        $hook = $this->buildHook();
         $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setOptions(
@@ -311,7 +316,7 @@ class HookTest extends TestCase
                     'url' => 'https://bar.foo',
                     'path' => '/bar'
                 ],
-                $this->createMock(PromiseInterface::class)
+                $this->createStub(PromiseInterface::class)
             )
         );
 
@@ -323,7 +328,7 @@ class HookTest extends TestCase
         $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setContext(
-                $this->createMock(JobUnitInterface::class),
+                $this->createStub(JobUnitInterface::class),
                 $workspace
             )
         );
@@ -340,8 +345,6 @@ class HookTest extends TestCase
 
     public function testRunWithError(): void
     {
-        $this->getProcessFactoryMock(false);
-        $hook = $this->buildHook();
         $workspace = $this->createMock(JobWorkspaceInterface::class);
 
         $workspace->expects($this->once())
@@ -372,6 +375,8 @@ class HookTest extends TestCase
             ->expects($this->once())
             ->method('run');
 
+        $this->getProcessFactoryMock(false);
+        $hook = $this->buildHook();
         $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setOptions(
@@ -380,7 +385,7 @@ class HookTest extends TestCase
                     'key' => 'fooBar',
                     'path' => '/bar'
                 ],
-                $this->createMock(PromiseInterface::class)
+                $this->createStub(PromiseInterface::class)
             )
         );
 
@@ -392,7 +397,7 @@ class HookTest extends TestCase
         $this->assertInstanceOf(
             Hook::class,
             $hook = $hook->setContext(
-                $this->createMock(JobUnitInterface::class),
+                $this->createStub(JobUnitInterface::class),
                 $workspace
             )
         );

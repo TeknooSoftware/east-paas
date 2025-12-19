@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Comma
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
@@ -52,7 +53,7 @@ class DisplayHistoryHandlerTest extends TestCase
 
     public function testInvokeWithoutOutput(): void
     {
-        $this->assertInstanceOf(DisplayHistoryHandler::class, ($this->buildStep(null))($this->createMock(HistorySent::class)));
+        $this->assertInstanceOf(DisplayHistoryHandler::class, ($this->buildStep(null))($this->createStub(HistorySent::class)));
     }
 
     public function testInvoke(): void
@@ -62,7 +63,7 @@ class DisplayHistoryHandlerTest extends TestCase
         $output->expects($this->once())
             ->method('writeln');
 
-        $this->assertInstanceOf(DisplayHistoryHandler::class, ($this->buildStep(null)->setOutput($output))($this->createMock(HistorySent::class)));
+        $this->assertInstanceOf(DisplayHistoryHandler::class, ($this->buildStep(null)->setOutput($output))($this->createStub(HistorySent::class)));
     }
 
     public function testInvokeWithEncryption(): void
@@ -72,17 +73,17 @@ class DisplayHistoryHandlerTest extends TestCase
         $output->expects($this->once())
             ->method('writeln');
 
-        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption = $this->createStub(EncryptionInterface::class);
         $encryption
             ->method('decrypt')
             ->willReturnCallback(
-                function (SensitiveContentInterface $data, PromiseInterface $promise) use ($encryption): MockObject {
+                function (SensitiveContentInterface $data, PromiseInterface $promise) use ($encryption): MockObject|Stub {
                     $promise->success($data);
 
                     return $encryption;
                 }
             );
 
-        $this->assertInstanceOf(DisplayHistoryHandler::class, ($this->buildStep($encryption)->setOutput($output))($this->createMock(HistorySent::class)));
+        $this->assertInstanceOf(DisplayHistoryHandler::class, ($this->buildStep($encryption)->setOutput($output))($this->createStub(HistorySent::class)));
     }
 }

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Misc;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -42,12 +43,16 @@ use Throwable;
 #[CoversClass(DispatchError::class)]
 class DispatchErrorTest extends TestCase
 {
-    private (ErrorFactoryInterface&MockObject)|null $errorFactory = null;
+    private (ErrorFactoryInterface&MockObject)|(ErrorFactoryInterface&Stub)|null $errorFactory = null;
 
-    public function geterrorFactoryMock(): ErrorFactoryInterface&MockObject
+    public function geterrorFactoryMock(bool $stub = false): (ErrorFactoryInterface&Stub)|(ErrorFactoryInterface&MockObject)
     {
         if (!$this->errorFactory instanceof ErrorFactoryInterface) {
-            $this->errorFactory = $this->createMock(ErrorFactoryInterface::class);
+            if ($stub) {
+                $this->errorFactory = $this->createStub(ErrorFactoryInterface::class);
+            } else {
+                $this->errorFactory = $this->createMock(ErrorFactoryInterface::class);
+            }
         }
 
         return $this->errorFactory;
@@ -55,15 +60,15 @@ class DispatchErrorTest extends TestCase
 
     public function buildStep(): DispatchError
     {
-        return new DispatchError($this->geterrorFactoryMock());
+        return new DispatchError($this->geterrorFactoryMock(true));
     }
 
     public function testInvoke(): void
     {
         $this->assertInstanceOf(DispatchError::class, $this->buildStep()(
-            $this->createMock(ManagerInterface::class),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(Throwable::class),
+            $this->createStub(ManagerInterface::class),
+            $this->createStub(ClientInterface::class),
+            $this->createStub(Throwable::class),
         ));
     }
 

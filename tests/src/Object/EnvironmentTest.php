@@ -103,7 +103,7 @@ class EnvironmentTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->exportToMeData(
-            $this->createMock(EastNormalizerInterface::class),
+            $this->createStub(EastNormalizerInterface::class),
             new \stdClass()
         );
     }

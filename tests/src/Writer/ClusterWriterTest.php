@@ -43,7 +43,11 @@ class ClusterWriterTest extends TestCase
 
     public function buildWriter(bool $preferRealDateOnUpdate = false): WriterInterface
     {
-        return new ClusterWriter(manager: $this->getObjectManager(), preferRealDateOnUpdate: $preferRealDateOnUpdate);
+        return new ClusterWriter(
+            manager: $this->getObjectManager(true),
+            datesService: $this->getDatesServiceMock(true),
+            preferRealDateOnUpdate: $preferRealDateOnUpdate,
+        );
     }
 
     public function getObject()

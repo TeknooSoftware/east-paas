@@ -36,6 +36,7 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface
 use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Generator;
@@ -59,17 +60,21 @@ use function strpos;
 #[CoversClass(ImageWrapper::class)]
 class ImageWrapperTest extends TestCase
 {
-    private (ProcessFactoryInterface&MockObject)|null $processFactory = null;
+    private (ProcessFactoryInterface&MockObject)|(ProcessFactoryInterface&Stub)|null $processFactory = null;
 
     protected function tearDown(): void
     {
         set_time_limit(0);
     }
 
-    public function getProcessFactoryMock(): ProcessFactoryInterface&MockObject
+    public function getProcessFactoryMock(bool $stub = false): (ProcessFactoryInterface&Stub)|(ProcessFactoryInterface&MockObject)
     {
         if (!$this->processFactory instanceof ProcessFactoryInterface) {
-            $this->processFactory = $this->createMock(ProcessFactoryInterface::class);
+            if ($stub) {
+                $this->processFactory = $this->createStub(ProcessFactoryInterface::class);
+            } else {
+                $this->processFactory = $this->createMock(ProcessFactoryInterface::class);
+            }
         }
 
         return $this->processFactory;
@@ -84,7 +89,7 @@ class ImageWrapperTest extends TestCase
                 'embedded-volume-image' => 'foo',
                 'volume' => 'bar',
             ],
-            $this->getProcessFactoryMock(),
+            $this->getProcessFactoryMock(true),
             'foo',
             $timeout
         );
@@ -98,7 +103,7 @@ class ImageWrapperTest extends TestCase
             [
                 'volume' => 'bar',
             ],
-            $this->getProcessFactoryMock(),
+            $this->getProcessFactoryMock(true),
             'foo',
             0,
         );
@@ -112,7 +117,7 @@ class ImageWrapperTest extends TestCase
             [
                 'image' => 'foo',
             ],
-            $this->getProcessFactoryMock(),
+            $this->getProcessFactoryMock(true),
             'foo',
             0
         );
@@ -124,7 +129,7 @@ class ImageWrapperTest extends TestCase
         $this->buildWrapper()->configure(
             'bar',
             new stdClass(),
-            $this->createMock(IdentityInterface::class)
+            $this->createStub(IdentityInterface::class)
         );
     }
 
@@ -134,7 +139,7 @@ class ImageWrapperTest extends TestCase
         $this->buildWrapper()->configure(
             new stdClass(),
             'bar',
-            $this->createMock(IdentityInterface::class)
+            $this->createStub(IdentityInterface::class)
         );
     }
 
@@ -154,7 +159,7 @@ class ImageWrapperTest extends TestCase
         $this->buildWrapper()->configure(
             'foo',
             'bar',
-            $this->createMock(IdentityInterface::class)
+            $this->createStub(IdentityInterface::class)
         );
     }
 
@@ -163,7 +168,7 @@ class ImageWrapperTest extends TestCase
         $this->assertInstanceOf(ImageWrapper::class, $this->buildWrapper()->configure(
             'foo',
             'bar',
-            $this->createMock(XRegistryAuth::class)
+            $this->createStub(XRegistryAuth::class)
         ));
     }
 
@@ -173,7 +178,7 @@ class ImageWrapperTest extends TestCase
         $this->buildWrapper()->buildImages(
             new stdClass(),
             'foo',
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -181,9 +186,9 @@ class ImageWrapperTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildWrapper()->buildImages(
-            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
             new stdClass(),
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
         );
     }
 
@@ -191,7 +196,7 @@ class ImageWrapperTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildWrapper()->buildImages(
-            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
             'foo',
             new stdClass()
         );
@@ -202,7 +207,7 @@ class ImageWrapperTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachBuildable')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
 
@@ -214,7 +219,7 @@ class ImageWrapperTest extends TestCase
         $cd->expects($this->exactly(2))
             ->method('updateBuildable')
             ->willReturnCallback(
-                function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd): MockObject {
+                function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd): MockObject|Stub {
                     $this->assertEquals(0, strpos($image->getUrl(), 'repository.teknoo.run'));
 
                     return $cd;
@@ -260,7 +265,7 @@ class ImageWrapperTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachBuildable')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $volumes = [
                     new PersistentVolume('v!', '/bar', 'pv'),
@@ -275,7 +280,7 @@ class ImageWrapperTest extends TestCase
 
         $cd->expects($this->exactly(2))
             ->method('updateBuildable')
-            ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd): MockObject {
+            ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd): MockObject|Stub {
                 $this->assertEquals(0, strpos($image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
@@ -284,7 +289,7 @@ class ImageWrapperTest extends TestCase
         $this->getProcessFactoryMock()
             ->expects($this->exactly(2))
             ->method('__invoke')
-            ->willReturnCallback(function (): MockObject {
+            ->willReturnCallback(function (): MockObject|Stub {
                 $process = $this->createMock(Process::class);
                 $process->expects($this->once())->method('isSuccessful')->willReturn(true);
                 $process->expects($this->once())->method('getOutput')->willReturn('foo');
@@ -316,7 +321,7 @@ class ImageWrapperTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachBuildable')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
                 $image2 = new Image('bar', '/bar', true, '7.4', []);
 
@@ -327,7 +332,7 @@ class ImageWrapperTest extends TestCase
 
         $cd->expects($this->exactly(2))
             ->method('updateBuildable')
-            ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd): MockObject {
+            ->willReturnCallback(function (BuildableInterface $oldImage, BuildableInterface $image) use ($cd): MockObject|Stub {
                 $this->assertEquals(0, strpos($image->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
@@ -336,7 +341,7 @@ class ImageWrapperTest extends TestCase
         $this->getProcessFactoryMock()
             ->expects($this->exactly(2))
             ->method('__invoke')
-            ->willReturnCallback(function (): MockObject {
+            ->willReturnCallback(function (): MockObject|Stub {
                 $process = $this->createMock(Process::class);
                 $process->expects($this->once())->method('isSuccessful')->willReturn(true);
                 $process->expects($this->once())->method('getOutput')->willReturn('foo');
@@ -369,7 +374,7 @@ class ImageWrapperTest extends TestCase
         $this->buildWrapper()->buildVolumes(
             new stdClass(),
             'foo',
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -377,9 +382,9 @@ class ImageWrapperTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildWrapper()->buildVolumes(
-            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
             new stdClass(),
-            $this->createMock(PromiseInterface::class)
+            $this->createStub(PromiseInterface::class)
         );
     }
 
@@ -387,7 +392,7 @@ class ImageWrapperTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildWrapper()->buildVolumes(
-            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
             'foo',
             new stdClass()
         );
@@ -398,7 +403,7 @@ class ImageWrapperTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachVolume')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
                 $volume2 = new Volume('bar1', ['bar' => 'foo/bar'], '/bar', '/mount');
 
@@ -418,7 +423,7 @@ class ImageWrapperTest extends TestCase
                     }
                 )
             )
-            ->willReturnCallback(function ($name, Volume $volume) use ($cd): MockObject {
+            ->willReturnCallback(function ($name, Volume $volume) use ($cd): MockObject|Stub {
                 $this->assertEquals(0, strpos($volume->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
@@ -463,10 +468,10 @@ class ImageWrapperTest extends TestCase
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachVolume')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
                 $volume2 = new Volume('bar1', ['bar' => 'foo'], '/bar', '/mount');
-                $volume3 = $this->createMock(PersistentVolume::class);
+                $volume3 = $this->createStub(PersistentVolume::class);
 
                 $callback('foo', $volume1);
                 $callback('bar', $volume2);
@@ -485,7 +490,7 @@ class ImageWrapperTest extends TestCase
                     }
                 )
             )
-            ->willReturnCallback(function ($name, Volume $volume) use ($cd): MockObject {
+            ->willReturnCallback(function ($name, Volume $volume) use ($cd): MockObject|Stub {
                 $this->assertEquals(0, strpos($volume->getUrl(), 'repository.teknoo.run'));
 
                 return $cd;
@@ -494,7 +499,7 @@ class ImageWrapperTest extends TestCase
         $this->getProcessFactoryMock()
             ->expects($this->exactly(2))
             ->method('__invoke')
-            ->willReturnCallback(function (): MockObject {
+            ->willReturnCallback(function (): MockObject|Stub {
                 $process = $this->createMock(Process::class);
                 $process->expects($this->once())->method('isSuccessful')->willReturn(true);
                 $process->expects($this->once())->method('getOutput')->willReturn('foo');

@@ -45,7 +45,7 @@ class JobTest extends TestCase
         return new Job(
             name: 'foo',
             pods: [
-                'bar' => $this->createMock(Pod::class),
+                'bar' => $this->createStub(Pod::class),
             ],
             completionsCount: 1,
             isParallel: true,
@@ -65,7 +65,7 @@ class JobTest extends TestCase
 
     public function testGetPods(): void
     {
-        $this->assertEquals(['bar' => $this->createMock(Pod::class)], $this->createJob()->getPods());
+        $this->assertEquals(['bar' => $this->createStub(Pod::class)], $this->createJob()->getPods());
     }
 
     public function testGetCompletionsCount(): void

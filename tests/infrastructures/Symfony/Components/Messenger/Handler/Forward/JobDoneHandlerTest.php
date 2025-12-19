@@ -51,14 +51,14 @@ class JobDoneHandlerTest extends TestCase
             ->method('__invoke');
 
         $this->assertInstanceOf(JobDoneHandler::class, ($this->buildStep()->setHandler($handler))(
-            $this->createMock(JobDone::class)
+            $this->createStub(JobDone::class)
         ));
     }
 
     public function testInvokeWithoutHandler(): void
     {
         $this->assertInstanceOf(JobDoneHandler::class, ($this->buildStep())(
-            $this->createMock(JobDone::class)
+            $this->createStub(JobDone::class)
         ));
     }
 }

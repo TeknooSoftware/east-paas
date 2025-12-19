@@ -56,7 +56,7 @@ class AccountType extends AbstractType
      * @param FormBuilderInterface<Account> $builder
      * @param array<string, string|bool> $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options): self
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -143,11 +143,9 @@ class AccountType extends AbstractType
                 $data->setQuotas($forms['quotas']->getData());
             }
         });
-
-        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver): self
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -160,7 +158,5 @@ class AccountType extends AbstractType
             'data_class' => Account::class,
             'namespaceIsReadonly' => false,
         ]);
-
-        return $this;
     }
 }

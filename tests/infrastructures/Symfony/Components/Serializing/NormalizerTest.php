@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use stdClass;
 use Teknoo\East\Paas\Infrastructures\Symfony\Serializing\Normalizer;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface as SymfonyNormalizerInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -44,12 +45,16 @@ use TypeError;
 #[CoversClass(Normalizer::class)]
 class NormalizerTest extends TestCase
 {
-    private (SymfonyNormalizerInterface&MockObject)|null $normalizer = null;
+    private (SymfonyNormalizerInterface&MockObject)|(SymfonyNormalizerInterface&Stub)|null $normalizer = null;
 
-    private function getSfNormalizerMock(): SymfonyNormalizerInterface&MockObject
+    private function getSfNormalizerMock(bool $stub = false): (SymfonyNormalizerInterface&Stub)|(SymfonyNormalizerInterface&MockObject)
     {
         if (!$this->normalizer instanceof SymfonyNormalizerInterface) {
-            $this->normalizer = $this->createMock(SymfonyNormalizerInterface::class);
+            if ($stub) {
+                $this->normalizer = $this->createStub(SymfonyNormalizerInterface::class);
+            } else {
+                $this->normalizer = $this->createMock(SymfonyNormalizerInterface::class);
+            }
         }
 
         return $this->normalizer;
@@ -58,7 +63,7 @@ class NormalizerTest extends TestCase
     public function buindNormalizer(): Normalizer
     {
         return new Normalizer(
-            $this->getSfNormalizerMock()
+            $this->getSfNormalizerMock(true)
         );
     }
 
@@ -78,7 +83,7 @@ class NormalizerTest extends TestCase
         $this->expectException(TypeError::class);
         $this->buindNormalizer()->normalize(
             new stdClass(),
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
             new stdClass(),
             []
         );
@@ -89,7 +94,7 @@ class NormalizerTest extends TestCase
         $this->expectException(TypeError::class);
         $this->buindNormalizer()->normalize(
             new stdClass(),
-            $this->createMock(PromiseInterface::class),
+            $this->createStub(PromiseInterface::class),
             'foo',
             new stdClass()
         );
@@ -101,7 +106,7 @@ class NormalizerTest extends TestCase
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        $this->getSfNormalizerMock()
+        $this->getSfNormalizerMock(true)
             ->method('normalize')
             ->willReturn(['foo' => 'bar']);
 
@@ -119,7 +124,7 @@ class NormalizerTest extends TestCase
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail');
 
-        $this->getSfNormalizerMock()
+        $this->getSfNormalizerMock(true)
             ->method('normalize')
             ->willThrowException(new Exception('foo'));
 

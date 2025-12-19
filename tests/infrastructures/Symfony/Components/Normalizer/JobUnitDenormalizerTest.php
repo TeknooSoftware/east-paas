@@ -70,13 +70,13 @@ class JobUnitDenormalizerTest extends TestCase
     public function testSetDenormalizer(): void
     {
         $this->assertInstanceOf(JobUnitDenormalizer::class, $this->buildNormalizer()->setDenormalizer(
-            $this->createMock(DenormalizerInterface::class)
+            $this->createStub(DenormalizerInterface::class)
         ));
     }
 
     public function testSupportsDenormalization(): void
     {
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $this->assertFalse($this->buildNormalizer()->supportsDenormalization(new stdClass(), 'foo'));
         $this->assertFalse($this->buildNormalizer()->supportsDenormalization(['foo' => 'bar'], 'foo'));
         $this->assertTrue($this->buildNormalizer()->setDenormalizer($denormalizer)->supportsDenormalization(['foo' => 'bar'], JobUnitInterface::class));
@@ -91,14 +91,14 @@ class JobUnitDenormalizerTest extends TestCase
     public function testDenormalizeNotArray(): void
     {
         $this->expectException(RuntimeException::class);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(new stdClass(), 'foo');
     }
 
     public function testDenormalizeNotClass(): void
     {
         $this->expectException(RuntimeException::class);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['foo' => 'bar'], 'foo');
     }
 
@@ -106,28 +106,28 @@ class JobUnitDenormalizerTest extends TestCase
     public function testDenormalizeNotId(): void
     {
         $this->expectException(NotSupportedException::class);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['foo' => 'bar'], JobUnitInterface::class);
     }
 
     public function testDenormalizeNotStringId(): void
     {
         $this->expectException(NotSupportedException::class);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['id' => new \stdClass()], JobUnitInterface::class);
     }
 
     public function testDenormalizeNotValidProject(): void
     {
         $this->expectException(NotSupportedException::class);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $this->buildNormalizer()->setDenormalizer($denormalizer)->denormalize(['id' => '123'], JobUnitInterface::class);
     }
 
     public function testDenormalizeNotValidrefix(): void
     {
         $this->expectException(NotSupportedException::class);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
         $project = [
             "@class" => "Teknoo\\Paas\\Object\\Project",
@@ -179,15 +179,15 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 null,
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+                $iregistry = $this->createStub(ImageRegistryInterface::class),
+                $env = $this->createStub(Environment::class),
+                $clusters = [$this->createStub(Cluster::class)],
+                $history = $this->createStub(History::class)
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -223,15 +223,15 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
                 null,
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+                $iregistry = $this->createStub(ImageRegistryInterface::class),
+                $env = $this->createStub(Environment::class),
+                $clusters = [$this->createStub(Cluster::class)],
+                $history = $this->createStub(History::class)
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -267,15 +267,15 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $srepo = $this->createStub(SourceRepositoryInterface::class),
                 null,
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+                $env = $this->createStub(Environment::class),
+                $clusters = [$this->createStub(Cluster::class)],
+                $history = $this->createStub(History::class)
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -311,15 +311,15 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
+                $srepo = $this->createStub(SourceRepositoryInterface::class),
                 null,
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+                $env = $this->createStub(Environment::class),
+                $clusters = [$this->createStub(Cluster::class)],
+                $history = $this->createStub(History::class)
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -355,15 +355,15 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
+                $srepo = $this->createStub(SourceRepositoryInterface::class),
+                $iregistry = $this->createStub(ImageRegistryInterface::class),
                 null,
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+                $clusters = [$this->createStub(Cluster::class)],
+                $history = $this->createStub(History::class)
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -399,15 +399,15 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
+                $srepo = $this->createStub(SourceRepositoryInterface::class),
+                $iregistry = $this->createStub(ImageRegistryInterface::class),
                 null,
-                $clusters = [$this->createMock(Cluster::class)],
-                $history = $this->createMock(History::class)
+                $clusters = [$this->createStub(Cluster::class)],
+                $history = $this->createStub(History::class)
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -443,15 +443,15 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
+                $srepo = $this->createStub(SourceRepositoryInterface::class),
+                $iregistry = $this->createStub(ImageRegistryInterface::class),
+                $env = $this->createStub(Environment::class),
                 [],
-                $history = $this->createMock(History::class)
+                $history = $this->createStub(History::class)
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -487,15 +487,15 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
+                $srepo = $this->createStub(SourceRepositoryInterface::class),
+                $iregistry = $this->createStub(ImageRegistryInterface::class),
+                $env = $this->createStub(Environment::class),
                 [new stdClass()],
-                $history = $this->createMock(History::class)
+                $history = $this->createStub(History::class)
             );
 
         $id = "c529be6e38cf3e40bea008eaee8bfb4f";
@@ -531,14 +531,14 @@ class JobUnitDenormalizerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer
             ->method('denormalize')
             ->willReturnOnConsecutiveCalls(
-                $srepo = $this->createMock(SourceRepositoryInterface::class),
-                $iregistry = $this->createMock(ImageRegistryInterface::class),
-                $env = $this->createMock(Environment::class),
-                $clusters = [$this->createMock(Cluster::class)],
+                $srepo = $this->createStub(SourceRepositoryInterface::class),
+                $iregistry = $this->createStub(ImageRegistryInterface::class),
+                $env = $this->createStub(Environment::class),
+                $clusters = [$this->createStub(Cluster::class)],
                 null
             );
 
@@ -578,11 +578,11 @@ class JobUnitDenormalizerTest extends TestCase
             ->method('denormalize')
             ->willReturnCallback(
                 $this->buildParametersVerification(
-                    $srepo = $this->createMock(SourceRepositoryInterface::class),
-                    $iregistry = $this->createMock(ImageRegistryInterface::class),
-                    $env = $this->createMock(Environment::class),
-                    $clusters = [$this->createMock(Cluster::class)],
-                    $history = $this->createMock(History::class),
+                    $srepo = $this->createStub(SourceRepositoryInterface::class),
+                    $iregistry = $this->createStub(ImageRegistryInterface::class),
+                    $env = $this->createStub(Environment::class),
+                    $clusters = [$this->createStub(Cluster::class)],
+                    $history = $this->createStub(History::class),
                 )
             );
 
@@ -638,11 +638,11 @@ class JobUnitDenormalizerTest extends TestCase
             ->method('denormalize')
             ->willReturnCallback(
                 $this->buildParametersVerification(
-                    $srepo = $this->createMock(SourceRepositoryInterface::class),
-                    $iregistry = $this->createMock(ImageRegistryInterface::class),
-                    $env = $this->createMock(Environment::class),
-                    $clusters = [$this->createMock(Cluster::class)],
-                    $history = $this->createMock(History::class),
+                    $srepo = $this->createStub(SourceRepositoryInterface::class),
+                    $iregistry = $this->createStub(ImageRegistryInterface::class),
+                    $env = $this->createStub(Environment::class),
+                    $clusters = [$this->createStub(Cluster::class)],
+                    $history = $this->createStub(History::class),
                 )
             );
 
@@ -697,11 +697,11 @@ class JobUnitDenormalizerTest extends TestCase
             ->method('denormalize')
             ->willReturnCallback(
                 $this->buildParametersVerification(
-                    $srepo = $this->createMock(SourceRepositoryInterface::class),
-                    $iregistry = $this->createMock(ImageRegistryInterface::class),
-                    $env = $this->createMock(Environment::class),
-                    $clusters = [$this->createMock(Cluster::class)],
-                    $history = $this->createMock(History::class),
+                    $srepo = $this->createStub(SourceRepositoryInterface::class),
+                    $iregistry = $this->createStub(ImageRegistryInterface::class),
+                    $env = $this->createStub(Environment::class),
+                    $clusters = [$this->createStub(Cluster::class)],
+                    $history = $this->createStub(History::class),
                 )
             );
 
@@ -751,11 +751,11 @@ class JobUnitDenormalizerTest extends TestCase
             ->method('denormalize')
             ->willReturnCallback(
                 $this->buildParametersVerification(
-                    $srepo = $this->createMock(SourceRepositoryInterface::class),
-                    $iregistry = $this->createMock(ImageRegistryInterface::class),
-                    $env = $this->createMock(Environment::class),
-                    $clusters = [$this->createMock(Cluster::class)],
-                    $history = $this->createMock(History::class),
+                    $srepo = $this->createStub(SourceRepositoryInterface::class),
+                    $iregistry = $this->createStub(ImageRegistryInterface::class),
+                    $env = $this->createStub(Environment::class),
+                    $clusters = [$this->createStub(Cluster::class)],
+                    $history = $this->createStub(History::class),
                 )
             );
 
@@ -812,11 +812,11 @@ class JobUnitDenormalizerTest extends TestCase
             ->method('denormalize')
             ->willReturnCallback(
                 $this->buildParametersVerification(
-                    $srepo = $this->createMock(SourceRepositoryInterface::class),
-                    $iregistry = $this->createMock(ImageRegistryInterface::class),
-                    $env = $this->createMock(Environment::class),
-                    $clusters = [$this->createMock(Cluster::class)],
-                    $history = $this->createMock(History::class),
+                    $srepo = $this->createStub(SourceRepositoryInterface::class),
+                    $iregistry = $this->createStub(ImageRegistryInterface::class),
+                    $env = $this->createStub(Environment::class),
+                    $clusters = [$this->createStub(Cluster::class)],
+                    $history = $this->createStub(History::class),
                 )
             );
 

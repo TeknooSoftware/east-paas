@@ -39,7 +39,7 @@ class UnsetTimeLimitTest extends TestCase
 {
     public function buildStep(): UnsetTimeLimit
     {
-        $mock = $this->createMock(TimeoutServiceInterface::class);
+        $mock = $this->createStub(TimeoutServiceInterface::class);
         return new UnsetTimeLimit(
             $mock
         );

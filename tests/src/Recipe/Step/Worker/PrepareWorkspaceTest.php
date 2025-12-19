@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -42,12 +43,16 @@ use TypeError;
 #[CoversClass(PrepareWorkspace::class)]
 class PrepareWorkspaceTest extends TestCase
 {
-    private (JobWorkspaceInterface&MockObject)|null $workspace = null;
+    private (JobWorkspaceInterface&MockObject)|(JobWorkspaceInterface&Stub)|null $workspace = null;
 
-    public function getWorkspaceMock(): JobWorkspaceInterface&MockObject
+    public function getWorkspaceMock(bool $stub = false): (JobWorkspaceInterface&Stub)|(JobWorkspaceInterface&MockObject)
     {
         if (!$this->workspace instanceof JobWorkspaceInterface) {
-            $this->workspace = $this->createMock(JobWorkspaceInterface::class);
+            if ($stub) {
+                $this->workspace = $this->createStub(JobWorkspaceInterface::class);
+            } else {
+                $this->workspace = $this->createMock(JobWorkspaceInterface::class);
+            }
         }
 
         return $this->workspace;
@@ -55,7 +60,7 @@ class PrepareWorkspaceTest extends TestCase
 
     public function buildStep(): PrepareWorkspace
     {
-        return new PrepareWorkspace($this->getWorkspaceMock());
+        return new PrepareWorkspace($this->getWorkspaceMock(true));
     }
 
     public function testInvokeBadJob(): void
@@ -63,7 +68,7 @@ class PrepareWorkspaceTest extends TestCase
         $this->expectException(TypeError::class);
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -71,14 +76,14 @@ class PrepareWorkspaceTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass()
         );
     }
 
     public function testInvoke(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $this->getWorkspaceMock()->expects($this->once())

@@ -44,7 +44,11 @@ class ProjectWriterTest extends TestCase
 
     public function buildWriter(bool $preferRealDateOnUpdate = false): WriterInterface
     {
-        return new ProjectWriter(manager: $this->getObjectManager(), preferRealDateOnUpdate: $preferRealDateOnUpdate);
+        return new ProjectWriter(
+            manager: $this->getObjectManager(true),
+            datesService: $this->getDatesServiceMock(true),
+            preferRealDateOnUpdate: $preferRealDateOnUpdate,
+        );
     }
 
     /**

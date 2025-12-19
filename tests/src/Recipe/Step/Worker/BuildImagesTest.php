@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Foundation\Client\ClientInterface;
@@ -48,12 +49,16 @@ use TypeError;
 #[CoversClass(BuildImages::class)]
 class BuildImagesTest extends TestCase
 {
-    private (DispatchHistoryInterface&MockObject)|null $dispatchHistory = null;
+    private (DispatchHistoryInterface&MockObject)|(DispatchHistoryInterface&Stub)|null $dispatchHistory = null;
 
-    public function getDispatchHistoryMock(): DispatchHistoryInterface&MockObject
+    public function getDispatchHistoryMock(bool $stub = false): (DispatchHistoryInterface&Stub)|(DispatchHistoryInterface&MockObject)
     {
         if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
-            $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+            if ($stub) {
+                $this->dispatchHistory = $this->createStub(DispatchHistoryInterface::class);
+            } else {
+                $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+            }
         }
 
         return $this->dispatchHistory;
@@ -62,7 +67,7 @@ class BuildImagesTest extends TestCase
     public function buildStep(): BuildImages
     {
         return new BuildImages(
-            $this->getDispatchHistoryMock(),
+            $this->getDispatchHistoryMock(true),
         );
     }
 
@@ -72,13 +77,13 @@ class BuildImagesTest extends TestCase
 
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -87,14 +92,14 @@ class BuildImagesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(ImageBuilder::class),
+            $this->createStub(ImageBuilder::class),
             new stdClass(),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -103,14 +108,14 @@ class BuildImagesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(ImageBuilder::class),
-            $this->createMock(CompiledDeploymentInterface::class),
+            $this->createStub(ImageBuilder::class),
+            $this->createStub(CompiledDeploymentInterface::class),
             new stdClass(),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -120,14 +125,14 @@ class BuildImagesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(ImageBuilder::class),
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(ImageBuilder::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
             new stdClass(),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -136,14 +141,14 @@ class BuildImagesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(ImageBuilder::class),
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(ImageBuilder::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -152,13 +157,13 @@ class BuildImagesTest extends TestCase
         $this->expectException(TypeError::class);
 
         ($this->buildStep())(
-            $this->createMock(ImageBuilder::class),
-            $this->createMock(CompiledDeploymentInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(ImageBuilder::class),
+            $this->createStub(CompiledDeploymentInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             'foo',
             'bar',
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
             new stdClass()
         );
     }
@@ -166,11 +171,11 @@ class BuildImagesTest extends TestCase
     public function testInvoke(): void
     {
         $imageBuilder = $this->createMock(ImageBuilder::class);
-        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
+        $compileDep = $this->createStub(CompiledDeploymentInterface::class);
         $jobWorkspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $client =  $this->createMock(ClientInterface::class);
-        $manager = $this->createMock(ManagerInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $client =  $this->createStub(ClientInterface::class);
+        $manager = $this->createStub(ManagerInterface::class);
 
         $imageBuilder->expects($this->once())
             ->method('buildImages')
@@ -215,10 +220,10 @@ class BuildImagesTest extends TestCase
     public function testInvokeOnError(): void
     {
         $imageBuilder = $this->createMock(ImageBuilder::class);
-        $compileDep = $this->createMock(CompiledDeploymentInterface::class);
+        $compileDep = $this->createStub(CompiledDeploymentInterface::class);
         $jobWorkspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $client =  $this->createMock(ClientInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $client =  $this->createStub(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $imageBuilder->expects($this->once())

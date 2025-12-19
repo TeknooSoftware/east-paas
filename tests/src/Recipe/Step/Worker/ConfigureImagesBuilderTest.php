@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -42,12 +43,16 @@ use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureImagesBuilder;
 #[CoversClass(ConfigureImagesBuilder::class)]
 class ConfigureImagesBuilderTest extends TestCase
 {
-    private (ImageBuilder&MockObject)|null $builder = null;
+    private (ImageBuilder&MockObject)|(ImageBuilder&Stub)|null $builder = null;
 
-    public function getBuilderMock(): ImageBuilder&MockObject
+    public function getBuilderMock(bool $stub = false): (ImageBuilder&Stub)|(ImageBuilder&MockObject)
     {
         if (!$this->builder instanceof ImageBuilder) {
-            $this->builder = $this->createMock(ImageBuilder::class);
+            if ($stub) {
+                $this->builder = $this->createStub(ImageBuilder::class);
+            } else {
+                $this->builder = $this->createMock(ImageBuilder::class);
+            }
         }
 
         return $this->builder;
@@ -56,7 +61,7 @@ class ConfigureImagesBuilderTest extends TestCase
     public function buildStep(): ConfigureImagesBuilder
     {
         return new ConfigureImagesBuilder(
-            $this->getBuilderMock(),
+            $this->getBuilderMock(true),
         );
     }
 
@@ -65,8 +70,8 @@ class ConfigureImagesBuilderTest extends TestCase
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
             new \stdClass(),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -74,9 +79,9 @@ class ConfigureImagesBuilderTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new \stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -84,26 +89,26 @@ class ConfigureImagesBuilderTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ClientInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ClientInterface::class),
             new \stdClass()
         );
     }
 
     public function testInvoke(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->with([ImageBuilder::class => $this->getBuilderMock()]);
+            ->with([ImageBuilder::class => $this->getBuilderMock(true)]);
 
         $job
             ->method('configureImageBuilder')
             ->willReturnCallback(
-                function (ImageBuilder $builder, PromiseInterface $promise) use ($job): MockObject {
+                function (ImageBuilder $builder, PromiseInterface $promise) use ($job): MockObject|Stub {
                     $promise->success(clone $builder);
 
                     return $job;
@@ -115,14 +120,14 @@ class ConfigureImagesBuilderTest extends TestCase
 
     public function testInvokeOnError(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $job
             ->method('configureImageBuilder')
             ->willReturnCallback(
-                function (ImageBuilder $builder, PromiseInterface $promise) use ($job): MockObject {
+                function (ImageBuilder $builder, PromiseInterface $promise) use ($job): MockObject|Stub {
                     $promise->fail(new \Exception());
 
                     return $job;

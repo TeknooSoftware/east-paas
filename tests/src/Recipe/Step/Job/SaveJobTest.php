@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Job;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -42,12 +43,16 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(SaveJob::class)]
 class SaveJobTest extends TestCase
 {
-    private (JobWriter&MockObject)|null $jobWriter = null;
+    private (JobWriter&MockObject)|(JobWriter&Stub)|null $jobWriter = null;
 
-    public function getjobWriterMock(): JobWriter&MockObject
+    public function getjobWriterMock(bool $stub = false): (JobWriter&Stub)|(JobWriter&MockObject)
     {
         if (!$this->jobWriter instanceof JobWriter) {
-            $this->jobWriter = $this->createMock(JobWriter::class);
+            if ($stub) {
+                $this->jobWriter = $this->createStub(JobWriter::class);
+            } else {
+                $this->jobWriter = $this->createMock(JobWriter::class);
+            }
         }
 
         return $this->jobWriter;
@@ -55,14 +60,14 @@ class SaveJobTest extends TestCase
 
     public function buildStep(): SaveJob
     {
-        return new SaveJob($this->getjobWriterMock());
+        return new SaveJob($this->getjobWriterMock(true));
     }
 
     public function testInvoke(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
         $client = $this->createMock(ClientInterface::class);
-        $job = $this->createMock(Job::class);
+        $job = $this->createStub(Job::class);
 
         $this->getjobWriterMock()
             ->expects($this->once())
@@ -89,8 +94,8 @@ class SaveJobTest extends TestCase
     public function testInvokeFailureOnProjectLoading(): void
     {
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
-        $job = $this->createMock(Job::class);
+        $client = $this->createStub(ClientInterface::class);
+        $job = $this->createStub(Job::class);
 
         $exception = new \DomainException();
 

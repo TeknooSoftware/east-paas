@@ -46,7 +46,7 @@ class AccountQuotaType extends AbstractType
      * @param FormBuilderInterface<AccountQuota> $builder
      * @param array<string, string|bool> $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options): self
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -67,18 +67,14 @@ class AccountQuotaType extends AbstractType
         $builder->add('capacity', TextType::class, ['required' => true]);
 
         $builder->add('requires', TextType::class, ['required' => false]);
-
-        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver): self
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
         $resolver->setDefaults([
             'data_class' => AccountQuota::class,
         ]);
-
-        return $this;
     }
 }

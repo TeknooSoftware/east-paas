@@ -44,7 +44,7 @@ class PodTest extends TestCase
         return new Pod(
             name: 'foo',
             replicas: 2,
-            containers: [$this->createMock(Container::class)],
+            containers: [$this->createStub(Container::class)],
             ociRegistryConfigName: 'bar',
             maxUpgradingPods: 3,
             maxUnavailablePods: 2,

@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\ProjectBuilding;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount as AnyInvokedCountMatcher;
+use PHPUnit\Framework\MockObject\Stub;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\AbstractHook;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts\ProcessFactoryInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -45,14 +46,9 @@ use function str_replace;
 #[CoversClass(AbstractHook::class)]
 class NpmHookTest extends TestCase
 {
-    public function publicCreateMock(string $originalClassName): MockObject
+    public function publicCreateMock(string $originalClassName): MockObject|Stub
     {
-        return parent::createMock($originalClassName);
-    }
-
-    public function publicAny(): AnyInvokedCountMatcher
-    {
-        return parent::any();
+        return parent::createStub($originalClassName);
     }
 
     public function buildHook(
@@ -80,7 +76,7 @@ class NpmHookTest extends TestCase
                     }
 
                     $process = $this->test->publicCreateMock(Process::class);
-                    $process->expects($this->test->publicAny())->method('isSuccessful')->willReturn($this->success);
+                    $process->method('isSuccessful')->willReturn($this->success);
 
                     return $process;
                 }
@@ -102,7 +98,7 @@ class NpmHookTest extends TestCase
     public function testSetOptionsBadOptions(): void
     {
         $this->expectException(\TypeError::class);
-        $this->buildHook()->setOptions(new \stdClass(), $this->createMock(PromiseInterface::class));
+        $this->buildHook()->setOptions(new \stdClass(), $this->createStub(PromiseInterface::class));
     }
 
     public function testSetOptionsNotScalar(): void

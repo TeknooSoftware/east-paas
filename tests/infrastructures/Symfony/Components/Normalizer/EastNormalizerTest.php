@@ -65,7 +65,7 @@ class EastNormalizerTest extends TestCase
 
         $object->expects($this->once())
             ->method('exportToMeData')
-            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject {
+            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject|Stub {
                 $this->assertInstanceOf(EastNormalizerBase::class, $nrmlz);
                 $this->assertNotSame($normalizer, $nrmlz);
                 $this->assertEquals($context, $ctxt);
@@ -91,7 +91,7 @@ class EastNormalizerTest extends TestCase
 
         $object->expects($this->once())
             ->method('exportToMeData')
-            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject {
+            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject|Stub {
                 $this->assertInstanceOf(EastNormalizerBase::class, $nrmlz);
                 $this->assertNotSame($normalizer, $nrmlz);
                 $this->assertEquals($context, $ctxt);
@@ -114,7 +114,7 @@ class EastNormalizerTest extends TestCase
 
         $object->expects($this->once())
             ->method('exportToMeData')
-            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject {
+            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject|Stub {
                 $this->assertInstanceOf(EastNormalizer::class, $nrmlz);
                 $this->assertNotSame($normalizer, $nrmlz);
                 $this->assertEquals($context, $ctxt);
@@ -144,7 +144,7 @@ class EastNormalizerTest extends TestCase
 
         $object->expects($this->once())
             ->method('exportToMeData')
-            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject {
+            ->willReturnCallback(function ($nrmlz, $ctxt) use ($normalizer, $object, $context, $returnValue): MockObject|Stub {
                 $this->assertInstanceOf(EastNormalizer::class, $nrmlz);
                 $this->assertNotSame($normalizer, $nrmlz);
                 $this->assertEquals($context, $ctxt);

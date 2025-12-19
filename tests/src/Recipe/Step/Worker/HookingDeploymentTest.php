@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Foundation\Client\ClientInterface;
 use Teknoo\East\Foundation\Manager\ManagerInterface;
@@ -46,12 +47,16 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 #[CoversClass(HookingDeployment::class)]
 class HookingDeploymentTest extends TestCase
 {
-    private (DispatchHistoryInterface&MockObject)|null $dispatchHistory = null;
+    private (DispatchHistoryInterface&MockObject)|(DispatchHistoryInterface&Stub)|null $dispatchHistory = null;
 
-    public function getDispatchHistoryMock(): DispatchHistoryInterface&MockObject
+    public function getDispatchHistoryMock(bool $stub = false): (DispatchHistoryInterface&Stub)|(DispatchHistoryInterface&MockObject)
     {
         if (!$this->dispatchHistory instanceof DispatchHistoryInterface) {
-            $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+            if ($stub) {
+                $this->dispatchHistory = $this->createStub(DispatchHistoryInterface::class);
+            } else {
+                $this->dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+            }
         }
 
         return $this->dispatchHistory;
@@ -60,7 +65,7 @@ class HookingDeploymentTest extends TestCase
     public function buildStep(): HookingDeployment
     {
         return new HookingDeployment(
-            $this->getDispatchHistoryMock(),
+            $this->getDispatchHistoryMock(true),
         );
     }
 
@@ -68,14 +73,14 @@ class HookingDeploymentTest extends TestCase
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $compiled = $this->createMock(CompiledDeploymentInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $client =  $this->createMock(ClientInterface::class);
-        $manager = $this->createMock(ManagerInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $client =  $this->createStub(ClientInterface::class);
+        $manager = $this->createStub(ManagerInterface::class);
 
         $hook1 = $this->createMock(HookInterface::class);
         $hook1->expects($this->once())->method('setPath')->with('foo/bar');
         $hook1->expects($this->once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook1): \PHPUnit\Framework\MockObject\MockObject {
+            function (PromiseInterface $promise) use ($hook1): MockObject|Stub {
                 $promise->success('foo');
 
                 return $hook1;
@@ -109,7 +114,7 @@ class HookingDeploymentTest extends TestCase
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
+                function (callable $callback) use ($workspace): MockObject|Stub {
                     $callback('foo/bar');
 
                     return $workspace;
@@ -119,7 +124,7 @@ class HookingDeploymentTest extends TestCase
         $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
-                function (callable $callback) use ($hook1, $hook2, $compiled): \PHPUnit\Framework\MockObject\MockObject {
+                function (callable $callback) use ($hook1, $hook2, $compiled): MockObject|Stub {
                     $callback($hook1);
                     $callback($hook2);
 
@@ -150,14 +155,14 @@ class HookingDeploymentTest extends TestCase
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $compiled = $this->createMock(CompiledDeploymentInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $client =  $this->createMock(ClientInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $client =  $this->createStub(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $hook1 = $this->createMock(HookInterface::class);
         $hook1->expects($this->once())->method('setPath')->with('foo/bar');
         $hook1->expects($this->once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook1): \PHPUnit\Framework\MockObject\MockObject {
+            function (PromiseInterface $promise) use ($hook1): MockObject|Stub {
                 $promise->fail(new \RuntimeException('foo'));
 
                 return $hook1;
@@ -170,7 +175,7 @@ class HookingDeploymentTest extends TestCase
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
+                function (callable $callback) use ($workspace): MockObject|Stub {
                     $callback('foo/bar');
 
                     return $workspace;
@@ -180,7 +185,7 @@ class HookingDeploymentTest extends TestCase
         $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
-                function (callable $callback) use ($hook1, $hook2, $compiled): \PHPUnit\Framework\MockObject\MockObject {
+                function (callable $callback) use ($hook1, $hook2, $compiled): MockObject|Stub {
                     $callback($hook1);
                     $callback($hook2);
 
@@ -212,8 +217,8 @@ class HookingDeploymentTest extends TestCase
     {
         $workspace = $this->createMock(JobWorkspaceInterface::class);
         $compiled = $this->createMock(CompiledDeploymentInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
-        $client =  $this->createMock(ClientInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $client =  $this->createStub(ClientInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
 
         $project = 'foo';
@@ -222,7 +227,7 @@ class HookingDeploymentTest extends TestCase
         $hook1 = $this->createMock(HookInterface::class);
         $hook1->expects($this->once())->method('setPath')->with('foo/bar');
         $hook1->expects($this->once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook1): \PHPUnit\Framework\MockObject\MockObject {
+            function (PromiseInterface $promise) use ($hook1): MockObject|Stub {
                 $promise->success('foo');
 
                 return $hook1;
@@ -231,7 +236,7 @@ class HookingDeploymentTest extends TestCase
         $hook2 = $this->createMock(HookInterface::class);
         $hook2->expects($this->once())->method('setPath')->with('foo/bar');
         $hook2->expects($this->once())->method('run')->willReturnCallback(
-            function (PromiseInterface $promise) use ($hook2): \PHPUnit\Framework\MockObject\MockObject {
+            function (PromiseInterface $promise) use ($hook2): MockObject|Stub {
                 $promise->fail(new \RuntimeException('foo'));
 
                 return $hook2;
@@ -241,7 +246,7 @@ class HookingDeploymentTest extends TestCase
         $workspace->expects($this->once())
             ->method('runInRepositoryPath')
             ->willReturnCallback(
-                function (callable $callback) use ($workspace): \PHPUnit\Framework\MockObject\MockObject {
+                function (callable $callback) use ($workspace): MockObject|Stub {
                     $callback('foo/bar');
 
                     return $workspace;
@@ -251,7 +256,7 @@ class HookingDeploymentTest extends TestCase
         $compiled->expects($this->once())
             ->method('foreachHook')
             ->willReturnCallback(
-                function (callable $callback) use ($hook1, $hook2, $compiled): \PHPUnit\Framework\MockObject\MockObject {
+                function (callable $callback) use ($hook1, $hook2, $compiled): MockObject|Stub {
                     $callback($hook1);
                     $callback($hook2);
 

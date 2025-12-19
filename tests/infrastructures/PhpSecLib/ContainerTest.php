@@ -139,7 +139,7 @@ class ContainerTest extends TestCase
         $promise->expects($this->once())->method('fail');
 
         $service->decrypt(
-            $this->createMock(SensitiveContentInterface::class),
+            $this->createStub(SensitiveContentInterface::class),
             $promise,
         );
     }

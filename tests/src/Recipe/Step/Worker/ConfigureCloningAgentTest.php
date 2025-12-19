@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Recipe\Step\Worker;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Foundation\Client\ClientInterface;
@@ -46,12 +47,16 @@ use TypeError;
 #[CoversClass(ConfigureCloningAgent::class)]
 class ConfigureCloningAgentTest extends TestCase
 {
-    private (CloningAgentInterface&MockObject)|null $agent = null;
+    private (CloningAgentInterface&MockObject)|(CloningAgentInterface&Stub)|null $agent = null;
 
-    public function getAgentMock(): CloningAgentInterface&MockObject
+    public function getAgentMock(bool $stub = false): (CloningAgentInterface&Stub)|(CloningAgentInterface&MockObject)
     {
         if (!$this->agent instanceof CloningAgentInterface) {
-            $this->agent = $this->createMock(CloningAgentInterface::class);
+            if ($stub) {
+                $this->agent = $this->createStub(CloningAgentInterface::class);
+            } else {
+                $this->agent = $this->createMock(CloningAgentInterface::class);
+            }
         }
 
         return $this->agent;
@@ -60,7 +65,7 @@ class ConfigureCloningAgentTest extends TestCase
     public function buildStep(): ConfigureCloningAgent
     {
         return new ConfigureCloningAgent(
-            $this->getAgentMock(),
+            $this->getAgentMock(true),
         );
     }
 
@@ -69,9 +74,9 @@ class ConfigureCloningAgentTest extends TestCase
         $this->expectException(TypeError::class);
         ($this->buildStep())(
             new stdClass(),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -79,10 +84,10 @@ class ConfigureCloningAgentTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
+            $this->createStub(JobUnitInterface::class),
             new stdClass(),
-            $this->createMock(ClientInterface::class),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ClientInterface::class),
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -90,10 +95,10 @@ class ConfigureCloningAgentTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
             new stdClass(),
-            $this->createMock(ManagerInterface::class)
+            $this->createStub(ManagerInterface::class)
         );
     }
 
@@ -101,28 +106,28 @@ class ConfigureCloningAgentTest extends TestCase
     {
         $this->expectException(TypeError::class);
         ($this->buildStep())(
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(ClientInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(ClientInterface::class),
             new stdClass()
         );
     }
 
     public function testInvoke(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $manager->expects($this->once())
             ->method('updateWorkPlan')
-            ->with([CloningAgentInterface::class => $this->getAgentMock()]);
+            ->with([CloningAgentInterface::class => $this->getAgentMock(true)]);
 
         $job
             ->method('configureCloningAgent')
             ->willReturnCallback(
-                function (CloningAgentInterface $agent, JobWorkspaceInterface $workspace, PromiseInterface $promise) use ($job): MockObject {
+                function (CloningAgentInterface $agent, JobWorkspaceInterface $workspace, PromiseInterface $promise) use ($job): MockObject|Stub {
                     $promise->success(clone $agent);
 
                     return $job;
@@ -134,15 +139,15 @@ class ConfigureCloningAgentTest extends TestCase
 
     public function testInvokeOnError(): void
     {
-        $job = $this->createMock(JobUnitInterface::class);
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
+        $job = $this->createStub(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
         $manager = $this->createMock(ManagerInterface::class);
-        $client = $this->createMock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
 
         $job
             ->method('configureCloningAgent')
             ->willReturnCallback(
-                function (CloningAgentInterface $agent, JobWorkspaceInterface $workspace, PromiseInterface $promise) use ($job, $manager): MockObject {
+                function (CloningAgentInterface $agent, JobWorkspaceInterface $workspace, PromiseInterface $promise) use ($job, $manager): MockObject|Stub {
                     $promise->fail(new Exception());
 
                     return $job;

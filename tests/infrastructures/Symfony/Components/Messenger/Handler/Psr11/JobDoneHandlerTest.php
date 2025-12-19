@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Symfony\Messenger\Handler\Psr11
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
@@ -50,9 +51,9 @@ class JobDoneHandlerTest extends TestCase
                 'foo',
                 'bar',
                 null,
-                $this->getUriFactoryInterfaceMock(),
-                $this->getRequestFactoryInterfaceMock(),
-                $this->getStreamFactoryInterfaceMock(),
+                $this->getUriFactoryInterfaceMock(true),
+                $this->getRequestFactoryInterfaceMock(true),
+                $this->getStreamFactoryInterfaceMock(true),
                 $this->getClientInterfaceMock()
             )),
             JobDoneHandler::class,
@@ -62,11 +63,11 @@ class JobDoneHandlerTest extends TestCase
 
     public function testInvokeWithEncryption(): void
     {
-        $encryption = $this->createMock(EncryptionInterface::class);
+        $encryption = $this->createStub(EncryptionInterface::class);
         $encryption
             ->method('decrypt')
             ->willReturnCallback(
-                function (SensitiveContentInterface $data, PromiseInterface $promise) use ($encryption): MockObject {
+                function (SensitiveContentInterface $data, PromiseInterface $promise) use ($encryption): MockObject|Stub {
                     $promise->success($data);
 
                     return $encryption;
@@ -78,9 +79,9 @@ class JobDoneHandlerTest extends TestCase
                 'foo',
                 'bar',
                 $encryption,
-                $this->getUriFactoryInterfaceMock(),
-                $this->getRequestFactoryInterfaceMock(),
-                $this->getStreamFactoryInterfaceMock(),
+                $this->getUriFactoryInterfaceMock(true),
+                $this->getRequestFactoryInterfaceMock(true),
+                $this->getStreamFactoryInterfaceMock(true),
                 $this->getClientInterfaceMock()
             )),
             JobDoneHandler::class,

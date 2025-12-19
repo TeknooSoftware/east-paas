@@ -43,7 +43,7 @@ class GitRepositoryTest extends TestCase
 
     public function buildObject(): GitRepository
     {
-        return new GitRepository('fooBar', 'barFoo', $this->createMock(IdentityInterface::class));
+        return new GitRepository('fooBar', 'barFoo', $this->createStub(IdentityInterface::class));
     }
 
     public function testGetPullUrl(): void
@@ -71,7 +71,7 @@ class GitRepositoryTest extends TestCase
     {
         $this->expectException(\TypeError::class);
         $this->buildObject()->exportToMeData(
-            $this->createMock(EastNormalizerInterface::class),
+            $this->createStub(EastNormalizerInterface::class),
             new \stdClass()
         );
     }
@@ -86,12 +86,15 @@ class GitRepositoryTest extends TestCase
                 'id' => '123',
                 'pull_url' => 'fooBar',
                 'default_branch' => 'barFoo',
-                'identity' => $this->createMock(IdentityInterface::class),
+                'identity' => $this->createStub(IdentityInterface::class),
             ]);
 
-        $this->assertInstanceOf(GitRepository::class, $this->buildObject()->setId('123')->exportToMeData(
-            $normalizer,
-            ['foo' => 'bar']
-        ));
+        $this->assertInstanceOf(
+            GitRepository::class,
+            $this->buildObject()->setId('123')->exportToMeData(
+                $normalizer,
+                ['foo' => 'bar']
+            )
+        );
     }
 }

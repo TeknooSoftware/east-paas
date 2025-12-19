@@ -52,7 +52,7 @@ class NamespaceTranscriberTest extends TestCase
     public function testSetDriver(): void
     {
         $transcriber = $this->buildTranscriber();
-        $transcriber2 = $transcriber->setDriver($this->createMock(Driver::class));
+        $transcriber2 = $transcriber->setDriver($this->createStub(Driver::class));
 
         $this->assertInstanceOf(NamespaceTranscriber::class, $transcriber2);
 
@@ -61,7 +61,7 @@ class NamespaceTranscriberTest extends TestCase
 
     public function testRun(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->never())
@@ -95,7 +95,7 @@ class NamespaceTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
@@ -103,12 +103,12 @@ class NamespaceTranscriberTest extends TestCase
 
     public function testRunWithHNC(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('withJobSettings')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(1, 'prefix', 'myproject');
 
                 return $cd;
@@ -134,7 +134,7 @@ class NamespaceTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default-namespace-foo',
             useHierarchicalNamespaces: true,
         ));
@@ -142,7 +142,7 @@ class NamespaceTranscriberTest extends TestCase
 
     public function testRunWithHNCButNoChildNameSpace(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->never())
@@ -167,7 +167,7 @@ class NamespaceTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',
             useHierarchicalNamespaces: false,
         ));
@@ -175,12 +175,12 @@ class NamespaceTranscriberTest extends TestCase
 
     public function testErrorWithHNC(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('withJobSettings')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback(1, 'prefix', 'myproject');
 
                 return $cd;
@@ -206,7 +206,7 @@ class NamespaceTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default-namespace-foo',
             useHierarchicalNamespaces: true,
         ));

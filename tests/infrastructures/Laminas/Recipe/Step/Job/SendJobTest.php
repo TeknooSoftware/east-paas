@@ -45,7 +45,7 @@ class SendJobTest extends TestCase
 
         $this->assertInstanceOf(SendJob::class, (new SendJob())(
             $client,
-            $this->createMock(Job::class),
+            $this->createStub(Job::class),
             \json_encode(['foo' => 'bar']),
         ));
     }

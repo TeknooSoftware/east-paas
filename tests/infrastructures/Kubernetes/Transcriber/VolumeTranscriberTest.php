@@ -58,7 +58,7 @@ class VolumeTranscriberTest extends TestCase
 
         $cd->expects($this->once())
             ->method('foreachVolume')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', new Reference('storage-size')), 'a-prefix');
                 $callback('foo', new PersistentVolume('foo', 'foo', new Reference('storage-provider'), 'bar'), 'a-prefix');
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar', true, true), 'a-prefix');
@@ -107,7 +107,7 @@ class VolumeTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
@@ -115,12 +115,12 @@ class VolumeTranscriberTest extends TestCase
 
     public function testError(): void
     {
-        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
             ->method('foreachVolume')
-            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
                 $callback('foo', new PersistentVolume('foo', 'foo', 'id', 'bar'), 'a-prefix');
                 return $cd;
             });
@@ -143,7 +143,7 @@ class VolumeTranscriberTest extends TestCase
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,
-            defaultsBag: $this->createMock(DefaultsBag::class),
+            defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));

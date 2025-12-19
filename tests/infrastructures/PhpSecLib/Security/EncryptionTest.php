@@ -30,6 +30,7 @@ use phpseclib3\Crypt\Common\PublicKey;
 use phpseclib3\Crypt\RSA;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
@@ -53,8 +54,8 @@ class EncryptionTest extends TestCase
 {
     public function testEncryptWithBadAPI(): void
     {
-        $privateKey = $this->createMock(PrivateKey::class);
-        $publicKey = $this->createMock(PublicKey::class);
+        $privateKey = $this->createStub(PrivateKey::class);
+        $publicKey = $this->createStub(PublicKey::class);
 
         $service = new Encryption(
             privateKey: $privateKey,
@@ -62,7 +63,7 @@ class EncryptionTest extends TestCase
             algorithm: 'rsa',
         );
 
-        $content = $this->createMock(SensitiveContentInterface::class);
+        $content = $this->createStub(SensitiveContentInterface::class);
         $content
             ->method('getContent')
             ->willReturn('foo');
@@ -97,10 +98,10 @@ class EncryptionTest extends TestCase
         $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
-                function ($content, $algo): MockObject {
+                function ($content, $algo): MockObject|Stub {
                     $this->assertEquals('rsa', $algo);
 
-                    return $this->createMock(SensitiveContentInterface::class);
+                    return $this->createStub(SensitiveContentInterface::class);
                 }
             );
 
@@ -134,12 +135,12 @@ class EncryptionTest extends TestCase
         $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
-                function ($content, $algo) use ($privateKey): MockObject {
+                function ($content, $algo) use ($privateKey): MockObject|Stub {
                     $this->assertEquals('rsa', $algo);
 
                     $this->assertEquals('foo', $privateKey->decrypt(base64_decode((string) $content)));
 
-                    return $this->createMock(SensitiveContentInterface::class);
+                    return $this->createStub(SensitiveContentInterface::class);
                 }
             );
 
@@ -193,10 +194,10 @@ class EncryptionTest extends TestCase
         $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
-                function ($content, $algo): MockObject {
+                function ($content, $algo): MockObject|Stub {
                     $this->assertEquals('rsa', $algo);
 
-                    return $this->createMock(SensitiveContentInterface::class);
+                    return $this->createStub(SensitiveContentInterface::class);
                 }
             );
 
@@ -263,8 +264,8 @@ class EncryptionTest extends TestCase
 
     public function testDecryptWithBadAPI(): void
     {
-        $privateKey = $this->createMock(PrivateKey::class);
-        $publicKey = $this->createMock(PublicKey::class);
+        $privateKey = $this->createStub(PrivateKey::class);
+        $publicKey = $this->createStub(PublicKey::class);
 
         $service = new Encryption(
             privateKey: $privateKey,
@@ -272,7 +273,7 @@ class EncryptionTest extends TestCase
             algorithm: 'rsa',
         );
 
-        $content = $this->createMock(SensitiveContentInterface::class);
+        $content = $this->createStub(SensitiveContentInterface::class);
         $content
             ->method('getContent')
             ->willReturn('foo');
@@ -296,7 +297,7 @@ class EncryptionTest extends TestCase
     public function testDecryptWithMismatchAlgo(): void
     {
         $privateKey = RSA::createKey(1024);
-        $publicKey = $this->createMock(PublicKey::class);
+        $publicKey = $this->createStub(PublicKey::class);
 
         $service = new Encryption(
             privateKey: $privateKey,
@@ -304,7 +305,7 @@ class EncryptionTest extends TestCase
             algorithm: 'rsa',
         );
 
-        $content = $this->createMock(SensitiveContentInterface::class);
+        $content = $this->createStub(SensitiveContentInterface::class);
         $content
             ->method('getContent')
             ->willReturn('foo');
@@ -328,7 +329,7 @@ class EncryptionTest extends TestCase
     public function testDecryptWithNotEncryptedContent(): void
     {
         $privateKey = RSA::createKey(1024);
-        $publicKey = $this->createMock(PublicKey::class);
+        $publicKey = $this->createStub(PublicKey::class);
 
         $service = new Encryption(
             privateKey: $privateKey,
@@ -336,7 +337,7 @@ class EncryptionTest extends TestCase
             algorithm: 'rsa',
         );
 
-        $content = $this->createMock(SensitiveContentInterface::class);
+        $content = $this->createStub(SensitiveContentInterface::class);
         $content
             ->method('getContent')
             ->willReturn('foo');
@@ -360,7 +361,7 @@ class EncryptionTest extends TestCase
     public function testDecryptWithNotSupportedEncrypted(): void
     {
         $privateKey = RSA::createKey(1024);
-        $publicKey = $this->createMock(PublicKey::class);
+        $publicKey = $this->createStub(PublicKey::class);
 
         $service = new Encryption(
             privateKey: $privateKey,
@@ -368,7 +369,7 @@ class EncryptionTest extends TestCase
             algorithm: '',
         );
 
-        $content = $this->createMock(SensitiveContentInterface::class);
+        $content = $this->createStub(SensitiveContentInterface::class);
         $content
             ->method('getContent')
             ->willReturn('foo');
@@ -409,10 +410,10 @@ class EncryptionTest extends TestCase
         $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
-                function ($content, $algo): MockObject {
+                function ($content, $algo): MockObject|Stub {
                     $this->assertEmpty($algo);
 
-                    return $this->createMock(SensitiveContentInterface::class);
+                    return $this->createStub(SensitiveContentInterface::class);
                 }
             );
 
@@ -449,10 +450,10 @@ class EncryptionTest extends TestCase
         $content->expects($this->once())
             ->method('cloneWith')
             ->willReturnCallback(
-                function ($content, $algo): MockObject {
+                function ($content, $algo): MockObject|Stub {
                     $this->assertEmpty($algo);
 
-                    return $this->createMock(SensitiveContentInterface::class);
+                    return $this->createStub(SensitiveContentInterface::class);
                 }
             );
 

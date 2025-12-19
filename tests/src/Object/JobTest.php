@@ -105,7 +105,7 @@ class JobTest extends TestCase
      */
     public function testSetProject(): void
     {
-        $argument = new Project($this->createMock(Account::class));
+        $argument = new Project($this->createStub(Account::class));
 
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->setProject($argument));
@@ -116,7 +116,7 @@ class JobTest extends TestCase
 
     public function testGetProject(): void
     {
-        $argument = new Project($this->createMock(Account::class));
+        $argument = new Project($this->createStub(Account::class));
 
         $object = $this->buildObject();
         $this->assertInstanceOf(Project::class, $object->setProject($argument)->getProject());
@@ -242,7 +242,7 @@ class JobTest extends TestCase
     public function testAddFromHistoryExceptionOnBadCallabled(): void
     {
         $this->expectException(Throwable::class);
-        $this->buildObject()->addFromHistory($this->createMock(History::class), new stdClass());
+        $this->buildObject()->addFromHistory($this->createStub(History::class), new stdClass());
     }
 
     public function testSetHistoryBadArgument(): void
@@ -296,7 +296,7 @@ class JobTest extends TestCase
      */
     public function testSetSourceRepository(): void
     {
-        $argument = $this->createMock(SourceRepositoryInterface::class);
+        $argument = $this->createStub(SourceRepositoryInterface::class);
 
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->setSourceRepository($argument));
@@ -313,7 +313,7 @@ class JobTest extends TestCase
      */
     public function testAddCluster(): void
     {
-        $argument = $this->createMock(Cluster::class);
+        $argument = $this->createStub(Cluster::class);
 
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->addCluster($argument));
@@ -323,7 +323,7 @@ class JobTest extends TestCase
 
     public function testSetClustersArray(): void
     {
-        $argument = $this->createMock(Cluster::class);
+        $argument = $this->createStub(Cluster::class);
 
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->setClusters([$argument]));
@@ -334,7 +334,7 @@ class JobTest extends TestCase
 
     public function testSetClustersCollection(): void
     {
-        $argument = $this->createMock(Cluster::class);
+        $argument = $this->createStub(Cluster::class);
 
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->setClusters(new ArrayObject([$argument])));
@@ -345,7 +345,7 @@ class JobTest extends TestCase
 
     public function testGetCluster(): void
     {
-        $argument = $this->createMock(Cluster::class);
+        $argument = $this->createStub(Cluster::class);
 
         $object = $this->buildObject();
         $this->assertInstanceOf($object::class, $object->setClusters(new ArrayObject([$argument])));
@@ -368,9 +368,9 @@ class JobTest extends TestCase
             ->setId('test')
             ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
-            ->setSourceRepository($this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRegistry($this->createMock(ImageRegistryInterface::class))
-            ->addCluster($this->createMock(Cluster::class))
+            ->setSourceRepository($this->createStub(SourceRepositoryInterface::class))
+            ->setImagesRegistry($this->createStub(ImageRegistryInterface::class))
+            ->addCluster($this->createStub(Cluster::class))
             ->addToHistory('foo', new DateTimeImmutable('2018-05-01'), true));
     }
 
@@ -390,7 +390,7 @@ class JobTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->buildObject()->exportToMeData(
-            $this->createMock(EastNormalizerInterface::class),
+            $this->createStub(EastNormalizerInterface::class),
             new stdClass()
         );
     }
@@ -516,9 +516,9 @@ class JobTest extends TestCase
             ->setId('test')
             ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
-            ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
-            ->addCluster($this->createMock(Cluster::class))
+            ->setSourceRepository($repo = $this->createStub(SourceRepositoryInterface::class))
+            ->setImagesRegistry($repo = $this->createStub(ImageRegistryInterface::class))
+            ->addCluster($this->createStub(Cluster::class))
             ->addToHistory('foo', new DateTimeImmutable('2018-05-01'), true);
 
         $this->assertInstanceOf(Job::class, $object->isRunnable($promise));
@@ -534,9 +534,9 @@ class JobTest extends TestCase
             ->setId('test')
             ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
-            ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
-            ->addCluster($this->createMock(Cluster::class))
+            ->setSourceRepository($repo = $this->createStub(SourceRepositoryInterface::class))
+            ->setImagesRegistry($repo = $this->createStub(ImageRegistryInterface::class))
+            ->addCluster($this->createStub(Cluster::class))
             ->addToHistory('foo', new DateTimeImmutable('2018-05-01'), true);
 
         $this->assertInstanceOf(Job::class, $object->isRunnable($promise));
@@ -552,9 +552,9 @@ class JobTest extends TestCase
             ->setId('test')
             ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
-            ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
-            ->addCluster($this->createMock(Cluster::class))
+            ->setSourceRepository($repo = $this->createStub(SourceRepositoryInterface::class))
+            ->setImagesRegistry($repo = $this->createStub(ImageRegistryInterface::class))
+            ->addCluster($this->createStub(Cluster::class))
             ->addToHistory('foo', new DateTimeImmutable('2018-05-01'));
 
         $this->assertInstanceOf(Job::class, $object->isRunnable($promise));
@@ -585,9 +585,9 @@ class JobTest extends TestCase
             ->setId('test')
             ->setProject(new Project(new Account()->setId('foo'))->setId('bar')->setName('hello'))
             ->setEnvironment(new Environment('foo'))
-            ->setSourceRepository($repo = $this->createMock(SourceRepositoryInterface::class))
-            ->setImagesRegistry($repo = $this->createMock(ImageRegistryInterface::class))
-            ->addCluster($this->createMock(Cluster::class));
+            ->setSourceRepository($repo = $this->createStub(SourceRepositoryInterface::class))
+            ->setImagesRegistry($repo = $this->createStub(ImageRegistryInterface::class))
+            ->addCluster($this->createStub(Cluster::class));
 
         $this->assertInstanceOf(Job::class, $object->validate($date));
         $this->assertInstanceOf(Job::class, $object->isRunnable($promise));

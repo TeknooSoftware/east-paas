@@ -55,14 +55,14 @@ class ClassFinderDenormalizerTest extends TestCase
     public function testSetDenormalizer(): void
     {
         $this->buildNormalizer()->setDenormalizer(
-            $this->createMock(DenormalizerInterface::class)
+            $this->createStub(DenormalizerInterface::class)
         );
         $this->assertTrue(true);
     }
 
     public function testSupportsDenormalization(): void
     {
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $this->assertFalse($this->buildNormalizer()->supportsDenormalization(new stdClass(), 'foo'));
         $this->assertFalse($this->buildNormalizer()->supportsDenormalization(['foo' => 'bar'], 'foo'));
         $this->assertFalse($this->buildNormalizer()->supportsDenormalization(['@class' => Environment::class], 'foo'));
@@ -86,7 +86,7 @@ class ClassFinderDenormalizerTest extends TestCase
     public function testDenormalizeNotArray(): void
     {
         $this->expectException(RuntimeException::class);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $n = $this->buildNormalizer();
         $n->setDenormalizer($denormalizer);
         $n->denormalize(new stdClass(), 'foo');
@@ -95,7 +95,7 @@ class ClassFinderDenormalizerTest extends TestCase
     public function testDenormalizeNotClass(): void
     {
         $this->expectException(RuntimeException::class);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $n = $this->buildNormalizer();
         $n->setDenormalizer($denormalizer);
         $n->denormalize(['foo' => 'bar'], 'foo');

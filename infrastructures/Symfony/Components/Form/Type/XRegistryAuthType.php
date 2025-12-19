@@ -51,7 +51,7 @@ class XRegistryAuthType extends AbstractType
      * @param FormBuilderInterface<XRegistryAuth> $builder
      * @param array<string, mixed> $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options): self
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -117,11 +117,9 @@ class XRegistryAuthType extends AbstractType
                 }
             }
         );
-
-        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver): self
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
@@ -129,7 +127,5 @@ class XRegistryAuthType extends AbstractType
             'data_class' => XRegistryAuth::class,
             'empty_data' => null,
         ]);
-
-        return $this;
     }
 }

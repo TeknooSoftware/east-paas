@@ -48,7 +48,7 @@ class ResourceManagerTest extends TestCase
     {
         $this->assertInstanceOf(ResourceManager::class, $this->buildManager()->updateQuotaAvailability(
             'cpu',
-            $this->createMock(AvailabilityInterface::class),
+            $this->createStub(AvailabilityInterface::class),
         ));
     }
 
@@ -57,7 +57,7 @@ class ResourceManagerTest extends TestCase
         $manager = $this->buildManager();
         $a1 = $this->createMock(AvailabilityInterface::class);
         $a1->expects($this->once())->method('update')->willReturnSelf();
-        $a2 = $this->createMock(AvailabilityInterface::class);
+        $a2 = $this->createStub(AvailabilityInterface::class);
 
         $this->assertInstanceOf(ResourceManager::class, $manager->updateQuotaAvailability(
             'cpu',
@@ -73,7 +73,7 @@ class ResourceManagerTest extends TestCase
     public function testUpdateQuotaAvailabilityFreezed(): void
     {
         $manager = $this->buildManager();
-        $a = $this->createMock(AvailabilityInterface::class);
+        $a = $this->createStub(AvailabilityInterface::class);
 
         $manager->freeze();
         $this->expectException(ResourceCapacityExceededException::class);
@@ -88,7 +88,7 @@ class ResourceManagerTest extends TestCase
         $manager = $this->buildManager();
 
         $this->expectException(ResourceCapacityExceededException::class);
-        $manager->reserve('cpu', '100m', '500m', 1, $this->createMock(ResourceSet::class));
+        $manager->reserve('cpu', '100m', '500m', 1, $this->createStub(ResourceSet::class));
     }
 
     public function testReserve(): void
@@ -102,7 +102,7 @@ class ResourceManagerTest extends TestCase
             $a,
         ));
 
-        $this->assertInstanceOf(ResourceManager::class, $manager->reserve('cpu', '100m', '500m', 1, $this->createMock(ResourceSet::class)));
+        $this->assertInstanceOf(ResourceManager::class, $manager->reserve('cpu', '100m', '500m', 1, $this->createStub(ResourceSet::class)));
     }
 
     public function testPrepareAutomaticsReservationsNotDefined(): void

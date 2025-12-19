@@ -45,7 +45,7 @@ class HistorySentHandlerTest extends TestCase
 
     public function testInvokeWithoutHandler(): void
     {
-        $this->assertInstanceOf(HistorySentHandler::class, ($this->buildStep())($this->createMock(HistorySent::class)));
+        $this->assertInstanceOf(HistorySentHandler::class, ($this->buildStep())($this->createStub(HistorySent::class)));
     }
 
     public function testInvoke(): void
@@ -55,6 +55,6 @@ class HistorySentHandlerTest extends TestCase
         $handler->expects($this->once())
             ->method('__invoke');
 
-        $this->assertInstanceOf(HistorySentHandler::class, ($this->buildStep()->setHandler($handler))($this->createMock(HistorySent::class)));
+        $this->assertInstanceOf(HistorySentHandler::class, ($this->buildStep()->setHandler($handler))($this->createStub(HistorySent::class)));
     }
 }

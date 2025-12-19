@@ -237,10 +237,10 @@ class PodCompilerTest extends TestCase
         $this->assertInstanceOf(PodCompiler::class, $this->buildCompiler()->compile(
             $definitions,
             $compiledDeployment,
-            $this->createMock(JobWorkspaceInterface::class),
-            $this->createMock(JobUnitInterface::class),
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -258,23 +258,23 @@ class PodCompilerTest extends TestCase
                     string $volumeFrom,
                     string $mountPath,
                     PromiseInterface $promise,
-                ) use ($compiledDeployment): MockObject {
-                    $promise->success($this->createMock(VolumeInterface::class));
+                ) use ($compiledDeployment): MockObject|Stub {
+                    $promise->success($this->createStub(VolumeInterface::class));
 
                     return $compiledDeployment;
                 }
             );
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->assertInstanceOf(PodCompiler::class, $builder->compile(
             $definitions,
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -290,15 +290,15 @@ class PodCompilerTest extends TestCase
         $compiledDeployment
             ->method('importVolume')
             ->willReturnCallback(
-                function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment): MockObject {
+                function (string $volumeFrom, string $mountPath, PromiseInterface $promise) use ($compiledDeployment): MockObject|Stub {
                     $promise->fail(new DomainException('foo'));
 
                     return $compiledDeployment;
                 }
             );
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->expectException(DomainException::class);
 
@@ -307,8 +307,8 @@ class PodCompilerTest extends TestCase
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 
@@ -322,19 +322,19 @@ class PodCompilerTest extends TestCase
         unset($definitions['php-pod']['containers']['php-composer']['volumes']['other_name2']['mount-path']);
         $builder = $this->buildCompiler();
 
-        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment = $this->createStub(CompiledDeploymentInterface::class);
         $compiledDeployment->method('addPod');
 
-        $workspace = $this->createMock(JobWorkspaceInterface::class);
-        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
 
         $this->assertInstanceOf(PodCompiler::class, $builder->compile(
             $definitions,
             $compiledDeployment,
             $workspace,
             $jobUnit,
-            $this->createMock(ResourceManager::class),
-            $this->createMock(DefaultsBag::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         ));
     }
 

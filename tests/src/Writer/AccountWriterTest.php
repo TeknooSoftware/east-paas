@@ -43,7 +43,11 @@ class AccountWriterTest extends TestCase
 
     public function buildWriter(bool $preferRealDateOnUpdate = false): WriterInterface
     {
-        return new AccountWriter(manager: $this->getObjectManager(), preferRealDateOnUpdate: $preferRealDateOnUpdate);
+        return new AccountWriter(
+            manager: $this->getObjectManager(true),
+            datesService: $this->getDatesServiceMock(true),
+            preferRealDateOnUpdate: $preferRealDateOnUpdate,
+        );
     }
 
     /**
