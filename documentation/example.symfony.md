@@ -20,8 +20,8 @@ Without Symfony Recipe
     di_bridge:
         definitions:
             - '%kernel.project_dir%/vendor/teknoo/east-foundation/src/di.php'
-            - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/Resources/config/di.php'
-            - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/Resources/config/laminas_di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/config/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-foundation/infrastructures/symfony/config/laminas_di.php'
         import:
             Psr\Log\LoggerInterface: 'logger'
 
@@ -31,8 +31,8 @@ Without Symfony Recipe
         definitions:
             - '%kernel.project_dir%/vendor/teknoo/east-common/src/di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-common/infrastructures/doctrine/di.php'
-            - '%kernel.project_dir%/vendor/teknoo/east-common/infrastructures/symfony/Resources/config/di.php'
-            - '%kernel.project_dir%/vendor/teknoo/east-common/infrastructures/symfony/Resources/config/laminas_di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-common/infrastructures/symfony/config/di.php'
+            - '%kernel.project_dir%/vendor/teknoo/east-common/infrastructures/symfony/config/laminas_di.php'
             - '%kernel.project_dir%/vendor/teknoo/east-common/infrastructures/di.php'
         import:
             Doctrine\Persistence\ObjectManager: 'doctrine_mongodb.odm.default_document_manager'
@@ -91,12 +91,12 @@ Without Symfony Recipe
 ### In routing.yaml
 
     paas_admin_account:
-        resource: '@TeknooEastPaasBundle/Resources/config/routing_admin_account.yaml'
+        resource: '@TeknooEastPaasBundle/config/routing_admin_account.yaml'
         prefix: '/admin'
         schemes:    [https]
     
     paas_admin_job:
-        resource: '@TeknooEastPaasBundle/Resources/config/routing_admin_job.yaml'
+        resource: '@TeknooEastPaasBundle/config/routing_admin_job.yaml'
         prefix: '/admin'
         schemes:    [https]
 

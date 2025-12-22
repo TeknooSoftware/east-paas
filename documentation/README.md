@@ -92,7 +92,7 @@ To use this library in your application, you must implement some stuff :
   * `HistorySent` and `JobDone` messages (run the plan `AddHistory`)
   * `MessageJob` (run the plan `RunJob`)
   * Create a new job (run the plan `NewJob`)
-* Add routes (for `Symfony` from `infrastructures/Symfony/Bundle/Resources/config`, but you can also use your routes).
+* Add routes (for `Symfony` from `infrastructures/Symfony/Bundle/config`, but you can also use your routes).
   to manage `Account`, `Project`, `Job` and `User`
 
 Main Plans
