@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.1.2] - 2025-12-22
+### Stable Release
+- Migrate in Symfony Bundle config files from Resources/config to config.
+- Fix methods signatures about Dependency Injection in Symfony Bundle.
+
 ## [5.1.1] - 2025-12-19
 ### Stable Release
 - Fix bc break introduced into patch of phpstan and phpunit
