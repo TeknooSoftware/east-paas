@@ -29,6 +29,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -54,7 +55,7 @@ class AccountType extends AbstractType
 {
     /**
      * @param FormBuilderInterface<Account> $builder
-     * @param array<string, string|bool> $options
+     * @param array{namespaceIsReadonly: bool, doctrine_type: class-string<FormType>} $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -98,7 +99,7 @@ class AccountType extends AbstractType
 
         $builder->add(
             'users',
-            (string) $options['doctrine_type'],
+            $options['doctrine_type'],
             [
                 'class' => User::class,
                 'required' => true,
