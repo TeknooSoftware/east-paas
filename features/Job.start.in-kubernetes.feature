@@ -558,3 +558,25 @@ Feature: Execute a job to deploy a project on a Kubernetes cluster
     Then I must obtain an HTTP answer with this status code equals to "200"
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
     And all messages must be encrypted
+
+  Scenario: From the API, for a Kubernetes cluster with Traefik ingress controller, run a job with custom backend
+  protocol annotation mapper
+    Given I have a configured platform
+    And a custom backend protocol annotation mapper for Traefik
+    And the platform is booted
+    And a project with a paas file using Traefik backend
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes manifests have been created
+    And all messages must be not encrypted

@@ -209,6 +209,37 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(IngressTranscriber::class, $container->get(IngressTranscriber::class));
     }
 
+    public function testIngressTranscriberWithValidBackendAnnotationMapper(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', []);
+        $container->set(
+            'teknoo.east.paas.kubernetes.ingress.backend_annotations_mapper',
+            fn () => fn (?string $provider, bool $isHttpsBackend): array => []
+        );
+
+        $this->assertInstanceOf(IngressTranscriber::class, $container->get(IngressTranscriber::class));
+    }
+
+    public function testIngressTranscriberWithInvalidBackendAnnotationMapper(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_ingress_class', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.name', 'foo');
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_service.port', 80);
+        $container->set('teknoo.east.paas.kubernetes.ingress.default_annotations', []);
+        $container->set(
+            'teknoo.east.paas.kubernetes.ingress.backend_annotations_mapper',
+            'not_a_callable'
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $container->get(IngressTranscriber::class);
+    }
+
     public function testDeploymentTranscriberBadClass(): void
     {
         $container = $this->buildContainer();

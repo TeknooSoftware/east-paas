@@ -56,6 +56,11 @@ class IngressTranscriber implements ExposingInterface
     private const string SECRET_SUFFIX = '-secret';
 
     /**
+     * @var callable
+     */
+    private $backendProtocolAnnotationMapper = null;
+
+    /**
      * @param array<string, mixed> $defaultIngressAnnotations
      */
     public function __construct(
@@ -63,7 +68,18 @@ class IngressTranscriber implements ExposingInterface
         private readonly ?string $defaultIngressService,
         private readonly ?int $defaultIngressPort,
         private readonly array $defaultIngressAnnotations = [],
+        ?callable $backendProtocolAnnotationMapper = null,
     ) {
+        $this->backendProtocolAnnotationMapper = $backendProtocolAnnotationMapper;
+        if (null === $this->backendProtocolAnnotationMapper) {
+            $this->backendProtocolAnnotationMapper = static fn (
+                ?string $provider,
+                bool $isHttpsBackend,
+            ): array => match ($isHttpsBackend) {
+                false => [],
+                true => ['nginx.ingress.kubernetes.io/backend-protocol' => 'HTTPS'],
+            };
+        }
     }
 
     /**
@@ -78,6 +94,7 @@ class IngressTranscriber implements ExposingInterface
         ?int $defaultIngressPort,
         array $defaultIngressAnnotations,
         callable $prefixer,
+        callable $backendProtocolAnnotationMapper,
     ): array {
         $ruleGenerator = function (string $host) use ($prefixer, $ingress): array {
             $rule = [
@@ -158,13 +175,13 @@ class IngressTranscriber implements ExposingInterface
             ],
         ];
 
-        if (null !== $defaultIngressClass || null !== $ingress->getProvider()) {
-            $provider = $ingress->getProvider() ?? $defaultIngressClass;
+        $provider = $ingress->getProvider() ?? $defaultIngressClass;
+        if (null !== $provider) {
             $specs['metadata']['annotations']['kubernetes.io/ingress.class'] = $provider;
         }
 
-        if ($ingress->isHttpsBackend()) {
-            $specs['metadata']['annotations']['nginx.ingress.kubernetes.io/backend-protocol'] = 'HTTPS';
+        foreach ($backendProtocolAnnotationMapper($provider, $ingress->isHttpsBackend()) as $annotation => $value) {
+            $specs['metadata']['annotations'][$annotation] = $value;
         }
 
         if (null !== $defaultIngressService && null !== $defaultIngressPort) {
@@ -197,16 +214,18 @@ class IngressTranscriber implements ExposingInterface
         ?int $defaultIngressPort,
         array $defaultIngressAnnotations,
         callable $prefixer,
+        callable $backendProtocolAnnotationMapper,
     ): KubeIngress {
         return new KubeIngress(
             static::writeSpec(
-                $ingress,
-                $namespace,
-                $defaultIngressClass,
-                $defaultIngressService,
-                $defaultIngressPort,
-                $defaultIngressAnnotations,
-                $prefixer,
+                ingress: $ingress,
+                namespace: $namespace,
+                defaultIngressClass: $defaultIngressClass,
+                defaultIngressService: $defaultIngressService,
+                defaultIngressPort: $defaultIngressPort,
+                defaultIngressAnnotations: $defaultIngressAnnotations,
+                prefixer: $prefixer,
+                backendProtocolAnnotationMapper: $backendProtocolAnnotationMapper,
             )
         );
     }
@@ -224,6 +243,7 @@ class IngressTranscriber implements ExposingInterface
         $defaultIngressService = $this->defaultIngressService;
         $defaultIngressPort = $this->defaultIngressPort;
         $defaultIngressAnnotations = $this->defaultIngressAnnotations;
+        $backendProtocolAnnotationMapper = $this->backendProtocolAnnotationMapper;
 
         $compiledDeployment->foreachIngress(
             static function (
@@ -237,16 +257,18 @@ class IngressTranscriber implements ExposingInterface
                 $defaultIngressService,
                 $defaultIngressPort,
                 $defaultIngressAnnotations,
+                $backendProtocolAnnotationMapper,
             ): void {
                 $prefixer = self::createPrefixer($prefix);
                 $kubIngress = self::convertToIngress(
-                    $ingress,
-                    $namespace,
-                    $defaultIngressClass,
-                    $defaultIngressService,
-                    $defaultIngressPort,
-                    $defaultIngressAnnotations,
-                    $prefixer,
+                    ingress: $ingress,
+                    namespace: $namespace,
+                    defaultIngressClass: $defaultIngressClass,
+                    defaultIngressService: $defaultIngressService,
+                    defaultIngressPort: $defaultIngressPort,
+                    defaultIngressAnnotations: $defaultIngressAnnotations,
+                    prefixer: $prefixer,
+                    backendProtocolAnnotationMapper: $backendProtocolAnnotationMapper,
                 );
 
                 try {

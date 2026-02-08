@@ -60,8 +60,8 @@ class ContainerTest extends TestCase
     private function generateTestForRepository(string $objectClass, string $repositoryClass): void
     {
         $container = $this->buildContainer();
-        $objectManager = $this->createStub(ObjectManager::class);
-        $objectManager->method('getRepository')->with($objectClass)->willReturn(
+        $objectManager = $this->createMock(ObjectManager::class);
+        $objectManager->expects($this->atLeastOnce())->method('getRepository')->with($objectClass)->willReturn(
             $this->createStub(DocumentRepository::class)
         );
 
@@ -74,8 +74,8 @@ class ContainerTest extends TestCase
     private function generateTestForRepositoryWithUnsupportedRepository(string $objectClass, string $repositoryClass): void
     {
         $container = $this->buildContainer();
-        $objectManager = $this->createStub(ObjectManager::class);
-        $objectManager->method('getRepository')->with($objectClass)->willReturn(
+        $objectManager = $this->createMock(ObjectManager::class);
+        $objectManager->expects($this->atLeastOnce())->method('getRepository')->with($objectClass)->willReturn(
             $this->createStub(ObjectRepository::class)
         );
 

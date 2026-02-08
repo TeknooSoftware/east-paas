@@ -43,6 +43,7 @@ return static function (
     string $projectName,
     bool $withJob,
     bool $withCondition,
+    string $provider,
 ): CompiledDeployment {
     $cd = new CompiledDeployment(
         version: $withJob || $withCondition ? 1.1 : 1,
@@ -572,12 +573,16 @@ return static function (
         )
     );
 
+    if (empty($provider)) {
+        $provider = null;
+    }
+
     $cd->addIngress(
         name: 'demo-secure',
         ingress: new CompiledDeployment\Expose\Ingress(
             name: 'demo-secure',
             host: 'demo-secure.teknoo.software',
-            provider: null,
+            provider: $provider,
             defaultServiceName: 'demo',
             defaultServicePort: 8181,
             paths: [],

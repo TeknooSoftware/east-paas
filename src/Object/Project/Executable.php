@@ -50,7 +50,11 @@ class Executable implements StateInterface
 
     public function prepareJob(): Closure
     {
-        return function (Job $job, DateTimeInterface $date, Environment $environment): Project {
+        return function (
+            Job $job,
+            DateTimeInterface $date,
+            Environment $environment,
+        ): Project {
             $this->account->canIPrepareNewJob($this, $job, $date, $environment);
 
             return $this;

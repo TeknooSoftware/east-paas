@@ -680,7 +680,7 @@ class JobTranscriberTest extends TestCase
 
     public function testErrorOnFetching(): void
     {
-        $kubeClient = $this->createStub(KubeClient::class);
+        $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
@@ -800,6 +800,7 @@ class JobTranscriberTest extends TestCase
 
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient
+            ->expects($this->atLeastOnce())
             ->method('__call')
             ->with('jobs')
             ->willReturn($repo);
@@ -850,7 +851,7 @@ class JobTranscriberTest extends TestCase
 
     public function testError(): void
     {
-        $kubeClient = $this->createStub(KubeClient::class);
+        $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
@@ -951,6 +952,7 @@ class JobTranscriberTest extends TestCase
 
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient
+            ->expects($this->atLeastOnce())
             ->method('__call')
             ->with('jobs')
             ->willReturn($repo);

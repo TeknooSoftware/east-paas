@@ -347,7 +347,8 @@ class WorkspaceTest extends TestCase
         $promise->expects($this->once())->method('success');
         $promise->expects($this->never())->method('fail');
 
-        $this->getFilesystemMock(true)
+        $this->getFilesystemMock()
+            ->expects($this->atLeastOnce())
             ->method('listContents')
             ->with($path = 'foo')
             ->willReturn(new DirectoryListing(new ArrayIterator([$this->createStub(StorageAttributes::class)])));
@@ -361,7 +362,8 @@ class WorkspaceTest extends TestCase
         $promise->expects($this->never())->method('success');
         $promise->expects($this->once())->method('fail')->with($this->callback(fn ($e): bool => $e instanceof DomainException));
 
-        $this->getFilesystemMock(true)
+        $this->getFilesystemMock()
+            ->expects($this->atLeastOnce())
             ->method('listContents')
             ->with($path = 'foo')
             ->willReturn(new DirectoryListing(new ArrayIterator([])));

@@ -659,7 +659,7 @@ class StatefulSetsTranscriberTest extends TestCase
 
     public function testErrorOnFetching(): void
     {
-        $kubeClient = $this->createStub(KubeClient::class);
+        $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
@@ -744,6 +744,7 @@ class StatefulSetsTranscriberTest extends TestCase
 
         $repo = $this->createMock(StatefulSetRepository::class);
         $kubeClient
+            ->expects($this->atLeastOnce())
             ->method('__call')
             ->with('statefulsets')
             ->willReturn($repo);
@@ -785,7 +786,7 @@ class StatefulSetsTranscriberTest extends TestCase
 
     public function testError(): void
     {
-        $kubeClient = $this->createStub(KubeClient::class);
+        $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
@@ -850,6 +851,7 @@ class StatefulSetsTranscriberTest extends TestCase
 
         $repo = $this->createMock(StatefulSetRepository::class);
         $kubeClient
+            ->expects($this->atLeastOnce())
             ->method('__call')
             ->with('statefulsets')
             ->willReturn($repo);

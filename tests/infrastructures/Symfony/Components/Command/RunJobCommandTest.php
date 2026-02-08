@@ -191,7 +191,6 @@ class RunJobCommandTest extends TestCase
 
         $this->getStreamFactoryMock(true)
             ->method('createStream')
-            ->with('fooBar')
             ->willReturn($this->createStub(StreamInterface::class));
 
         $this->getMessageFactoryMock(true)
@@ -222,7 +221,6 @@ class RunJobCommandTest extends TestCase
 
         $this->getStreamFactoryMock(true)
             ->method('createStream')
-            ->with('fooBar')
             ->willReturn($this->createStub(StreamInterface::class));
 
         $this->getMessageFactoryMock(true)

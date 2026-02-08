@@ -32,6 +32,7 @@ use Behat\Hook\BeforeScenario;
 use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
+use Closure;
 use DI\Container as DiContainer;
 use DateTime;
 use DateTimeZone;
@@ -174,6 +175,8 @@ class FeatureContext implements Context
     private array $quotasAllowed;
 
     private static string $quotasDefined = '';
+
+    private static string $ingressProvider = '';
 
     private static bool $jobsDefined = false;
 
@@ -346,7 +349,9 @@ class FeatureContext implements Context
                 $container->setParameter('container.dumper.inline_class_loader', true);
 
                 foreach ($this->context->additionalsParameters as $name => &$params) {
-                    $container->setParameter($name, $params);
+                    if (!$params instanceof Closure) {
+                        $container->setParameter($name, $params);
+                    }
                 }
 
                 unset($params);
@@ -377,6 +382,15 @@ class FeatureContext implements Context
 
         $this->kernel->boot();
         $this->sfContainer = $this->kernel->getContainer();
+
+        $diContainer = $this->sfContainer->get(DiContainer::class);
+        foreach ($this->additionalsParameters as $name => &$params) {
+            if ($params instanceof Closure) {
+                $diContainer->set(
+                    $name, fn () => $params,
+                );
+            }
+        }
     }
 
     #[BeforeScenario]
@@ -408,6 +422,7 @@ class FeatureContext implements Context
             'teknoo.east.paas.default_storage_provider' => 'default',
         ];
         self::$quotasDefined = '';
+        self::$ingressProvider = '';
         self::$defaultsDefined = '';
         self::$jobsDefined = false;
         self::$conditionsDefined = false;
@@ -1250,6 +1265,13 @@ EOF,
         self::$quotasDefined = '';
     }
 
+    #[Given('a project with a paas file using Traefik backend')]
+    public function aProjectWithAPaasFileUsingTraefikBackend(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-traefik-backend.yaml';
+        self::$ingressProvider = 'traefik';
+    }
+
     #[Given('a project with a complete paas file with conditions')]
     public function aProjectWithACompletePaasFileWithConditions(): void
     {
@@ -1788,6 +1810,24 @@ EOF,
         self::$useHnc = true;
     }
 
+    #[Given('a custom backend protocol annotation mapper for Traefik')]
+    public function aCustomBackendProtocolAnnotationMapperForTraefik(): void
+    {
+        $this->additionalsParameters['teknoo.east.paas.kubernetes.ingress.backend_annotations_mapper'] =
+            static function (?string $provider, bool $isHttpsBackend): array {
+                if ('traefik' === $provider) {
+                    return [
+                        'traefik.ingress.kubernetes.io/protocol' => match ($isHttpsBackend) {
+                            false => 'http',
+                            true => 'https',
+                        }
+                    ];
+                }
+
+                return [];
+            };
+    }
+
     public static function compareCD(CompiledDeploymentInterface $cd): void
     {
         $ecd = (include('expectedCD.php'))(
@@ -1797,6 +1837,7 @@ EOF,
             strtolower(trim((string)preg_replace('#[^A-Za-z0-9-]+#', '', (string) self::$projectName))),
             self::$jobsDefined,
             self::$conditionsDefined,
+            self::$ingressProvider,
         );
         //TO avoid circural references in var_export
         $tcd = clone $cd;
@@ -2051,6 +2092,12 @@ EOF;
                     JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT
                 ),
             false => '',
+        };
+
+        $ingressBackendProtocol = match (self::$ingressProvider) {
+            'traefik' => '"kubernetes.io/ingress.class": "traefik",'
+                . PHP_EOL . '"traefik.ingress.kubernetes.io/protocol": "https"',
+            default => '"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS"',
         };
 
         $jobsManifest = '';
@@ -3108,7 +3155,7 @@ EOF;
                 },
                 "annotations": {
                     "foo": "bar",
-                    "nginx.ingress.kubernetes.io/backend-protocol": "HTTPS"
+                    {$ingressBackendProtocol}
                 }
             },
             "spec": {

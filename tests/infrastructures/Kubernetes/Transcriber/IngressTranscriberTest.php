@@ -45,9 +45,9 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(IngressTranscriber::class)]
 class IngressTranscriberTest extends TestCase
 {
-    public function buildTranscriber(): IngressTranscriber
+    public function buildTranscriber(?callable $backendProtocolAnnotationMapper = null): IngressTranscriber
     {
-        return new IngressTranscriber('provider', 'foo', 80, ['foo' => 'bar']);
+        return new IngressTranscriber('provider', 'foo', 80, ['foo' => 'bar'], $backendProtocolAnnotationMapper);
     }
 
     public function testRun(): void
@@ -124,7 +124,7 @@ class IngressTranscriberTest extends TestCase
 
     public function testError(): void
     {
-        $kubeClient = $this->createStub(KubeClient::class);
+        $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $cd->expects($this->once())
@@ -164,6 +164,7 @@ class IngressTranscriberTest extends TestCase
 
         $repo = $this->createMock(IngressRepository::class);
         $kubeClient
+            ->expects($this->atLeastOnce())
             ->method('__call')
             ->with('ingresses')
             ->willReturn($repo);
@@ -185,6 +186,123 @@ class IngressTranscriberTest extends TestCase
         $promise->expects($this->once())->method('fail');
 
         $this->assertInstanceOf(IngressTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+    }
+
+    public function testRunWithHttpsBackend(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachIngress')
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
+                $callback(
+                    new Ingress(
+                        'foo1',
+                        'foo.com',
+                        null,
+                        'sr1',
+                        80,
+                        [],
+                        null,
+                        true
+                    ),
+                    'a-prefix',
+                );
+
+                return $cd;
+            });
+
+        $repoIngress = $this->createMock(IngressRepository::class);
+
+        $kubeClient->expects($this->atLeastOnce())
+            ->method('setNamespace')
+            ->with('default_namespace');
+
+        $kubeClient
+            ->method('__call')
+            ->willReturnMap([
+                ['ingresses', [], $repoIngress],
+            ]);
+
+        $repoIngress->expects($this->once())
+            ->method('apply')
+            ->willReturn(['foo']);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(IngressTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+    }
+
+    public function testRunWithCustomBackendProtocolAnnotationMapper(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $customMapper = function (?string $provider, bool $isHttpsBackend): array {
+            if ($isHttpsBackend && $provider === 'traefik') {
+                return ['traefik.ingress.kubernetes.io/backend-protocol' => 'https'];
+            }
+            return [];
+        };
+
+        $cd->expects($this->once())
+            ->method('foreachIngress')
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
+                $callback(
+                    new Ingress(
+                        'foo1',
+                        'foo.com',
+                        'traefik',
+                        'sr1',
+                        80,
+                        [],
+                        null,
+                        true
+                    ),
+                    'a-prefix',
+                );
+
+                return $cd;
+            });
+
+        $repoIngress = $this->createMock(IngressRepository::class);
+
+        $kubeClient->expects($this->atLeastOnce())
+            ->method('setNamespace')
+            ->with('default_namespace');
+
+        $kubeClient
+            ->method('__call')
+            ->willReturnMap([
+                ['ingresses', [], $repoIngress],
+            ]);
+
+        $repoIngress->expects($this->once())
+            ->method('apply')
+            ->willReturn(['foo']);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(IngressTranscriber::class, $this->buildTranscriber($customMapper)->transcribe(
             compiledDeployment: $cd,
             client: $kubeClient,
             promise: $promise,

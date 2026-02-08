@@ -1,5 +1,14 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.2.0] - 2026-02-08
+### Stable Release
+- Fix BC Break introduced into PHPUnit 13.0.1
+- Fix issue when provider was defined into ingresses definitions into `paas.yaml`.
+- Remove dependencie about `nginx-ingress` into `IngressTranscriber` to allow applications to define
+  ingresses annotations about https backed according to defined provider thanks to a callable defined at the DI key 
+  `teknoo.east.paas.kubernetes.ingress.backend_annotations_mapper`.
+  - If no callable defined, previous behavior with a fallback to the `nginx-ingress` annoations is performed 
+
 ## [5.1.2] - 2025-12-22
 ### Stable Release
 - Migrate in Symfony Bundle config files from Resources/config to config.

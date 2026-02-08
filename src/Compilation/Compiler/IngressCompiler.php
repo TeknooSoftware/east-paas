@@ -121,7 +121,7 @@ class IngressCompiler implements CompilerInterface, ExtenderInterface
                 new Ingress(
                     name: $name,
                     host: $config[self::KEY_HOST],
-                    provider: $config[self::KEY_SERVICE][self::KEY_PROVIDER] ?? null,
+                    provider: $config[self::KEY_PROVIDER] ?? null,
                     defaultServiceName: $config[self::KEY_SERVICE][self::KEY_SERVICE_NAME] ?? null,
                     defaultServicePort: $port,
                     paths: $paths,

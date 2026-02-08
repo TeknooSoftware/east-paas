@@ -51,6 +51,7 @@ use function DI\create;
 use function DI\get;
 use function is_a;
 use function is_array;
+use function is_callable;
 use function is_iterable;
 use function iterator_to_array;
 use function sys_get_temp_dir;
@@ -86,6 +87,7 @@ return [
         $defaultServiceName = null;
         $defaultServicePort = null;
         $defaultAnnotations = [];
+        $backendProtocolAnnotationMapper = null;
 
         if ($container->has('teknoo.east.paas.kubernetes.ingress.default_ingress_class')) {
             $defaultIngressClass = (string) $container->get(
@@ -103,6 +105,18 @@ return [
 
         if ($container->has('teknoo.east.paas.kubernetes.ingress.default_annotations')) {
             $defaultAnnotations = $container->get('teknoo.east.paas.kubernetes.ingress.default_annotations');
+        }
+
+        if ($container->has('teknoo.east.paas.kubernetes.ingress.backend_annotations_mapper')) {
+            $backendProtocolAnnotationMapper = $container->get(
+                'teknoo.east.paas.kubernetes.ingress.backend_annotations_mapper'
+            );
+
+            if (!is_callable($backendProtocolAnnotationMapper)) {
+                throw new InvalidArgumentException(
+                    "`teknoo.east.paas.kubernetes.ingress.backend_annotations_mapper` must be a callable"
+                );
+            }
         }
 
         if (!is_iterable($defaultAnnotations) && !is_array($defaultAnnotations)) {
@@ -128,6 +142,7 @@ return [
             defaultIngressService: $defaultServiceName,
             defaultIngressPort: $defaultServicePort,
             defaultIngressAnnotations: $defaultAnnotations,
+            backendProtocolAnnotationMapper: $backendProtocolAnnotationMapper,
         );
     },
 
