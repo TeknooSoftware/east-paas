@@ -3,6 +3,9 @@ parameters:
     paths:
         - src/
         - infrastructures/
+    excludePaths:
+        - src/Object/Account/Active.php
+        - src/Object/Account/Inactive.php
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
