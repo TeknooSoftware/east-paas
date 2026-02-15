@@ -122,14 +122,14 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
     public function addBuildable(BuildableInterface $buildable): CompiledDeploymentInterface
     {
-        $this->buildables[$buildable->getUrl()][$buildable->getTag()] = $buildable;
+        $this->buildables[$buildable->getUrl()][(string) $buildable->getTag()] = $buildable;
 
         return $this;
     }
 
     public function updateBuildable(BuildableInterface $old, BuildableInterface $new): CompiledDeploymentInterface
     {
-        $this->buildables[$old->getUrl()][$old->getTag()] = $new->getUrl();
+        $this->buildables[$old->getUrl()][(string) $old->getTag()] = $new->getUrl();
         $this->addBuildable($new);
 
         return $this;
@@ -296,11 +296,11 @@ class CompiledDeployment implements CompiledDeploymentInterface
                 $buildable = $container->getImage();
                 $version = $container->getVersion();
 
-                if (isset($processedBuildables[$buildable][$version])) {
+                if (isset($processedBuildables[$buildable][(string) $version])) {
                     continue;
                 }
 
-                $processedBuildables[$buildable][$version] = true;
+                $processedBuildables[$buildable][(string) $version] = true;
 
                 if ($this->hasBuildable($buildable, $version)) {
                     $callback(
@@ -341,7 +341,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
             $imgVersion = $container->getVersion();
 
             if ($this->hasBuildable($imgName, $imgVersion)) {
-                $buildables[$imgName][$imgVersion] = $this->getBuildable($imgName, $imgVersion);
+                $buildables[$imgName][$imgVersion ?? ''] = $this->getBuildable($imgName, $imgVersion);
                 foreach ($container->getVolumes() as $name => $volume) {
                     if ($volume instanceof PopulatedVolumeInterface) {
                         $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];

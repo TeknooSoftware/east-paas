@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.2.1] - 2026-02-15
+### Stable Release
+- Fix bug with PHP 8.5 in tests
+
 ## [5.2.0] - 2026-02-08
 ### Stable Release
 - Fix BC Break introduced into PHPUnit 13.0.1

@@ -326,7 +326,7 @@ class JobUnit implements JobUnitInterface
                 }
 
                 if ($key !== $finalKey) {
-                    $values[$finalKey] = $value;
+                    $values[$finalKey ?? (string) $finalKey] = $value;
                     unset($values[$key]);
                 }
             }

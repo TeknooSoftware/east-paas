@@ -90,34 +90,54 @@ class CompiledDeploymentTest extends TestCase
 
     public function testAddBuildable(): void
     {
+        $buildable = $this->createStub(BuildableInterface::class);
+        $buildable->method('getUrl')->willReturn('foo');
+        $buildable->method('getTag')->willReturn('bar');
+
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->addBuildable(
-            $this->createStub(BuildableInterface::class)
+            $buildable
         ));
     }
 
     public function testupdateBuildableWrongOldBuildable(): void
     {
+        $buildable = $this->createStub(BuildableInterface::class);
+        $buildable->method('getUrl')->willReturn('foo');
+        $buildable->method('getTag')->willReturn('bar');
+
         $this->expectException(TypeError::class);
         $this->buildObject()->updateBuildable(
             new stdClass(),
-            $this->createStub(BuildableInterface::class)
+            $buildable,
         );
     }
 
     public function testupdateBuildableWrongNewBuildable(): void
     {
+        $buildable = $this->createStub(BuildableInterface::class);
+        $buildable->method('getUrl')->willReturn('foo');
+        $buildable->method('getTag')->willReturn('bar');
+
         $this->expectException(TypeError::class);
         $this->buildObject()->updateBuildable(
-            $this->createStub(BuildableInterface::class),
+            $buildable,
             new stdClass()
         );
     }
 
     public function testupdateBuildable(): void
     {
+        $buildable1 = $this->createStub(BuildableInterface::class);
+        $buildable1->method('getUrl')->willReturn('foo');
+        $buildable1->method('getTag')->willReturn('bar');
+
+        $buildable2 = $this->createStub(BuildableInterface::class);
+        $buildable2->method('getUrl')->willReturn('foo');
+        $buildable2->method('getTag')->willReturn('bar');
+
         $this->assertInstanceOf(CompiledDeployment::class, $this->buildObject()->updateBuildable(
-            $this->createStub(BuildableInterface::class),
-            $this->createStub(BuildableInterface::class)
+            $buildable1,
+            $buildable2,
         ));
     }
 

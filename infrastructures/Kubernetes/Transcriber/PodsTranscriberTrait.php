@@ -140,8 +140,8 @@ trait PodsTranscriberTrait
     {
         /** @var Container $container */
         foreach ($pod as $container) {
-            if (isset($images[$container->getImage()][$container->getVersion()])) {
-                $image = $images[$container->getImage()][$container->getVersion()];
+            if (isset($images[$container->getImage()][(string) $container->getVersion()])) {
+                $image = $images[$container->getImage()][(string) $container->getVersion()];
                 $imgUrl = $image->getUrl() . ':' . $image->getTag();
             } else {
                 $imgUrl = $container->getImage() . ':' . $container->getVersion();
