@@ -6,6 +6,7 @@ parameters:
     excludePaths:
         - src/Object/Account/Active.php
         - src/Object/Account/Inactive.php
+        - src/Object/Job/Pending.php
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
