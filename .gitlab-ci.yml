@@ -18,6 +18,12 @@ test:8.4-upper:
     PHP_VERSION: '8.4'
   script:
     - make test
+
+test:8.4-qa:
+  extends: .abstract_tests
+  variables:
+    PHP_VERSION: '8.4'
+  script:
     - make qa
 
 test:8.5-upper:
@@ -26,4 +32,10 @@ test:8.5-upper:
     PHP_VERSION: '8.5'
   script:
     - make test
+
+test:8.5-qa:
+  extends: .abstract_tests
+  variables:
+    PHP_VERSION: '8.5'
+  script:
     - make qa
