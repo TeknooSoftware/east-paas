@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.2.2] - 2026-02-20
+### Stable Release
+- Fix deprecation and use ingressClassName instead ingress.class
+
 ## [5.2.1] - 2026-02-15
 ### Stable Release
 - Fix bug with PHP 8.5 in tests

@@ -2094,9 +2094,13 @@ EOF;
             false => '',
         };
 
+        $ingressClassName = match (self::$ingressProvider) {
+            '' => '',
+            default => '"ingressClassName": "' . self::$ingressProvider . '",',
+        };
+
         $ingressBackendProtocol = match (self::$ingressProvider) {
-            'traefik' => '"kubernetes.io/ingress.class": "traefik",'
-                . PHP_EOL . '"traefik.ingress.kubernetes.io/protocol": "https"',
+            'traefik' => '"traefik.ingress.kubernetes.io/protocol": "https"',
             default => '"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS"',
         };
 
@@ -3180,7 +3184,7 @@ EOF;
                         }
                     }
                 ],
-                "tls": [
+                {$ingressClassName}"tls": [
                     {
                         "hosts": [
                             "demo-secure.teknoo.software"

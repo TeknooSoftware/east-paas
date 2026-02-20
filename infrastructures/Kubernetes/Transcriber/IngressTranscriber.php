@@ -177,7 +177,7 @@ class IngressTranscriber implements ExposingInterface
 
         $provider = $ingress->getProvider() ?? $defaultIngressClass;
         if (null !== $provider) {
-            $specs['metadata']['annotations']['kubernetes.io/ingress.class'] = $provider;
+            $specs['spec']['ingressClassName'] = $provider;
         }
 
         foreach ($backendProtocolAnnotationMapper($provider, $ingress->isHttpsBackend()) as $annotation => $value) {
