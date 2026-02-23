@@ -124,7 +124,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
         int $version,
         callable $prefixer,
         string $requireLabel,
-        defaultsBag $defaultsBag,
+        DefaultsBag $defaultsBag,
     ): StatefulSet {
         return new StatefulSet(
             static::writeSpec(
@@ -145,7 +145,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
         PromiseInterface $promise,
-        defaultsBag $defaultsBag,
+        DefaultsBag $defaultsBag,
         string $namespace,
         bool $useHierarchicalNamespaces,
     ): TranscriberInterface {

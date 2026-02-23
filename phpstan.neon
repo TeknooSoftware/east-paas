@@ -13,9 +13,6 @@ parameters:
             message: '#DefaultsBag\|null given#'
             path: infrastructures/Kubernetes/
         -
-            message: '#non-native method stdClass::#'
-            path: infrastructures/PhpSecLib/Security/Encryption.php
-        -
             message: '#Cannot call method decrypt#'
             path: infrastructures/Symfony/Components/Messenger/Handler/Psr11
         -
@@ -90,9 +87,6 @@ parameters:
         -
             message: '#[a-zA-Z\\]+\|null given#'
             path:  src/Object/Project.php
-        -
-            message: '#Cannot access property \$message#'
-            path:  src/Parser/YamlValidator.php
         -
             message: '#mixed#'
             path:  */di.php

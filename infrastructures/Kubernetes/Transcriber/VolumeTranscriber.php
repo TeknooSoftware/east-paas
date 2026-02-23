@@ -98,7 +98,7 @@ class VolumeTranscriber implements DeploymentInterface
         PersistentVolumeInterface $volume,
         string $namespace,
         callable $prefixer,
-        defaultsBag $defaultsBag,
+        DefaultsBag $defaultsBag,
     ): PersistentVolumeClaim {
         return new PersistentVolumeClaim(
             static::writeSpec($volume, $namespace, $prefixer, $defaultsBag)
@@ -109,7 +109,7 @@ class VolumeTranscriber implements DeploymentInterface
         CompiledDeploymentInterface $compiledDeployment,
         KubernetesClient $client,
         PromiseInterface $promise,
-        defaultsBag $defaultsBag,
+        DefaultsBag $defaultsBag,
         string $namespace,
         bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
