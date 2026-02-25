@@ -19,13 +19,6 @@ test:8.4-upper:
   script:
     - make test
 
-test:8.4-qa:
-  extends: .abstract_tests
-  variables:
-    PHP_VERSION: '8.4'
-  script:
-    - make qa
-
 test:8.5-upper:
   extends: .abstract_tests
   variables:
