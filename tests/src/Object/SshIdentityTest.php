@@ -27,7 +27,6 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\SshIdentity;
 use Teknoo\Tests\East\Common\Object\Traits\ObjectTestTrait;
@@ -111,11 +110,4 @@ class SshIdentityTest extends TestCase
         ));
     }
 
-    public function testSetExportConfiguration(): void
-    {
-        SshIdentity::setExportConfiguration($conf = ['name' => ['all']]);
-        $rc = new ReflectionClass(SshIdentity::class);
-
-        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
-    }
 }

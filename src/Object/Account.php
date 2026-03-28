@@ -33,13 +33,13 @@ use Teknoo\East\Common\Contracts\Object\VisitableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Object\User as BaseUser;
 use Teknoo\East\Common\Object\VisitableTrait;
-use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
+use Teknoo\East\Foundation\Normalizer\Object\AutoTrait;
+use Teknoo\East\Foundation\Normalizer\Object\ClassGroup;
+use Teknoo\East\Foundation\Normalizer\Object\Normalize;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Contracts\Object\Account\AccountAwareInterface;
 use Teknoo\East\Paas\Object\Account\Active;
 use Teknoo\East\Paas\Object\Account\Inactive;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\States\Attributes\Assertion\Property;
 use Teknoo\States\Attributes\StateClass;
 use Teknoo\States\Automated\Assertion\Property\IsEmpty;
@@ -60,6 +60,7 @@ use Teknoo\States\Proxy\ProxyTrait;
 #[StateClass(Inactive::class)]
 #[Property(Active::class, ['name', IsNotEmpty::class])]
 #[Property(Inactive::class, ['name', IsEmpty::class])]
+#[ClassGroup('default', 'api', 'digest', 'crud')]
 class Account implements
     IdentifiedObjectInterface,
     TimestampableInterface,
@@ -71,22 +72,28 @@ class Account implements
 {
     use ObjectTrait;
     use ProxyTrait;
-    use GroupsTrait;
-    use ExportConfigurationsTrait;
+    use AutoTrait;
     use VisitableTrait {
         VisitableTrait::runVisit as realRunVisit;
     }
     use AutomatedTrait;
 
+    #[Normalize(['default', 'api', 'digest', 'crud'])]
+    protected ?string $id = null;
+
+    #[Normalize(['default', 'api', 'digest', 'crud'])]
     protected ?string $name = null;
 
+    #[Normalize(['default', 'admin'])]
     protected ?string $namespace = null;
 
+    #[Normalize('admin')]
     protected ?string $prefixNamespace = null;
 
     /**
      * @var iterable<AccountQuota>|null
      */
+    #[Normalize(['default', 'admin'])]
     protected ?iterable $quotas = null;
 
     /**
@@ -97,20 +104,8 @@ class Account implements
     /**
      * @var BaseUser[]
      */
+    #[Normalize('admin', loader: '@lazy')]
     protected ?iterable $users = [];
-
-    /**
-     * @var array<string, string[]>
-     */
-    private static array $exportConfigurations = [
-        '@class' => ['default', 'api', 'digest', 'crud'],
-        'id' => ['default', 'api', 'digest', 'crud'],
-        'name' => ['default', 'api', 'digest', 'crud'],
-        'namespace' => ['default', 'admin'],
-        'prefixNamespace' => ['admin'],
-        'quota' => ['default', 'admin'],
-        'users' => ['admin'],
-    ];
 
     public function __construct()
     {
@@ -236,31 +231,6 @@ class Account implements
             $this->name,
             $this->namespace,
             $this->prefixNamespace,
-        );
-
-        return $this;
-    }
-
-    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
-    {
-        $data = [
-            '@class' => self::class,
-            'id' => $this->getId(),
-            'name' => $this->getName(),
-            'namespace' => $this->getNamespace(),
-            'prefixNamespace' => $this->getPrefixNamespace(),
-            'quotas' => $this->getQuotas(),
-            'users' => fn () => $this->getUsers(),
-        ];
-
-        $this->setGroupsConfiguration(self::$exportConfigurations);
-
-        $normalizer->injectData(
-            $this->filterExport(
-                data: $data,
-                groups: (array) ($context['groups'] ?? ['default']),
-                lazyData: true,
-            )
         );
 
         return $this;

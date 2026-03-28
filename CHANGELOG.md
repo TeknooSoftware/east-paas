@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.3.0] - 2026-03-28
+### Stable Release
+- Migrate to `Tekno East Foundation` 9.2
+- Migrate to `AutoTrait`
+- Remove `ExportConfigurationsTrait`
+
 ## [5.2.2] - 2026-02-20
 ### Stable Release
 - Fix deprecation and use ingressClassName instead ingress.class

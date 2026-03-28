@@ -27,14 +27,14 @@ namespace Teknoo\East\Paas\Object;
 
 use SensitiveParameter;
 use Stringable;
-use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
+use Teknoo\East\Foundation\Normalizer\Object\AutoTrait;
+use Teknoo\East\Foundation\Normalizer\Object\ClassGroup;
+use Teknoo\East\Foundation\Normalizer\Object\Normalize;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityWithConfigNameInterface;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Immutable\ImmutableTrait;
 
 /**
@@ -45,6 +45,7 @@ use Teknoo\Immutable\ImmutableTrait;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[ClassGroup('default', 'api', 'crud')]
 class XRegistryAuth implements
     IdentifiedObjectInterface,
     NormalizableInterface,
@@ -54,31 +55,25 @@ class XRegistryAuth implements
 {
     use ObjectTrait;
     use ImmutableTrait;
-    use GroupsTrait;
-    use ExportConfigurationsTrait;
+    use AutoTrait;
 
+    #[Normalize(['default', 'api', 'crud'])]
+    protected ?string $id = null;
+
+    #[Normalize(['default', 'api', 'crud'])]
     private string $username = '';
 
+    #[Normalize(['default', 'crud'])]
     private string $password = '';
 
+    #[Normalize(['default', 'api', 'crud'])]
     private string $email = '';
 
+    #[Normalize(['default', 'crud'])]
     private string $auth = '';
 
+    #[Normalize(['default', 'api', 'crud'], 'server_address')]
     private string $serverAddress = '';
-
-    /**
-     * @var array<string, string[]>
-     */
-    private static array $exportConfigurations = [
-        '@class' => ['default', 'api', 'crud'],
-        'id' => ['default', 'api', 'crud'],
-        'username' => ['default', 'api', 'crud'],
-        'password' => ['default', 'crud'],
-        'email' => ['default', 'api', 'crud'],
-        'auth' => ['default', 'crud'],
-        'server_address' => ['default', 'api', 'crud'],
-    ];
 
     public function __construct(
         string $username = '',
@@ -87,6 +82,7 @@ class XRegistryAuth implements
         string $email = '',
         string $auth = '',
         string $serverAddress = '',
+        ?string $id = null,
     ) {
         $this->uniqueConstructorCheck();
 
@@ -95,6 +91,7 @@ class XRegistryAuth implements
         $this->email = $email;
         $this->auth = $auth;
         $this->serverAddress = $serverAddress;
+        $this->id = $id;
     }
 
     public function getName(): string
@@ -135,29 +132,5 @@ class XRegistryAuth implements
     public function getServerAddress(): string
     {
         return $this->serverAddress;
-    }
-
-    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
-    {
-        $data = [
-            '@class' => self::class,
-            'id' => $this->getId(),
-            'username' => $this->getUsername(),
-            'password' => $this->getPassword(),
-            'email' => $this->getEmail(),
-            'auth' => $this->getAuth(),
-            'server_address' => $this->getServerAddress(),
-        ];
-
-        $this->setGroupsConfiguration(self::$exportConfigurations);
-
-        $normalizer->injectData(
-            $this->filterExport(
-                $data,
-                (array) ($context['groups'] ?? ['default']),
-            )
-        );
-
-        return $this;
     }
 }

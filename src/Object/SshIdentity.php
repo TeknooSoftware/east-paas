@@ -26,13 +26,13 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Object;
 
 use Stringable;
-use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
+use Teknoo\East\Foundation\Normalizer\Object\AutoTrait;
+use Teknoo\East\Foundation\Normalizer\Object\ClassGroup;
+use Teknoo\East\Foundation\Normalizer\Object\Normalize;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
@@ -44,6 +44,7 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[ClassGroup('default', 'api', 'crud')]
 class SshIdentity implements
     IdentifiedObjectInterface,
     IdentityInterface,
@@ -53,31 +54,27 @@ class SshIdentity implements
 {
     use ObjectTrait;
     use ImmutableTrait;
-    use GroupsTrait;
-    use ExportConfigurationsTrait;
+    use AutoTrait;
 
+    #[Normalize(['default', 'api', 'crud'])]
+    protected ?string $id = null;
+
+    #[Normalize(['default', 'api', 'crud'])]
     private string $name = '';
 
+    #[Normalize(['default', 'crud'], 'private_key')]
     private string $privateKey = '';
-
-    /**
-     * @var array<string, string[]>
-     */
-    private static array $exportConfigurations = [
-        '@class' => ['default', 'api', 'crud'],
-        'id' => ['default', 'api', 'crud'],
-        'name' => ['default', 'api', 'crud'],
-        'private_key' => ['default', 'crud'],
-    ];
 
     public function __construct(
         string $name = '',
         string $privateKey = '',
+        ?string $id = null,
     ) {
         $this->uniqueConstructorCheck();
 
         $this->name = $name;
         $this->privateKey = $privateKey;
+        $this->id = $id;
     }
 
     public function getName(): string
@@ -93,26 +90,5 @@ class SshIdentity implements
     public function getPrivateKey(): string
     {
         return $this->privateKey;
-    }
-
-    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
-    {
-        $data = [
-            '@class' => self::class,
-            'id' => $this->getId(),
-            'name' => $this->getName(),
-            'private_key' => $this->getPrivateKey(),
-        ];
-
-        $this->setGroupsConfiguration(self::$exportConfigurations);
-
-        $normalizer->injectData(
-            $this->filterExport(
-                $data,
-                (array) ($context['groups'] ?? ['default']),
-            )
-        );
-
-        return $this;
     }
 }

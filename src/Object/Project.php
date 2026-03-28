@@ -28,8 +28,9 @@ namespace Teknoo\East\Paas\Object;
 use DateTimeInterface;
 use Stringable;
 use Teknoo\East\Common\Object\VisitableTrait;
-use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
+use Teknoo\East\Foundation\Normalizer\Object\AutoTrait;
+use Teknoo\East\Foundation\Normalizer\Object\ClassGroup;
+use Teknoo\East\Foundation\Normalizer\Object\Normalize;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
@@ -40,7 +41,6 @@ use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
 use Teknoo\East\Paas\Object\Exception\MissingAccountException;
 use Teknoo\East\Paas\Object\Project\Draft;
 use Teknoo\East\Paas\Object\Project\Executable;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\States\Attributes\StateClass;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Property;
@@ -65,6 +65,7 @@ use const PHP_INT_MAX;
  */
 #[StateClass(Draft::class)]
 #[StateClass(Executable::class)]
+#[ClassGroup('default', 'api', 'digest', 'crud')]
 class Project implements
     IdentifiedObjectInterface,
     AutomatedInterface,
@@ -75,22 +76,29 @@ class Project implements
 {
     use ObjectTrait;
     use ProxyTrait;
-    use GroupsTrait;
-    use ExportConfigurationsTrait;
+    use AutoTrait;
     use VisitableTrait;
     use AutomatedTrait;
 
+    #[Normalize(['default', 'api', 'digest', 'crud'])]
+    protected ?string $id = null;
+
+    #[Normalize(['default', 'api', 'digest', 'crud'])]
     protected ?string $name = null;
 
+    #[Normalize('crud')]
     protected ?string $prefix = null;
 
+    #[Normalize('crud', loader: '@lazy')]
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
+    #[Normalize('crud', loader: '@lazy')]
     protected ?ImageRegistryInterface $imagesRegistry = null;
 
     /**
      * @var array<int, Cluster>|iterable<Cluster>
      */
+    #[Normalize('crud', loader: '@lazy')]
     protected iterable $clusters = [];
 
     /**
@@ -98,21 +106,8 @@ class Project implements
      */
     protected iterable $jobs = [];
 
-    /**
-     * @var array<string, string[]>
-     */
-    private static array $exportConfigurations = [
-        '@class' => ['default', 'api', 'digest', 'crud'],
-        'id' => ['default', 'api', 'digest', 'crud'],
-        'account' => ['crud'],
-        'name' => ['default', 'api', 'digest', 'crud'],
-        'prefix' => ['crud'],
-        'sourceRepository' => ['crud'],
-        'imagesRegistry' => ['crud'],
-        'clusters' => ['crud'],
-    ];
-
     public function __construct(
+        #[Normalize('crud')]
         protected ?Account $account = null,
     ) {
         $this->initializeStateProxy();
@@ -224,32 +219,6 @@ class Project implements
             date: $date,
             isFinal: true,
             serialNumber: PHP_INT_MAX,
-        );
-
-        return $this;
-    }
-
-    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
-    {
-        $data = [
-            '@class' => self::class,
-            'account' => $this->getAccount(),
-            'id' => $this->getId(),
-            'name' => $this->getName(),
-            'prefix' => $this->prefix,
-            'sourceRepository' => fn (): ?SourceRepositoryInterface => $this->sourceRepository,
-            'imagesRegistry' => fn (): ?ImageRegistryInterface => $this->imagesRegistry,
-            'clusters' => fn (): iterable => $this->clusters,
-        ];
-
-        $this->setGroupsConfiguration(self::$exportConfigurations);
-
-        $normalizer->injectData(
-            $this->filterExport(
-                data: $data,
-                groups: (array) ($context['groups'] ?? ['default']),
-                lazyData: true,
-            )
         );
 
         return $this;

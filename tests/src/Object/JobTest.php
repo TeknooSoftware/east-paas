@@ -30,7 +30,6 @@ use DateTime;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use RuntimeException;
@@ -76,28 +75,6 @@ class JobTest extends TestCase
     public function buildObject(): Job
     {
         return new Job();
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        Job::setExportConfiguration(
-            [
-                '@class' => ['default', 'api', 'digest'],
-                'id' => ['default', 'api', 'digest'],
-                'project' => ['default', 'api', 'digest'],
-                'environment' => ['default', 'api', 'digest'],
-                'prefix' => ['default', 'api'],
-                'source_repository' => ['default', 'api'],
-                'images_repository' => ['default', 'api'],
-                'clusters' => ['default', 'api'],
-                'history' => ['default', 'api'],
-                'extra' => ['default', 'api'],
-                'defaults' => ['default', 'api'],
-                'quotas' => ['default', 'api'],
-            ]
-        );
     }
 
     /**
@@ -593,11 +570,4 @@ class JobTest extends TestCase
         $this->assertInstanceOf(Job::class, $object->isRunnable($promise));
     }
 
-    public function testSetExportConfiguration(): void
-    {
-        Job::setExportConfiguration($conf = ['name' => ['default']]);
-        $rc = new ReflectionClass(Job::class);
-
-        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
-    }
 }

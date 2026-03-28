@@ -29,7 +29,6 @@ use DateTime;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use RuntimeException;
@@ -68,24 +67,6 @@ class ProjectTest extends TestCase
     public function buildObject(): Project
     {
         return new Project($this->createStub(Account::class));
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        Project::setExportConfiguration(
-            [
-                '@class' => ['default', 'api', 'digest', 'crud'],
-                'id' => ['default', 'api', 'digest', 'crud'],
-                'account' => ['crud'],
-                'name' => ['default', 'api', 'digest', 'crud'],
-                'prefix' => ['crud'],
-                'sourceRepository' => ['crud'],
-                'imagesRegistry' => ['crud'],
-                'clusters' => ['crud'],
-            ]
-        );
     }
 
     public function testConstructor(): void
@@ -590,7 +571,7 @@ class ProjectTest extends TestCase
                 'id' => '123',
                 'name' => 'fooName',
                 'account' => $project->getAccount(),
-                'prefix' => '',
+                'prefix' => null,
                 'sourceRepository' => null,
                 'imagesRegistry' => null,
                 'clusters' => [],
@@ -606,14 +587,6 @@ class ProjectTest extends TestCase
                     ['groups' => 'crud']
                 )
         );
-    }
-
-    public function testSetExportConfiguration(): void
-    {
-        Project::setExportConfiguration($conf = ['name' => ['default']]);
-        $rc = new ReflectionClass(Project::class);
-
-        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
     }
 
     public function testIsRunnable(): void

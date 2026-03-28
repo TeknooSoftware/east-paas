@@ -27,13 +27,13 @@ namespace Teknoo\East\Paas\Object;
 
 use SensitiveParameter;
 use Stringable;
-use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
+use Teknoo\East\Foundation\Normalizer\Object\AutoTrait;
+use Teknoo\East\Foundation\Normalizer\Object\ClassGroup;
+use Teknoo\East\Foundation\Normalizer\Object\Normalize;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 
@@ -45,6 +45,7 @@ use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
+#[ClassGroup('default', 'api', 'crud')]
 class ClusterCredentials implements
     IdentifiedObjectInterface,
     IdentityInterface,
@@ -54,34 +55,28 @@ class ClusterCredentials implements
 {
     use ObjectTrait;
     use ImmutableTrait;
-    use GroupsTrait;
-    use ExportConfigurationsTrait;
+    use AutoTrait;
 
+    #[Normalize(['default', 'api', 'crud'])]
+    protected ?string $id = null;
+
+    #[Normalize(['default', 'crud'], 'ca_certificate')]
     private string $caCertificate = '';
 
+    #[Normalize(['default', 'crud'], 'client_certificate')]
     private string $clientCertificate = '';
 
+    #[Normalize(['default', 'crud'], 'client_key')]
     private string $clientKey = '';
 
+    #[Normalize(['default', 'crud'])]
     private string $token = '';
 
+    #[Normalize(['default', 'api', 'crud'])]
     private string $username = '';
 
+    #[Normalize(['default', 'crud'])]
     private string $password = '';
-
-    /**
-     * @var array<string, string[]>
-     */
-    private static array $exportConfigurations = [
-        '@class' => ['default', 'api', 'crud'],
-        'id' => ['default', 'api', 'crud'],
-        'ca_certificate' => ['default', 'crud'],
-        'client_certificate' => ['default', 'crud'],
-        'client_key' => ['default', 'crud'],
-        'token' => ['default', 'crud'],
-        'username' => ['default', 'api', 'crud'],
-        'password' => ['default', 'crud'],
-    ];
 
     public function __construct(
         string $caCertificate = '',
@@ -91,6 +86,7 @@ class ClusterCredentials implements
         string $username = '',
         #[SensitiveParameter]
         string $password = '',
+        ?string $id = null,
     ) {
         $this->uniqueConstructorCheck();
 
@@ -100,6 +96,7 @@ class ClusterCredentials implements
         $this->token = $token;
         $this->username = $username;
         $this->password = $password;
+        $this->id = $id;
     }
 
     public function getName(): string
@@ -140,30 +137,5 @@ class ClusterCredentials implements
     public function getPassword(): string
     {
         return $this->password;
-    }
-
-    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
-    {
-        $data = [
-            '@class' => self::class,
-            'id' => $this->getId(),
-            'ca_certificate' => $this->getCaCertificate(),
-            'client_certificate' => $this->getClientCertificate(),
-            'client_key' => $this->getClientKey(),
-            'token' => $this->getToken(),
-            'username' => $this->getUsername(),
-            'password' => $this->getPassword(),
-        ];
-
-        $this->setGroupsConfiguration(self::$exportConfigurations);
-
-        $normalizer->injectData(
-            $this->filterExport(
-                $data,
-                (array) ($context['groups'] ?? ['default']),
-            )
-        );
-
-        return $this;
     }
 }

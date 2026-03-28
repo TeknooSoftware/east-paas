@@ -74,7 +74,7 @@ parameters:
             path:  src/Object/
         -
             message: '#is never read, only written.#'
-            path:  src/Object/Cluster.php
+            path:  src/Object/
         -
             message: '#Cannot call method [a-zA-Z]+\(\) on [a-zA-Z\\]+\|null#'
             path:  src/Object/Job.php

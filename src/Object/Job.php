@@ -31,8 +31,9 @@ use Teknoo\East\Common\Contracts\Object\TimestampableInterface;
 use Teknoo\East\Common\Contracts\Object\VisitableInterface;
 use Teknoo\East\Common\Object\ObjectTrait;
 use Teknoo\East\Common\Object\VisitableTrait;
-use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
-use Teknoo\East\Foundation\Normalizer\Object\GroupsTrait;
+use Teknoo\East\Foundation\Normalizer\Object\AutoTrait;
+use Teknoo\East\Foundation\Normalizer\Object\ClassGroup;
+use Teknoo\East\Foundation\Normalizer\Object\Normalize;
 use Teknoo\East\Foundation\Normalizer\Object\NormalizableInterface;
 use Teknoo\East\Paas\Contracts\Object\ImageRegistryInterface;
 use Teknoo\East\Paas\Contracts\Object\SourceRepositoryInterface;
@@ -42,7 +43,6 @@ use Teknoo\East\Paas\Object\Job\Executing;
 use Teknoo\East\Paas\Object\Job\Pending;
 use Teknoo\East\Paas\Object\Job\Terminated;
 use Teknoo\East\Paas\Object\Job\Validating;
-use Teknoo\East\Paas\Object\Traits\ExportConfigurationsTrait;
 use Teknoo\States\Attributes\StateClass;
 use Teknoo\States\Automated\Assertion\AssertionInterface;
 use Teknoo\States\Automated\Assertion\Callback;
@@ -70,6 +70,7 @@ use function is_callable;
 #[StateClass(Pending::class)]
 #[StateClass(Terminated::class)]
 #[StateClass(Validating::class)]
+#[ClassGroup('default', 'api', 'digest')]
 class Job implements
     IdentifiedObjectInterface,
     AutomatedInterface,
@@ -79,60 +80,54 @@ class Job implements
 {
     use ObjectTrait;
     use ProxyTrait;
-    use GroupsTrait;
-    use ExportConfigurationsTrait;
+    use AutoTrait;
     use VisitableTrait;
     use AutomatedTrait;
 
+    #[Normalize(['default', 'api', 'digest'])]
+    protected ?string $id = null;
+
+    #[Normalize(['default', 'api', 'digest'])]
     protected ?Project $project = null;
 
-    protected ?Environment $environment = null;
-
+    #[Normalize(['default', 'api'])]
     protected ?string $prefix = null;
 
+    #[Normalize(['default', 'api', 'digest'])]
+    protected ?Environment $environment = null;
+
+    #[Normalize(['default', 'api'], 'source_repository')]
     protected ?SourceRepositoryInterface $sourceRepository = null;
 
+    #[Normalize(['default', 'api'], 'images_repository')]
     protected ?ImageRegistryInterface $imagesRegistry = null;
 
     /**
      * @var array<int, Cluster>
      */
+    #[Normalize(['default', 'api'])]
     protected iterable $clusters = [];
 
+    #[Normalize(['default', 'api'])]
     protected ?History $history = null;
 
     /**
      * @var array<string, mixed>
      */
+    #[Normalize(['default', 'api'])]
     private array $extra = [];
 
     /**
      * @var array<string, mixed>
      */
+    #[Normalize(['default', 'api'])]
     private array $defaults = [];
 
     /**
      * @var AccountQuota[]
      */
+    #[Normalize(['default', 'api'])]
     private iterable $quotas = [];
-
-    /**
-     * @var array<string, string[]>
-     */
-    private static array $exportConfigurations = [
-        '@class' => ['default', 'api', 'digest'],
-        'id' => ['default', 'api', 'digest'],
-        'project' => ['default', 'api', 'digest'],
-        'environment' => ['default', 'api', 'digest'],
-        'prefix' => ['default', 'api'],
-        'source_repository' => ['default', 'api'],
-        'images_repository' => ['default', 'api'],
-        'clusters' => ['default', 'api'],
-        'history' => ['default', 'api'],
-        'extra' => ['default', 'api'],
-        'defaults' => ['default', 'api'],
-        'quotas' => ['default', 'api'],
-    ];
 
     public function __construct()
     {
@@ -325,35 +320,6 @@ class Job implements
     public function setQuotas(iterable $quotas): self
     {
         $this->quotas = $quotas;
-
-        return $this;
-    }
-
-    public function exportToMeData(EastNormalizerInterface $normalizer, array $context = []): NormalizableInterface
-    {
-        $data = [
-            '@class' => self::class,
-            'id' => $this->getId(),
-            'project' => $this->getProject(),
-            'prefix' => $this->prefix,
-            'environment' => $this->environment,
-            'source_repository' => $this->sourceRepository,
-            'images_repository' => $this->imagesRegistry,
-            'clusters' => $this->clusters,
-            'history' => $this->history,
-            'extra' => $this->extra,
-            'defaults' => $this->defaults,
-            'quotas' => $this->quotas,
-        ];
-
-        $this->setGroupsConfiguration(self::$exportConfigurations);
-
-        $normalizer->injectData(
-            $this->filterExport(
-                $data,
-                (array) ($context['groups'] ?? ['default']),
-            )
-        );
 
         return $this;
     }

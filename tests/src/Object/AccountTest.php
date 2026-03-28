@@ -28,8 +28,6 @@ namespace Teknoo\Tests\East\Paas\Object;
 use DateTime;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use ReflectionMethod;
 use stdClass;
 use Symfony\Component\Form\FormInterface;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
@@ -63,23 +61,6 @@ class AccountTest extends TestCase
     public function buildObject(): Account
     {
         return new Account();
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        Account::setExportConfiguration(
-            [
-                '@class' => ['default', 'api', 'digest', 'crud'],
-                'id' => ['default', 'api', 'digest', 'crud'],
-                'name' => ['default', 'api', 'digest', 'crud'],
-                'namespace' => ['default', 'admin'],
-                'prefixNamespace' => ['admin'],
-                'quota' => ['default', 'admin'],
-                'users' => ['admin'],
-            ]
-        );
     }
 
     public function testGetName(): void
@@ -493,6 +474,7 @@ class AccountTest extends TestCase
                 'id' => '123',
                 'name' => 'fooName',
                 'namespace' => null,
+                'quotas' => null,
             ]);
 
         $this->assertInstanceOf(
@@ -507,11 +489,4 @@ class AccountTest extends TestCase
         );
     }
 
-    public function testSetExportConfiguration(): void
-    {
-        Account::setExportConfiguration($conf = ['name' => ['default']]);
-        $rc = new ReflectionClass(Account::class);
-
-        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
-    }
 }

@@ -27,7 +27,6 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use stdClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
@@ -142,11 +141,4 @@ class ClusterCredentialsTest extends TestCase
         ));
     }
 
-    public function testSetExportConfiguration(): void
-    {
-        ClusterCredentials::setExportConfiguration($conf = ['name' => ['all']]);
-        $rc = new ReflectionClass(ClusterCredentials::class);
-
-        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
-    }
 }

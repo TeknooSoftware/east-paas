@@ -27,7 +27,6 @@ namespace Teknoo\Tests\East\Paas\Object;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use stdClass;
 use Teknoo\East\Foundation\Normalizer\EastNormalizerInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
@@ -144,11 +143,4 @@ class XRegistryAuthTest extends TestCase
         ));
     }
 
-    public function testSetExportConfiguration(): void
-    {
-        XRegistryAuth::setExportConfiguration($conf = ['name' => ['all']]);
-        $rc = new ReflectionClass(XRegistryAuth::class);
-
-        $this->assertEquals($conf, $rc->getStaticPropertyValue('exportConfigurations'));
-    }
 }
