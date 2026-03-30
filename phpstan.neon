@@ -13,9 +13,6 @@ parameters:
             message: '#DefaultsBag\|null given#'
             path: infrastructures/Kubernetes/
         -
-            message: '#Cannot call method decrypt#'
-            path: infrastructures/Symfony/Components/Messenger/Handler/Psr11
-        -
             message: '#Cannot cast iterable#'
             path: infrastructures/ProjectBuilding/
         -
