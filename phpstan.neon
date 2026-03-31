@@ -28,9 +28,6 @@ parameters:
             message: '#::getVersion\(\) expects#'
             path: infrastructures/Kubernetes/Transcriber/
         -
-            message: '#mixed given#'
-            path: infrastructures/Doctrine/Form/Type/AccountType.php
-        -
             message: '#expects callable\(string\): string, Closure\(\): mixed given#'
             path: infrastructures/PhpSecLib/Security/Encryption.php
         -

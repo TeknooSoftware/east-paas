@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\EnvironmentType;
 use Teknoo\East\Paas\Object\Environment;
 
@@ -43,7 +44,7 @@ class EnvironmentTypeTest extends TestCase
 
     public function buildForm(): EnvironmentType
     {
-        return new EnvironmentType();
+        return new EnvironmentType($this->createStub(EastDataMapper::class));
     }
 
     private function getObject(): Environment

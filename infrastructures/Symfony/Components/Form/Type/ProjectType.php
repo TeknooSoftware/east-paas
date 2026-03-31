@@ -32,6 +32,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Object\Project;
 use Traversable;
 
@@ -48,6 +49,11 @@ use function iterator_to_array;
  */
 class ProjectType extends AbstractType
 {
+    public function __construct(
+        private readonly EastDataMapper $dataMapper,
+    ) {
+    }
+
     /**
      * @param FormBuilderInterface<Project> $builder
      * @param array<string, mixed> $options
@@ -79,42 +85,7 @@ class ProjectType extends AbstractType
             ]
         );
 
-        $builder->setDataMapper(new class () implements DataMapperInterface {
-            /**
-             * @param Traversable<string, FormInterface> $forms
-             * @param ?Project $data
-             */
-            public function mapDataToForms($data, $forms): void
-            {
-                if (!$data instanceof Project) {
-                    return;
-                }
-
-                $visitors = array_map(
-                    static fn (FormInterface $form): callable => $form->setData(...),
-                    iterator_to_array($forms)
-                );
-                $data->visit($visitors);
-            }
-
-            /**
-             * @param Traversable<string, FormInterface<Project>> $forms
-             * @param ?Project $data
-             */
-            public function mapFormsToData($forms, &$data): void
-            {
-                if (!$data instanceof Project) {
-                    return;
-                }
-
-                $forms = iterator_to_array($forms);
-                $data->setName($forms['name']->getData());
-                $data->setPrefix((string) $forms['prefix']->getData());
-                $data->setSourceRepository($forms['sourceRepository']->getData());
-                $data->setImagesRegistry($forms['imagesRegistry']->getData());
-                $data->setClusters($forms['clusters']->getData());
-            }
-        });
+        $builder->setDataMapper($this->dataMapper->configure(Project::class));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

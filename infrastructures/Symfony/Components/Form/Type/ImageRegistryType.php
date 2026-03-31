@@ -33,6 +33,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Object\ImageRegistry;
 use Traversable;
 
@@ -48,6 +49,11 @@ use function iterator_to_array;
  */
 class ImageRegistryType extends AbstractType
 {
+    public function __construct(
+        private readonly EastDataMapper $dataMapper,
+    ) {
+    }
+
     /**
      * @param FormBuilderInterface<ImageRegistry> $builder
      * @param array<string, mixed> $options
@@ -70,35 +76,7 @@ class ImageRegistryType extends AbstractType
 
         $builder->add('identity', XRegistryAuthType::class, ['required' => true]);
 
-        $builder->setDataMapper(new class () implements DataMapperInterface {
-            /**
-             * @param Traversable<string, FormInterface<ImageRegistry>> $forms
-             * @param ?ImageRegistry $data
-             */
-            public function mapDataToForms($data, $forms): void
-            {
-                if (!$data instanceof ImageRegistry) {
-                    return;
-                }
-
-                $forms = iterator_to_array($forms);
-                $forms['apiUrl']->setData($data->getApiUrl());
-                $forms['identity']->setData($data->getIdentity());
-            }
-
-            /**
-             * @param Traversable<string, FormInterface<ImageRegistry>> $forms
-             * @param ImageRegistry $data
-             */
-            public function mapFormsToData($forms, &$data): void
-            {
-                $forms = iterator_to_array($forms);
-                $data = new ImageRegistry(
-                    (string) $forms['apiUrl']->getData(),
-                    $forms['identity']->getData()
-                );
-            }
-        });
+        $builder->setDataMapper($this->dataMapper->configure(ImageRegistry::class));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

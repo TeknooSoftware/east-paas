@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\ImageRegistry;
@@ -47,7 +48,7 @@ class ProjectTypeTest extends TestCase
 
     public function buildForm(): ProjectType
     {
-        return new ProjectType();
+        return new ProjectType($this->createStub(EastDataMapper::class));
     }
 
     private function getObject(): Project

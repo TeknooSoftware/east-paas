@@ -8,6 +8,36 @@ parameters:
     teknoo.east.paas.rendering.clean_html: true
 
 services:
+    Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType:
+        class: 'Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType'
+        arguments:
+            - '@Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper'
+        tags: ['form.type']
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ProjectType'
+        arguments:
+            - '@Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper'
+        tags: ['form.type']
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\EnvironmentType:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\EnvironmentType'
+        arguments:
+            - '@Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper'
+        tags: ['form.type']
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\GitRepositoryType:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\GitRepositoryType'
+        arguments:
+            - '@Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper'
+        tags: ['form.type']
+
+    Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ImageRegistryType:
+        class: 'Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ImageRegistryType'
+        arguments:
+            - '@Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper'
+        tags: ['form.type']
+
     teknoo.east.paas.symfony.property_accessor:
         class: 'Symfony\Component\PropertyAccess\PropertyAccessor'
         public: true

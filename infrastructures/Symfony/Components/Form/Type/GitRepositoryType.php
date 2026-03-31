@@ -31,6 +31,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Object\GitRepository;
 use Traversable;
 
@@ -46,6 +47,11 @@ use function iterator_to_array;
  */
 class GitRepositoryType extends AbstractType
 {
+    public function __construct(
+        private readonly EastDataMapper $dataMapper,
+    ) {
+    }
+
     /**
      * @param FormBuilderInterface<GitRepository> $builder
      * @param array<string, mixed> $options
@@ -58,37 +64,7 @@ class GitRepositoryType extends AbstractType
         $builder->add('defaultBranch', TextType::class, ['required' => false]);
         $builder->add('identity', SshIdentityType::class, ['required' => true]);
 
-        $builder->setDataMapper(new class () implements DataMapperInterface {
-            /**
-             * @param Traversable<string, FormInterface<GitRepository>> $forms
-             * @param ?GitRepository $data
-             */
-            public function mapDataToForms($data, $forms): void
-            {
-                if (!$data instanceof GitRepository) {
-                    return;
-                }
-
-                $forms = iterator_to_array($forms);
-                $forms['pullUrl']->setData($data->getPullUrl());
-                $forms['defaultBranch']->setData($data->getDefaultBranch());
-                $forms['identity']->setData($data->getIdentity());
-            }
-
-            /**
-             * @param Traversable<string, FormInterface<GitRepository>> $forms
-             * @param GitRepository $data
-             */
-            public function mapFormsToData($forms, &$data): void
-            {
-                $forms = iterator_to_array($forms);
-                $data = new GitRepository(
-                    (string) $forms['pullUrl']->getData(),
-                    (string) $forms['defaultBranch']->getData(),
-                    $forms['identity']->getData()
-                );
-            }
-        });
+        $builder->setDataMapper($this->dataMapper->configure(GitRepository::class));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

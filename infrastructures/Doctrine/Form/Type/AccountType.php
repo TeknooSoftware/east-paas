@@ -35,6 +35,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Common\Object\User;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\AccountQuotaType;
 use Teknoo\East\Paas\Object\Account;
 use Traversable;
@@ -53,6 +54,11 @@ use function iterator_to_array;
  */
 class AccountType extends AbstractType
 {
+    public function __construct(
+        private readonly EastDataMapper $dataMapper,
+    ) {
+    }
+
     /**
      * @param FormBuilderInterface<Account> $builder
      * @param array{namespaceIsReadonly: bool, doctrine_type: class-string<FormType>} $options
@@ -107,43 +113,7 @@ class AccountType extends AbstractType
             ]
         );
 
-        $builder->setDataMapper(dataMapper: new class () implements DataMapperInterface {
-            /**
-             * @param Traversable<string, FormInterface> $forms
-             * @param ?Account $data
-             */
-            public function mapDataToForms($data, $forms): void
-            {
-                if (!$data instanceof Account) {
-                    return;
-                }
-
-                $visitors = array_map(
-                    static fn (FormInterface $form): callable => $form->setData(...),
-                    iterator_to_array($forms)
-                );
-
-                $data->visit($visitors);
-            }
-
-            /**
-             * @param Traversable<string, FormInterface<AccountType>> $forms
-             * @param ?Account $data
-             */
-            public function mapFormsToData($forms, &$data): void
-            {
-                if (!$data instanceof Account) {
-                    return;
-                }
-
-                $forms = iterator_to_array($forms);
-                $data->setName($forms['name']->getData());
-                $data->setNamespace($forms['namespace']->getData());
-                $data->setPrefixNamespace($forms['prefix_namespace']->getData());
-                $data->setUsers($forms['users']->getData());
-                $data->setQuotas($forms['quotas']->getData());
-            }
-        });
+        $builder->setDataMapper($this->dataMapper->configure(Account::class));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.4.0] - 2026-03-31
+### Stable Release
+- Migrate to `Tekno East Common` 4.4 and use `EastDataMapper`.
+
 ## [5.3.0] - 2026-03-28
 ### Stable Release
 - Migrate to `Tekno East Foundation` 9.2

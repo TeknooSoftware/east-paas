@@ -40,6 +40,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Teknoo\East\Common\Contracts\Object\IdentifiedObjectInterface;
 use Teknoo\East\Common\Object\User as BaseUser;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Form\Type\AccountType;
 use Teknoo\East\Paas\Object\Account;
 use Teknoo\East\Paas\Object\AccountQuota;
@@ -63,7 +64,7 @@ class AccountTypeTest extends TestCase
 
     public function buildForm(): AccountType
     {
-        return new AccountType();
+        return new AccountType($this->createStub(EastDataMapper::class));
     }
 
     private function getObject(): Account

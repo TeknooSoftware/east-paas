@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\GitRepositoryType;
 use Teknoo\East\Paas\Object\GitRepository;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
@@ -44,7 +45,7 @@ class GitRepositoryTypeTest extends TestCase
 
     public function buildForm(): GitRepositoryType
     {
-        return new GitRepositoryType();
+        return new GitRepositoryType($this->createStub(EastDataMapper::class));
     }
 
     private function getObject(): GitRepository

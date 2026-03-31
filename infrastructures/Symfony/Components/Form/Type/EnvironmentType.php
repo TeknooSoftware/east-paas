@@ -31,6 +31,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Teknoo\East\CommonBundle\Form\DataMapper\EastDataMapper;
 use Teknoo\East\Paas\Object\Environment;
 use Traversable;
 
@@ -46,6 +47,11 @@ use function iterator_to_array;
  */
 class EnvironmentType extends AbstractType
 {
+    public function __construct(
+        private readonly EastDataMapper $dataMapper,
+    ) {
+    }
+
     /**
      * @param FormBuilderInterface<Environment> $builder
      * @param array<string, mixed> $options
@@ -56,33 +62,7 @@ class EnvironmentType extends AbstractType
 
         $builder->add('name', TextType::class, ['required' => true, 'label' => 'Environment']);
 
-        $builder->setDataMapper(new class () implements DataMapperInterface {
-            /**
-             * @param Traversable<string, FormInterface<Environment>> $forms
-             * @param ?Environment $data
-             */
-            public function mapDataToForms($data, $forms): void
-            {
-                if (!$data instanceof Environment) {
-                    return;
-                }
-
-                $forms = iterator_to_array($forms);
-                $forms['name']->setData($data->getName());
-            }
-
-            /**
-             * @param Traversable<string, FormInterface<Environment>> $forms
-             * @param Environment $data
-             */
-            public function mapFormsToData($forms, &$data): void
-            {
-                $forms = iterator_to_array($forms);
-                $data = new Environment(
-                    (string) $forms['name']->getData()
-                );
-            }
-        });
+        $builder->setDataMapper($this->dataMapper->configure(Environment::class));
     }
 
     public function configureOptions(OptionsResolver $resolver): void
