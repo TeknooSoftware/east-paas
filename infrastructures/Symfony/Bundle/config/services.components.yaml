@@ -75,12 +75,12 @@ services:
     Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\HistorySentHandler'
         tags:
-            - 'messenger.message_handler'
+            - { name: messenger.message_handler, sign: true }
 
     Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Forward\JobDoneHandler'
         tags:
-            - 'messenger.message_handler'
+            - { name: messenger.message_handler, sign: true }
 
     Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Messenger\Handler\Command\DisplayHistoryHandler'

@@ -4,6 +4,7 @@
 COMPOSER ?= /usr/bin/env composer
 DEPENDENCIES ?= latest
 PHP ?= /usr/bin/env php
+NB_THREADS ?= 4
 
 ### Helpers
 all: clean depend
@@ -42,6 +43,16 @@ audit:
 
 ### Testing
 test:
+	rm -rf tests/var/cache/
+	XDEBUG_MODE=coverage ${PHP} -dmax_execution_time=0 -dzend_extension=xdebug.so -dxdebug.mode=coverage vendor/bin/phpunit -c phpunit.xml --colors --coverage-text
+ifeq ($(DEPENDENCIES), lowest)
+	${PHP} -d memory_limit=400M vendor/bin/behat --parallel-feature ${NB_THREADS}
+else
+	${PHP} -d memory_limit=350M vendor/bin/behat --parallel-feature ${NB_THREADS}
+endif
+	rm -rf tests/var/cache/
+
+test-mono--thread:
 	rm -rf tests/var/cache/
 	XDEBUG_MODE=coverage ${PHP} -dmax_execution_time=0 -dzend_extension=xdebug.so -dxdebug.mode=coverage vendor/bin/phpunit -c phpunit.xml --colors --coverage-text
 ifeq ($(DEPENDENCIES), lowest)

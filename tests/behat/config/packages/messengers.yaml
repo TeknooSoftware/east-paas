@@ -11,7 +11,7 @@ services:
             - '@Psr\Http\Client\ClientInterface'
             - '@Psr\Http\Client\ClientInterface'
         tags:
-            - 'messenger.message_handler'
+            - { name: messenger.message_handler, sign: true }
 
     Teknoo\Tests\East\Paas\Behat\Handler\Psr11\JobDoneHandler:
         class: 'Teknoo\Tests\East\Paas\Behat\Handler\Psr11\JobDoneHandler'
@@ -25,4 +25,4 @@ services:
             - '@Psr\Http\Client\ClientInterface'
             - '@Psr\Http\Client\ClientInterface'
         tags:
-            - 'messenger.message_handler'
+            - { name: messenger.message_handler, sign: true }

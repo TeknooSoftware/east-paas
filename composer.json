@@ -48,6 +48,7 @@
         "symfony/property-access": "^6.4.24||^7.4||^8",
         "nikic/php-parser": "^5.7",
         "behat/behat": "^3.29",
+        "dmarynicz/behat-parallel-extension": "^1.2.0",
         "doctrine/common": "^3.5",
         "doctrine/mongodb-odm": "^2.16.1",
         "doctrine/mongodb-odm-bundle": "^5.6",

@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.4.1] - 2026-04-25
+### Stable Release
+- Force signing message with symfony
+- Parallelize behat
+
 ## [5.4.0] - 2026-03-31
 ### Stable Release
 - Migrate to `Tekno East Common` 4.4 and use `EastDataMapper`.
