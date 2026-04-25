@@ -71,6 +71,7 @@
         "symfony/error-handler": "^6.4.24||^7.4||^8",
         "symfony/event-dispatcher-contracts": "^3.6",
         "symfony/event-dispatcher": "^6.4.24||^7.4||^8",
+        "symfony/expression-language": "^v6.4.32||^7.4||^8",
         "symfony/finder": "^6.4.24||^7.4||^8",
         "symfony/form": "^6.4.24||^7.4||^8",
         "symfony/framework-bundle": "^6.4.24||^7.4||^8",

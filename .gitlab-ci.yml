@@ -9,7 +9,7 @@ before_script:
 test:8.4-lower:
   image: $PHP_IMAGE:$PHP_VERSION
   script:
-    - make test-mono--thread
+    - make test
   variables:
     PHP_VERSION: '8.4'
     DEPENDENCIES: lowest
