@@ -6,7 +6,9 @@
                                             http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
 
     <embedded-document name="Teknoo\East\Paas\Object\GitRepository">
-        <id type="string" strategy="UUID"/>
+        <id type="string" strategy="CUSTOM">
+            <generator-option name="class" value="Teknoo\East\Common\Doctrine\IdGenerator\UuidV7Generator"/>
+        </id>
         <field field-name="pullUrl" name="pull_url" type="string" nullable="false"/>
         <field field-name="defaultBranch" name="default_branch" type="string"/>
         <field field-name="createdAt" name="created_at" type="date" nullable="false"/>

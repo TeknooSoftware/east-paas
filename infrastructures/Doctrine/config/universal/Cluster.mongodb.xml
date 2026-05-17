@@ -6,7 +6,9 @@
                                             http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
 
     <document name="Teknoo\East\Paas\Object\Cluster" collection="clusters" inheritance-type="COLLECTION_PER_CLASS">
-        <id type="string" strategy="UUID"/>
+        <id type="string" strategy="CUSTOM">
+            <generator-option name="class" value="Teknoo\East\Common\Doctrine\IdGenerator\UuidV7Generator"/>
+        </id>
         <field field-name="name" type="string" nullable="false"/>
         <field field-name="namespace" type="string" nullable="false"/>
         <field field-name="useHierarchicalNamespaces" name="use_hierarchical_namespaces" type="bool" nullable="false"/>

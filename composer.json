@@ -37,7 +37,7 @@
         "teknoo/states": "^7.1.5",
         "teknoo/recipe": "^7.2.2",
         "teknoo/east-foundation": "^9.2",
-        "teknoo/east-common": "^4.4"
+        "teknoo/east-common": "^4.5"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -92,6 +92,7 @@
         "symfony/string": "^6.4.24||^7.4||^8",
         "symfony/translation-contracts": "^3.6.1",
         "symfony/translation": "^6.4.24||^7.4||^8",
+        "symfony/uid": "^6.4.24||^7.4||^8",
         "symfony/validator": "^6.4.24||^7.4||^8",
         "symfony/var-exporter": "^6.4.24||^7.4||^8",
         "symfony/yaml": "^6.4.24||^7.4||^8",
