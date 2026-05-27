@@ -49,6 +49,7 @@ use Teknoo\Kubernetes\Repository\Repository;
 
 use function array_map;
 use function substr;
+use function version_compare;
 
 /**
  * Trait to factorise pods' features transcribing
@@ -61,8 +62,19 @@ use function substr;
 trait PodsTranscriberTrait
 {
     public function __construct(
-        private readonly string $requireLabel = 'paas.east.teknoo.net'
+        private readonly string $requireLabel = 'paas.east.teknoo.net',
+        private readonly string $versionLevel = '1.30',
     ) {
+    }
+
+    private static function supportsHostUsers(string $versionLevel): bool
+    {
+        return version_compare($versionLevel, '1.36', '>=');
+    }
+
+    private static function supportsImageVolumes(string $versionLevel): bool
+    {
+        return version_compare($versionLevel, '1.32', '>=');
     }
 
     /**
@@ -136,8 +148,15 @@ trait PodsTranscriberTrait
      * @param array<string, > $specs
      * @param array<string, array<string, Image>>|Image[][] $images
      */
-    private static function convertToContainer(array &$specs, Pod $pod, array $images, callable $prefixer): void
-    {
+    private static function convertToContainer(
+        array &$specs,
+        Pod $pod,
+        array $images,
+        callable $prefixer,
+        string $versionLevel,
+    ): void {
+        $useImageVolumes = self::supportsImageVolumes($versionLevel);
+
         /** @var Container $container */
         foreach ($pod as $container) {
             if (isset($images[$container->getImage()][(string) $container->getVersion()])) {
@@ -164,11 +183,24 @@ trait PodsTranscriberTrait
 
             $volumesMount = [];
             foreach ($container->getVolumes() as $volume) {
-                $volumesMount[] = [
+                $volumeConf = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'mountPath' => $volume->getMountPath(),
                     'readOnly' => $volume instanceof PopulatedVolumeInterface,
                 ];
+
+                if (
+                    $useImageVolumes
+                    && !$volume instanceof PersistentVolumeInterface
+                    && !$volume instanceof SecretVolume
+                    && !$volume instanceof MapVolume
+                    && $volume instanceof Volume
+                ) {
+                    $volumeConf['subPath'] = $volume->getLocalPath();
+                    $volumeConf['readOnly'] = true;
+                }
+
+                $volumesMount[] = $volumeConf;
             }
 
             if (!empty($volumesMount)) {
@@ -228,8 +260,15 @@ trait PodsTranscriberTrait
      * @param array<string, mixed> $specs
      * @param array<string, SecretVolume|MapVolume|Volume> $volumes
      */
-    private static function convertToVolumes(array &$specs, Pod $pod, array $volumes, callable $prefixer): void
-    {
+    private static function convertToVolumes(
+        array &$specs,
+        Pod $pod,
+        array $volumes,
+        callable $prefixer,
+        string $versionLevel,
+    ): void {
+        $useImageVolumes = self::supportsImageVolumes($versionLevel);
+
         foreach ($volumes as $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
                 $specs['volumes'][] = [
@@ -258,6 +297,18 @@ trait PodsTranscriberTrait
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'configMap' => [
                         'name' => $prefixer($volume->getMapIdentifier() . self::MAP_SUFFIX),
+                    ],
+                ];
+
+                continue;
+            }
+
+            if ($useImageVolumes) {
+                $specs['volumes'][] = [
+                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
+                    'image' => [
+                        'reference' => $volume->getUrl(),
+                        'pullPolicy' => 'Always',
                     ],
                 ];
 
@@ -321,6 +372,7 @@ trait PodsTranscriberTrait
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
+        string $versionLevel,
         ?RestartPolicy $defaultRestartPolicy = null,
     ): array {
         $hostAlias = [
@@ -337,6 +389,10 @@ trait PodsTranscriberTrait
             'hostAliases' => $hostAliases,
             'containers' => [],
         ];
+
+        if (self::supportsHostUsers($versionLevel)) {
+            $spec['hostUsers'] = false;
+        }
 
         $restartPolicy = $pod->getRestartPolicy() ?? $defaultRestartPolicy;
         if (null !== $restartPolicy) {
@@ -384,8 +440,8 @@ trait PodsTranscriberTrait
             ];
         }
 
-        self::convertToVolumes($spec, $pod, $volumes, $prefixer);
-        self::convertToContainer($spec, $pod, $images, $prefixer);
+        self::convertToVolumes($spec, $pod, $volumes, $prefixer, $versionLevel);
+        self::convertToContainer($spec, $pod, $images, $prefixer, $versionLevel);
 
         return $spec;
     }
@@ -407,6 +463,7 @@ trait PodsTranscriberTrait
         callable $updateStrategy,
         bool $addServiceName,
         DefaultsBag $defaultsBag,
+        string $versionLevel,
     ): array {
         $specs = [
             'metadata' => [
@@ -444,6 +501,7 @@ trait PodsTranscriberTrait
                         prefixer: $prefixer,
                         requireLabel: $requireLabel,
                         defaultsBag: $defaultsBag,
+                        versionLevel: $versionLevel,
                     ),
                 ],
             ],

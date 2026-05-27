@@ -30,6 +30,7 @@ use DI\Container;
 use DI\ContainerBuilder;
 use DomainException;
 use Exception;
+use ReflectionProperty;
 use stdClass;
 use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\DI\Exception\InvalidArgumentException;
@@ -372,5 +373,77 @@ class ContainerTest extends TestCase
     {
         $container = $this->buildContainer();
         $this->assertInstanceOf(VolumeTranscriber::class, $container->get(VolumeTranscriber::class));
+    }
+
+    private function readVersionLevel(object $transcriber): string
+    {
+        $property = new ReflectionProperty($transcriber, 'versionLevel');
+
+        return (string) $property->getValue($transcriber);
+    }
+
+    public function testDeploymentTranscriberDefaultVersionLevel(): void
+    {
+        $container = $this->buildContainer();
+        $transcriber = $container->get(DeploymentTranscriber::class);
+
+        $this->assertSame('1.30', $this->readVersionLevel($transcriber));
+    }
+
+    public function testDeploymentTranscriberCustomVersionLevel(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernernes.version_level', '1.36');
+
+        $this->assertSame('1.36', $this->readVersionLevel($container->get(DeploymentTranscriber::class)));
+    }
+
+    public function testStatefulSetsTranscriberDefaultVersionLevel(): void
+    {
+        $container = $this->buildContainer();
+
+        $this->assertSame('1.30', $this->readVersionLevel($container->get(StatefulSetsTranscriber::class)));
+    }
+
+    public function testStatefulSetsTranscriberCustomVersionLevel(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.kubernernes.version_level', '1.36');
+
+        $this->assertSame('1.36', $this->readVersionLevel($container->get(StatefulSetsTranscriber::class)));
+    }
+
+    public function testJobTranscriberDefaultVersionLevel(): void
+    {
+        $container = $this->buildContainer();
+        $container->set(SleepServiceInterface::class, $this->createStub(SleepServiceInterface::class));
+
+        $this->assertSame('1.30', $this->readVersionLevel($container->get(JobTranscriber::class)));
+    }
+
+    public function testJobTranscriberCustomVersionLevel(): void
+    {
+        $container = $this->buildContainer();
+        $container->set(SleepServiceInterface::class, $this->createStub(SleepServiceInterface::class));
+        $container->set('teknoo.east.paas.kubernernes.version_level', '1.36');
+
+        $this->assertSame('1.36', $this->readVersionLevel($container->get(JobTranscriber::class)));
+    }
+
+    public function testCronJobTranscriberDefaultVersionLevel(): void
+    {
+        $container = $this->buildContainer();
+        $container->set(SleepServiceInterface::class, $this->createStub(SleepServiceInterface::class));
+
+        $this->assertSame('1.30', $this->readVersionLevel($container->get(CronJobTranscriber::class)));
+    }
+
+    public function testCronJobTranscriberCustomVersionLevel(): void
+    {
+        $container = $this->buildContainer();
+        $container->set(SleepServiceInterface::class, $this->createStub(SleepServiceInterface::class));
+        $container->set('teknoo.east.paas.kubernernes.version_level', '1.36');
+
+        $this->assertSame('1.36', $this->readVersionLevel($container->get(CronJobTranscriber::class)));
     }
 }

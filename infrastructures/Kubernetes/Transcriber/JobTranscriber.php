@@ -82,6 +82,7 @@ class JobTranscriber implements DeploymentInterface
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
+        string $versionLevel,
     ): JobModel {
         $spec = self::writeJobSpec(
             job: $job,
@@ -91,6 +92,7 @@ class JobTranscriber implements DeploymentInterface
             prefixer: $prefixer,
             requireLabel: $requireLabel,
             defaultsBag: $defaultsBag,
+            versionLevel: $versionLevel,
         );
 
         $spec['metadata'] = [
@@ -116,6 +118,7 @@ class JobTranscriber implements DeploymentInterface
         bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $requireLabel = $this->requireLabel;
+        $versionLevel = $this->versionLevel;
         $sleepService = $this->sleepService;
 
         $compiledDeployment->foreachJob(
@@ -131,6 +134,7 @@ class JobTranscriber implements DeploymentInterface
                 $requireLabel,
                 $defaultsBag,
                 $sleepService,
+                $versionLevel,
             ): void {
                 if ($job->getPlanning() !== Planning::DuringDeployment) {
                     return;
@@ -165,6 +169,7 @@ class JobTranscriber implements DeploymentInterface
                             prefixer: $prefixer,
                             requireLabel: $requireLabel,
                             defaultsBag: $defaultsBag,
+                            versionLevel: $versionLevel,
                         );
 
                         if ($dRepository->exists($kubeSet->getMetadata('name') ?? $name . self::NAME_SUFFIX)) {

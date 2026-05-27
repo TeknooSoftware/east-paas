@@ -170,7 +170,13 @@ return [
             $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.job.require_label');
         }
 
-        return new $className($requireLabel)->setSleepService($container->get(SleepServiceInterface::class));
+        $versionLevel = '1.30';
+        if ($container->has('teknoo.east.paas.kubernernes.version_level')) {
+            $versionLevel = (string) $container->get('teknoo.east.paas.kubernernes.version_level');
+        }
+
+        return new $className($requireLabel, $versionLevel)
+            ->setSleepService($container->get(SleepServiceInterface::class));
     },
 
     CronJobTranscriber::class . ':class' => CronJobTranscriber::class,
@@ -187,7 +193,13 @@ return [
             $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.cronjob.require_label');
         }
 
-        return new $className($requireLabel)->setSleepService($container->get(SleepServiceInterface::class));
+        $versionLevel = '1.30';
+        if ($container->has('teknoo.east.paas.kubernernes.version_level')) {
+            $versionLevel = (string) $container->get('teknoo.east.paas.kubernernes.version_level');
+        }
+
+        return new $className($requireLabel, $versionLevel)
+            ->setSleepService($container->get(SleepServiceInterface::class));
     },
 
     DeploymentTranscriber::class . ':class' => DeploymentTranscriber::class,
@@ -204,7 +216,12 @@ return [
             $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.deployment.require_label');
         }
 
-        return new $className($requireLabel);
+        $versionLevel = '1.30';
+        if ($container->has('teknoo.east.paas.kubernernes.version_level')) {
+            $versionLevel = (string) $container->get('teknoo.east.paas.kubernernes.version_level');
+        }
+
+        return new $className($requireLabel, $versionLevel);
     },
 
     StatefulSetsTranscriber::class . ':class' => StatefulSetsTranscriber::class,
@@ -221,7 +238,12 @@ return [
             $requireLabel = (string) $container->get('teknoo.east.paas.kubernetes.statefulSets.require_label');
         }
 
-        return new $className($requireLabel);
+        $versionLevel = '1.30';
+        if ($container->has('teknoo.east.paas.kubernernes.version_level')) {
+            $versionLevel = (string) $container->get('teknoo.east.paas.kubernernes.version_level');
+        }
+
+        return new $className($requireLabel, $versionLevel);
     },
 
     SecretTranscriber::class . ':class' => SecretTranscriber::class,

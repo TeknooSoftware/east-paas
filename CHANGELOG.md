@@ -1,5 +1,17 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.6.0] - 2026-05-27
+### Stable Release
+- Add `teknoo.east.paas.kubernernes.version_level` DI parameter (default `'1.30'`) to target a specific Kubernetes API
+  level. Injected into `DeploymentTranscriber`, `StatefulSetsTranscriber`, `JobTranscriber` and `CronJobTranscriber`
+  via their new `versionLevel` constructor argument.
+- When `version_level` is `>= 1.36`:
+  - pod specs include `hostUsers: false` for user-namespace isolation (Kubernetes 1.36+).
+- When `version_level` is `>= 1.32`:
+  - populated `Volume` mounts are emitted as native image-volume sources (`volumes[].image.reference` with
+    `pullPolicy: "Always"`) instead of the previous init-container + `emptyDir` workaround.
+- Existing deployments are unaffected: with the default `'1.30'`, generated manifests are identical to 5.5.x.
+
 ## [5.5.0] - 2026-05-17
 ### Stable Release
 - Use new `Teknoo\East\Common\Doctrine\IdGenerator\UuidV7Generator` (`infrastructures/doctrine/IdGenerator/`),

@@ -65,6 +65,7 @@ trait JobTranscriberTrait
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
+        string $versionLevel,
     ): array {
         $specs = [
             'metadata' => [],
@@ -86,6 +87,7 @@ trait JobTranscriberTrait
                         prefixer: $prefixer,
                         requireLabel: $requireLabel,
                         defaultsBag: $defaultsBag,
+                        versionLevel: $versionLevel,
                         defaultRestartPolicy: RestartPolicy::Never,
                     )
                 ]

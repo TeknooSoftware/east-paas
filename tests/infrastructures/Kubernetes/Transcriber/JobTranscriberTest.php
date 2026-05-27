@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job as CDJob;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
@@ -1003,5 +1004,204 @@ class JobTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    private function buildCDForVersionLevel(CompiledDeploymentInterface $cd): void
+    {
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject {
+                $image1 = new Image('foo', '/foo', true, '7.4', []);
+                $image1 = $image1->withRegistry('repository.teknoo.run');
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+                $volume1 = $volume1->withRegistry('repository.teknoo.run');
+
+                $c1 = new Container(
+                    'c1',
+                    'foo',
+                    '7.4',
+                    [80],
+                    ['foo' => $volume1->import('/foo')],
+                    [],
+                    null,
+                    new ResourceSet(),
+                );
+
+                $pod1 = new Pod('p1', 1, [$c1]);
+
+                $job1 = new CDJob(
+                    name: 'job1',
+                    pods: [$pod1],
+                    completionsCount: 1,
+                    isParallel: false,
+                    completion: CDJob\CompletionMode::Common,
+                    successCondition: null,
+                    timeLimit: 10,
+                    shelfLife: 20,
+                    planning: Planning::DuringDeployment,
+                    planningSchedule: null,
+                );
+
+                $callback($job1, ['foo' => ['7.4' => $image1]], ['foo' => $volume1], 'a-prefix');
+
+                return $cd;
+            });
+    }
+
+    public function testRunWithKubernetes136(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $this->buildCDForVersionLevel($cd);
+
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+        $repo->method('exists')->willReturn(false);
+
+        $capturedSpec = null;
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (Job $model) use (&$capturedSpec): array {
+                    $capturedSpec = $model->toArray()['spec']['template']['spec'];
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new JobTranscriber('paas.east.teknoo.net', '1.36');
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $this->assertInstanceOf(JobTranscriber::class, $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        $this->assertIsArray($capturedSpec);
+        $this->assertFalse($capturedSpec['hostUsers']);
+        $this->assertArrayNotHasKey('initContainers', $capturedSpec);
+        $this->assertSame(
+            [
+                'name' => 'foo1-volume',
+                'image' => [
+                    'reference' => 'repository.teknoo.run/foo1',
+                    'pullPolicy' => 'Always',
+                ],
+            ],
+            $capturedSpec['volumes'][0],
+        );
+    }
+
+    public function testRunWithKubernetes135Explicit(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $this->buildCDForVersionLevel($cd);
+
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+        $repo->method('exists')->willReturn(false);
+
+        $capturedSpec = null;
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (Job $model) use (&$capturedSpec): array {
+                    $capturedSpec = $model->toArray()['spec']['template']['spec'];
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new JobTranscriber('paas.east.teknoo.net', '1.35');
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $this->assertInstanceOf(JobTranscriber::class, $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        $this->assertIsArray($capturedSpec);
+        $this->assertArrayNotHasKey('hostUsers', $capturedSpec);
+        $this->assertArrayNotHasKey('initContainers', $capturedSpec);
+        $this->assertSame(
+            [
+                'name' => 'foo1-volume',
+                'image' => [
+                    'reference' => 'repository.teknoo.run/foo1',
+                    'pullPolicy' => 'Always',
+                ],
+            ],
+            $capturedSpec['volumes'][0],
+        );
+    }
+
+    public function testRunWithKubernetes130Explicit(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $this->buildCDForVersionLevel($cd);
+
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+        $repo->method('exists')->willReturn(false);
+
+        $capturedSpec = null;
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (Job $model) use (&$capturedSpec): array {
+                    $capturedSpec = $model->toArray()['spec']['template']['spec'];
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new JobTranscriber('paas.east.teknoo.net', '1.30');
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $this->assertInstanceOf(JobTranscriber::class, $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        $this->assertIsArray($capturedSpec);
+        $this->assertArrayNotHasKey('hostUsers', $capturedSpec);
+        $this->assertArrayHasKey('initContainers', $capturedSpec);
+        $this->assertSame('foo1', $capturedSpec['initContainers'][0]['name']);
+        $this->assertSame(
+            [
+                'name' => 'foo1-volume',
+                'emptyDir' => [],
+            ],
+            $capturedSpec['volumes'][0],
+        );
     }
 }
