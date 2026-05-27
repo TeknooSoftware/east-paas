@@ -139,7 +139,7 @@ use function var_export;
 class FeatureContext implements Context
 {
     public const int STR_REPEAT_FOR_SIMULATION = 100000;
-    
+
     private ?KernelInterface $kernel = null;
 
     private ?Container $sfContainer = null;
@@ -183,6 +183,8 @@ class FeatureContext implements Context
     private static bool $conditionsDefined = false;
 
     private static string $defaultsDefined = '';
+
+    private static string $versionLevel = '1.30';
 
     private ?string $calledUrl = null;
 
@@ -424,6 +426,7 @@ class FeatureContext implements Context
         self::$quotasDefined = '';
         self::$ingressProvider = '';
         self::$defaultsDefined = '';
+        self::$versionLevel = '1.30';
         self::$jobsDefined = false;
         self::$conditionsDefined = false;
         self::$CDCompared = false;
@@ -1810,6 +1813,13 @@ EOF,
         self::$useHnc = true;
     }
 
+    #[Given('the kubernetes cluster runs version :version')]
+    public function theKubernetesClusterRunsVersion(string $version): void
+    {
+        self::$versionLevel = $version;
+        $this->additionalsParameters['teknoo.east.paas.kubernernes.version_level'] = $version;
+    }
+
     #[Given('a custom backend protocol annotation mapper for Traefik')]
     public function aCustomBackendProtocolAnnotationMapperForTraefik(): void
     {
@@ -2104,6 +2114,93 @@ EOF;
             default => '"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS"',
         };
 
+        $useImageVolumes = version_compare(self::$versionLevel, '1.32', '>=');
+        $useHostUsers = version_compare(self::$versionLevel, '1.36', '>=');
+
+        $hostUsersInline = '';
+        if ($useHostUsers) {
+            $hostUsersInline = ', "hostUsers": false';
+        }
+
+        if ($useImageVolumes) {
+            $populatedMountSubPath = ",\n                                        \"subPath\": \"/foo/bar\"";
+        } else {
+            $populatedMountSubPath = '';
+        }
+
+        $jobInitContainerBlock = '';
+        if (!$useImageVolumes) {
+            $jobInitContainerBlock = <<<JSON
+,
+                        "initContainers": [
+                            {
+                                "name": "extra-foobarproject",
+                                "image": "https://foo.bar/extra-foobarproject",
+                                "imagePullPolicy": "Always",
+                                "volumeMounts": [
+                                    {
+                                        "name": "extra-foobarproject-volume",
+                                        "mountPath": "/opt/extra",
+                                        "readOnly": false
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "MOUNT_PATH",
+                                        "value": "/opt/extra"
+                                    }
+                                ]
+                            }
+                        ]
+JSON;
+        }
+
+        $deploymentInitContainerBlock = '';
+        if (!$useImageVolumes) {
+            $deploymentInitContainerBlock = <<<JSON
+,
+                        "initContainers": [
+                            {
+                                "name": "extra-foobarproject",
+                                "image": "https://foo.bar/extra-foobarproject",
+                                "imagePullPolicy": "Always",
+                                "volumeMounts": [
+                                    {
+                                        "name": "extra-foobarproject-volume",
+                                        "mountPath": "/opt/extra",
+                                        "readOnly": false
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "MOUNT_PATH",
+                                        "value": "/opt/extra"
+                                    }
+                                ]{$phpRunResources}
+                            }
+                        ]
+JSON;
+        }
+
+        if ($useImageVolumes) {
+            $populatedVolumeEntry = <<<JSON
+{
+                                "name": "extra-foobarproject-volume",
+                                "image": {
+                                    "reference": "https://foo.bar/extra-foobarproject",
+                                    "pullPolicy": "Always"
+                                }
+                            }
+JSON;
+        } else {
+            $populatedVolumeEntry = <<<JSON
+{
+                                "name": "extra-foobarproject-volume",
+                                "emptyDir": []
+                            }
+JSON;
+        }
+
         $jobsManifest = '';
         if (self::$jobsDefined) {
             $jobsManifest = <<<"EOF"
@@ -2139,7 +2236,7 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"
                             }
-                        ],
+                        ]{$hostUsersInline},
                         "restartPolicy": "Never"
                     }
                 },
@@ -2178,7 +2275,7 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"
                             }
-                        ],
+                        ]{$hostUsersInline},
                         "restartPolicy": "Never"
                     }
                 },
@@ -2217,7 +2314,7 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"
                             }
-                        ],
+                        ]{$hostUsersInline},
                         "restartPolicy": "Never"
                     }
                 },
@@ -2256,7 +2353,7 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"
                             }
-                        ],
+                        ]{$hostUsersInline},
                         "restartPolicy": "Never"
                     }
                 },
@@ -2320,7 +2417,7 @@ EOF;
                                     {
                                         "name": "extra-foobarproject-volume",
                                         "mountPath": "/opt/extra",
-                                        "readOnly": true
+                                        "readOnly": true{$populatedMountSubPath}
                                     },
                                     {
                                         "name": "data-b424d-43879-43879-volume",
@@ -2344,33 +2441,10 @@ EOF;
                                     }
                                 ]
                             }
-                        ],
-                        "restartPolicy": "Never",
-                        "initContainers": [
-                            {
-                                "name": "extra-foobarproject",
-                                "image": "https://foo.bar/extra-foobarproject",
-                                "imagePullPolicy": "Always",
-                                "volumeMounts": [
-                                    {
-                                        "name": "extra-foobarproject-volume",
-                                        "mountPath": "/opt/extra",
-                                        "readOnly": false
-                                    }
-                                ],
-                                "env": [
-                                    {
-                                        "name": "MOUNT_PATH",
-                                        "value": "/opt/extra"
-                                    }
-                                ]
-                            }
-                        ],
+                        ]{$hostUsersInline},
+                        "restartPolicy": "Never"{$jobInitContainerBlock},
                         "volumes": [
-                            {
-                                "name": "extra-foobarproject-volume",
-                                "emptyDir": []
-                            },
+                            {$populatedVolumeEntry},
                             {
                                 "name": "data-b424d-43879-43879-volume",
                                 "persistentVolumeClaim": {
@@ -2461,7 +2535,7 @@ EOF;
                                         "image": "registry.hub.docker.com/backup:alpine",
                                         "imagePullPolicy": "Always"
                                     }
-                                ],
+                                ]{$hostUsersInline},
                                 "restartPolicy": "OnFailure"
                             }
                         },
@@ -2639,7 +2713,7 @@ EOF;
                                 "image": "registry.hub.docker.com/bash:alpine",
                                 "imagePullPolicy": "Always"$shellResources
                             }
-                        ]$imagePullSecrets
+                        ]{$hostUsersInline}$imagePullSecrets
                     }
                 }
             }
@@ -2749,7 +2823,7 @@ EOF;
                                     }
                                 ]$blackfireResources
                             }
-                        ]$imagePullSecrets,
+                        ]{$hostUsersInline}$imagePullSecrets,
                         "securityContext": {
                             "fsGroup": 1000
                         }
@@ -2862,7 +2936,7 @@ EOF;
                                     {
                                         "name": "extra-foobarproject-volume",
                                         "mountPath": "/opt/extra",
-                                        "readOnly": true
+                                        "readOnly": true{$populatedMountSubPath}
                                     },
                                     {
                                         "name": "data-09597-1e225-volume",
@@ -2899,7 +2973,7 @@ EOF;
                                     "failureThreshold": 1
                                 }$phpRunResources
                             }
-                        ]$imagePullSecrets,
+                        ]{$hostUsersInline}$imagePullSecrets,
                         "affinity": {
                             "nodeAffinity": {
                                 "requiredDuringSchedulingIgnoredDuringExecution": {
@@ -2919,32 +2993,9 @@ EOF;
                                     ]
                                 }
                             }
-                        },
-                        "initContainers": [
-                            {
-                                "name": "extra-foobarproject",
-                                "image": "https://foo.bar/extra-foobarproject",
-                                "imagePullPolicy": "Always",
-                                "volumeMounts": [
-                                    {
-                                        "name": "extra-foobarproject-volume",
-                                        "mountPath": "/opt/extra",
-                                        "readOnly": false
-                                    }
-                                ],
-                                "env": [
-                                    {
-                                        "name": "MOUNT_PATH",
-                                        "value": "/opt/extra"
-                                    }
-                                ]$phpRunResources
-                            }
-                        ],
+                        }{$deploymentInitContainerBlock},
                         "volumes": [
-                            {
-                                "name": "extra-foobarproject-volume",
-                                "emptyDir": []
-                            },
+                            {$populatedVolumeEntry},
                             {
                                 "name": "data-09597-1e225-volume",
                                 "persistentVolumeClaim": {

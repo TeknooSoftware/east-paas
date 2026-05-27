@@ -83,6 +83,7 @@ class CronJobTranscriber implements DeploymentInterface
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
+        string $versionLevel,
     ): array {
         $specs = [
             'metadata' => [
@@ -105,6 +106,7 @@ class CronJobTranscriber implements DeploymentInterface
                     prefixer: $prefixer,
                     requireLabel: $requireLabel,
                     defaultsBag: $defaultsBag,
+                    versionLevel: $versionLevel,
                 )
             ],
         ];
@@ -129,6 +131,7 @@ class CronJobTranscriber implements DeploymentInterface
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
+        string $versionLevel,
     ): CronJob {
         return new CronJob(
             static::writeCronJobSpec(
@@ -142,6 +145,7 @@ class CronJobTranscriber implements DeploymentInterface
                 prefixer: $prefixer,
                 requireLabel: $requireLabel,
                 defaultsBag: $defaultsBag,
+                versionLevel: $versionLevel,
             )
         );
     }
@@ -155,6 +159,7 @@ class CronJobTranscriber implements DeploymentInterface
         bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $requireLabel = $this->requireLabel;
+        $versionLevel = $this->versionLevel;
         $sleepService = $this->sleepService;
 
         $compiledDeployment->foreachJob(
@@ -170,6 +175,7 @@ class CronJobTranscriber implements DeploymentInterface
                 $requireLabel,
                 $defaultsBag,
                 $sleepService,
+                $versionLevel,
             ): void {
                 if ($job->getPlanning() !== Planning::Scheduled) {
                     return;
@@ -204,6 +210,7 @@ class CronJobTranscriber implements DeploymentInterface
                             prefixer: $prefixer,
                             requireLabel: $requireLabel,
                             defaultsBag: $defaultsBag,
+                            versionLevel: $versionLevel,
                         );
 
                         if ($dRepository->exists($kubeSet->getMetadata('name') ?? $name . self::NAME_SUFFIX)) {

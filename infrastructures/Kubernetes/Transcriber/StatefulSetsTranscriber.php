@@ -81,6 +81,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
+        string $versionLevel,
     ): array {
         return static::commonSpecWriting(
             name: $name,
@@ -108,6 +109,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
             },
             addServiceName: true,
             defaultsBag: $defaultsBag,
+            versionLevel: $versionLevel,
         );
     }
 
@@ -125,6 +127,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
         callable $prefixer,
         string $requireLabel,
         DefaultsBag $defaultsBag,
+        string $versionLevel,
     ): StatefulSet {
         return new StatefulSet(
             static::writeSpec(
@@ -137,6 +140,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                 prefixer: $prefixer,
                 requireLabel: $requireLabel,
                 defaultsBag: $defaultsBag,
+                versionLevel: $versionLevel,
             )
         );
     }
@@ -150,6 +154,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
         bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $requireLabel = $this->requireLabel;
+        $versionLevel = $this->versionLevel;
         $compiledDeployment->foreachPod(
             static function (
                 Pod $pod,
@@ -162,6 +167,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                 $promise,
                 $requireLabel,
                 $defaultsBag,
+                $versionLevel,
             ): void {
                 if ($pod->isStateless()) {
                     return;
@@ -197,6 +203,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                     prefixer: $prefixer,
                     requireLabel:$requireLabel,
                     defaultsBag: $defaultsBag,
+                    versionLevel: $versionLevel,
                 );
 
                 try {
