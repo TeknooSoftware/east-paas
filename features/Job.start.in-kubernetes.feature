@@ -59,7 +59,7 @@ Feature: Execute a job to deploy a project on a Kubernetes cluster
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
+    And some Kubernetes v1.30 manifests have been created
     And all messages must be not encrypted
 
   Scenario: From the API, for a Kubernetes 1.36 cluster, run a job on a project with a PaaS file and get manifests
@@ -81,7 +81,7 @@ Feature: Execute a job to deploy a project on a Kubernetes cluster
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
+    And some Kubernetes v1.36 manifests have been created
     And all messages must be not encrypted
 
   Scenario: From the API, for a Kubernetes 1.35 cluster, run a job on a project with a PaaS file and get manifests
@@ -103,7 +103,53 @@ Feature: Execute a job to deploy a project on a Kubernetes cluster
     When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
     Then I must obtain an HTTP answer with this status code equals to "200"
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
-    And some Kubernetes manifests have been created
+    And some Kubernetes v1.35 manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, the configured version 1.36 is clamped down to the cluster
+  reported version 1.30 and emits legacy manifests
+    Given I have a configured platform
+    And the kubernetes cluster runs version "1.36"
+    And the kubernetes cluster reports gitVersion "v1.30.5"
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes v1.30 manifests have been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Kubernetes cluster, when the cluster cannot return its version the configured
+  version 1.36 is kept and the manifest includes image volumes and hostUsers false
+    Given I have a configured platform
+    And the kubernetes cluster runs version "1.36"
+    And the kubernetes cluster cannot return its version
+    And the platform is booted
+    And a project with a complete paas file
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a kubernetes client
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 36 in the body
+    And some Kubernetes v1.36 manifests have been created
     And all messages must be not encrypted
 
   Scenario: From the API, for a Kubernetes cluster, run a job on a project with a PaaS file, on encrypted messages

@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.6.1] - 2026-05-28
+### Stable Release
+- At transcribe time each transcriber now reads the actual cluster version via `Client::version()` and clamps
+  `version_level` to the lower of (configured, cluster) — opting into 1.36 features against a 1.30 cluster
+  silently downgrades to 1.30 behavior.
+
 ## [5.6.0] - 2026-05-27
 ### Stable Release
 - Add `teknoo.east.paas.kubernernes.version_level` DI parameter (default `'1.30'`) to target a specific Kubernetes API

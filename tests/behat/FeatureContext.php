@@ -186,6 +186,8 @@ class FeatureContext implements Context
 
     private static string $versionLevel = '1.30';
 
+    private static ?string $clusterGitVersion = null;
+
     private ?string $calledUrl = null;
 
     private ?string $clusterName = null;
@@ -427,6 +429,7 @@ class FeatureContext implements Context
         self::$ingressProvider = '';
         self::$defaultsDefined = '';
         self::$versionLevel = '1.30';
+        self::$clusterGitVersion = null;
         self::$jobsDefined = false;
         self::$conditionsDefined = false;
         self::$CDCompared = false;
@@ -1775,6 +1778,22 @@ EOF,
             ->method('__call')
             ->willReturn($repoMock);
 
+        if (null !== self::$clusterGitVersion) {
+            if ('' === self::$clusterGitVersion) {
+                $mock->expects(new AnyInvokedCountMatcher())
+                    ->method('version')
+                    ->willReturn(
+                        [],
+                    );
+            } else {
+                $mock->expects(new AnyInvokedCountMatcher())
+                    ->method('version')
+                    ->willReturn(
+                        ['gitVersion' => self::$clusterGitVersion],
+                    );
+            }
+        }
+
         $this->manifests = [];
         $repoMock->expects(new AnyInvokedCountMatcher())
             ->method('apply')
@@ -1818,6 +1837,18 @@ EOF,
     {
         self::$versionLevel = $version;
         $this->additionalsParameters['teknoo.east.paas.kubernernes.version_level'] = $version;
+    }
+
+    #[Given('the kubernetes cluster reports gitVersion :gitVersion')]
+    public function theKubernetesClusterReportsGitVersion(string $gitVersion): void
+    {
+        self::$clusterGitVersion = $gitVersion;
+    }
+
+    #[Given('the kubernetes cluster cannot return its version')]
+    public function theKubernetesClusterCannotReturnItsVersion(): void
+    {
+        self::$clusterGitVersion = '';
     }
 
     #[Given('a custom backend protocol annotation mapper for Traefik')]
@@ -1882,12 +1913,12 @@ EOF,
         self::$CDCompared = true;
     }
 
-    /**
-     * @throws JsonException
-     */
+
     #[Then('some Kubernetes manifests have been created')]
-    public function someKubernetesManifestsHaveBeenCreated(): void
+    #[Then('some Kubernetes v:effectiveVersion manifests have been created')]
+    public function someKubernetesManifestsHaveBeenCreated(?string $effectiveVersion = null): void
     {
+        $versionLevel = $effectiveVersion ?? self::$versionLevel;
         $hncSuffix = self::$hncSuffix;
         $nameHnc = trim($hncSuffix, '-');
 
@@ -2114,8 +2145,8 @@ EOF;
             default => '"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS"',
         };
 
-        $useImageVolumes = version_compare(self::$versionLevel, '1.32', '>=');
-        $useHostUsers = version_compare(self::$versionLevel, '1.36', '>=');
+        $useImageVolumes = version_compare($versionLevel, '1.32', '>=');
+        $useHostUsers = version_compare($versionLevel, '1.36', '>=');
 
         $hostUsersInline = '';
         if ($useHostUsers) {
