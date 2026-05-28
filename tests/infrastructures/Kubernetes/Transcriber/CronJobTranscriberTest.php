@@ -1200,4 +1200,85 @@ class CronJobTranscriberTest extends TestCase
             $capturedSpec['volumes'][0],
         );
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function runTranscribeWithClusterVersion(
+        string $configuredVersion,
+        mixed $clusterVersionPayload,
+    ): array {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $this->buildCDForVersionLevel($cd);
+
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('version')->willReturn($clusterVersionPayload);
+
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+        $repo->method('exists')->willReturn(false);
+
+        $capturedSpec = null;
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (CronJob $model) use (&$capturedSpec): array {
+                    $capturedSpec = $model->toArray()['spec']['jobTemplate']['spec']['template']['spec'];
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new CronJobTranscriber('paas.east.teknoo.net', $configuredVersion);
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $this->assertInstanceOf(CronJobTranscriber::class, $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        $this->assertIsArray($capturedSpec);
+        return $capturedSpec;
+    }
+
+    public function testValidateVersionClampsToLowerCluster(): void
+    {
+        $capturedSpec = $this->runTranscribeWithClusterVersion('1.36', ['gitVersion' => 'v1.30.5']);
+
+        $this->assertArrayNotHasKey('hostUsers', $capturedSpec);
+        $this->assertArrayHasKey('initContainers', $capturedSpec);
+    }
+
+    public function testValidateVersionKeepsConfiguredWhenClusterHigher(): void
+    {
+        $capturedSpec = $this->runTranscribeWithClusterVersion('1.36', ['gitVersion' => 'v1.40.0']);
+
+        $this->assertFalse($capturedSpec['hostUsers']);
+        $this->assertArrayNotHasKey('initContainers', $capturedSpec);
+    }
+
+    public function testValidateVersionFallbackOnMissingGitVersion(): void
+    {
+        $capturedSpec = $this->runTranscribeWithClusterVersion('1.36', []);
+
+        $this->assertFalse($capturedSpec['hostUsers']);
+        $this->assertArrayNotHasKey('initContainers', $capturedSpec);
+    }
+
+    public function testValidateVersionFallbackOnGarbageGitVersion(): void
+    {
+        $capturedSpec = $this->runTranscribeWithClusterVersion('1.36', ['gitVersion' => 'garbage']);
+
+        $this->assertFalse($capturedSpec['hostUsers']);
+        $this->assertArrayNotHasKey('initContainers', $capturedSpec);
+    }
 }

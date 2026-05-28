@@ -154,7 +154,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
         bool $useHierarchicalNamespaces,
     ): TranscriberInterface {
         $requireLabel = $this->requireLabel;
-        $versionLevel = $this->versionLevel;
+        $versionLevel = $this->validateKubernetesVersionLevel($client);
         $compiledDeployment->foreachPod(
             static function (
                 Pod $pod,

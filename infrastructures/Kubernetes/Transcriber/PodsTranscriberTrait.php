@@ -40,6 +40,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PopulatedVolumeInterface;
+use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\CronJob;
 use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\Kubernetes\Model\Job;
@@ -47,7 +48,9 @@ use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\StatefulSet;
 use Teknoo\Kubernetes\Repository\Repository;
 
+use function is_string;
 use function array_map;
+use function preg_match;
 use function substr;
 use function version_compare;
 
@@ -65,6 +68,28 @@ trait PodsTranscriberTrait
         private readonly string $requireLabel = 'paas.east.teknoo.net',
         private readonly string $versionLevel = '1.30',
     ) {
+    }
+
+    private function validateKubernetesVersionLevel(Client $client): string
+    {
+        $versionArray = $client->version();
+        $versionString = $versionArray['gitVersion'] ?? false;
+
+        if (empty($versionString) || !is_string($versionString)) {
+            return $this->versionLevel;
+        }
+
+        if (preg_match('/v?(\d+\.\d+(?:\.\d+)?)/', $versionString, $matches) !== 1) {
+            return $this->versionLevel;
+        }
+
+        $clusterVersion = $matches[1];
+
+        if (version_compare($clusterVersion, $this->versionLevel, '<')) {
+            return $clusterVersion;
+        }
+
+        return $this->versionLevel;
     }
 
     private static function supportsHostUsers(string $versionLevel): bool

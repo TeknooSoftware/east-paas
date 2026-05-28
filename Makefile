@@ -52,7 +52,7 @@ else
 endif
 	rm -rf tests/var/cache/
 
-test-mono--thread:
+test-mono-thread:
 	rm -rf tests/var/cache/
 	XDEBUG_MODE=coverage ${PHP} -dmax_execution_time=0 -dzend_extension=xdebug.so -dxdebug.mode=coverage vendor/bin/phpunit -c phpunit.xml --colors --coverage-text
 ifeq ($(DEPENDENCIES), lowest)
