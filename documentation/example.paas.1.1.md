@@ -323,10 +323,15 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
           php-service: #Service name
               pod: "php-pods" #Pod name, use service name by default
               internal: false #If false, a load balancer is use to access it from outside
-              protocol: 'TCP' #Or UDP
+              protocol: 'HTTPS' #Or UDP or HTTPS
               ports:
                   - listen: 9876 #Port listened
                     target: 8080 #Pod's port targeted
+          demo-udp: #Service name
+              protocol: 'UDP' #Or UDP or HTTPS'
+              ports:
+                  - listen: 6666 #Port listened
+                    target: 6666 #Pod's port targeted
           demo: #Service name
               ports:
                   - listen: 8080 #Port listened

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
@@ -60,8 +61,14 @@ class ServiceTranscriber implements ExposingInterface
         $ports = [];
         foreach ($service->getPorts() as $listen => $target) {
             $ports[] = [
-                'name' => strtolower($service->getName() . '-' . $listen),
-                'protocol' => $service->getProtocol(),
+                'name' => match ($service->getProtocol()) {
+                    Transport::Https => 'https-' . strtolower($service->getName() . '-' . $listen),
+                    default => strtolower($service->getName() . '-' . $listen),
+                },
+                'protocol' => match ($service->getProtocol()) {
+                    Transport::Udp => 'UDP',
+                    Transport::Https, Transport::Tcp => 'TCP',
+                },
                 'port' => $listen,
                 'targetPort' => $target,
             ];

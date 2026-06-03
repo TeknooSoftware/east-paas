@@ -1,5 +1,5 @@
 paas: #Dedicated to compiler
-    version: v1.0
+    version: v1.1
 
 #Config
 maps:
@@ -186,7 +186,7 @@ services:
     php-service: #Service name
         pod: "php-pods" #Pod name, use service name by default
         internal: false #If false, a load balancer is use to access it from outside
-        protocol: 'TCP' #Or UDP
+        protocol: 'HTTPS' #Or UDP
         ports:
             - listen: 9876 #Port listened
               target: 8080 #Pod's port targeted

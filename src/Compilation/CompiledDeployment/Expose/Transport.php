@@ -36,4 +36,6 @@ enum Transport: string
     case Udp = 'UDP';
 
     case Tcp = 'TCP';
+
+    case Https = 'HTTPS';
 }

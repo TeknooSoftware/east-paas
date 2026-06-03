@@ -455,6 +455,8 @@
       <xs:enumeration value="udp" />
       <xs:enumeration value="TCP" />
       <xs:enumeration value="tcp" />
+      <xs:enumeration value="HTTPS" />
+      <xs:enumeration value="https" />
     </xs:restriction>
   </xs:simpleType>
 

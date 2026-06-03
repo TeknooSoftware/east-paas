@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ServiceTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Model\Service as KubeService;
 use Teknoo\Kubernetes\Repository\ServiceRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
@@ -107,6 +108,69 @@ class ServiceTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    public function testRunHttps(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachService')
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
+                $callback(
+                    new Service('foo', 'foo', [443 => 8443], Transport::Https, false),
+                    'a-prefix',
+                );
+                return $cd;
+            });
+
+        $repoService = $this->createMock(ServiceRepository::class);
+
+        $repoService->expects($this->once())
+            ->method('exists')
+            ->willReturn(false);
+
+        $repoService->expects($this->never())
+            ->method('delete');
+
+        $appliedSpec = null;
+        $repoService->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(function (KubeService $service) use (&$appliedSpec): array {
+                $appliedSpec = $service->toArray();
+                return ['foo'];
+            });
+
+        $kubeClient->expects($this->atLeastOnce())
+            ->method('setNamespace')
+            ->with('default_namespace');
+
+        $kubeClient
+            ->method('__call')
+            ->willReturnMap([
+                ['services', [], $repoService],
+            ]);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(ServiceTranscriber::class, $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        self::assertNotNull($appliedSpec);
+        self::assertSame('https-foo-443', $appliedSpec['spec']['ports'][0]['name']);
+        self::assertSame('TCP', $appliedSpec['spec']['ports'][0]['protocol']);
+        self::assertSame(443, $appliedSpec['spec']['ports'][0]['port']);
+        self::assertSame(8443, $appliedSpec['spec']['ports'][0]['targetPort']);
+        self::assertSame('LoadBalancer', $appliedSpec['spec']['type']);
     }
 
     public function testError(): void

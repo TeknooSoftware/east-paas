@@ -46,7 +46,7 @@ return static function (
     string $provider,
 ): CompiledDeployment {
     $cd = new CompiledDeployment(
-        version: $withJob || $withCondition ? 1.1 : 1,
+        version: $withJob || $withCondition || 'traefik' === $provider ? 1.1 : 1,
         prefix: $prefix,
         projectName: $projectName,
     );
@@ -523,7 +523,10 @@ return static function (
             ports: [
                 9876 => 8080,
             ],
-            protocol: CompiledDeployment\Expose\Transport::Tcp,
+            protocol: match ($provider) {
+                'traefik' => CompiledDeployment\Expose\Transport::Https,
+                default => CompiledDeployment\Expose\Transport::Tcp
+            },
             internal: false,
         )
     );
