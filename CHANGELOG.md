@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.6.2] - 2026-06-03
+### Stable Release
+- Add `HTTPS` as `transport`/`protocol` for services
+- If a service use HTTPS, the port implementation is prefixed by `https-`
+
 ## [5.6.1] - 2026-05-28
 ### Stable Release
 - At transcribe time each transcriber now reads the actual cluster version via `Client::version()` and clamps

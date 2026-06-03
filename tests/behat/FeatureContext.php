@@ -2145,6 +2145,11 @@ EOF;
             default => '"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS"',
         };
 
+        $phpServicePrefix = match (self::$ingressProvider) {
+            'traefik' => 'https-',
+            default => '',
+        };
+
         $useImageVolumes = version_compare($versionLevel, '1.32', '>=');
         $useHostUsers = version_compare($versionLevel, '1.36', '>=');
 
@@ -3073,7 +3078,7 @@ EOF;
                 "type": "LoadBalancer",
                 "ports": [
                     {
-                        "name": "php-service-9876",
+                        "name": "{$phpServicePrefix}php-service-9876",
                         "protocol": "TCP",
                         "port": 9876,
                         "targetPort": 8080
