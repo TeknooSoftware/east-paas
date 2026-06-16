@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
+use DomainException;
 use Psr\Container\ContainerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
@@ -32,10 +33,17 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\Transcr
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver as DriverAlias; //To prevent a bug into PHP-DI
 use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory as RunnerFactoryAlias;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\TranscriberCollection as TranscriberCollectionAlias;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ConfigMapTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\DeploymentTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\JobTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\NetworkTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\SecretTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\VolumeTranscriber;
 
 use function DI\create;
 use function DI\decorate;
 use function DI\get;
+use function is_a;
 use function sys_get_temp_dir;
 
 return [
@@ -62,21 +70,115 @@ return [
         );
     },
 
+    NetworkTranscriber::class . ':class' => NetworkTranscriber::class,
+    NetworkTranscriber::class => static function (ContainerInterface $container): NetworkTranscriber {
+        $className = $container->get(NetworkTranscriber::class . ':class');
+        if (!is_a($className, NetworkTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a network transcriber");
+        }
+
+        $networkDriver = 'bridge';
+        if ($container->has('teknoo.east.paas.docker-compose.network.driver')) {
+            $networkDriver = (string) $container->get('teknoo.east.paas.docker-compose.network.driver');
+        }
+
+        return new $className($networkDriver);
+    },
+
+    SecretTranscriber::class . ':class' => SecretTranscriber::class,
+    SecretTranscriber::class => static function (ContainerInterface $container): SecretTranscriber {
+        $className = $container->get(SecretTranscriber::class . ':class');
+        if (!is_a($className, SecretTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a secret transcriber");
+        }
+
+        return new $className();
+    },
+
+    ConfigMapTranscriber::class . ':class' => ConfigMapTranscriber::class,
+    ConfigMapTranscriber::class => static function (ContainerInterface $container): ConfigMapTranscriber {
+        $className = $container->get(ConfigMapTranscriber::class . ':class');
+        if (!is_a($className, ConfigMapTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a configMap transcriber");
+        }
+
+        return new $className();
+    },
+
+    VolumeTranscriber::class . ':class' => VolumeTranscriber::class,
+    VolumeTranscriber::class => static function (ContainerInterface $container): VolumeTranscriber {
+        $className = $container->get(VolumeTranscriber::class . ':class');
+        if (!is_a($className, VolumeTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a volume transcriber");
+        }
+
+        return new $className();
+    },
+
+    DeploymentTranscriber::class . ':class' => DeploymentTranscriber::class,
+    DeploymentTranscriber::class => static function (ContainerInterface $container): DeploymentTranscriber {
+        $className = $container->get(DeploymentTranscriber::class . ':class');
+        if (!is_a($className, DeploymentTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a deployment transcriber");
+        }
+
+        return new $className();
+    },
+
+    JobTranscriber::class . ':class' => JobTranscriber::class,
+    JobTranscriber::class => static function (ContainerInterface $container): JobTranscriber {
+        $className = $container->get(JobTranscriber::class . ':class');
+        if (!is_a($className, JobTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a job transcriber");
+        }
+
+        return new $className();
+    },
+
     TranscriberCollectionInterface::class => get(TranscriberCollectionAlias::class),
 
     TranscriberCollectionAlias::class => static function (
         ContainerInterface $container
     ): TranscriberCollectionAlias {
-        //Transcribers are registered (with their 5/10/10/10/30/32/40/50 priorities) in the dedicated
-        //deploy/expose transcriber phases. The scaffold ships an empty collection.
-        return new TranscriberCollectionAlias();
+        $collection = new TranscriberCollectionAlias();
+        $collection->add(5, $container->get(NetworkTranscriber::class));
+        $collection->add(10, $container->get(SecretTranscriber::class));
+        $collection->add(10, $container->get(ConfigMapTranscriber::class));
+        $collection->add(10, $container->get(VolumeTranscriber::class));
+        $collection->add(30, $container->get(DeploymentTranscriber::class));
+        $collection->add(32, $container->get(JobTranscriber::class));
+
+        return $collection;
     },
 
-    DriverAlias::class => create()
-        ->constructor(
-            get(RunnerFactoryInterface::class),
-            get(TranscriberCollectionInterface::class)
-        ),
+    DriverAlias::class => static function (ContainerInterface $container): DriverAlias {
+        $tmpDir = sys_get_temp_dir();
+        if ($container->has('teknoo.east.paas.worker.tmp_dir')) {
+            $tmpDir = (string) $container->get('teknoo.east.paas.worker.tmp_dir');
+        }
+
+        $deployRoot = '/opt/paas';
+        if ($container->has('teknoo.east.paas.docker-compose.deploy_root')) {
+            $deployRoot = (string) $container->get('teknoo.east.paas.docker-compose.deploy_root');
+        }
+
+        $traefikContainer = 'traefik';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.container')) {
+            $traefikContainer = (string) $container->get('teknoo.east.paas.docker-compose.traefik.container');
+        }
+
+        return new DriverAlias(
+            runnerFactory: $container->get(RunnerFactoryInterface::class),
+            transcribers: $container->get(TranscriberCollectionInterface::class),
+            templates: [
+                'deploy' => __DIR__ . '/templates/deploy.yml.template',
+                'expose' => __DIR__ . '/templates/expose.yml.template',
+            ],
+            tmpDir: $tmpDir,
+            deployRoot: $deployRoot,
+            traefikContainer: $traefikContainer,
+        );
+    },
 
     Directory::class => decorate(static function (Directory $previous, ContainerInterface $container): Directory {
         $previous->register('docker-compose', $container->get(DriverAlias::class));

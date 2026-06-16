@@ -41,6 +41,9 @@ use function trim;
  */
 trait CommonTrait
 {
+    /**
+     * @return callable(string): string
+     */
     private static function createPrefixer(?string $prefix): callable
     {
         return static function (string $value) use ($prefix): string {

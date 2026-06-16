@@ -86,28 +86,42 @@ trait PodsTranscriberTrait
 
     /**
      * Convert a container's variables to Compose `environment` entries; references to secrets and maps are
-     * turned into `secrets:`/`configs:` mounts or env vars by the consuming transcriber (F4).
+     * turned into `secrets:`/`configs:` mounts.
      *
      * @param array<string, mixed> $spec
-     * @param array<string, SecretReference|MapReference|string> $variables
+     * @param array<string, mixed> $variables
+     * @param callable(string): string $prefixer
      */
     private static function convertVariables(array &$spec, array $variables, callable $prefixer): void
     {
+        /** @var list<string> $secrets */
+        $secrets = $spec['secrets'] ?? [];
+        /** @var list<string> $configs */
+        $configs = $spec['configs'] ?? [];
         $environment = [];
+
         foreach ($variables as $name => $value) {
             if ($value instanceof SecretReference) {
-                $spec['secrets'][] = $prefixer($value->getName() . self::SECRET_SUFFIX);
+                $secrets[] = $prefixer($value->getName() . self::SECRET_SUFFIX);
 
                 continue;
             }
 
             if ($value instanceof MapReference) {
-                $spec['configs'][] = $prefixer($value->getName() . self::MAP_SUFFIX);
+                $configs[] = $prefixer($value->getName() . self::MAP_SUFFIX);
 
                 continue;
             }
 
             $environment[$name] = $value;
+        }
+
+        if (!empty($secrets)) {
+            $spec['secrets'] = $secrets;
+        }
+
+        if (!empty($configs)) {
+            $spec['configs'] = $configs;
         }
 
         if (!empty($environment)) {
@@ -120,12 +134,20 @@ trait PodsTranscriberTrait
      * declared mount path.
      *
      * @param array<string, mixed> $spec
+     * @param callable(string): string $prefixer
      */
     private static function convertVolumes(array &$spec, Container $container, callable $prefixer): void
     {
+        /** @var list<string> $volumes */
+        $volumes = $spec['volumes'] ?? [];
+        /** @var list<string> $secrets */
+        $secrets = $spec['secrets'] ?? [];
+        /** @var list<string> $configs */
+        $configs = $spec['configs'] ?? [];
+
         foreach ($container->getVolumes() as $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
-                $spec['volumes'][] = sprintf(
+                $volumes[] = sprintf(
                     '%s:%s',
                     $prefixer($volume->getName()),
                     $volume->getMountPath(),
@@ -135,22 +157,34 @@ trait PodsTranscriberTrait
             }
 
             if ($volume instanceof SecretVolume) {
-                $spec['secrets'][] = $prefixer($volume->getSecretIdentifier() . self::SECRET_SUFFIX);
+                $secrets[] = $prefixer($volume->getSecretIdentifier() . self::SECRET_SUFFIX);
 
                 continue;
             }
 
             if ($volume instanceof MapVolume) {
-                $spec['configs'][] = $prefixer($volume->getMapIdentifier() . self::MAP_SUFFIX);
+                $configs[] = $prefixer($volume->getMapIdentifier() . self::MAP_SUFFIX);
 
                 continue;
             }
 
-            $spec['volumes'][] = sprintf(
+            $volumes[] = sprintf(
                 '%s:%s',
                 $prefixer($volume->getName() . self::VOLUME_SUFFIX),
                 $volume->getMountPath(),
             );
+        }
+
+        if (!empty($volumes)) {
+            $spec['volumes'] = $volumes;
+        }
+
+        if (!empty($secrets)) {
+            $spec['secrets'] = $secrets;
+        }
+
+        if (!empty($configs)) {
+            $spec['configs'] = $configs;
         }
     }
 
@@ -237,6 +271,7 @@ trait PodsTranscriberTrait
      * Build the Compose service spec for a single container of a pod.
      *
      * @param array<string, array<string, Image>>|Image[][] $images
+     * @param callable(string): string $prefixer
      * @return array<string, mixed>
      */
     private static function containerToService(
@@ -262,12 +297,17 @@ trait PodsTranscriberTrait
             $spec['healthcheck'] = self::convertHealthCheck($healthCheck);
         }
 
+        $deploy = [];
         if (!empty($resources = self::convertResources($container))) {
-            $spec['deploy']['resources'] = $resources;
+            $deploy['resources'] = $resources;
         }
 
         if ($pod->getReplicas() > 1) {
-            $spec['deploy']['replicas'] = $pod->getReplicas();
+            $deploy['replicas'] = $pod->getReplicas();
+        }
+
+        if (!empty($deploy)) {
+            $spec['deploy'] = $deploy;
         }
 
         if (null !== ($restart = self::convertRestartPolicy($pod->getRestartPolicy()))) {
@@ -283,6 +323,7 @@ trait PodsTranscriberTrait
      * network namespace via `network_mode: "service:<anchor>"`.
      *
      * @param array<string, array<string, Image>>|Image[][] $images
+     * @param callable(string): string $prefixer
      * @return array<string, array<string, mixed>>
      */
     protected static function podToServices(

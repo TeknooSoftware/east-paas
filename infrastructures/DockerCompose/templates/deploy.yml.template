@@ -1,0 +1,74 @@
+---
+# East PaaS - Docker Compose deploy playbook
+# Rendered by the DockerCompose driver; {% %} placeholders are substituted before execution.
+- name: Deploy {% project %} on the Docker host
+  hosts: all
+  gather_facts: false
+  vars:
+    paas_project: "{% project %}"
+    paas_deploy_root: "{% deployRoot %}"
+    paas_project_dir: "{% deployRoot %}/{% project %}"
+    paas_network: "{% network %}"
+    paas_traefik_container: "{% traefikContainer %}"
+  tasks:
+    - name: Ensure the project directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}"
+        state: directory
+        mode: "0750"
+
+    - name: Ensure the secrets directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/secrets"
+        state: directory
+        mode: "0700"
+
+    - name: Ensure the configs directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/configs"
+        state: directory
+        mode: "0750"
+
+    - name: Push the Compose Specification file
+      ansible.builtin.copy:
+        src: "{% composeFile %}"
+        dest: "{{ paas_project_dir }}/compose.yaml"
+        mode: "0640"
+
+    - name: Push the configuration and secret files
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ paas_project_dir }}/{{ item.dest }}"
+        mode: "{{ item.mode }}"
+      loop: "{{ paas_files | default([]) }}"
+      no_log: true
+
+    - name: Remove volumes flagged for reset before bringing the stack up
+      community.docker.docker_volume:
+        name: "{{ paas_project }}_{{ item }}"
+        state: absent
+      loop: "{{ paas_reset_volumes | default([]) }}"
+
+    - name: Bring the Compose stack up
+      ansible.builtin.command:
+        cmd: docker compose -p {{ paas_project }} up -d --remove-orphans
+        chdir: "{{ paas_project_dir }}"
+      register: paas_compose_up
+      changed_when: true
+
+    - name: Run during-deployment jobs
+      ansible.builtin.command:
+        cmd: docker compose -p {{ paas_project }} --profile jobs run --rm {{ item }}
+        chdir: "{{ paas_project_dir }}"
+      loop: "{{ paas_jobs | default([]) }}"
+      register: paas_jobs_result
+      changed_when: true
+
+    - name: Connect Traefik to the project's private network (idempotent)
+      ansible.builtin.command:
+        cmd: docker network connect {{ paas_network }} {{ paas_traefik_container }}
+      register: paas_network_connect
+      changed_when: "'endpoint' in paas_network_connect.stdout"
+      failed_when:
+        - paas_network_connect.rc != 0
+        - "'already exists in network' not in paas_network_connect.stderr"

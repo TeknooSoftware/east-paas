@@ -83,9 +83,20 @@ class Driver implements DriverInterface, AutomatedInterface
 
     private ?string $namespace = null;
 
+    /**
+     * @param array<string, string> $templates absolute paths of the Ansible playbook templates, keyed by
+     *        stage (`deploy`, `expose`)
+     * @param (callable(): string)|null $tmpDirFactory factory creating a fresh per-run working directory
+     *        (overridable for tests); defaults to a uniquely named directory under the configured temp dir
+     */
     public function __construct(
         private readonly RunnerFactoryInterface $runnerFactory,
         private readonly TranscriberCollectionInterface $transcribers,
+        private readonly array $templates = [],
+        private readonly string $tmpDir = '',
+        private readonly string $deployRoot = '/opt/paas',
+        private readonly string $traefikContainer = 'traefik',
+        private $tmpDirFactory = null,
     ) {
         $this->initializeStateProxy();
         $this->updateStates();
