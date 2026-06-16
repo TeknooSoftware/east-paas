@@ -99,6 +99,9 @@
         "teknoo/bridge-phpdi-symfony": "^7.1.2",
         "teknoo/kubernetes-client": "^2.0.3"
     },
+    "suggest": {
+        "teknoo/kubernetes-client": "Kubernetes Client driver: run Kubernetes deployments",
+    },
     "autoload": {
         "psr-4": {
             "Teknoo\\East\\Paas\\": "src/",
