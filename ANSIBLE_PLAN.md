@@ -25,7 +25,7 @@ builder; the driver then **serializes to YAML and runs `ansible-playbook` once p
 
 | # | Decision |
 |---|----------|
-| Q1 | **SSH transport.** Worker runs `ansible-playbook` locally; Ansible connects over SSH to the host at `cluster.address`. Use the **`asm/php-ansible`** library (OOP wrapper, PHP 8.2–8.4, Symfony Process under the hood); fall back to raw Symfony Process behind our own contract. |
+| Q1 | **SSH transport.** Worker runs `ansible-playbook` locally; Ansible connects over SSH to the host at `cluster.address`. The binary is invoked via **raw Symfony Process** behind our own `RunnerInterface` contract (the contract keeps the runner swappable for other implementations). |
 | Q2 | **Reuse `Teknoo\East\Paas\Object\ClusterCredentials`** as the identity (mapping defined below). No new domain object. |
 | Q3 | **Connect-per-project.** The deploy playbook runs `docker network connect <project-net> <traefik>` so Traefik joins every dedicated project network. |
 | Q4 | **Per-ingress TLS.** `tls.secret` set → materialize cert/key files from the PaaS secret and reference them in Traefik. `meta.letsencrypt: true` → ACME `certResolver`. |
@@ -50,7 +50,7 @@ CompiledDeployment ──► DockerCompose\Driver (States: Generator → Running
                           ▼
                        Driver serializes accumulator → YAML + writes playbook artifacts → RunnerInterface
                           ▼
-                       AnsibleRunner (asm/php-ansible)  ── SSH ──►  Docker host
+                       SymfonyProcessRunner (Symfony Process)  ── SSH ──►  Docker host
                           deploy.yml : ensure dir, push files, `docker compose -p <ns> up -d`,
                                        run during-deployment jobs, `docker network connect <net> traefik`
                           expose.yml : push Traefik dynamic file into watched dir (+ cert files)
@@ -84,8 +84,8 @@ infrastructures/DockerCompose/
 │       ├── ExposingInterface.php               # runs in expose
 │       └── TranscriberCollectionInterface.php
 ├── Generation.php                              # GenerationInterface impl (mutable builder)
-├── RunnerFactory.php                           # builds AnsibleRunner; writes SSH key to tmp (0600)
-├── AnsibleRunner.php                           # wraps Asm\Ansible\Ansible; Symfony Process fallback
+├── RunnerFactory.php                           # builds SymfonyProcessRunner; writes SSH key to tmp (0600)
+├── SymfonyProcessRunner.php                    # runs `ansible-playbook` via Symfony Process
 ├── TranscriberCollection.php                   # priority-ordered, mirrors K8S
 ├── Transcriber/
 │   ├── CommonTrait.php                         # createPrefixer(), name sanitising (DNS-safe), cleanResult()
@@ -161,23 +161,17 @@ Copy the structure of `infrastructures/Kubernetes/Driver.php`:
 `cluster.address` formats accepted: `ssh://user@host:port`, `host:port`, `host`. Parse host/port; default
 port 22. Document this in `documentation/docker-compose.deployment.md`.
 
-### 3. Ansible execution (`RunnerFactoryInterface`, `RunnerInterface`, `RunnerFactory`, `AnsibleRunner`)
+### 3. Ansible execution (`RunnerFactoryInterface`, `RunnerInterface`, `RunnerFactory`, `SymfonyProcessRunner`)
 
 - `RunnerInterface::run(string $playbookPath, string $inventoryPath, array $extraVars, ?ClusterCredentials $credentials, PromiseInterface $promise): RunnerInterface`.
-- `AnsibleRunner` wraps `Asm\Ansible\Ansible`:
-  ```php
-  $ansible = new \Asm\Ansible\Ansible($playbookDir, $playbookBinary, $galaxyBinary);
-  $ansible->playbook()->play($playbookFile)->inventoryFile($inventoryPath)
-          ->extraVars($extraVars)->user($sshUser)->privateKey($keyFile)
-          ->execute(/* callback streams output */);
-  ```
-  Resolve success/failure exactly like `infrastructures/Image/ImageWrapper/Running.php::waitProcess()`:
-  exit code → `promise->success(output)` or `promise->fail(new RuntimeException($stderr))`. Honour a
-  configurable timeout (default 300s, like the library).
-- Provide a **`SymfonyProcessRunner`** alternative (raw `ansible-playbook` via `Symfony\Component\Process\Process`)
-  behind the same `RunnerInterface` so the dependency on `asm/php-ansible` is optional/swappable and so
-  Behat can substitute a fake. DI selects the implementation.
-- `RunnerFactory` (mirrors K8S `Factory`): constructor `(string $tmpDir, string $playbookBinary='ansible-playbook', ?float $timeout=null, ?callable $tmpNameFunction=null)`; `__invoke()` writes the SSH key from `ClusterCredentials` to a temp file (`chmod 0600`), returns a configured `AnsibleRunner`; cleans temp files in `__destruct()` (copy K8S `write()`/`unlink` discipline).
+- **`SymfonyProcessRunner`** is the single implementation: it calls the raw `ansible-playbook` binary via
+  `Symfony\Component\Process\Process` (command line built from playbook path, `--inventory`, `--extra-vars`
+  as JSON, SSH user/key). Behat can substitute a fake `Process`. Resolve success/failure exactly like
+  `infrastructures/Image/ImageWrapper/Running.php::waitProcess()`: a successful process →
+  `promise->success(output)`, a failed one → `promise->fail(new RuntimeException($stderr))`. Honour a
+  configurable timeout (default 300s). `RunnerInterface` is kept as a contract so other runner
+  implementations remain pluggable.
+- `RunnerFactory` (mirrors K8S `Factory`): constructor `(string $tmpDir, string $playbookBinary='ansible-playbook', ?float $timeout=null, ?callable $tmpNameFunction=null, ?callable $runnerBuilder=null)`; `__invoke()` writes the SSH key from `ClusterCredentials` to a temp file (`chmod 0600`), returns a configured `SymfonyProcessRunner` (or whatever `$runnerBuilder` builds); cleans temp files in `__destruct()` (copy K8S `write()`/`unlink` discipline).
 
 ### 4. Accumulator (`GenerationInterface`, `Generation.php`)
 
@@ -406,8 +400,8 @@ Scheduled jobs are **not** in the Compose file. The worker re-runs them on sched
 **Unit** (`tests/infrastructures/DockerCompose/`, PHPUnit attributes `#[CoversClass]`, mirror K8S tests):
 - `DriverTest` — Generator refuses; `configure()` rejects non-`ClusterCredentials`; `deploy()`/`expose()`
   iterate the right transcribers and invoke the runner (mock `RunnerFactoryInterface`/`RunnerInterface`).
-- `RunnerFactoryTest`, `AnsibleRunnerTest` (+ `SymfonyProcessRunnerTest`) — mock `Process`/the Ansible
-  wrapper; assert command/inventory/extraVars/timeout and success-vs-fail promise resolution.
+- `RunnerFactoryTest`, `SymfonyProcessRunnerTest` — mock `Process`; assert
+  command/inventory/extraVars/timeout and success-vs-fail promise resolution.
 - `GenerationTest` — accumulator add/serialize; Compose + Traefik array shape.
 - One test per transcriber — feed a mock `CompiledDeploymentInterface` whose `foreach*` invokes the callback
   with hand-built domain objects (`Pod`, `Container`, `Service`, `Ingress`, volumes, `Job`); assert the
@@ -431,10 +425,9 @@ Scheduled jobs are **not** in the Compose file. The worker re-runs them on sched
 
 - `autoload.psr-4`: add `"Teknoo\\East\\Paas\\Infrastructures\\DockerCompose\\": "infrastructures/DockerCompose/"`.
 - `autoload-dev.psr-4`: add `"Teknoo\\Tests\\East\\Paas\\Infrastructures\\DockerCompose\\": "tests/infrastructures/DockerCompose/"`.
-- `require-dev`: add `asm/php-ansible` and `symfony/scheduler` (`symfony/yaml`, `symfony/process`,
-  `symfony/messenger` already present) — same convention as `teknoo/kubernetes-client` being dev-only.
-- `suggest`: add `asm/php-ansible` ("Docker Compose driver: run Ansible playbooks") and `symfony/scheduler`
-  ("platform-side scheduling of scheduled jobs").
+- `require-dev`: add `symfony/scheduler` (`symfony/yaml`, `symfony/process`, `symfony/messenger` already
+  present) — same convention as `teknoo/kubernetes-client` being dev-only.
+- `suggest`: add `symfony/scheduler` ("platform-side scheduling of scheduled jobs").
 - No changes needed to `phpunit.xml` / `behat.dist.yml` / `Makefile` — directories are auto-discovered.
 
 ## QA & verification
@@ -457,8 +450,8 @@ Run from repo root (existing tooling):
 1. **Scaffold module + DI:** module dirs, `Driver` + `Generator`/`Running`, exceptions, empty
    `TranscriberCollection`, `di.php` registering `'docker-compose'`; `ContainerTest` green. Add autoload +
    deps; `composer dump-autoload`.
-2. **Ansible execution:** `RunnerInterface`/`RunnerFactoryInterface`, `AnsibleRunner` (+ Symfony Process
-   fallback), `RunnerFactory` (SSH key temp file); unit tests.
+2. **Ansible execution:** `RunnerInterface`/`RunnerFactoryInterface`, `SymfonyProcessRunner`,
+   `RunnerFactory` (SSH key temp file); unit tests.
 3. **Accumulator + contracts:** `GenerationInterface`/`Generation`, transcriber interfaces, `CommonTrait`,
    `PodsTranscriberTrait`; unit tests.
 4. **Deploy transcribers:** Network, Secret, ConfigMap, Volume, Deployment(+pods), Job(during-deployment);

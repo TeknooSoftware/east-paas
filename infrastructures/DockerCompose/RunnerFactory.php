@@ -73,8 +73,8 @@ final class RunnerFactory implements RunnerFactoryInterface
 
     /**
      * @param (callable(string, ?float, ?string, ?string): RunnerInterface)|null $runnerBuilder builder of
-     *        the concrete `RunnerInterface` (defaults to `AnsibleRunner`; DI may inject a builder of
-     *        `SymfonyProcessRunner` instead)
+     *        the concrete `RunnerInterface` (defaults to `SymfonyProcessRunner`; DI may inject another
+     *        builder instead)
      * @param callable|null $tmpNameFunction overridable temporary-file-name generator (defaults to `tempnam`)
      */
     public function __construct(
@@ -93,16 +93,12 @@ final class RunnerFactory implements RunnerFactoryInterface
         if (null !== $runnerBuilder) {
             $this->runnerBuilder = $runnerBuilder;
         } else {
-            if (null !== $timeout) {
-                $timeout = (int) $timeout;
-            }
-
             $this->runnerBuilder = static fn (
                 string $playbookBinary,
                 ?float $timeout,
                 ?string $sshUser,
                 ?string $privateKeyFile,
-            ): RunnerInterface => new AnsibleRunner(
+            ): RunnerInterface => new SymfonyProcessRunner(
                 playbookBinary: $playbookBinary,
                 timeout: $timeout,
                 sshUser: $sshUser,

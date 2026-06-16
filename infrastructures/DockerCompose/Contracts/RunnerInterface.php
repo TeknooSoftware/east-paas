@@ -30,9 +30,9 @@ use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 /**
- * Contract for the component running an Ansible playbook (via `asm/php-ansible` or raw Symfony Process)
- * to deploy or expose the generated Compose Specification + Traefik dynamic configuration on the remote
- * Docker host over SSH.
+ * Contract for the component running an Ansible playbook (via the raw `ansible-playbook` binary through
+ * Symfony Process) to deploy or expose the generated Compose Specification + Traefik dynamic configuration
+ * on the remote Docker host over SSH.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)

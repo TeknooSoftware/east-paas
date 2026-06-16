@@ -41,9 +41,8 @@ use const PHP_EOL;
 
 /**
  * `RunnerInterface` implementation calling the raw `ansible-playbook` binary through a Symfony
- * `Process`, so the dependency on `asm/php-ansible` stays optional/swappable and a fake `Process`
- * can be substituted in tests/Behat. The selection between this runner and `AnsibleRunner` is made
- * by the DI container.
+ * `Process`. A fake `Process` can be substituted in tests/Behat. This is the default `RunnerInterface`
+ * built by `RunnerFactory`; the DI container may inject another implementation behind the same contract.
  *
  * Success/failure is resolved exactly like `Infrastructures\Image\ImageWrapper\Running::waitProcess()`:
  * a successful process resolves the promise with its output, a failed process fails it with a

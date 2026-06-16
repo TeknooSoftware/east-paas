@@ -27,10 +27,10 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\AnsibleRunner;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\BadTempFileException;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\SymfonyProcessRunner;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
 use function file_exists;
@@ -52,7 +52,7 @@ class RunnerFactoryTest extends TestCase
 
         $runner = $factory('ssh://host:22', null);
 
-        self::assertInstanceOf(AnsibleRunner::class, $runner);
+        self::assertInstanceOf(SymfonyProcessRunner::class, $runner);
 
         unset($factory);
     }

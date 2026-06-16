@@ -54,7 +54,7 @@ CompiledDeployment ─► DockerCompose\Driver (Generator → Running)
                      Driver serializes the accumulator to YAML, writes the playbook,
                      a single-host inventory and all pushed files into a per-run temp dir
                         ▼
-                     RunnerInterface (AnsibleRunner / SymfonyProcessRunner) ── SSH ─► Docker host
+                     RunnerInterface (SymfonyProcessRunner) ── SSH ─► Docker host
                         deploy.yml : create dirs, push files, `docker compose -p <project> up -d`,
                                      run during-deployment jobs, `docker network connect <net> traefik`
                         expose.yml : push TLS files + `<project>.yml` into Traefik's watched directory
@@ -258,9 +258,10 @@ On the **worker** (where the deployment runs):
 
 * `ansible` / `ansible-playbook` available on `PATH` (or pointed to via
   `teknoo.east.paas.docker-compose.ansible.binary`);
-* the `community.docker` Ansible collection (used for `community.docker.docker_volume`);
-* the optional `asm/php-ansible` Composer package (the `AnsibleRunner` wraps it; a raw Symfony Process
-  `SymfonyProcessRunner` is provided as a swappable fallback selected by the DI).
+* the `community.docker` Ansible collection (used for `community.docker.docker_volume`).
+
+The worker invokes `ansible-playbook` through `SymfonyProcessRunner` (the default `RunnerInterface`); the
+DI container may inject another implementation behind the same contract.
 
 On the **Docker host** (the `cluster.address` target):
 

@@ -41,7 +41,6 @@
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
-        "asm/php-ansible": "^6.0",
         "symfony/scheduler": "^6.4.24||^7.4||^8",
         "phpunit/phpunit": "^13.0.1",
         "squizlabs/php_codesniffer": "^4.0.1",
@@ -103,7 +102,6 @@
     },
     "suggest": {
         "teknoo/kubernetes-client": "Kubernetes Client driver: run Kubernetes deployments",
-        "asm/php-ansible": "Docker Compose driver: run Ansible playbooks",
         "symfony/scheduler": "platform-side scheduling of scheduled jobs"
     },
     "autoload": {
