@@ -109,6 +109,38 @@ interface GenerationInterface
     public function getFiles(): array;
 
     /**
+     * Pushed files described for the deploy/expose playbook `copy` loops as a list of
+     * `{src, dest, mode}` entries (relative paths kept identical on the host below the project dir).
+     *
+     * @return array<int, array{src: string, dest: string, mode: string}>
+     */
+    public function getFilesToCopy(): array;
+
+    /**
+     * TLS cert/key files described for the expose playbook `copy` loop as a list of `{src, dest}`
+     * entries; `dest` is the bare filename dropped into Traefik's certs directory.
+     *
+     * @return array<int, array{src: string, dest: string}>
+     */
+    public function getCertificatesToCopy(): array;
+
+    /**
+     * Names of the project volumes flagged `resetOnDeployment` (the `x-paas-reset` marker), to be removed
+     * by the deploy playbook before the stack is brought up. Names are unprefixed by the project.
+     *
+     * @return array<int, string>
+     */
+    public function getResetVolumes(): array;
+
+    /**
+     * Names of the Compose services guarding during-deployment jobs (the `jobs` profile / `x-paas-job`
+     * marker), to be run once by the deploy playbook with `docker compose --profile jobs run --rm <svc>`.
+     *
+     * @return array<int, string>
+     */
+    public function getJobsToRun(): array;
+
+    /**
      * @return array<int, string>
      */
     public function getNetworksToWire(): array;

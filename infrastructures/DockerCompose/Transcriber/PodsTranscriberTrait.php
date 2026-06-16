@@ -314,6 +314,14 @@ trait PodsTranscriberTrait
             $spec['restart'] = $restart;
         }
 
+        //Pod fsGroup -> `group_add` best-effort: Compose has no exact fsGroup equivalent (Kubernetes
+        //recursively chowns mounted volumes to the fsGroup), so the pod's fsGroup is added as a
+        //supplementary group of the container process. This is partial support: it does not chown existing
+        //volume contents; volumes must already be group-readable/writable by that GID on the host.
+        if (null !== ($fsGroup = $pod->getFsGroup())) {
+            $spec['group_add'] = [(string) $fsGroup];
+        }
+
         return $spec;
     }
 

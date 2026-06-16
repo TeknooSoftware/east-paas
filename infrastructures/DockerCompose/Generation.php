@@ -28,8 +28,11 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
 
 use function array_values;
+use function basename;
 use function in_array;
+use function is_array;
 use function is_string;
+use function str_starts_with;
 
 /**
  * Mutable accumulator (builder) used by the Docker Compose driver's transcribers to collect the full Compose
@@ -273,6 +276,62 @@ final class Generation implements GenerationInterface
     public function getFiles(): array
     {
         return $this->files;
+    }
+
+    public function getFilesToCopy(): array
+    {
+        $entries = [];
+        foreach ($this->files as $relativePath => $content) {
+            $entries[] = [
+                'src' => $relativePath,
+                'dest' => $relativePath,
+                'mode' => str_starts_with($relativePath, 'secrets/') ? '0600' : '0640',
+            ];
+        }
+
+        return $entries;
+    }
+
+    public function getCertificatesToCopy(): array
+    {
+        $entries = [];
+        foreach ($this->certificates as $certificate) {
+            $entries[] = [
+                'src' => $certificate['certFile'],
+                'dest' => basename($certificate['certFile']),
+            ];
+            $entries[] = [
+                'src' => $certificate['keyFile'],
+                'dest' => basename($certificate['keyFile']),
+            ];
+        }
+
+        return $entries;
+    }
+
+    public function getResetVolumes(): array
+    {
+        $names = [];
+        foreach ($this->volumes as $name => $spec) {
+            if (!empty($spec['x-paas-reset'])) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
+    }
+
+    public function getJobsToRun(): array
+    {
+        $names = [];
+        foreach ($this->services as $name => $spec) {
+            $profiles = $spec['profiles'] ?? [];
+            if (is_array($profiles) && in_array('jobs', $profiles, true)) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 
     public function getNetworksToWire(): array

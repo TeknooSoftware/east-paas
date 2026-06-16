@@ -218,12 +218,37 @@ class Running implements StateInterface
                 onFail: static fn (#[SensitiveParameter] Throwable $error): mixed => $mainPromise->fail($error),
             );
 
+            //Thread the accumulator's derived data into the playbook variables it loops over: the locally
+            //written secret/config files (paas_files), the volumes flagged resetOnDeployment
+            //(paas_reset_volumes), the during-deployment job services (paas_jobs) and the per-ingress TLS
+            //cert/key files (paas_certs). Each file `src` is resolved to its absolute working-dir path so
+            //the Ansible `copy` tasks can read the local file; `dest`/`mode` are preserved.
+            $resolveCopySources = static function (array $entries) use ($workingDir): array {
+                $resolved = [];
+                foreach ($entries as $entry) {
+                    $entry['src'] = $workingDir . '/' . $entry['src'];
+                    $resolved[] = $entry;
+                }
+
+                return $resolved;
+            };
+
+            $extraVars = [
+                'paas_project' => $generation->getProjectName(),
+            ];
+
+            if ($runExposing) {
+                $extraVars['paas_certs'] = $resolveCopySources($generation->getCertificatesToCopy());
+            } else {
+                $extraVars['paas_files'] = $resolveCopySources($generation->getFilesToCopy());
+                $extraVars['paas_reset_volumes'] = $generation->getResetVolumes();
+                $extraVars['paas_jobs'] = $generation->getJobsToRun();
+            }
+
             $runner->run(
                 playbookPath: $playbookPath,
                 inventoryPath: $inventoryPath,
-                extraVars: [
-                    'paas_project' => $generation->getProjectName(),
-                ],
+                extraVars: $extraVars,
                 credentials: $this->credentials,
                 promise: $runnerPromise,
             );

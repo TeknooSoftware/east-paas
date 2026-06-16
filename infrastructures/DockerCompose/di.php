@@ -46,6 +46,9 @@ use function DI\create;
 use function DI\decorate;
 use function DI\get;
 use function is_a;
+use function is_array;
+use function is_iterable;
+use function iterator_to_array;
 use function sys_get_temp_dir;
 
 return [
@@ -190,11 +193,45 @@ return [
             );
         }
 
+        $defaultServiceName = null;
+        if ($container->has('teknoo.east.paas.docker-compose.ingress.default_service.name')) {
+            $defaultServiceName = (string) $container->get(
+                'teknoo.east.paas.docker-compose.ingress.default_service.name',
+            );
+        }
+
+        $defaultServicePort = null;
+        if ($container->has('teknoo.east.paas.docker-compose.ingress.default_service.port')) {
+            $defaultServicePort = (int) $container->get(
+                'teknoo.east.paas.docker-compose.ingress.default_service.port',
+            );
+        }
+
+        $defaultMiddlewares = [];
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.default_middlewares')) {
+            $defaultMiddlewares = $container->get(
+                'teknoo.east.paas.docker-compose.traefik.default_middlewares',
+            );
+
+            if (!is_iterable($defaultMiddlewares) && !is_array($defaultMiddlewares)) {
+                throw new DomainException(
+                    '`teknoo.east.paas.docker-compose.traefik.default_middlewares` must be an array or iterable',
+                );
+            }
+
+            if (!is_array($defaultMiddlewares)) {
+                $defaultMiddlewares = iterator_to_array($defaultMiddlewares);
+            }
+        }
+
         return new $className(
             webEntrypoint: $webEntrypoint,
             secureEntrypoint: $secureEntrypoint,
             defaultCertResolver: $defaultCertResolver,
+            defaultServiceName: $defaultServiceName,
+            defaultServicePort: $defaultServicePort,
             httpsBackendInsecureSkipVerify: $httpsBackendInsecureSkipVerify,
+            defaultMiddlewares: $defaultMiddlewares,
         );
     },
 
