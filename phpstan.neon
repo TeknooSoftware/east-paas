@@ -10,13 +10,6 @@ parameters:
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         -
-            identifier: trait.unused
-            path: infrastructures/DockerCompose/Transcriber/
-            reportUnmatched: false
-        -
-            message: '#mixed#'
-            path: infrastructures/DockerCompose/
-        -
             message: '#DefaultsBag\|null given#'
             path: infrastructures/Kubernetes/
         -

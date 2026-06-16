@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
@@ -118,7 +119,7 @@ class JobTranscriber implements DeploymentInterface
 
                     /** @var Pod $pod */
                     foreach ($job->getPods() as $pod) {
-                        /** @var array<string, array<string, \Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image>> $images */
+                        /** @var array<string, array<string, Image>> $images */
                         $services = self::podToServices(
                             pod: $pod,
                             images: $images,

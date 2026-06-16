@@ -47,6 +47,7 @@ use function is_string;
 use function str_starts_with;
 use function strlen;
 use function substr;
+use const PHP_EOL;
 
 /**
  * "Exposing transcriber" translating CompiledDeployment's ingresses to a Traefik v3 dynamic configuration
@@ -120,7 +121,7 @@ class IngressTranscriber implements ExposingInterface
                 $options = [];
                 foreach ($secret->getOptions() as $key => $value) {
                     if (is_array($value)) {
-                        $value = implode("\n", $value);
+                        $value = implode(PHP_EOL, $value);
                     }
 
                     $options[(string) $key] = self::decode($value);

@@ -78,12 +78,12 @@ Cluster configuration
 
 In a project's cluster definition (the same place Kubernetes clusters are declared), set:
 
-| Field | Value |
-|---|---|
-| `type` | `docker-compose` |
-| `address` | the SSH address of the Docker host, e.g. `ssh://deployer@docker-host.example.com:22` |
+| Field       | Value                                                                                  |
+|-------------|----------------------------------------------------------------------------------------|
+| `type`      | `docker-compose`                                                                       |
+| `address`   | the SSH address of the Docker host, e.g. `ssh://deployer@docker-host.example.com:22`   |
 | `namespace` | the environment namespace (combined with the project name to form the Compose project) |
-| `identity` | a `ClusterCredentials` carrying the SSH login and private key (see mapping below) |
+| `identity`  | a `ClusterCredentials` carrying the SSH login and private key (see mapping below)      |
 
 ### `cluster.address` formats
 
@@ -101,14 +101,14 @@ is empty.
 The driver reuses the existing `Teknoo\East\Paas\Object\ClusterCredentials` object (no new domain object).
 Its getters are mapped to SSH / Ansible as follows:
 
-| `ClusterCredentials` getter | SSH / Ansible use |
-|---|---|
-| `getUsername()` | `ansible_user` (SSH login). If empty, falls back to the user in `cluster.address`. |
-| `getClientKey()` | SSH **private key**. Written to a temp file with mode `0600`, then passed as `ansible_ssh_private_key_file` (`--private-key`). |
-| `getPassword()` | optional SSH password / become (`--ask-become-pass`) value. |
-| `getCaCertificate()` | optional host public key for `known_hosts` (strict host-key checking). |
-| `getToken()` | **unused** by this driver. |
-| `getClientCertificate()` | **unused** by this driver. |
+| `ClusterCredentials` getter | SSH / Ansible use                                                                                                              |
+|-----------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `getUsername()`             | `ansible_user` (SSH login). If empty, falls back to the user in `cluster.address`.                                             |
+| `getClientKey()`            | SSH **private key**. Written to a temp file with mode `0600`, then passed as `ansible_ssh_private_key_file` (`--private-key`). |
+| `getPassword()`             | optional SSH password / become (`--ask-become-pass`) value.                                                                    |
+| `getCaCertificate()`        | optional host public key for `known_hosts` (strict host-key checking).                                                         |
+| `getToken()`                | **unused** by this driver.                                                                                                     |
+| `getClientCertificate()`    | **unused** by this driver.                                                                                                     |
 
 The private key is materialized to a temporary file by `RunnerFactory` (Ansible refuses world-readable
 keys, hence `chmod 0600`) and the temp files are removed in the factory's `__destruct()`, mirroring the
@@ -150,16 +150,16 @@ For each run the driver writes, into a fresh per-run working directory under
 The `CompiledDeployment` model is mapped to the Compose / Traefik model by a priority-ordered set of
 transcribers:
 
-| Priority | Transcriber | Stage | Role |
-|---|---|---|---|
-| 5  | `NetworkTranscriber`    | deploy | declares the dedicated `private` network; wires it to Traefik |
-| 10 | `SecretTranscriber`     | deploy | PaaS `Secret` → Compose `secrets` + pushed files |
-| 10 | `ConfigMapTranscriber`  | deploy | PaaS `Map` → Compose `configs` |
-| 10 | `VolumeTranscriber`     | deploy | persistent / secret / map volumes |
-| 30 | `DeploymentTranscriber` | deploy | pods → Compose services (one anchor + sidecars sharing the network) |
-| 32 | `JobTranscriber`        | deploy | during-deployment jobs only (Compose `jobs` profile) |
-| 40 | `ServiceTranscriber`    | expose | network aliases; external raw TCP/UDP → Traefik TCP/UDP routers |
-| 50 | `IngressTranscriber`    | expose | HTTP(S) ingresses → Traefik routers/services + TLS |
+| Priority | Transcriber             | Stage  | Role                                                                |
+|----------|-------------------------|--------|---------------------------------------------------------------------|
+| 5        | `NetworkTranscriber`    | deploy | declares the dedicated `private` network; wires it to Traefik       |
+| 10       | `SecretTranscriber`     | deploy | PaaS `Secret` → Compose `secrets` + pushed files                    |
+| 10       | `ConfigMapTranscriber`  | deploy | PaaS `Map` → Compose `configs`                                      |
+| 10       | `VolumeTranscriber`     | deploy | persistent / secret / map volumes                                   |
+| 30       | `DeploymentTranscriber` | deploy | pods → Compose services (one anchor + sidecars sharing the network) |
+| 32       | `JobTranscriber`        | deploy | during-deployment jobs only (Compose `jobs` profile)                |
+| 40       | `ServiceTranscriber`    | expose | network aliases; external raw TCP/UDP → Traefik TCP/UDP routers     |
+| 50       | `IngressTranscriber`    | expose | HTTP(S) ingresses → Traefik routers/services + TLS                  |
 
 ### Pods → services
 
@@ -231,22 +231,22 @@ Configuration (DI parameters)
 
 The driver reads the following container parameters (all optional, with the defaults shown):
 
-| Parameter | Default | Purpose |
-|---|---|---|
-| `teknoo.east.paas.worker.tmp_dir` | system temp dir | per-run working directory + SSH key temp file |
-| `teknoo.east.paas.docker-compose.ansible.binary` | `ansible-playbook` | Ansible playbook binary |
-| `teknoo.east.paas.docker-compose.timeout` | library default (300s) | Ansible run timeout (seconds) |
-| `teknoo.east.paas.docker-compose.deploy_root` | `/opt/paas` | host root for per-project deploy dirs |
-| `teknoo.east.paas.docker-compose.network.driver` | `bridge` | dedicated network driver |
-| `teknoo.east.paas.docker-compose.traefik.container` | `traefik` | Traefik container name/id to `network connect` |
-| `teknoo.east.paas.docker-compose.traefik.dynamic_dir` | `/etc/traefik/dynamic` | Traefik watched directory |
-| `teknoo.east.paas.docker-compose.traefik.certs_dir` | `/etc/traefik/certs` | host dir for pushed TLS cert/key files |
-| `teknoo.east.paas.docker-compose.traefik.default_certresolver` | _(none)_ | ACME resolver name for `meta.letsencrypt` |
-| `teknoo.east.paas.docker-compose.traefik.entrypoint.web` | `web` | HTTP entrypoint name |
-| `teknoo.east.paas.docker-compose.traefik.entrypoint.websecure` | `websecure` | HTTPS entrypoint name |
-| `teknoo.east.paas.docker-compose.traefik.entrypoint.tcp` | `tcp` | raw-TCP entrypoint name |
-| `teknoo.east.paas.docker-compose.traefik.entrypoint.udp` | `udp` | raw-UDP entrypoint name |
-| `teknoo.east.paas.docker-compose.https_backend.insecure_skip_verify` | `false` | skip TLS verification to HTTPS backends |
+| Parameter                                                            | Default                | Purpose                                        |
+|----------------------------------------------------------------------|------------------------|------------------------------------------------|
+| `teknoo.east.paas.worker.tmp_dir`                                    | system temp dir        | per-run working directory + SSH key temp file  |
+| `teknoo.east.paas.docker-compose.ansible.binary`                     | `ansible-playbook`     | Ansible playbook binary                        |
+| `teknoo.east.paas.docker-compose.timeout`                            | library default (300s) | Ansible run timeout (seconds)                  |
+| `teknoo.east.paas.docker-compose.deploy_root`                        | `/opt/paas`            | host root for per-project deploy dirs          |
+| `teknoo.east.paas.docker-compose.network.driver`                     | `bridge`               | dedicated network driver                       |
+| `teknoo.east.paas.docker-compose.traefik.container`                  | `traefik`              | Traefik container name/id to `network connect` |
+| `teknoo.east.paas.docker-compose.traefik.dynamic_dir`                | `/etc/traefik/dynamic` | Traefik watched directory                      |
+| `teknoo.east.paas.docker-compose.traefik.certs_dir`                  | `/etc/traefik/certs`   | host dir for pushed TLS cert/key files         |
+| `teknoo.east.paas.docker-compose.traefik.default_certresolver`       | _(none)_               | ACME resolver name for `meta.letsencrypt`      |
+| `teknoo.east.paas.docker-compose.traefik.entrypoint.web`             | `web`                  | HTTP entrypoint name                           |
+| `teknoo.east.paas.docker-compose.traefik.entrypoint.websecure`       | `websecure`            | HTTPS entrypoint name                          |
+| `teknoo.east.paas.docker-compose.traefik.entrypoint.tcp`             | `tcp`                  | raw-TCP entrypoint name                        |
+| `teknoo.east.paas.docker-compose.traefik.entrypoint.udp`             | `udp`                  | raw-UDP entrypoint name                        |
+| `teknoo.east.paas.docker-compose.https_backend.insecure_skip_verify` | `false`                | skip TLS verification to HTTPS backends        |
 
 See `documentation/traefik.ingress.md` for the Traefik static configuration that must be in place on the
 host.

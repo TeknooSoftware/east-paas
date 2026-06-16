@@ -45,6 +45,7 @@ use function reset;
 use function str_starts_with;
 use function strlen;
 use function substr;
+use const PHP_EOL;
 
 /**
  * "Deployment transcriber" translating CompiledDeployment's secrets (provider `map`, carrying inline values
@@ -73,7 +74,7 @@ class SecretTranscriber implements DeploymentInterface
     private static function decode(mixed $value): string
     {
         if (is_array($value)) {
-            return implode("\n", array_map(self::decode(...), $value));
+            return implode(PHP_EOL, array_map(self::decode(...), $value));
         }
 
         if (is_string($value) && str_starts_with($value, self::BASE64_PREFIX)) {
@@ -109,7 +110,7 @@ class SecretTranscriber implements DeploymentInterface
             $lines[] = (string) $key . '=' . self::decode($value);
         }
 
-        return implode("\n", $lines);
+        return implode(PHP_EOL, $lines);
     }
 
     public function transcribe(

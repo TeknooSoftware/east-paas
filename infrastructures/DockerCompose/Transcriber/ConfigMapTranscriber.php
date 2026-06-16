@@ -38,6 +38,7 @@ use function count;
 use function implode;
 use function is_scalar;
 use function reset;
+use const PHP_EOL;
 
 /**
  * "Deployment transcriber" translating CompiledDeployment's maps (key/value configuration) to Compose
@@ -82,7 +83,7 @@ class ConfigMapTranscriber implements DeploymentInterface
             $lines[] = (string) $key . '=' . self::scalarToString($value);
         }
 
-        return implode("\n", $lines);
+        return implode(PHP_EOL, $lines);
     }
 
     public function transcribe(

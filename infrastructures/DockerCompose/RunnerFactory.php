@@ -37,6 +37,7 @@ use function file_put_contents;
 use function parse_url;
 use function tempnam;
 use function unlink;
+use const PHP_URL_USER;
 
 /**
  * Factory in the DI building, on demand, a configured `RunnerInterface` to run an Ansible playbook on the
@@ -92,6 +93,10 @@ final class RunnerFactory implements RunnerFactoryInterface
         if (null !== $runnerBuilder) {
             $this->runnerBuilder = $runnerBuilder;
         } else {
+            if (null !== $timeout) {
+                $timeout = (int) $timeout;
+            }
+
             $this->runnerBuilder = static fn (
                 string $playbookBinary,
                 ?float $timeout,
@@ -99,7 +104,7 @@ final class RunnerFactory implements RunnerFactoryInterface
                 ?string $privateKeyFile,
             ): RunnerInterface => new AnsibleRunner(
                 playbookBinary: $playbookBinary,
-                timeout: null === $timeout ? null : (int) $timeout,
+                timeout: $timeout,
                 sshUser: $sshUser,
                 privateKeyFile: $privateKeyFile,
             );
