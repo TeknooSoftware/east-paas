@@ -62,6 +62,7 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use Symfony\Component\Yaml\Yaml;
 use Teknoo\DI\SymfonyBridge\DIBridgeBundle;
 use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
@@ -90,6 +91,8 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
@@ -217,6 +220,16 @@ class FeatureContext implements Context
     private static string $hncSuffix = '';
 
     private array $manifests = [];
+
+    /**
+     * @var array<string, string> captured Docker Compose artifacts (compose.yaml + playbooks) keyed by file name
+     */
+    private array $composeArtifacts = [];
+
+    /**
+     * @var array<string, string> captured Traefik dynamic-configuration artifacts keyed by file name
+     */
+    private array $traefikArtifacts = [];
 
     public bool $slowDb = false;
 
@@ -636,6 +649,8 @@ class FeatureContext implements Context
     public function iHaveAConfiguredPlatform(): void
     {
         $this->clusterType = 'behat';
+        $this->composeArtifacts = [];
+        $this->traefikArtifacts = [];
 
         $this->buildRepository(Account::class);
         $this->buildRepository(Cluster::class);
@@ -764,6 +779,23 @@ class FeatureContext implements Context
         $this->clusterName = $name;
         $this->envName = $id;
 
+        //The Docker Compose driver connects over SSH: use an "ssh://user@host:port" address and map the
+        //ClusterCredentials to SSH (clientKey = private key, username/password = SSH login).
+        $isDockerCompose = 'docker-compose' === $this->clusterType;
+        $address = $isDockerCompose ? 'ssh://deployer@docker-host.behat.test:22' : 'https://foo-bar';
+        $credentials = $isDockerCompose
+            ? new ClusterCredentials(
+                clientKey: "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEBEHAT\n-----END OPENSSH PRIVATE KEY-----\n",
+                username: 'deployer',
+                password: 'behatBecomePassword',
+            )->setId('cluster-auth-id')
+            : new ClusterCredentials(
+                caCertificate: 'caCertValue',
+                clientCertificate: 'fooBar',
+                clientKey: 'barKey',
+                token: 'fooBar',
+            )->setId('cluster-auth-id');
+
         $this->project->setClusters([
             $this->cluster = new Cluster()
                 ->setId('cluster-id')
@@ -773,15 +805,8 @@ class FeatureContext implements Context
                 ->setNamespace('behat-test')
                 ->useHierarchicalNamespaces(self::$useHnc)
                 ->setEnvironment($this->environment = new Environment($this->envName))
-                ->setAddress('https://foo-bar')
-                ->setIdentity(
-                    new ClusterCredentials(
-                        caCertificate: 'caCertValue',
-                        clientCertificate: 'fooBar',
-                        clientKey: 'barKey',
-                        token: 'fooBar',
-                    )->setId('cluster-auth-id')
-                )
+                ->setAddress($address)
+                ->setIdentity($credentials)
         ]);
     }
 
@@ -1824,6 +1849,83 @@ EOF,
         );
 
         $this->clusterType = 'kubernetes';
+    }
+
+    #[Given('a docker-compose orchestrator')]
+    public function aDockerComposeOrchestrator(): void
+    {
+        $this->composeArtifacts = [];
+        $this->traefikArtifacts = [];
+
+        $capture = function (string $playbookPath): void {
+            $workingDir = \dirname($playbookPath);
+            $playbookName = \basename($playbookPath);
+
+            if (\is_file($playbookPath)) {
+                $this->composeArtifacts[$playbookName] = (string) \file_get_contents($playbookPath);
+            }
+
+            //The full Compose Specification file is produced during the deploy stage (services, networks,
+            //volumes, ...); the expose stage rewrites a near-empty compose.yaml, so only the deploy one is kept.
+            $composePath = $workingDir . '/compose.yaml';
+            if ('deploy.yml' === $playbookName && \is_file($composePath)) {
+                $this->composeArtifacts['compose.yaml'] = (string) \file_get_contents($composePath);
+            }
+
+            //The Traefik dynamic configuration is serialized to "<project>.yml" alongside the playbook on the
+            //expose stage; capture every "*.yml" sibling but the playbooks themselves (deploy.yml/expose.yml).
+            foreach ((array) \glob($workingDir . '/*.yml') as $file) {
+                $name = \basename((string) $file);
+                if ('deploy.yml' === $name || 'expose.yml' === $name) {
+                    continue;
+                }
+
+                $this->traefikArtifacts[$name] = (string) \file_get_contents((string) $file);
+            }
+        };
+
+        $runner = new class ($capture) implements RunnerInterface {
+            /**
+             * @param callable(string): void $capture
+             */
+            public function __construct(
+                private $capture,
+            ) {
+            }
+
+            public function run(
+                string $playbookPath,
+                string $inventoryPath,
+                array $extraVars,
+                ?ClusterCredentials $credentials,
+                PromiseInterface $promise,
+            ): RunnerInterface {
+                ($this->capture)($playbookPath);
+
+                $promise->success('docker-compose fake runner: playbook captured, nothing executed');
+
+                return $this;
+            }
+        };
+
+        $this->sfContainer->set(
+            RunnerFactoryInterface::class,
+            new class ($runner) implements RunnerFactoryInterface {
+                public function __construct(
+                    private readonly RunnerInterface $runner,
+                ) {
+                }
+
+                public function __invoke(
+                    string $url,
+                    ?ClusterCredentials $credentials,
+                ): RunnerInterface {
+                    return $this->runner;
+                }
+            }
+        );
+
+        $this->clusterType = 'docker-compose';
     }
 
     #[Given('a cluster supporting hierarchical namespace')]
@@ -3294,6 +3396,94 @@ EOF;
             $expectedPretty,
             $json,
         );
+    }
+
+    #[Then('some docker compose configuration has been created')]
+    public function someDockerComposeConfigurationHasBeenCreated(): void
+    {
+        //The fake RunnerInterface captured the artifacts written by the driver into its working directory
+        //(mirroring the $this->manifests capture for Kubernetes) instead of running Ansible/Docker.
+        Assert::assertNotEmpty(
+            $this->composeArtifacts,
+            'No Docker Compose artifact has been captured by the fake runner',
+        );
+        Assert::assertArrayHasKey(
+            'compose.yaml',
+            $this->composeArtifacts,
+            'The compose.yaml file has not been generated',
+        );
+
+        $compose = $this->composeArtifacts['compose.yaml'];
+
+        //The deploy playbook must have been generated and must drive Docker Compose with the project name.
+        Assert::assertArrayHasKey(
+            'deploy.yml',
+            $this->composeArtifacts,
+            'The deploy Ansible playbook has not been generated',
+        );
+        Assert::assertNotEmpty($this->composeArtifacts['deploy.yml']);
+        Assert::assertTrue(
+            str_contains($this->composeArtifacts['deploy.yml'], 'docker compose')
+            || str_contains($this->composeArtifacts['deploy.yml'], 'docker_compose'),
+            'The deploy playbook does not drive Docker Compose',
+        );
+
+        //Golden structural assertions on the generated Compose Specification file.
+        $parsed = (array) Yaml::parse($compose);
+        Assert::assertArrayHasKey('services', $parsed);
+        Assert::assertArrayHasKey('networks', $parsed);
+        Assert::assertNotEmpty($parsed['services']);
+
+        //Every service either joins the dedicated private network or shares a pod anchor's network namespace
+        //(sidecars use "network_mode: service:<anchor>" to replicate Kubernetes pod network sharing).
+        foreach ($parsed['services'] as $serviceName => $serviceSpec) {
+            $serviceSpec = (array) $serviceSpec;
+            Assert::assertTrue(
+                isset($serviceSpec['networks']) || isset($serviceSpec['network_mode']),
+                "Service \"$serviceName\" is neither attached to a network nor sharing a pod network namespace",
+            );
+        }
+
+        //The private network is declared as an internal bridge so containers are reachable only through Traefik.
+        Assert::assertArrayHasKey('private', $parsed['networks']);
+        Assert::assertEquals('bridge', $parsed['networks']['private']['driver'] ?? null);
+        Assert::assertTrue($parsed['networks']['private']['internal'] ?? false);
+    }
+
+    #[Then('some traefik configuration has been created')]
+    public function someTraefikConfigurationHasBeenCreated(): void
+    {
+        Assert::assertNotEmpty(
+            $this->traefikArtifacts,
+            'No Traefik dynamic configuration artifact has been captured by the fake runner',
+        );
+
+        //The expose playbook must have been generated to drop the Traefik dynamic file in the watched directory.
+        Assert::assertArrayHasKey(
+            'expose.yml',
+            $this->composeArtifacts,
+            'The expose Ansible playbook has not been generated',
+        );
+        Assert::assertNotEmpty($this->composeArtifacts['expose.yml']);
+
+        $traefik = (string) reset($this->traefikArtifacts);
+        $parsed = (array) Yaml::parse($traefik);
+
+        Assert::assertArrayHasKey('http', $parsed);
+        Assert::assertArrayHasKey('routers', $parsed['http']);
+        Assert::assertArrayHasKey('services', $parsed['http']);
+        Assert::assertNotEmpty($parsed['http']['routers']);
+        Assert::assertNotEmpty($parsed['http']['services']);
+
+        //Routers must carry a Host(...) rule and reference an entrypoint.
+        foreach ($parsed['http']['routers'] as $routerName => $routerSpec) {
+            Assert::assertArrayHasKey('rule', $routerSpec, "Router \"$routerName\" has no rule");
+            Assert::assertTrue(
+                str_contains((string) $routerSpec['rule'], 'Host('),
+                "Router \"$routerName\" rule does not contain a Host(...) matcher",
+            );
+            Assert::assertArrayHasKey('entryPoints', $routerSpec, "Router \"$routerName\" has no entrypoint");
+        }
     }
 
     #[When('I export the job :jobId with :group data')]
