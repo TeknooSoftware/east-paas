@@ -26,31 +26,40 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
 use Psr\Container\ContainerInterface;
-use SensitiveParameter;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver as DriverAlias; //To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory as RunnerFactoryAlias;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\TranscriberCollection as TranscriberCollectionAlias;
-use Teknoo\East\Paas\Object\ClusterCredentials;
 
 use function DI\create;
 use function DI\decorate;
 use function DI\get;
+use function sys_get_temp_dir;
 
 return [
     RunnerFactoryInterface::class => static function (ContainerInterface $container): RunnerFactoryInterface {
-        //Placeholder factory wired during the scaffold phase. The Ansible-backed implementation
-        //(RunnerFactory + AnsibleRunner) is introduced in the dedicated Ansible execution phase.
-        return new class implements RunnerFactoryInterface {
-            public function __invoke(
-                string $url,
-                #[SensitiveParameter] ?ClusterCredentials $credentials,
-            ): RunnerInterface {
-                throw new \RuntimeException('Docker Compose runner is not configured yet');
-            }
-        };
+        $tmpDir = sys_get_temp_dir();
+        if ($container->has('teknoo.east.paas.worker.tmp_dir')) {
+            $tmpDir = (string) $container->get('teknoo.east.paas.worker.tmp_dir');
+        }
+
+        $playbookBinary = 'ansible-playbook';
+        if ($container->has('teknoo.east.paas.docker-compose.ansible.binary')) {
+            $playbookBinary = (string) $container->get('teknoo.east.paas.docker-compose.ansible.binary');
+        }
+
+        $timeout = null;
+        if ($container->has('teknoo.east.paas.docker-compose.timeout')) {
+            $timeout = (float) $container->get('teknoo.east.paas.docker-compose.timeout');
+        }
+
+        return new RunnerFactoryAlias(
+            tmpDir: $tmpDir,
+            playbookBinary: $playbookBinary,
+            timeout: $timeout,
+        );
     },
 
     TranscriberCollectionInterface::class => get(TranscriberCollectionAlias::class),
