@@ -47,6 +47,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 use Traversable;
 use TypeError;
 
+use function dirname;
 use function sys_get_temp_dir;
 
 /**
@@ -91,7 +92,7 @@ class DriverTest extends TestCase
             transcribers: $transcribers ?? $this->createStub(TranscriberCollectionInterface::class),
             templates: [
                 'deploy' => __DIR__ . '/../../../infrastructures/DockerCompose/templates/deploy.yml.template',
-                'expose' => __DIR__ . '/../../../infrastructures/DockerCompose/templates/deploy.yml.template',
+                'expose' => __DIR__ . '/../../../infrastructures/DockerCompose/templates/expose.yml.template',
             ],
             tmpDir: $this->tmpDir,
             deployRoot: '/opt/paas',
@@ -292,5 +293,94 @@ class DriverTest extends TestCase
         );
 
         self::assertInstanceOf(Driver::class, $driver->expose($cd, $promise));
+    }
+
+    public function testExposeSerializesTraefikConfigToProjectFile(): void
+    {
+        $exposing = $this->createMock(ExposingInterface::class);
+        $exposing->expects($this->once())
+            ->method('transcribe')
+            ->willReturnCallback(function (...$args) use ($exposing): ExposingInterface {
+                /** @var \Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface $generation */
+                $generation = $args[1];
+                $generation->addTraefikRouter('http', 'web', [
+                    'rule' => 'Host(`demo.example.com`)',
+                    'entryPoints' => ['web'],
+                    'service' => 'web-default',
+                ]);
+
+                return $exposing;
+            });
+
+        $transcribers = $this->createStub(TranscriberCollectionInterface::class);
+        $transcribers->method('getIterator')->willReturnCallback(
+            function () use ($exposing): Traversable {
+                yield from [$exposing];
+            }
+        );
+
+        $capturedPlaybook = null;
+        $runner = $this->createStub(RunnerInterface::class);
+        $runner->method('run')->willReturnCallback(
+            function (...$args) use ($runner, &$capturedPlaybook): RunnerInterface {
+                $capturedPlaybook = $args[0];
+                $args[4]->success('PLAY RECAP ok');
+
+                return $runner;
+            }
+        );
+
+        $runnerFactory = $this->createStub(RunnerFactoryInterface::class);
+        $runnerFactory->method('__invoke')->willReturn($runner);
+
+        $cd = $this->createStub(CompiledDeploymentInterface::class);
+        $cd->method('withJobSettings')->willReturnCallback(
+            function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(1.0, 'prefix', 'my-project');
+
+                return $cd;
+            }
+        );
+
+        $captured = null;
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())
+            ->method('success')
+            ->willReturnCallback(function (array $result) use (&$captured, $promise): PromiseInterface {
+                $captured = $result;
+
+                return $promise;
+            });
+
+        $driver = $this->buildDriver($runnerFactory, $transcribers)->configure(
+            'ssh://host',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'default',
+            false,
+        );
+
+        $driver->expose($cd, $promise);
+
+        self::assertIsString($capturedPlaybook);
+        $traefikFile = dirname($capturedPlaybook) . '/default-my-project.yml';
+        self::assertFileExists($traefikFile);
+
+        self::assertIsArray($captured);
+        self::assertArrayHasKey('traefik', $captured);
+        self::assertSame(
+            [
+                'http' => [
+                    'routers' => [
+                        'web' => [
+                            'rule' => 'Host(`demo.example.com`)',
+                            'entryPoints' => ['web'],
+                            'service' => 'web-default',
+                        ],
+                    ],
+                ],
+            ],
+            $captured['traefik'],
+        );
     }
 }

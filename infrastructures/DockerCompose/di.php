@@ -35,9 +35,11 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory as RunnerFactor
 use Teknoo\East\Paas\Infrastructures\DockerCompose\TranscriberCollection as TranscriberCollectionAlias;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\DeploymentTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\JobTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\NetworkTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\SecretTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ServiceTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\VolumeTranscriber;
 
 use function DI\create;
@@ -135,6 +137,67 @@ return [
         return new $className();
     },
 
+    ServiceTranscriber::class . ':class' => ServiceTranscriber::class,
+    ServiceTranscriber::class => static function (ContainerInterface $container): ServiceTranscriber {
+        $className = $container->get(ServiceTranscriber::class . ':class');
+        if (!is_a($className, ServiceTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a service transcriber");
+        }
+
+        $tcpEntrypoint = 'tcp';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.entrypoint.tcp')) {
+            $tcpEntrypoint = (string) $container->get('teknoo.east.paas.docker-compose.traefik.entrypoint.tcp');
+        }
+
+        $udpEntrypoint = 'udp';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.entrypoint.udp')) {
+            $udpEntrypoint = (string) $container->get('teknoo.east.paas.docker-compose.traefik.entrypoint.udp');
+        }
+
+        return new $className($tcpEntrypoint, $udpEntrypoint);
+    },
+
+    IngressTranscriber::class . ':class' => IngressTranscriber::class,
+    IngressTranscriber::class => static function (ContainerInterface $container): IngressTranscriber {
+        $className = $container->get(IngressTranscriber::class . ':class');
+        if (!is_a($className, IngressTranscriber::class, true)) {
+            throw new DomainException("The class $className is not an ingress transcriber");
+        }
+
+        $webEntrypoint = 'web';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.entrypoint.web')) {
+            $webEntrypoint = (string) $container->get('teknoo.east.paas.docker-compose.traefik.entrypoint.web');
+        }
+
+        $secureEntrypoint = 'websecure';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.entrypoint.websecure')) {
+            $secureEntrypoint = (string) $container->get(
+                'teknoo.east.paas.docker-compose.traefik.entrypoint.websecure',
+            );
+        }
+
+        $defaultCertResolver = null;
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.default_certresolver')) {
+            $defaultCertResolver = (string) $container->get(
+                'teknoo.east.paas.docker-compose.traefik.default_certresolver',
+            );
+        }
+
+        $httpsBackendInsecureSkipVerify = false;
+        if ($container->has('teknoo.east.paas.docker-compose.https_backend.insecure_skip_verify')) {
+            $httpsBackendInsecureSkipVerify = (bool) $container->get(
+                'teknoo.east.paas.docker-compose.https_backend.insecure_skip_verify',
+            );
+        }
+
+        return new $className(
+            webEntrypoint: $webEntrypoint,
+            secureEntrypoint: $secureEntrypoint,
+            defaultCertResolver: $defaultCertResolver,
+            httpsBackendInsecureSkipVerify: $httpsBackendInsecureSkipVerify,
+        );
+    },
+
     TranscriberCollectionInterface::class => get(TranscriberCollectionAlias::class),
 
     TranscriberCollectionAlias::class => static function (
@@ -147,6 +210,8 @@ return [
         $collection->add(10, $container->get(VolumeTranscriber::class));
         $collection->add(30, $container->get(DeploymentTranscriber::class));
         $collection->add(32, $container->get(JobTranscriber::class));
+        $collection->add(40, $container->get(ServiceTranscriber::class));
+        $collection->add(50, $container->get(IngressTranscriber::class));
 
         return $collection;
     },
@@ -167,6 +232,16 @@ return [
             $traefikContainer = (string) $container->get('teknoo.east.paas.docker-compose.traefik.container');
         }
 
+        $traefikDynamicDir = '/etc/traefik/dynamic';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.dynamic_dir')) {
+            $traefikDynamicDir = (string) $container->get('teknoo.east.paas.docker-compose.traefik.dynamic_dir');
+        }
+
+        $traefikCertsDir = '/etc/traefik/certs';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.certs_dir')) {
+            $traefikCertsDir = (string) $container->get('teknoo.east.paas.docker-compose.traefik.certs_dir');
+        }
+
         return new DriverAlias(
             runnerFactory: $container->get(RunnerFactoryInterface::class),
             transcribers: $container->get(TranscriberCollectionInterface::class),
@@ -177,6 +252,8 @@ return [
             tmpDir: $tmpDir,
             deployRoot: $deployRoot,
             traefikContainer: $traefikContainer,
+            traefikDynamicDir: $traefikDynamicDir,
+            traefikCertsDir: $traefikCertsDir,
         );
     },
 

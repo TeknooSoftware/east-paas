@@ -96,6 +96,8 @@ class Driver implements DriverInterface, AutomatedInterface
         private readonly string $tmpDir = '',
         private readonly string $deployRoot = '/opt/paas',
         private readonly string $traefikContainer = 'traefik',
+        private readonly string $traefikDynamicDir = '/etc/traefik/dynamic',
+        private readonly string $traefikCertsDir = '/etc/traefik/certs',
         private $tmpDirFactory = null,
     ) {
         $this->initializeStateProxy();

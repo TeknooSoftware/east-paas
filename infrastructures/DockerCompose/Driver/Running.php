@@ -162,10 +162,21 @@ class Running implements StateInterface
                 Yaml::dump($composeFile, 8, 4),
             );
 
+            //On the expose stage the Traefik dynamic configuration is serialized to "<project>.yml" so the
+            //playbook can drop it into Traefik's watched directory.
+            $traefikConfigPath = '';
+            if ($runExposing) {
+                $traefikConfigPath = $workingDir . '/' . $generation->getProjectName() . '.yml';
+                file_put_contents(
+                    $traefikConfigPath,
+                    Yaml::dump($traefikConfig, 8, 4),
+                );
+            }
+
             $playbookPath = $workingDir . '/' . $stage . '.yml';
             file_put_contents(
                 $playbookPath,
-                $this->renderPlaybook($stage, $generation, $workingDir, $composePath),
+                $this->renderPlaybook($stage, $generation, $workingDir, $composePath, $traefikConfigPath),
             );
 
             $inventoryPath = $workingDir . '/inventory.ini';
@@ -229,6 +240,7 @@ class Running implements StateInterface
             GenerationInterface $generation,
             string $workingDir,
             string $composePath,
+            string $traefikConfigPath = '',
         ): string {
             $template = (string) file_get_contents($this->templates[$stage]);
 
@@ -240,6 +252,9 @@ class Running implements StateInterface
                 '{% network %}' => $networks[0] ?? ($generation->getProjectName() . '_'
                     . $generation->getDedicatedNetworkName()),
                 '{% traefikContainer %}' => $this->traefikContainer,
+                '{% traefikDynamicDir %}' => $this->traefikDynamicDir,
+                '{% traefikCertsDir %}' => $this->traefikCertsDir,
+                '{% traefikConfigFile %}' => $traefikConfigPath,
                 '{% composeFile %}' => $composePath,
                 '{% workingDir %}' => $workingDir,
             ];
