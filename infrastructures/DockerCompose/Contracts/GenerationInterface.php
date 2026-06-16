@@ -38,6 +38,62 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts;
 interface GenerationInterface
 {
     /**
+     * Compose project name (the "namespace"), used by `docker compose -p <project>`.
+     */
+    public function getProjectName(): string;
+
+    /**
+     * Name of the dedicated, internal network declared in the Compose file (Compose prefixes it with the
+     * project name on the host).
+     */
+    public function getDedicatedNetworkName(): string;
+
+    /**
+     * @param array<string, mixed> $spec
+     */
+    public function addService(string $name, array $spec): GenerationInterface;
+
+    /**
+     * @param array<string, mixed> $spec
+     */
+    public function addNetwork(string $name, array $spec): GenerationInterface;
+
+    /**
+     * @param array<string, mixed> $spec
+     */
+    public function addVolume(string $name, array $spec): GenerationInterface;
+
+    /**
+     * @param array<string, mixed> $spec
+     */
+    public function addConfig(string $name, array $spec, ?string $content = null): GenerationInterface;
+
+    /**
+     * @param array<string, mixed> $spec
+     */
+    public function addSecret(string $name, array $spec, ?string $content = null): GenerationInterface;
+
+    /**
+     * @param 'http'|'tcp'|'udp' $kind
+     * @param array<string, mixed> $spec
+     */
+    public function addTraefikRouter(string $kind, string $name, array $spec): GenerationInterface;
+
+    /**
+     * @param 'http'|'tcp'|'udp' $kind
+     * @param array<string, mixed> $spec
+     */
+    public function addTraefikService(string $kind, string $name, array $spec): GenerationInterface;
+
+    public function addTlsCertificate(string $certFile, string $keyFile): GenerationInterface;
+
+    public function setCertResolver(string $name): GenerationInterface;
+
+    public function addFile(string $relativePath, string $content): GenerationInterface;
+
+    public function wireNetworkToTraefik(string $networkName): GenerationInterface;
+
+    /**
      * @return array<string, mixed>
      */
     public function getComposeFile(): array;

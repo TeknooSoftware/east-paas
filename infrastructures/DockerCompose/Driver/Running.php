@@ -30,6 +30,7 @@ use SensitiveParameter;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\ExposingInterface;
@@ -68,39 +69,7 @@ class Running implements StateInterface
     private function createGeneration(): Closure
     {
         return function (): GenerationInterface {
-            return new class implements GenerationInterface {
-                /**
-                 * @return array<string, mixed>
-                 */
-                public function getComposeFile(): array
-                {
-                    return [];
-                }
-
-                /**
-                 * @return array<string, mixed>
-                 */
-                public function getTraefikConfig(): array
-                {
-                    return [];
-                }
-
-                /**
-                 * @return array<string, string>
-                 */
-                public function getFiles(): array
-                {
-                    return [];
-                }
-
-                /**
-                 * @return array<int, string>
-                 */
-                public function getNetworksToWire(): array
-                {
-                    return [];
-                }
-            };
+            return new Generation((string) $this->namespace);
         };
     }
 
