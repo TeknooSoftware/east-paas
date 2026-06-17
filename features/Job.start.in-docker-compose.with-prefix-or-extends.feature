@@ -53,6 +53,94 @@ Feature: Execute a job to deploy a project on a Docker Compose host through Ansi
     And some traefik configuration has been created
     And all messages must be not encrypted
 
+  Scenario: From the API, for a Docker Compose host, run a job on a project using prefix with a PaaS file using
+  conditions, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with conditions
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project using prefix with a PaaS file using jobs and
+  get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with jobs
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 25 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project using prefix with a PaaS file using jobs, on
+  encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with jobs
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid" and a prefix "a-prefix"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 25 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with unavailable extends and
+  get a 400 error
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a paas file using extends
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "400"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.job.extends-not-available:pods:php-pods-extends","status":400,"detail":["teknoo.east.paas.error.recipe.job.extends-not-available:pods:php-pods-extends"]}'
+    And all messages must be not encrypted
+
   Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file using extends and get a
   normalized job's history
     Given I have a configured platform
@@ -74,6 +162,28 @@ Feature: Execute a job to deploy a project on a Docker Compose host through Ansi
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
     And some docker compose configuration has been created
     And some traefik configuration has been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a too long job on a project with a PaaS file using extends and
+  a 500 error
+    Given I have a configured platform
+    And extensions libraries provided by administrators
+    And the platform is booted
+    And a project with a paas file using extends
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    And simulate a too long image building
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "500"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"Error, time limit exceeded","status":500,"detail":["Error, time limit exceeded"]}'
     And all messages must be not encrypted
 
   Scenario: From the API, for a Docker Compose host, run a job on a project using prefix with a PaaS file using extends
