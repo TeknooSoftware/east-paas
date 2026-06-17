@@ -88,6 +88,70 @@ Feature: Execute a job to deploy a project on a Docker Compose host through Ansi
     And some traefik configuration has been created
     And all messages must be encrypted
 
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file using conditions and get a
+  normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with conditions
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file using conditions but file
+  has wrong version and get an error
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with conditions with wrong version
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "400"
+    And with this body answer, the problem json, 'if{ENV=prod} error'
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file using conditions, on
+  encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with conditions
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be encrypted
+
   Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file using jobs and get a
   normalized job's history
     Given I have a configured platform
@@ -108,6 +172,235 @@ Feature: Execute a job to deploy a project on a Docker Compose host through Ansi
     And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 25 in the body
     And some docker compose configuration has been created
     And some traefik configuration has been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file without defined resources
+  on a cluster with quota and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file without resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file without defined resources
+  on a cluster with quota, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file without resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with partial defined
+  resources on a cluster with quota and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with partial resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with partial defined
+  resources on a cluster with quota, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with partial resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with full defined resources
+  on a cluster with quota and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with full defined resources
+  on a cluster with quota, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with resources
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with full defined resources
+  via relative quota on a cluster with quota and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a complete paas file with resources and relative quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And larges quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with full defined resources
+  via relative quota on a cluster with quota, on encrypted messages between workers and get a normalized job's history
+    Given I have a configured platform
+    And encryption capacities between servers and agents
+    And the platform is booted
+    And a project with a complete paas file with resources and relative quota
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And larges quotas defined for this account
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
+    And some docker compose configuration has been created
+    And some traefik configuration has been created
+    And all messages must be encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file without validated
+  requirements and get a 404 error
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a paas file with requirements
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "404"
+    And with this body answer, the problem json, '{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":404,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","These requirements `set1`, `set2` are not validated"]}'
+    And all messages must be not encrypted
+
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with validated requirements
+  and get a normalized job's history
+    Given I have a configured platform
+    And the platform is booted
+    And a project with a paas file with requirements
+    And validator for requirements
+    And a job workspace agent
+    And a git cloning agent
+    And a composer hook as hook builder
+    And an OCI builder
+    And a docker-compose orchestrator
+    And A consumer Account "fooBar"
+    And a project on this account "fooBar Project" with the id "projectid"
+    And a cluster "behat-cluster" dedicated to the environment "prod"
+    And a repository on the url "https://github.com/foo/bar"
+    And a job with the id "jobid" at date "2018-01-01 00:00:00 UTC"
+    When I run a job "jobid" from project "projectid" to "/project/projectid/environment/prod/job/jobid/run"
+    Then I must obtain an HTTP answer with this status code equals to "200"
+    And with the final history at date "2018-10-01 02:03:04 UTC" and with the serial at 23 in the body
     And all messages must be not encrypted
 
   Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file requiring resources and
