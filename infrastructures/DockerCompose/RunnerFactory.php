@@ -37,6 +37,7 @@ use function file_put_contents;
 use function parse_url;
 use function tempnam;
 use function unlink;
+
 use const PHP_URL_USER;
 
 /**

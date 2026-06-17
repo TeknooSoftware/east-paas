@@ -38,6 +38,7 @@ use function count;
 use function implode;
 use function is_scalar;
 use function reset;
+
 use const PHP_EOL;
 
 /**

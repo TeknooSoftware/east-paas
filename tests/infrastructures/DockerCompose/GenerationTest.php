@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
 
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
@@ -244,6 +245,46 @@ class GenerationTest extends TestCase
             ],
             $generation->getFiles(),
         );
+    }
+
+    public function testGetFilesToCopyReturnsFileToCopyWithMode(): void
+    {
+        $generation = $this->buildGeneration();
+        $generation
+            ->addFile('configs/cfg', 'value')
+            ->addFile('secrets/sec', 'topsecret');
+
+        $entries = $generation->getFilesToCopy();
+
+        self::assertContainsOnlyInstancesOf(FileToCopy::class, $entries);
+        self::assertCount(2, $entries);
+
+        self::assertSame('configs/cfg', $entries[0]->src);
+        self::assertSame('configs/cfg', $entries[0]->dest);
+        self::assertSame('0640', $entries[0]->mode);
+
+        self::assertSame('secrets/sec', $entries[1]->src);
+        self::assertSame('secrets/sec', $entries[1]->dest);
+        self::assertSame('0600', $entries[1]->mode);
+    }
+
+    public function testGetCertificatesToCopyReturnsFileToCopyWithoutMode(): void
+    {
+        $generation = $this->buildGeneration();
+        $generation->addTlsCertificate('certs/example.crt', 'certs/example.key');
+
+        $entries = $generation->getCertificatesToCopy();
+
+        self::assertContainsOnlyInstancesOf(FileToCopy::class, $entries);
+        self::assertCount(2, $entries);
+
+        self::assertSame('certs/example.crt', $entries[0]->src);
+        self::assertSame('example.crt', $entries[0]->dest);
+        self::assertNull($entries[0]->mode);
+
+        self::assertSame('certs/example.key', $entries[1]->src);
+        self::assertSame('example.key', $entries[1]->dest);
+        self::assertNull($entries[1]->mode);
     }
 
     public function testWireNetworkToTraefikIsDeduplicated(): void

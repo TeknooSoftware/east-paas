@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts;
 
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
+
 /**
  * Contract for the mutable accumulator used by the Docker Compose driver's transcribers to collect the
  * full Compose Specification file, the Traefik dynamic configuration, the files to push to the host and
@@ -112,7 +114,7 @@ interface GenerationInterface
      * Pushed files described for the deploy/expose playbook `copy` loops as a list of
      * `{src, dest, mode}` entries (relative paths kept identical on the host below the project dir).
      *
-     * @return array<int, array{src: string, dest: string, mode: string}>
+     * @return array<int, FileToCopy>
      */
     public function getFilesToCopy(): array;
 
@@ -120,7 +122,7 @@ interface GenerationInterface
      * TLS cert/key files described for the expose playbook `copy` loop as a list of `{src, dest}`
      * entries; `dest` is the bare filename dropped into Traefik's certs directory.
      *
-     * @return array<int, array{src: string, dest: string}>
+     * @return array<int, FileToCopy>
      */
     public function getCertificatesToCopy(): array;
 

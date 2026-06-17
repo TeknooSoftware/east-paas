@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
 
 use function array_values;
 use function basename;
@@ -282,11 +283,11 @@ final class Generation implements GenerationInterface
     {
         $entries = [];
         foreach ($this->files as $relativePath => $content) {
-            $entries[] = [
-                'src' => $relativePath,
-                'dest' => $relativePath,
-                'mode' => str_starts_with($relativePath, 'secrets/') ? '0600' : '0640',
-            ];
+            $entries[] = new FileToCopy(
+                src: $relativePath,
+                dest: $relativePath,
+                mode: str_starts_with($relativePath, 'secrets/') ? '0600' : '0640',
+            );
         }
 
         return $entries;
@@ -296,14 +297,14 @@ final class Generation implements GenerationInterface
     {
         $entries = [];
         foreach ($this->certificates as $certificate) {
-            $entries[] = [
-                'src' => $certificate['certFile'],
-                'dest' => basename($certificate['certFile']),
-            ];
-            $entries[] = [
-                'src' => $certificate['keyFile'],
-                'dest' => basename($certificate['keyFile']),
-            ];
+            $entries[] = new FileToCopy(
+                src: $certificate['certFile'],
+                dest: basename($certificate['certFile']),
+            );
+            $entries[] = new FileToCopy(
+                src: $certificate['keyFile'],
+                dest: basename($certificate['keyFile']),
+            );
         }
 
         return $entries;

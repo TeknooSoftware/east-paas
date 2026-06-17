@@ -45,6 +45,7 @@ use function reset;
 use function str_starts_with;
 use function strlen;
 use function substr;
+
 use const PHP_EOL;
 
 /**

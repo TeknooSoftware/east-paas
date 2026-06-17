@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\Exposin
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\GenericTranscriberInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\InvalidConfigurationException;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
 use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\States\State\StateInterface;
@@ -44,6 +45,7 @@ use Teknoo\States\State\StateTrait;
 use Throwable;
 
 use function array_keys;
+use function array_map;
 use function array_values;
 use function dirname;
 use function explode;
@@ -151,6 +153,7 @@ class Running implements StateInterface
                 );
             }
 
+            /** @var string $workingDir */
             $workingDir = $this->createWorkingDir();
 
             $composeFile = $generation->getComposeFile();
@@ -212,7 +215,7 @@ class Running implements StateInterface
                 ]);
             };
 
-            /** @var PromiseInterface<mixed, mixed> $runnerPromise */
+            /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>|string, mixed, mixed> $runnerPromise */
             $runnerPromise = new Promise(
                 onSuccess: $onSuccess,
                 onFail: static fn (#[SensitiveParameter] Throwable $error): mixed => $mainPromise->fail($error),
@@ -223,24 +226,23 @@ class Running implements StateInterface
             //(paas_reset_volumes), the during-deployment job services (paas_jobs) and the per-ingress TLS
             //cert/key files (paas_certs). Each file `src` is resolved to its absolute working-dir path so
             //the Ansible `copy` tasks can read the local file; `dest`/`mode` are preserved.
-            $resolveCopySources = static function (array $entries) use ($workingDir): array {
-                $resolved = [];
-                foreach ($entries as $entry) {
-                    $entry['src'] = $workingDir . '/' . $entry['src'];
-                    $resolved[] = $entry;
-                }
-
-                return $resolved;
-            };
+            $resolveCopySources = static fn (FileToCopy $entry): array =>
+                $entry->withResolvedSource($workingDir)->toArray();
 
             $extraVars = [
                 'paas_project' => $generation->getProjectName(),
             ];
 
             if ($runExposing) {
-                $extraVars['paas_certs'] = $resolveCopySources($generation->getCertificatesToCopy());
+                $extraVars['paas_certs'] = array_map(
+                    $resolveCopySources,
+                    $generation->getCertificatesToCopy(),
+                );
             } else {
-                $extraVars['paas_files'] = $resolveCopySources($generation->getFilesToCopy());
+                $extraVars['paas_files'] = array_map(
+                    $resolveCopySources,
+                    $generation->getFilesToCopy(),
+                );
                 $extraVars['paas_reset_volumes'] = $generation->getResetVolumes();
                 $extraVars['paas_jobs'] = $generation->getJobsToRun();
             }
