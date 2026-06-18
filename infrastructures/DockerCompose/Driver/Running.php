@@ -53,6 +53,7 @@ use function file_get_contents;
 use function file_put_contents;
 use function is_dir;
 use function is_string;
+use function json_encode;
 use function mkdir;
 use function parse_url;
 use function preg_replace;
@@ -145,7 +146,10 @@ class Running implements StateInterface
             bool $runExposing,
             PromiseInterface $mainPromise,
         ): void {
-            $stage = $runExposing ? 'expose' : 'deploy';
+            $stage = match ($runExposing) {
+                true => 'expose',
+                false => 'deploy',
+            };
 
             if (empty($this->templates[$stage])) {
                 throw new InvalidConfigurationException(
@@ -208,10 +212,14 @@ class Running implements StateInterface
                 $traefikConfig,
                 $mainPromise,
             ): void {
+                if (!is_string($output)) {
+                    $output = json_encode($output, JSON_THROW_ON_ERROR);
+                }
+
                 $mainPromise->success([
                     'compose' => $composeFile,
                     'traefik' => $traefikConfig,
-                    'output' => is_string($output) ? $output : '',
+                    'output' => $output,
                 ]);
             };
 

@@ -65,6 +65,7 @@ use Teknoo\States\Proxy\ProxyTrait;
     ['master', IsNotEmpty::class],
     ['defaultsBag', IsNotEmpty::class],
     ['namespace', IsNotEmpty::class],
+    ['tmpDirFactory', IsNotNull::class],
 )]
 #[Property(
     Generator::class,
@@ -83,6 +84,8 @@ class Driver implements DriverInterface, AutomatedInterface
 
     private ?string $namespace = null;
 
+    private $tmpDirFactory = null;
+
     /**
      * @param array<string, string> $templates absolute paths of the Ansible playbook templates, keyed by
      *        stage (`deploy`, `expose`)
@@ -92,14 +95,15 @@ class Driver implements DriverInterface, AutomatedInterface
     public function __construct(
         private readonly RunnerFactoryInterface $runnerFactory,
         private readonly TranscriberCollectionInterface $transcribers,
-        private readonly array $templates = [],
-        private readonly string $tmpDir = '',
+        private readonly array $templates,
+        callable $tmpDirFactory,
         private readonly string $deployRoot = '/opt/paas',
         private readonly string $traefikContainer = 'traefik',
         private readonly string $traefikDynamicDir = '/etc/traefik/dynamic',
         private readonly string $traefikCertsDir = '/etc/traefik/certs',
-        private $tmpDirFactory = null,
     ) {
+        $this->tmpDirFactory = $tmpDirFactory;
+
         $this->initializeStateProxy();
         $this->updateStates();
     }
