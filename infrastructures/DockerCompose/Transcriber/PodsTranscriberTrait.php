@@ -40,7 +40,6 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeIn
 
 use function array_map;
 use function iterator_to_array;
-use function sprintf;
 
 /**
  * Trait factorising the shared Pod -> Compose service(s) logic used by the deployment transcribers of the
@@ -147,11 +146,7 @@ trait PodsTranscriberTrait
 
         foreach ($container->getVolumes() as $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
-                $volumes[] = sprintf(
-                    '%s:%s',
-                    $prefixer($volume->getName()),
-                    $volume->getMountPath(),
-                );
+                $volumes[] = $prefixer($volume->getName()) . ':' . $volume->getMountPath();
 
                 continue;
             }
@@ -168,11 +163,7 @@ trait PodsTranscriberTrait
                 continue;
             }
 
-            $volumes[] = sprintf(
-                '%s:%s',
-                $prefixer($volume->getName() . self::VOLUME_SUFFIX),
-                $volume->getMountPath(),
-            );
+            $volumes[] = $prefixer($volume->getName() . self::VOLUME_SUFFIX) . ':' . $volume->getMountPath();
         }
 
         if (!empty($volumes)) {
@@ -195,6 +186,14 @@ trait PodsTranscriberTrait
      */
     private static function convertHealthCheck(HealthCheck $healthCheck): array
     {
+        $port = (int) $healthCheck->getPort();
+
+        if (true === $healthCheck->isSecure()) {
+            $scheme = 'https';
+        } else {
+            $scheme = 'http';
+        }
+
         $test = match ($healthCheck->getType()) {
             HealthCheckType::Command => array_map(
                 static fn (string $part): string => $part,
@@ -202,23 +201,19 @@ trait PodsTranscriberTrait
             ),
             HealthCheckType::Tcp => [
                 'CMD-SHELL',
-                sprintf('nc -z localhost %d || exit 1', (int) $healthCheck->getPort()),
+                'nc -z localhost ' . $port . ' || exit 1',
             ],
             HealthCheckType::Http => [
                 'CMD-SHELL',
-                sprintf(
-                    'curl -fk %s://localhost:%d%s || exit 1',
-                    true === $healthCheck->isSecure() ? 'https' : 'http',
-                    (int) $healthCheck->getPort(),
-                    (string) $healthCheck->getPath(),
-                ),
+                'curl -fk ' . $scheme . '://localhost:' . $port . (string) $healthCheck->getPath()
+                    . ' || exit 1',
             ],
         };
 
         return [
             'test' => $test,
-            'start_period' => sprintf('%ds', $healthCheck->getInitialDelay()),
-            'interval' => sprintf('%ds', $healthCheck->getPeriod()),
+            'start_period' => $healthCheck->getInitialDelay() . 's',
+            'interval' => $healthCheck->getPeriod() . 's',
             'retries' => $healthCheck->getFailureThreshold(),
         ];
     }

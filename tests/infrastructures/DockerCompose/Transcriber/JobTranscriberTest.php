@@ -34,7 +34,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\JobTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
@@ -84,7 +84,7 @@ class JobTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
@@ -92,7 +92,7 @@ class JobTranscriberTest extends TestCase
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',
@@ -130,7 +130,7 @@ class JobTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
@@ -138,7 +138,7 @@ class JobTranscriberTest extends TestCase
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',

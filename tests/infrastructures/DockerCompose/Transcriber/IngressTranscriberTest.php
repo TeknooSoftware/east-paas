@@ -32,8 +32,8 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\IngressTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
@@ -84,7 +84,7 @@ class IngressTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
@@ -92,7 +92,7 @@ class IngressTranscriberTest extends TestCase
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',
@@ -178,7 +178,7 @@ class IngressTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
@@ -186,7 +186,7 @@ class IngressTranscriberTest extends TestCase
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',
@@ -263,7 +263,7 @@ class IngressTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
@@ -271,7 +271,7 @@ class IngressTranscriberTest extends TestCase
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',
@@ -340,7 +340,7 @@ class IngressTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = $this->createMock(GenerationInterface::class);
+        $generation = $this->createMock(AccumulatorInterface::class);
         $generation->expects($this->once())
             ->method('addTraefikService')
             ->willThrowException(new \RuntimeException('boom'));
@@ -351,7 +351,7 @@ class IngressTranscriberTest extends TestCase
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',

@@ -428,6 +428,7 @@ Feature: Execute a job to deploy a project on a Docker Compose host through Ansi
   Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file using a Traefik backend
   and get a normalized job's history
     Given I have a configured platform
+    And a custom backend protocol annotation mapper for Traefik
     And the platform is booted
     And a project with a paas file using Traefik backend
     And a job workspace agent

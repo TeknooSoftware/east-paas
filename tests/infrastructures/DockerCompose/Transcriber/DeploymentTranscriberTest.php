@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\DeploymentTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
@@ -75,7 +75,7 @@ class DeploymentTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
@@ -83,7 +83,7 @@ class DeploymentTranscriberTest extends TestCase
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',
@@ -99,6 +99,9 @@ class DeploymentTranscriberTest extends TestCase
                         'environment' => ['APP_ENV' => 'prod'],
                         'restart' => 'always',
                     ],
+                ],
+                'networks' => [
+                    'private' => ['driver' => 'bridge', 'internal' => true],
                 ],
             ],
             $generation->getComposeFile(),
@@ -125,14 +128,14 @@ class DeploymentTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',

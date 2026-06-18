@@ -30,7 +30,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\ExposingInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -52,12 +52,12 @@ use const PHP_EOL;
 
 /**
  * "Exposing transcriber" translating CompiledDeployment's ingresses to a Traefik v3 dynamic configuration
- * (`http` routers and services) accumulated in the Generation, then serialized by the driver to the
+ * (`http` routers and services) accumulated in the Accumulator, then serialized by the driver to the
  * `<project>.yml` file dropped into Traefik's watched directory.
  *
  * One router is emitted per ingress (rule `Host(...) || Host(<alias>)...`); each declared path produces an
  * extra, higher-priority router (`Host(...) && PathPrefix(...)`). Services point their load-balancer at the
- * Compose service DNS name on the wired network. TLS is handled per ingress (Q4): a `tlsSecret` materialises
+ * Compose service DNS name on the shared external network. TLS is handled per ingress (Q4): a `tlsSecret` materialises
  * the cert/key files from the matching PaaS secret (keys `tls.crt`/`tls.key`) and references them via
  * `addTlsCertificate()`; `meta.letsencrypt: true` switches the router to the configured ACME certResolver.
  *
@@ -162,7 +162,7 @@ class IngressTranscriber implements ExposingInterface
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
-        GenerationInterface $generation,
+        AccumulatorInterface $accumulator,
         PromiseInterface $promise,
         DefaultsBag $defaultsBag,
         string $namespace,
@@ -182,7 +182,7 @@ class IngressTranscriber implements ExposingInterface
                 Ingress $ingress,
                 string $prefix
             ) use (
-                $generation,
+                $accumulator,
                 $promise,
                 $secrets,
                 $webEntrypoint,
@@ -204,11 +204,15 @@ class IngressTranscriber implements ExposingInterface
                     $letsEncrypt = !empty($meta['letsencrypt']);
                     $hasTls = $letsEncrypt || !empty($ingress->getTlsSecret());
 
-                    $entryPoints = [$hasTls ? $secureEntrypoint : $webEntrypoint];
+                    if ($hasTls) {
+                        $entryPoints = [$secureEntrypoint];
+                    } else {
+                        $entryPoints = [$webEntrypoint];
+                    }
 
                     $tlsBlock = null;
                     if ($letsEncrypt && null !== $defaultCertResolver) {
-                        $generation->setCertResolver($defaultCertResolver);
+                        $accumulator->setCertResolver($defaultCertResolver);
                         $tlsBlock = [
                             'certResolver' => $defaultCertResolver,
                             'domains' => [
@@ -224,7 +228,7 @@ class IngressTranscriber implements ExposingInterface
                             $certFile = 'certs/' . $baseName . '.crt';
                             $keyFile = 'certs/' . $baseName . '.key';
 
-                            $generation
+                            $accumulator
                                 ->addFile($certFile, $options[self::TLS_CERT_KEY])
                                 ->addFile($keyFile, $options[self::TLS_KEY_KEY])
                                 ->addTlsCertificate($certFile, $keyFile);
@@ -233,13 +237,17 @@ class IngressTranscriber implements ExposingInterface
                         $tlsBlock = [];
                     }
 
-                    $scheme = $ingress->isHttpsBackend() ? 'https' : 'http';
+                    if ($ingress->isHttpsBackend()) {
+                        $scheme = 'https';
+                    } else {
+                        $scheme = 'http';
+                    }
 
                     $defaultServiceTraefikName = null;
                     if (!empty($ingress->getDefaultServiceName())) {
                         $defaultServiceTraefikName = $baseName . '-default';
 
-                        $generation->addTraefikService(
+                        $accumulator->addTraefikService(
                             'http',
                             $defaultServiceTraefikName,
                             self::buildService(
@@ -253,7 +261,7 @@ class IngressTranscriber implements ExposingInterface
                     } elseif (null !== $defaultServiceName && null !== $defaultServicePort) {
                         $defaultServiceTraefikName = $baseName . '-default';
 
-                        $generation->addTraefikService(
+                        $accumulator->addTraefikService(
                             'http',
                             $defaultServiceTraefikName,
                             self::buildService(
@@ -282,7 +290,7 @@ class IngressTranscriber implements ExposingInterface
                             $routerSpec['tls'] = $tlsBlock;
                         }
 
-                        $generation->addTraefikRouter('http', $baseName, $routerSpec);
+                        $accumulator->addTraefikRouter('http', $baseName, $routerSpec);
                         $result['http'][$baseName] = $routerSpec;
                     }
 
@@ -293,7 +301,7 @@ class IngressTranscriber implements ExposingInterface
                         );
                         $pathServiceName = $pathRouterName;
 
-                        $generation->addTraefikService(
+                        $accumulator->addTraefikService(
                             'http',
                             $pathServiceName,
                             self::buildService(
@@ -319,7 +327,7 @@ class IngressTranscriber implements ExposingInterface
                             $pathRouterSpec['tls'] = $tlsBlock;
                         }
 
-                        $generation->addTraefikRouter('http', $pathRouterName, $pathRouterSpec);
+                        $accumulator->addTraefikRouter('http', $pathRouterName, $pathRouterSpec);
                         $result['http'][$pathRouterName] = $pathRouterSpec;
                     }
 

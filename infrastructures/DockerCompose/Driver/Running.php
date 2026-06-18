@@ -30,8 +30,8 @@ use SensitiveParameter;
 use Symfony\Component\Yaml\Yaml;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation as GenerationImplementation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator as AccumulatorImplementation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\ExposingInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\GenericTranscriberInterface;
@@ -47,22 +47,16 @@ use Throwable;
 use function array_keys;
 use function array_map;
 use function array_values;
-use function dirname;
 use function explode;
-use function file_get_contents;
-use function file_put_contents;
-use function is_dir;
 use function is_string;
 use function json_encode;
-use function mkdir;
 use function parse_url;
 use function preg_replace;
 use function str_replace;
 use function strtolower;
-use function sys_get_temp_dir;
 use function trim;
-use function uniqid;
 
+use const JSON_THROW_ON_ERROR;
 use const PHP_URL_HOST;
 use const PHP_URL_PATH;
 use const PHP_URL_PORT;
@@ -81,9 +75,9 @@ class Running implements StateInterface
 {
     use StateTrait;
 
-    private function createGeneration(): Closure
+    private function createAccumulator(): Closure
     {
-        return function (CompiledDeploymentInterface $compiledDeployment): GenerationInterface {
+        return function (CompiledDeploymentInterface $compiledDeployment): AccumulatorInterface {
             $namespace = (string) $this->namespace;
             $project = $this->sanitizeProjectName($namespace);
 
@@ -94,7 +88,7 @@ class Running implements StateInterface
                 }
             );
 
-            return new GenerationImplementation($project);
+            return new AccumulatorImplementation($project, 'private', $this->networkDriver);
         };
     }
 
@@ -112,37 +106,36 @@ class Running implements StateInterface
         };
     }
 
+    /**
+     * Create a fresh, per-run working directory (a path relative to the workspace filesystem root) using the
+     * injected factory.
+     */
     private function createWorkingDir(): Closure
     {
         return function (): string {
-            if (null !== $this->tmpDirFactory) {
-                return ($this->tmpDirFactory)();
+            $factory = $this->tmpDirFactory;
+            if (null === $factory) {
+                throw new InvalidConfigurationException('Missing the working directory factory');
             }
 
-            $base = '' !== $this->tmpDir ? $this->tmpDir : sys_get_temp_dir();
-            $dir = $base . '/east-paas-compose-' . uniqid('', true);
-
-            if (!is_dir($dir)) {
-                mkdir($dir, 0700, true);
-            }
-
-            return $dir;
+            return $factory();
         };
     }
 
     /**
      * Serialize the accumulator, write the playbook, inventory and pushed files to a fresh working
-     * directory, run the matching Ansible playbook and resolve the main promise with a cleaned result.
+     * directory through the workspace filesystem, run the matching Ansible playbook and resolve the main
+     * promise with a cleaned result.
      *
      * @param PromiseInterface<array<string, mixed>, mixed> $mainPromise
      */
-    private function applyGeneration(): Closure
+    private function applyAccumulator(): Closure
     {
         /**
          * @param PromiseInterface<array<string, mixed>, mixed> $mainPromise
          */
         return function (
-            GenerationInterface $generation,
+            AccumulatorInterface $accumulator,
             bool $runExposing,
             PromiseInterface $mainPromise,
         ): void {
@@ -157,49 +150,48 @@ class Running implements StateInterface
                 );
             }
 
-            /** @var string $workingDir */
             $workingDir = $this->createWorkingDir();
+            $workingAbsoluteDir = $this->workspaceRoot . '/' . $workingDir;
 
-            $composeFile = $generation->getComposeFile();
-            $traefikConfig = $generation->getTraefikConfig();
+            $composeFile = $accumulator->getComposeFile();
+            $traefikConfig = $accumulator->getTraefikConfig();
 
-            $composePath = $workingDir . '/compose.yaml';
-            file_put_contents(
-                $composePath,
+            $composeAbsolutePath = $workingAbsoluteDir . '/compose.yaml';
+            $this->workspaceFilesystem->write(
+                $workingDir . '/compose.yaml',
                 Yaml::dump($composeFile, 8, 4),
             );
 
             //On the expose stage the Traefik dynamic configuration is serialized to "<project>.yml" so the
             //playbook can drop it into Traefik's watched directory.
-            $traefikConfigPath = '';
+            $traefikConfigAbsolutePath = '';
             if ($runExposing) {
-                $traefikConfigPath = $workingDir . '/' . $generation->getProjectName() . '.yml';
-                file_put_contents(
-                    $traefikConfigPath,
+                $traefikConfigAbsolutePath = $workingAbsoluteDir . '/' . $accumulator->getProjectName() . '.yml';
+                $this->workspaceFilesystem->write(
+                    $workingDir . '/' . $accumulator->getProjectName() . '.yml',
                     Yaml::dump($traefikConfig, 8, 4),
                 );
             }
 
-            $playbookPath = $workingDir . '/' . $stage . '.yml';
-            file_put_contents(
-                $playbookPath,
-                $this->renderPlaybook($stage, $generation, $workingDir, $composePath, $traefikConfigPath),
+            $playbookAbsolutePath = $workingAbsoluteDir . '/' . $stage . '.yml';
+            $this->workspaceFilesystem->write(
+                $workingDir . '/' . $stage . '.yml',
+                $this->renderPlaybook(
+                    $stage,
+                    $accumulator,
+                    $composeAbsolutePath,
+                    $traefikConfigAbsolutePath,
+                ),
             );
 
-            $inventoryPath = $workingDir . '/inventory.ini';
-            file_put_contents(
-                $inventoryPath,
+            $inventoryAbsolutePath = $workingAbsoluteDir . '/inventory.ini';
+            $this->workspaceFilesystem->write(
+                $workingDir . '/inventory.ini',
                 $this->renderInventory((string) $this->master),
             );
 
-            foreach ($generation->getFiles() as $relativePath => $content) {
-                $filePath = $workingDir . '/' . $relativePath;
-                $fileDir = dirname($filePath);
-                if (!is_dir($fileDir)) {
-                    mkdir($fileDir, 0700, true);
-                }
-
-                file_put_contents($filePath, $content);
+            foreach ($accumulator->getFiles() as $relativePath => $content) {
+                $this->workspaceFilesystem->write($workingDir . '/' . $relativePath, $content);
             }
 
             $runner = ($this->runnerFactory)((string) $this->master, $this->credentials);
@@ -235,29 +227,29 @@ class Running implements StateInterface
             //cert/key files (paas_certs). Each file `src` is resolved to its absolute working-dir path so
             //the Ansible `copy` tasks can read the local file; `dest`/`mode` are preserved.
             $resolveCopySources = static fn (FileToCopy $entry): array =>
-                $entry->withResolvedSource($workingDir)->toArray();
+                $entry->withResolvedSource($workingAbsoluteDir)->toArray();
 
             $extraVars = [
-                'paas_project' => $generation->getProjectName(),
+                'paas_project' => $accumulator->getProjectName(),
             ];
 
             if ($runExposing) {
                 $extraVars['paas_certs'] = array_map(
                     $resolveCopySources,
-                    $generation->getCertificatesToCopy(),
+                    $accumulator->getCertificatesToCopy(),
                 );
             } else {
                 $extraVars['paas_files'] = array_map(
                     $resolveCopySources,
-                    $generation->getFilesToCopy(),
+                    $accumulator->getFilesToCopy(),
                 );
-                $extraVars['paas_reset_volumes'] = $generation->getResetVolumes();
-                $extraVars['paas_jobs'] = $generation->getJobsToRun();
+                $extraVars['paas_reset_volumes'] = $accumulator->getResetVolumes();
+                $extraVars['paas_jobs'] = $accumulator->getJobsToRun();
             }
 
             $runner->run(
-                playbookPath: $playbookPath,
-                inventoryPath: $inventoryPath,
+                playbookPath: $playbookAbsolutePath,
+                inventoryPath: $inventoryAbsolutePath,
                 extraVars: $extraVars,
                 credentials: $this->credentials,
                 promise: $runnerPromise,
@@ -272,26 +264,23 @@ class Running implements StateInterface
     {
         return function (
             string $stage,
-            GenerationInterface $generation,
-            string $workingDir,
+            AccumulatorInterface $accumulator,
             string $composePath,
             string $traefikConfigPath = '',
         ): string {
-            $template = (string) file_get_contents($this->templates[$stage]);
+            $template = $this->templatesFilesystem->read($this->templates[$stage]);
 
-            $networks = $generation->getNetworksToWire();
+            $networks = $accumulator->getNetworksToWire();
 
             $replacements = [
-                '{% project %}' => $generation->getProjectName(),
+                '{% project %}' => $accumulator->getProjectName(),
                 '{% deployRoot %}' => $this->deployRoot,
-                '{% network %}' => $networks[0] ?? ($generation->getProjectName() . '_'
-                    . $generation->getDedicatedNetworkName()),
+                '{% network %}' => $networks[0] ?? '',
                 '{% traefikContainer %}' => $this->traefikContainer,
                 '{% traefikDynamicDir %}' => $this->traefikDynamicDir,
                 '{% traefikCertsDir %}' => $this->traefikCertsDir,
                 '{% traefikConfigFile %}' => $traefikConfigPath,
                 '{% composeFile %}' => $composePath,
-                '{% workingDir %}' => $workingDir,
             ];
 
             return str_replace(
@@ -341,13 +330,13 @@ class Running implements StateInterface
             bool $runDeployment,
             bool $runExposing
         ): void {
-            $generation = $this->createGeneration($compiledDeployment);
+            $accumulator = $this->createAccumulator($compiledDeployment);
             $defaultsBag = $this->defaultsBag ?? new DefaultsBag();
 
             try {
                 $promise = new Promise(
                     onSuccess: static function (): void {
-                        //Per-resource success is accumulated in the Generation; nothing to do here.
+                        //Per-resource success is accumulated in the Accumulator; nothing to do here.
                     },
                     onFail: static function (#[SensitiveParameter] Throwable $error): never {
                         //To break the foreach loop
@@ -367,7 +356,7 @@ class Running implements StateInterface
                          */
                         $transcriber->transcribe(
                             $compiledDeployment,
-                            $generation,
+                            $accumulator,
                             $promise,
                             $defaultsBag,
                             (string) $this->namespace,
@@ -375,7 +364,7 @@ class Running implements StateInterface
                     }
                 }
 
-                $this->applyGeneration($generation, $runExposing, $mainPromise);
+                $this->applyAccumulator($accumulator, $runExposing, $mainPromise);
             } catch (Throwable $error) {
                 $mainPromise->fail($error);
             }

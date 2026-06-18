@@ -75,7 +75,7 @@ class ContainerTest extends TestCase
     public function testDriver(): void
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         $this->assertInstanceOf(Driver::class, $container->get(Driver::class));
     }
@@ -83,7 +83,7 @@ class ContainerTest extends TestCase
     public function testDirectory(): void
     {
         $container = $this->buildContainer();
-        $container->set('teknoo.east.paas.worker.tmp_dir', '/foo');
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
 
         $this->assertInstanceOf(Directory::class, $container->get(Directory::class));
     }

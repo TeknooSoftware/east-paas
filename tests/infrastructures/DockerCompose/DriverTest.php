@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose;
 
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -90,12 +92,20 @@ class DriverTest extends TestCase
         return new Driver(
             runnerFactory: $runnerFactory ?? $this->createStub(RunnerFactoryInterface::class),
             transcribers: $transcribers ?? $this->createStub(TranscriberCollectionInterface::class),
+            workspaceFilesystem: new Filesystem(new LocalFilesystemAdapter($this->tmpDir)),
+            templatesFilesystem: new Filesystem(
+                new LocalFilesystemAdapter(
+                    __DIR__ . '/../../../infrastructures/DockerCompose/templates',
+                ),
+            ),
+            workspaceRoot: $this->tmpDir,
+            tmpDirFactory: static fn (): string => 'run-' . uniqid('', true),
             templates: [
-                'deploy' => __DIR__ . '/../../../infrastructures/DockerCompose/templates/deploy.yml.template',
-                'expose' => __DIR__ . '/../../../infrastructures/DockerCompose/templates/expose.yml.template',
+                'deploy' => 'deploy.yml.template',
+                'expose' => 'expose.yml.template',
             ],
-            tmpDir: $this->tmpDir,
             deployRoot: '/opt/paas',
+            networkDriver: 'bridge',
             traefikContainer: 'traefik',
         );
     }
@@ -301,9 +311,9 @@ class DriverTest extends TestCase
         $exposing->expects($this->once())
             ->method('transcribe')
             ->willReturnCallback(function (...$args) use ($exposing): ExposingInterface {
-                /** @var \Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface $generation */
-                $generation = $args[1];
-                $generation->addTraefikRouter('http', 'web', [
+                /** @var \Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface $accumulator */
+                $accumulator = $args[1];
+                $accumulator->addTraefikRouter('http', 'web', [
                     'rule' => 'Host(`demo.example.com`)',
                     'entryPoints' => ['web'],
                     'service' => 'web-default',

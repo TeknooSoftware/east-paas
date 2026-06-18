@@ -26,18 +26,24 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts;
 
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\InlineContent;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 
 /**
  * Contract for the mutable accumulator used by the Docker Compose driver's transcribers to collect the
  * full Compose Specification file, the Traefik dynamic configuration, the files to push to the host and
- * the networks to wire to Traefik, before the driver serializes them and runs the Ansible playbooks.
+ * the per-ingress TLS certificates, before the driver serializes them and runs the Ansible playbooks.
+ *
+ * Services reach each other on a per-project, dedicated, internal Docker network whose declared name is
+ * exposed by getDedicatedNetworkName() (Compose prefixes it with the project name on the host). The deploy
+ * playbook connects Traefik to the resolved network name returned by getNetworksToWire().
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface GenerationInterface
+interface AccumulatorInterface
 {
     /**
      * Compose project name (the "namespace"), used by `docker compose -p <project>`.
@@ -45,55 +51,49 @@ interface GenerationInterface
     public function getProjectName(): string;
 
     /**
-     * Name of the dedicated, internal network declared in the Compose file (Compose prefixes it with the
-     * project name on the host).
+     * Declared name of the per-project, dedicated, internal network every service attaches to (Compose
+     * prefixes it with the project name on the host).
      */
     public function getDedicatedNetworkName(): string;
 
     /**
      * @param array<string, mixed> $spec
      */
-    public function addService(string $name, array $spec): GenerationInterface;
+    public function addService(string $name, array $spec): AccumulatorInterface;
+
+    /**
+     * Add `ports` host-publishing entries to an already declared service (public services).
+     *
+     * @param array<int, string> $ports
+     */
+    public function publishPorts(string $name, array $ports): AccumulatorInterface;
 
     /**
      * @param array<string, mixed> $spec
      */
-    public function addNetwork(string $name, array $spec): GenerationInterface;
+    public function addVolume(string $name, array $spec): AccumulatorInterface;
 
-    /**
-     * @param array<string, mixed> $spec
-     */
-    public function addVolume(string $name, array $spec): GenerationInterface;
+    public function addConfig(string $name, MountedFile|InlineContent $definition): AccumulatorInterface;
 
-    /**
-     * @param array<string, mixed> $spec
-     */
-    public function addConfig(string $name, array $spec, ?string $content = null): GenerationInterface;
-
-    /**
-     * @param array<string, mixed> $spec
-     */
-    public function addSecret(string $name, array $spec, ?string $content = null): GenerationInterface;
+    public function addSecret(string $name, MountedFile|InlineContent $definition): AccumulatorInterface;
 
     /**
      * @param 'http'|'tcp'|'udp' $kind
      * @param array<string, mixed> $spec
      */
-    public function addTraefikRouter(string $kind, string $name, array $spec): GenerationInterface;
+    public function addTraefikRouter(string $kind, string $name, array $spec): AccumulatorInterface;
 
     /**
      * @param 'http'|'tcp'|'udp' $kind
      * @param array<string, mixed> $spec
      */
-    public function addTraefikService(string $kind, string $name, array $spec): GenerationInterface;
+    public function addTraefikService(string $kind, string $name, array $spec): AccumulatorInterface;
 
-    public function addTlsCertificate(string $certFile, string $keyFile): GenerationInterface;
+    public function addTlsCertificate(string $certFile, string $keyFile): AccumulatorInterface;
 
-    public function setCertResolver(string $name): GenerationInterface;
+    public function setCertResolver(string $name): AccumulatorInterface;
 
-    public function addFile(string $relativePath, string $content): GenerationInterface;
-
-    public function wireNetworkToTraefik(string $networkName): GenerationInterface;
+    public function addFile(string $relativePath, string $content): AccumulatorInterface;
 
     /**
      * @return array<string, mixed>
@@ -135,14 +135,17 @@ interface GenerationInterface
     public function getResetVolumes(): array;
 
     /**
-     * Names of the Compose services guarding during-deployment jobs (the `jobs` profile / `x-paas-job`
-     * marker), to be run once by the deploy playbook with `docker compose --profile jobs run --rm <svc>`.
+     * Names of the Compose services guarding during-deployment jobs (the `jobs` profile), to be run once by
+     * the deploy playbook with `docker compose --profile jobs run --rm <svc>`.
      *
      * @return array<int, string>
      */
     public function getJobsToRun(): array;
 
     /**
+     * Host-resolved names of the project's networks to which the deploy playbook connects Traefik (Compose
+     * prefixes the declared network with the project name, e.g. `{project}_private`).
+     *
      * @return array<int, string>
      */
     public function getNetworksToWire(): array;

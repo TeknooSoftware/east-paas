@@ -25,18 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
+use League\Flysystem\FilesystemOperator;
+use League\Flysystem\Visibility;
 use SensitiveParameter;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\BadTempFileException;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
-use function chmod;
-use function file_exists;
-use function file_put_contents;
 use function parse_url;
-use function tempnam;
-use function unlink;
+use function uniqid;
 
 use const PHP_URL_USER;
 
@@ -44,11 +41,11 @@ use const PHP_URL_USER;
  * Factory in the DI building, on demand, a configured `RunnerInterface` to run an Ansible playbook on the
  * remote Docker host over SSH.
  *
- * The factory materializes the SSH private key extracted from `ClusterCredentials::getClientKey()` into a
- * temporary file with mode `0600` (Ansible refuses world-readable keys) and resolves the SSH login user
- * from `ClusterCredentials::getUsername()`, falling back to the user embedded in the `cluster.address`
- * (`ssh://user@host:port`). Temporary files are removed in `__destruct()`, mirroring the write/unlink
- * discipline of `Infrastructures\Kubernetes\Factory`.
+ * The factory materializes the SSH private key extracted from `ClusterCredentials::getClientKey()` into the
+ * workspace filesystem with private visibility (the LocalFilesystemAdapter maps it to mode `0600`, which
+ * Ansible requires) and resolves the SSH login user from `ClusterCredentials::getUsername()`, falling back
+ * to the user embedded in the `cluster.address` (`ssh://user@host:port`). Materialized files are removed in
+ * `__destruct()`.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -63,9 +60,9 @@ final class RunnerFactory implements RunnerFactoryInterface
     private array $files = [];
 
     /**
-     * @var callable(string, string): (string|false)
+     * @var callable(): string
      */
-    private $tmpNameFunction;
+    private $keyFileNameFactory;
 
     /**
      * @var callable(string, ?float, ?string, ?string): RunnerInterface
@@ -73,22 +70,28 @@ final class RunnerFactory implements RunnerFactoryInterface
     private $runnerBuilder;
 
     /**
+     * @param FilesystemOperator $filesystem workspace filesystem (rooted at the worker temp dir) used to
+     *        materialize the SSH private key
+     * @param string $tmpDir absolute path of the workspace filesystem root, used to build the absolute key
+     *        path passed to Ansible
      * @param (callable(string, ?float, ?string, ?string): RunnerInterface)|null $runnerBuilder builder of
      *        the concrete `RunnerInterface` (defaults to `SymfonyProcessRunner`; DI may inject another
      *        builder instead)
-     * @param callable|null $tmpNameFunction overridable temporary-file-name generator (defaults to `tempnam`)
+     * @param (callable(): string)|null $keyFileNameFactory overridable generator of the relative key file
+     *        name (defaults to a `uniqid`-suffixed name)
      */
     public function __construct(
+        private readonly FilesystemOperator $filesystem,
         private readonly string $tmpDir,
         private readonly string $playbookBinary = 'ansible-playbook',
         private readonly ?float $timeout = null,
-        ?callable $tmpNameFunction = null,
+        ?callable $keyFileNameFactory = null,
         ?callable $runnerBuilder = null,
     ) {
-        if (null !== $tmpNameFunction) {
-            $this->tmpNameFunction = $tmpNameFunction;
+        if (null !== $keyFileNameFactory) {
+            $this->keyFileNameFactory = $keyFileNameFactory;
         } else {
-            $this->tmpNameFunction = tempnam(...);
+            $this->keyFileNameFactory = static fn (): string => 'east-paas-ansible-' . uniqid('', true);
         }
 
         if (null !== $runnerBuilder) {
@@ -150,25 +153,24 @@ final class RunnerFactory implements RunnerFactoryInterface
 
     private function write(#[SensitiveParameter] string $value): string
     {
-        $fileName = ($this->tmpNameFunction)($this->tmpDir, 'east-paas-ansible-');
+        $fileName = ($this->keyFileNameFactory)();
 
-        if (false === $fileName) {
-            throw new BadTempFileException('Bad temp file name in Ansible runner factory');
-        }
-
-        file_put_contents($fileName, $value);
-        chmod($fileName, 0600);
+        $this->filesystem->write(
+            $fileName,
+            $value,
+            ['visibility' => Visibility::PRIVATE],
+        );
 
         $this->files[] = $fileName;
 
-        return $fileName;
+        return $this->tmpDir . '/' . $fileName;
     }
 
     private function delete(): void
     {
         foreach ($this->files as $file) {
-            if (file_exists($file)) {
-                unlink($file);
+            if ($this->filesystem->fileExists($file)) {
+                $this->filesystem->delete($file);
             }
         }
 

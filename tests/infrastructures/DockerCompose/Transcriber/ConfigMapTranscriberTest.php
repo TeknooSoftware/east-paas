@@ -30,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ConfigMapTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
@@ -57,7 +57,7 @@ class ConfigMapTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->once())->method('success');
@@ -67,7 +67,7 @@ class ConfigMapTranscriberTest extends TestCase
             ConfigMapTranscriber::class,
             $this->buildTranscriber()->transcribe(
                 compiledDeployment: $cd,
-                generation: $generation,
+                accumulator: $generation,
                 promise: $promise,
                 defaultsBag: $this->createStub(DefaultsBag::class),
                 namespace: 'default',

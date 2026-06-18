@@ -23,33 +23,22 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber;
-
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
-use Teknoo\Recipe\Promise\PromiseInterface;
+namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Value;
 
 /**
- * Base interface to help the Docker Compose driver to transcribe a `CompiledDeploymentInterface` instance
- * into a Compose Specification file and a Traefik dynamic configuration, accumulated in an
- * `AccumulatorInterface` instance.
+ * Definition of a Compose `config`/`secret` provided inline as a string. A config is referenced directly in
+ * the Compose Specification as `{ content: <content> }`; a secret has no inline form in the Compose
+ * Specification, so the accumulator materialises it to a file (`secrets/<name>`) instead.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-interface TranscriberInterface
+final readonly class InlineContent
 {
-    /**
-     * @param PromiseInterface<array<string, mixed>, mixed> $promise
-     */
-    public function transcribe(
-        CompiledDeploymentInterface $compiledDeployment,
-        AccumulatorInterface $accumulator,
-        PromiseInterface $promise,
-        DefaultsBag $defaultsBag,
-        string $namespace,
-    ): TranscriberInterface;
+    public function __construct(
+        public string $content,
+    ) {
+    }
 }

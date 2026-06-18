@@ -28,9 +28,10 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
@@ -89,13 +90,13 @@ class ConfigMapTranscriber implements DeploymentInterface
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
-        GenerationInterface $generation,
+        AccumulatorInterface $accumulator,
         PromiseInterface $promise,
         DefaultsBag $defaultsBag,
         string $namespace,
     ): TranscriberInterface {
         $compiledDeployment->foreachMap(
-            static function (Map $map, string $prefix) use ($generation, $promise): void {
+            static function (Map $map, string $prefix) use ($accumulator, $promise): void {
                 $prefixer = self::createPrefixer($prefix);
 
                 try {
@@ -105,21 +106,21 @@ class ConfigMapTranscriber implements DeploymentInterface
 
                     foreach ($options as $key => $value) {
                         $configName = $baseName . '__' . (string) $key;
-                        $filePath = 'configs/' . $configName;
 
-                        $generation
-                            ->addConfig($configName, ['file' => './' . $filePath])
-                            ->addFile($filePath, self::scalarToString($value));
+                        $accumulator->addConfig(
+                            $configName,
+                            new MountedFile('configs/' . $configName, self::scalarToString($value)),
+                        );
 
-                        $entries[$configName] = ['file' => './' . $filePath];
+                        $entries[$configName] = ['file' => './configs/' . $configName];
                     }
 
-                    $aggregatePath = 'configs/' . $baseName;
-                    $generation
-                        ->addConfig($baseName, ['file' => './' . $aggregatePath])
-                        ->addFile($aggregatePath, self::aggregate($options));
+                    $accumulator->addConfig(
+                        $baseName,
+                        new MountedFile('configs/' . $baseName, self::aggregate($options)),
+                    );
 
-                    $entries[$baseName] = ['file' => './' . $aggregatePath];
+                    $entries[$baseName] = ['file' => './configs/' . $baseName];
 
                     $promise->success(['configs' => $entries]);
                 } catch (Throwable $error) {

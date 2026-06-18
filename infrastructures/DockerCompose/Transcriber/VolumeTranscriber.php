@@ -29,7 +29,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -56,7 +56,7 @@ class VolumeTranscriber implements DeploymentInterface
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
-        GenerationInterface $generation,
+        AccumulatorInterface $accumulator,
         PromiseInterface $promise,
         DefaultsBag $defaultsBag,
         string $namespace,
@@ -67,7 +67,7 @@ class VolumeTranscriber implements DeploymentInterface
                 VolumeInterface $volume,
                 string $prefix,
             ) use (
-                $generation,
+                $accumulator,
                 $promise,
             ): void {
                 if (!$volume instanceof PersistentVolumeInterface) {
@@ -87,7 +87,7 @@ class VolumeTranscriber implements DeploymentInterface
                         $spec['x-paas-reset'] = true;
                     }
 
-                    $generation->addVolume($volumeName, $spec);
+                    $accumulator->addVolume($volumeName, $spec);
 
                     $promise->success(['volumes' => [$volumeName => $spec]]);
                 } catch (Throwable $error) {

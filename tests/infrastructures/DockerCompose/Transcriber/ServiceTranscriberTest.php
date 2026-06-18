@@ -31,8 +31,8 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ServiceTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
@@ -45,7 +45,7 @@ class ServiceTranscriberTest extends TestCase
 {
     private function buildTranscriber(): ServiceTranscriber
     {
-        return new ServiceTranscriber('tcp', 'udp');
+        return new ServiceTranscriber();
     }
 
     public function testTranscribe(): void
@@ -54,78 +54,49 @@ class ServiceTranscriberTest extends TestCase
         $cd->expects($this->once())
             ->method('foreachService')
             ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
-                //Internal service: nothing Traefik-facing
+                //Internal service: nothing host-facing
                 $callback(new Service('internal-svc', 'php-pod', [8080 => 8080], Transport::Tcp, true), 'prj');
-                //External HTTPS service: reached through an ingress, no Traefik router here
+                //External HTTPS service: host port published
                 $callback(new Service('web-svc', 'nginx-pod', [443 => 8443], Transport::Https, false), 'prj');
-                //External raw TCP service: Traefik TCP router + service
+                //External raw TCP service: host port published
                 $callback(new Service('db-svc', 'db-pod', [5432 => 5432], Transport::Tcp, false), 'prj');
-                //External raw UDP service: Traefik UDP router + service (no rule)
-                $callback(new Service('dns-svc', 'dns-pod', [53 => 53], Transport::Udp, false), 'prj');
 
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        //The DeploymentTranscriber keys services by the raw pod name (no prefix), so the ports are
+        //published on those same keys.
+        $accumulator = new Accumulator('default-prj', 'private');
+        $accumulator
+            ->addService('php-pod', ['image' => 'php'])
+            ->addService('nginx-pod', ['image' => 'nginx'])
+            ->addService('db-pod', ['image' => 'postgres']);
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->exactly(4))->method('success');
+        $promise->expects($this->exactly(3))->method('success');
         $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
             ServiceTranscriber::class,
             $this->buildTranscriber()->transcribe(
                 compiledDeployment: $cd,
-                generation: $generation,
+                accumulator: $accumulator,
                 promise: $promise,
                 defaultsBag: $this->createStub(DefaultsBag::class),
                 namespace: 'default',
             ),
         );
 
-        self::assertSame(
-            [
-                'tcp' => [
-                    'routers' => [
-                        'prj-db-svc-5432' => [
-                            'entryPoints' => ['tcp'],
-                            'service' => 'prj-db-svc-5432',
-                            'rule' => 'HostSNI(`*`)',
-                        ],
-                    ],
-                    'services' => [
-                        'prj-db-svc-5432' => [
-                            'loadBalancer' => [
-                                'servers' => [
-                                    ['address' => 'prj-db-svc:5432'],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-                'udp' => [
-                    'routers' => [
-                        'prj-dns-svc-53' => [
-                            'entryPoints' => ['udp'],
-                            'service' => 'prj-dns-svc-53',
-                        ],
-                    ],
-                    'services' => [
-                        'prj-dns-svc-53' => [
-                            'loadBalancer' => [
-                                'servers' => [
-                                    ['address' => 'prj-dns-svc:53'],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            $generation->getTraefikConfig(),
-        );
+        $services = $accumulator->getComposeFile()['services'];
 
-        //Internal/HTTPS services produce no Compose changes here.
-        self::assertSame([], $generation->getComposeFile());
+        //Internal service: untouched, no host ports
+        self::assertArrayNotHasKey('ports', $services['php-pod']);
+        //External services: host ports published on the pod's Compose service
+        self::assertSame(['443:8443'], $services['nginx-pod']['ports']);
+        self::assertSame(['5432:5432'], $services['db-pod']['ports']);
+
+        //No Traefik configuration is produced by this transcriber.
+        self::assertSame([], $accumulator->getTraefikConfig());
     }
 
     public function testTranscribeFailure(): void
@@ -139,9 +110,9 @@ class ServiceTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = $this->createMock(GenerationInterface::class);
-        $generation->expects($this->once())
-            ->method('addTraefikRouter')
+        $accumulator = $this->createMock(AccumulatorInterface::class);
+        $accumulator->expects($this->once())
+            ->method('publishPorts')
             ->willThrowException(new \RuntimeException('boom'));
 
         $promise = $this->createMock(PromiseInterface::class);
@@ -150,7 +121,7 @@ class ServiceTranscriberTest extends TestCase
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $accumulator,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
+use League\Flysystem\FilesystemOperator;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -40,6 +41,7 @@ use Teknoo\States\Attributes\Assertion\Property;
 use Teknoo\States\Attributes\StateClass;
 use Teknoo\States\Automated\Assertion\Property\IsEmpty;
 use Teknoo\States\Automated\Assertion\Property\IsNotEmpty;
+use Teknoo\States\Automated\Assertion\Property\IsNotNull;
 use Teknoo\States\Automated\AutomatedInterface;
 use Teknoo\States\Automated\AutomatedTrait;
 use Teknoo\States\Proxy\ProxyTrait;
@@ -84,20 +86,32 @@ class Driver implements DriverInterface, AutomatedInterface
 
     private ?string $namespace = null;
 
+    /**
+     * @var (callable(): string)|null
+     */
     private $tmpDirFactory = null;
 
     /**
-     * @param array<string, string> $templates absolute paths of the Ansible playbook templates, keyed by
-     *        stage (`deploy`, `expose`)
-     * @param (callable(): string)|null $tmpDirFactory factory creating a fresh per-run working directory
-     *        (overridable for tests); defaults to a uniquely named directory under the configured temp dir
+     * @param FilesystemOperator $workspaceFilesystem filesystem rooted at the worker temp dir, used to write
+     *        the per-run artifacts (compose file, playbook, inventory, secret/config/cert files)
+     * @param FilesystemOperator $templatesFilesystem read-only filesystem rooted at the templates directory
+     * @param string $workspaceRoot absolute path of the workspace filesystem root, used to build the
+     *        absolute paths the Ansible `copy` tasks read from
+     * @param callable(): string $tmpDirFactory factory creating a fresh per-run working directory name
+     *        (relative to the workspace filesystem root)
+     * @param array<string, string> $templates relative names of the Ansible playbook templates inside the
+     *        templates filesystem, keyed by stage (`deploy`, `expose`)
      */
     public function __construct(
         private readonly RunnerFactoryInterface $runnerFactory,
         private readonly TranscriberCollectionInterface $transcribers,
-        private readonly array $templates,
+        private readonly FilesystemOperator $workspaceFilesystem,
+        private readonly FilesystemOperator $templatesFilesystem,
+        private readonly string $workspaceRoot,
         callable $tmpDirFactory,
+        private readonly array $templates,
         private readonly string $deployRoot = '/opt/paas',
+        private readonly string $networkDriver = 'bridge',
         private readonly string $traefikContainer = 'traefik',
         private readonly string $traefikDynamicDir = '/etc/traefik/dynamic',
         private readonly string $traefikCertsDir = '/etc/traefik/certs',

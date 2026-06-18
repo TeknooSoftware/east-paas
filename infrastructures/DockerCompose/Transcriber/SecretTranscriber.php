@@ -28,9 +28,10 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
@@ -116,13 +117,13 @@ class SecretTranscriber implements DeploymentInterface
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
-        GenerationInterface $generation,
+        AccumulatorInterface $accumulator,
         PromiseInterface $promise,
         DefaultsBag $defaultsBag,
         string $namespace,
     ): TranscriberInterface {
         $compiledDeployment->foreachSecret(
-            static function (Secret $secret, string $prefix) use ($generation, $promise): void {
+            static function (Secret $secret, string $prefix) use ($accumulator, $promise): void {
                 if ('map' !== $secret->getProvider()) {
                     return;
                 }
@@ -135,27 +136,28 @@ class SecretTranscriber implements DeploymentInterface
                     $entries = [];
 
                     //One Compose secret per key, so a single key can be mounted/injected individually
-                    //(this also exposes the tls.crt/tls.key files used by the ingress transcriber).
+                    //(this also exposes the tls.crt/tls.key files used by the ingress transcriber). Each
+                    //value is written to its own file under secrets/ and referenced as `{ file: ... }`.
                     foreach ($options as $key => $value) {
                         $secretName = $baseName . '__' . (string) $key;
-                        $filePath = 'secrets/' . $secretName;
 
-                        $generation
-                            ->addSecret($secretName, ['file' => './' . $filePath])
-                            ->addFile($filePath, self::decode($value));
+                        $accumulator->addSecret(
+                            $secretName,
+                            new MountedFile('secrets/' . $secretName, self::decode($value)),
+                        );
 
-                        $entries[$secretName] = ['file' => './' . $filePath];
+                        $entries[$secretName] = ['file' => './secrets/' . $secretName];
                     }
 
                     //A single aggregated Compose secret matching the name consumed by the deployment
                     //transcribers (`<prefixed>-secret`); its file holds the first option's value when only
                     //one key is present, otherwise the serialized set of keys.
-                    $aggregatePath = 'secrets/' . $baseName;
-                    $generation
-                        ->addSecret($baseName, ['file' => './' . $aggregatePath])
-                        ->addFile($aggregatePath, self::aggregate($options));
+                    $accumulator->addSecret(
+                        $baseName,
+                        new MountedFile('secrets/' . $baseName, self::aggregate($options)),
+                    );
 
-                    $entries[$baseName] = ['file' => './' . $aggregatePath];
+                    $entries[$baseName] = ['file' => './secrets/' . $baseName];
 
                     $promise->success(['secrets' => $entries]);
                 } catch (Throwable $error) {

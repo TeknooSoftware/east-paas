@@ -26,6 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
 use DomainException;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Container\ContainerInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
@@ -37,12 +39,10 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ConfigMapTranscri
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\DeploymentTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\IngressTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\JobTranscriber;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\NetworkTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\SecretTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ServiceTranscriber;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\VolumeTranscriber;
 
-use function DI\create;
 use function DI\decorate;
 use function DI\get;
 use function is_a;
@@ -50,6 +50,7 @@ use function is_array;
 use function is_iterable;
 use function iterator_to_array;
 use function sys_get_temp_dir;
+use function uniqid;
 
 return [
     RunnerFactoryInterface::class => static function (ContainerInterface $container): RunnerFactoryInterface {
@@ -69,25 +70,11 @@ return [
         }
 
         return new RunnerFactoryAlias(
+            filesystem: new Filesystem(new LocalFilesystemAdapter($tmpDir)),
             tmpDir: $tmpDir,
             playbookBinary: $playbookBinary,
             timeout: $timeout,
         );
-    },
-
-    NetworkTranscriber::class . ':class' => NetworkTranscriber::class,
-    NetworkTranscriber::class => static function (ContainerInterface $container): NetworkTranscriber {
-        $className = $container->get(NetworkTranscriber::class . ':class');
-        if (!is_a($className, NetworkTranscriber::class, true)) {
-            throw new DomainException("The class $className is not a network transcriber");
-        }
-
-        $networkDriver = 'bridge';
-        if ($container->has('teknoo.east.paas.docker-compose.network.driver')) {
-            $networkDriver = (string) $container->get('teknoo.east.paas.docker-compose.network.driver');
-        }
-
-        return new $className($networkDriver);
     },
 
     SecretTranscriber::class . ':class' => SecretTranscriber::class,
@@ -147,17 +134,7 @@ return [
             throw new DomainException("The class $className is not a service transcriber");
         }
 
-        $tcpEntrypoint = 'tcp';
-        if ($container->has('teknoo.east.paas.docker-compose.traefik.entrypoint.tcp')) {
-            $tcpEntrypoint = (string) $container->get('teknoo.east.paas.docker-compose.traefik.entrypoint.tcp');
-        }
-
-        $udpEntrypoint = 'udp';
-        if ($container->has('teknoo.east.paas.docker-compose.traefik.entrypoint.udp')) {
-            $udpEntrypoint = (string) $container->get('teknoo.east.paas.docker-compose.traefik.entrypoint.udp');
-        }
-
-        return new $className($tcpEntrypoint, $udpEntrypoint);
+        return new $className();
     },
 
     IngressTranscriber::class . ':class' => IngressTranscriber::class,
@@ -241,13 +218,12 @@ return [
         ContainerInterface $container
     ): TranscriberCollectionAlias {
         $collection = new TranscriberCollectionAlias();
-        $collection->add(5, $container->get(NetworkTranscriber::class));
         $collection->add(10, $container->get(SecretTranscriber::class));
         $collection->add(10, $container->get(ConfigMapTranscriber::class));
         $collection->add(10, $container->get(VolumeTranscriber::class));
         $collection->add(30, $container->get(DeploymentTranscriber::class));
         $collection->add(32, $container->get(JobTranscriber::class));
-        $collection->add(40, $container->get(ServiceTranscriber::class));
+        $collection->add(35, $container->get(ServiceTranscriber::class));
         $collection->add(50, $container->get(IngressTranscriber::class));
 
         return $collection;
@@ -262,6 +238,11 @@ return [
         $deployRoot = '/opt/paas';
         if ($container->has('teknoo.east.paas.docker-compose.deploy_root')) {
             $deployRoot = (string) $container->get('teknoo.east.paas.docker-compose.deploy_root');
+        }
+
+        $networkDriver = 'bridge';
+        if ($container->has('teknoo.east.paas.docker-compose.network.driver')) {
+            $networkDriver = (string) $container->get('teknoo.east.paas.docker-compose.network.driver');
         }
 
         $traefikContainer = 'traefik';
@@ -282,12 +263,16 @@ return [
         return new DriverAlias(
             runnerFactory: $container->get(RunnerFactoryInterface::class),
             transcribers: $container->get(TranscriberCollectionInterface::class),
+            workspaceFilesystem: new Filesystem(new LocalFilesystemAdapter($tmpDir)),
+            templatesFilesystem: new Filesystem(new LocalFilesystemAdapter(__DIR__ . '/templates')),
+            workspaceRoot: $tmpDir,
+            tmpDirFactory: static fn (): string => 'east-paas-compose-' . uniqid('', true),
             templates: [
-                'deploy' => __DIR__ . '/templates/deploy.yml.template',
-                'expose' => __DIR__ . '/templates/expose.yml.template',
+                'deploy' => 'deploy.yml.template',
+                'expose' => 'expose.yml.template',
             ],
-            tmpDir: $tmpDir,
             deployRoot: $deployRoot,
+            networkDriver: $networkDriver,
             traefikContainer: $traefikContainer,
             traefikDynamicDir: $traefikDynamicDir,
             traefikCertsDir: $traefikCertsDir,

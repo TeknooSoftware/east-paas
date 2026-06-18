@@ -25,40 +25,39 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
+use Generator;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\InlineContent;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 
+use function array_merge;
 use function array_values;
 use function basename;
 use function in_array;
 use function is_array;
-use function is_string;
 use function str_starts_with;
 
 /**
  * Mutable accumulator (builder) used by the Docker Compose driver's transcribers to collect the full Compose
- * Specification file, the Traefik dynamic configuration, the files to push to the host and the networks to
- * wire to Traefik, before the driver serializes them and runs the Ansible playbooks.
+ * Specification file, the Traefik dynamic configuration, the files to push to the host and the per-ingress
+ * TLS certificates, before the driver serializes them and runs the Ansible playbooks.
  *
- * It knows the Compose project name (the "namespace") and the dedicated, internal network name; Compose
- * prefixes the network with the project name on the host.
+ * Services reach each other on a per-project, dedicated, internal network (`driver: bridge, internal: true`)
+ * declared in the Compose file; Compose prefixes it with the project name on the host. The deploy playbook
+ * connects Traefik to that resolved network name so it can route ingress traffic to the services.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-final class Generation implements GenerationInterface
+final class Accumulator implements AccumulatorInterface
 {
     /**
      * @var array<string, array<string, mixed>>
      */
     private array $services = [];
-
-    /**
-     * @var array<string, array<string, mixed>>
-     */
-    private array $networks = [];
 
     /**
      * @var array<string, array<string, mixed>>
@@ -100,14 +99,10 @@ final class Generation implements GenerationInterface
      */
     private array $files = [];
 
-    /**
-     * @var array<int, string>
-     */
-    private array $networksToWire = [];
-
     public function __construct(
         private readonly string $projectName,
         private readonly string $dedicatedNetworkName = 'private',
+        private readonly string $networkDriver = 'bridge',
     ) {
     }
 
@@ -121,64 +116,84 @@ final class Generation implements GenerationInterface
         return $this->dedicatedNetworkName;
     }
 
-    public function addService(string $name, array $spec): GenerationInterface
+    public function getNetworksToWire(): array
+    {
+        return [$this->projectName . '_' . $this->dedicatedNetworkName];
+    }
+
+    public function addService(string $name, array $spec): AccumulatorInterface
     {
         $this->services[$name] = $spec;
 
         return $this;
     }
 
-    public function addNetwork(string $name, array $spec): GenerationInterface
+    public function publishPorts(string $name, array $ports): AccumulatorInterface
     {
-        $this->networks[$name] = $spec;
+        if (empty($ports)) {
+            return $this;
+        }
+
+        $existing = [];
+        if (isset($this->services[$name]['ports']) && is_array($this->services[$name]['ports'])) {
+            $existing = $this->services[$name]['ports'];
+        }
+
+        $this->services[$name]['ports'] = array_values(array_merge($existing, $ports));
 
         return $this;
     }
 
-    public function addVolume(string $name, array $spec): GenerationInterface
+    public function addVolume(string $name, array $spec): AccumulatorInterface
     {
         $this->volumes[$name] = $spec;
 
         return $this;
     }
 
-    public function addConfig(string $name, array $spec, ?string $content = null): GenerationInterface
+    public function addConfig(string $name, MountedFile|InlineContent $definition): AccumulatorInterface
     {
-        $this->configs[$name] = $spec;
+        if ($definition instanceof MountedFile) {
+            $this->configs[$name] = ['file' => './' . $definition->path];
+            $this->addFile($definition->path, $definition->content);
 
-        if (null !== $content && isset($spec['file']) && is_string($spec['file'])) {
-            $this->addFile($spec['file'], $content);
+            return $this;
         }
+
+        $this->configs[$name] = ['content' => $definition->content];
 
         return $this;
     }
 
-    public function addSecret(string $name, array $spec, ?string $content = null): GenerationInterface
+    public function addSecret(string $name, MountedFile|InlineContent $definition): AccumulatorInterface
     {
-        $this->secrets[$name] = $spec;
-
-        if (null !== $content && isset($spec['file']) && is_string($spec['file'])) {
-            $this->addFile($spec['file'], $content);
+        //The Compose Specification has no inline form for a secret: an inline value is materialised to a
+        //file under secrets/ exactly like a MountedFile.
+        if ($definition instanceof InlineContent) {
+            $definition = new MountedFile('secrets/' . $name, $definition->content);
         }
+
+        $this->secrets[$name] = ['file' => './' . $definition->path];
+        $this->addFile($definition->path, $definition->content);
 
         return $this;
     }
 
-    public function addTraefikRouter(string $kind, string $name, array $spec): GenerationInterface
+    public function addTraefikRouter(string $kind, string $name, array $spec): AccumulatorInterface
     {
         $this->traefik[$kind]['routers'][$name] = $spec;
 
         return $this;
     }
 
-    public function addTraefikService(string $kind, string $name, array $spec): GenerationInterface
+    public function addTraefikService(string $kind, string $name, array $spec): AccumulatorInterface
     {
         $this->traefik[$kind]['services'][$name] = $spec;
 
         return $this;
     }
 
-    public function addTlsCertificate(string $certFile, string $keyFile): GenerationInterface
+    public function addTlsCertificate(string $certFile, string $keyFile): AccumulatorInterface
     {
         $this->certificates[] = [
             'certFile' => $certFile,
@@ -188,25 +203,16 @@ final class Generation implements GenerationInterface
         return $this;
     }
 
-    public function setCertResolver(string $name): GenerationInterface
+    public function setCertResolver(string $name): AccumulatorInterface
     {
         $this->certResolver = $name;
 
         return $this;
     }
 
-    public function addFile(string $relativePath, string $content): GenerationInterface
+    public function addFile(string $relativePath, string $content): AccumulatorInterface
     {
         $this->files[$relativePath] = $content;
-
-        return $this;
-    }
-
-    public function wireNetworkToTraefik(string $networkName): GenerationInterface
-    {
-        if (!in_array($networkName, $this->networksToWire, true)) {
-            $this->networksToWire[] = $networkName;
-        }
 
         return $this;
     }
@@ -217,10 +223,14 @@ final class Generation implements GenerationInterface
 
         if (!empty($this->services)) {
             $compose['services'] = $this->services;
-        }
-
-        if (!empty($this->networks)) {
-            $compose['networks'] = $this->networks;
+            //The dedicated network is an internal bridge so containers are reachable only through Traefik
+            //(which the deploy playbook connects to it) or an explicitly published host port.
+            $compose['networks'] = [
+                $this->dedicatedNetworkName => [
+                    'driver' => $this->networkDriver,
+                    'internal' => true,
+                ],
+            ];
         }
 
         if (!empty($this->volumes)) {
@@ -238,21 +248,38 @@ final class Generation implements GenerationInterface
         return $compose;
     }
 
+    /**
+     * Yield only the non-empty Traefik sections (`http`/`tcp`/`udp` => `routers`/`services`), skipping every
+     * empty kind and empty section so the serialized dynamic configuration carries no empty containers.
+     *
+     * @return Generator<string, array<string, array<string, mixed>>>
+     */
+    private function nonEmptyTraefikSections(): Generator
+    {
+        foreach ($this->traefik as $kind => $sections) {
+            $kindConfig = [];
+            foreach ($sections as $section => $entries) {
+                if (empty($entries)) {
+                    continue;
+                }
+
+                $kindConfig[$section] = $entries;
+            }
+
+            if (empty($kindConfig)) {
+                continue;
+            }
+
+            yield $kind => $kindConfig;
+        }
+    }
+
     public function getTraefikConfig(): array
     {
         $config = [];
 
-        foreach ($this->traefik as $kind => $sections) {
-            $kindConfig = [];
-            foreach ($sections as $section => $entries) {
-                if (!empty($entries)) {
-                    $kindConfig[$section] = $entries;
-                }
-            }
-
-            if (!empty($kindConfig)) {
-                $config[$kind] = $kindConfig;
-            }
+        foreach ($this->nonEmptyTraefikSections() as $kind => $kindConfig) {
+            $config[$kind] = $kindConfig;
         }
 
         if (!empty($this->certificates)) {
@@ -283,10 +310,16 @@ final class Generation implements GenerationInterface
     {
         $entries = [];
         foreach ($this->files as $relativePath => $content) {
+            if (str_starts_with($relativePath, 'secrets/')) {
+                $mode = '0600';
+            } else {
+                $mode = '0640';
+            }
+
             $entries[] = new FileToCopy(
                 src: $relativePath,
                 dest: $relativePath,
-                mode: str_starts_with($relativePath, 'secrets/') ? '0600' : '0640',
+                mode: $mode,
             );
         }
 
@@ -333,10 +366,5 @@ final class Generation implements GenerationInterface
         }
 
         return $names;
-    }
-
-    public function getNetworksToWire(): array
-    {
-        return array_values($this->networksToWire);
     }
 }

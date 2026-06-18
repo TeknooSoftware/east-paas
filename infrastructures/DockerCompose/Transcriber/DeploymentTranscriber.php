@@ -29,7 +29,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\GenerationInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -55,12 +55,12 @@ class DeploymentTranscriber implements DeploymentInterface
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
-        GenerationInterface $generation,
+        AccumulatorInterface $accumulator,
         PromiseInterface $promise,
         DefaultsBag $defaultsBag,
         string $namespace,
     ): TranscriberInterface {
-        $networkName = $generation->getDedicatedNetworkName();
+        $networkName = $accumulator->getDedicatedNetworkName();
 
         $compiledDeployment->foreachPod(
             static function (
@@ -69,7 +69,7 @@ class DeploymentTranscriber implements DeploymentInterface
                 array $volumes,
                 string $prefix,
             ) use (
-                $generation,
+                $accumulator,
                 $promise,
                 $networkName,
             ): void {
@@ -85,7 +85,7 @@ class DeploymentTranscriber implements DeploymentInterface
                     );
 
                     foreach ($services as $serviceName => $serviceSpec) {
-                        $generation->addService($serviceName, $serviceSpec);
+                        $accumulator->addService($serviceName, $serviceSpec);
                     }
 
                     $promise->success(['services' => $services]);

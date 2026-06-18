@@ -32,7 +32,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Generation;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\VolumeTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
@@ -66,7 +66,7 @@ class VolumeTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->exactly(2))->method('success');
@@ -76,7 +76,7 @@ class VolumeTranscriberTest extends TestCase
             VolumeTranscriber::class,
             $this->buildTranscriber()->transcribe(
                 compiledDeployment: $cd,
-                generation: $generation,
+                accumulator: $generation,
                 promise: $promise,
                 defaultsBag: $this->createStub(DefaultsBag::class),
                 namespace: 'default',
@@ -105,14 +105,14 @@ class VolumeTranscriberTest extends TestCase
                 return $cd;
             });
 
-        $generation = new Generation('default-prj', 'private');
+        $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->never())->method('success');
 
         $this->buildTranscriber()->transcribe(
             compiledDeployment: $cd,
-            generation: $generation,
+            accumulator: $generation,
             promise: $promise,
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',

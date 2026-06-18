@@ -25,10 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose;
 
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\BadTempFileException;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\SymfonyProcessRunner;
 use Teknoo\East\Paas\Object\ClusterCredentials;
@@ -36,8 +37,10 @@ use Teknoo\East\Paas\Object\ClusterCredentials;
 use function file_exists;
 use function file_get_contents;
 use function fileperms;
+use function sprintf;
+use function substr;
 use function sys_get_temp_dir;
-use function tempnam;
+use function uniqid;
 
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
@@ -46,9 +49,32 @@ use function tempnam;
 #[CoversClass(RunnerFactory::class)]
 class RunnerFactoryTest extends TestCase
 {
+    private string $tmpDir = '';
+
+    protected function setUp(): void
+    {
+        $this->tmpDir = sys_get_temp_dir() . '/east-paas-rf-' . uniqid('', true);
+    }
+
+    private function buildFactory(
+        ?callable $runnerBuilder = null,
+        ?callable $keyFileNameFactory = null,
+        string $playbookBinary = 'ansible-playbook',
+        ?float $timeout = null,
+    ): RunnerFactory {
+        return new RunnerFactory(
+            filesystem: new Filesystem(new LocalFilesystemAdapter($this->tmpDir)),
+            tmpDir: $this->tmpDir,
+            playbookBinary: $playbookBinary,
+            timeout: $timeout,
+            keyFileNameFactory: $keyFileNameFactory,
+            runnerBuilder: $runnerBuilder,
+        );
+    }
+
     public function testInvokeWithoutCredentialsReturnsRunner(): void
     {
-        $factory = new RunnerFactory(sys_get_temp_dir());
+        $factory = $this->buildFactory();
 
         $runner = $factory('ssh://host:22', null);
 
@@ -64,8 +90,7 @@ class RunnerFactoryTest extends TestCase
         $capturedBinary = null;
         $capturedTimeout = null;
 
-        $factory = new RunnerFactory(
-            tmpDir: sys_get_temp_dir(),
+        $factory = $this->buildFactory(
             playbookBinary: '/usr/bin/ansible-playbook',
             timeout: 120.0,
             runnerBuilder: function (
@@ -102,7 +127,7 @@ class RunnerFactoryTest extends TestCase
         self::assertNotNull($capturedKeyFile);
         self::assertTrue(file_exists($capturedKeyFile));
         self::assertSame('PRIVATE-KEY-CONTENT', file_get_contents($capturedKeyFile));
-        self::assertSame('0600', \substr(\sprintf('%o', fileperms($capturedKeyFile)), -4));
+        self::assertSame('0600', substr(sprintf('%o', fileperms($capturedKeyFile)), -4));
 
         unset($factory);
 
@@ -113,8 +138,7 @@ class RunnerFactoryTest extends TestCase
     {
         $capturedUser = 'unset';
 
-        $factory = new RunnerFactory(
-            tmpDir: sys_get_temp_dir(),
+        $factory = $this->buildFactory(
             runnerBuilder: function (
                 string $binary,
                 ?float $timeout,
@@ -138,8 +162,7 @@ class RunnerFactoryTest extends TestCase
     {
         $capturedUser = 'unset';
 
-        $factory = new RunnerFactory(
-            tmpDir: sys_get_temp_dir(),
+        $factory = $this->buildFactory(
             runnerBuilder: function (
                 string $binary,
                 ?float $timeout,
@@ -159,35 +182,31 @@ class RunnerFactoryTest extends TestCase
         unset($factory);
     }
 
-    public function testInvokeThrowsOnBadTempFileName(): void
+    public function testCustomKeyFileNameFactoryIsUsedAndCleanedUp(): void
     {
-        $factory = new RunnerFactory(
-            tmpDir: sys_get_temp_dir(),
-            tmpNameFunction: fn (): false => false,
-        );
+        $capturedKeyFile = null;
 
-        $this->expectException(BadTempFileException::class);
+        $factory = $this->buildFactory(
+            runnerBuilder: function (
+                string $binary,
+                ?float $timeout,
+                ?string $sshUser,
+                ?string $privateKeyFile,
+            ) use (&$capturedKeyFile): RunnerInterface {
+                $capturedKeyFile = $privateKeyFile;
 
-        $factory('ssh://host:22', new ClusterCredentials(clientKey: 'KEY'));
-    }
-
-    public function testCustomTmpNameFunctionIsUsed(): void
-    {
-        $target = tempnam(sys_get_temp_dir(), 'east-paas-test-');
-        self::assertNotFalse($target);
-
-        $factory = new RunnerFactory(
-            tmpDir: sys_get_temp_dir(),
-            tmpNameFunction: fn (): string => $target,
-            runnerBuilder: fn (): RunnerInterface => $this->createStub(RunnerInterface::class),
+                return $this->createStub(RunnerInterface::class);
+            },
+            keyFileNameFactory: static fn (): string => 'my-key-file',
         );
 
         $factory('ssh://host:22', new ClusterCredentials(clientKey: 'KEY'));
 
-        self::assertSame('KEY', file_get_contents($target));
+        self::assertSame($this->tmpDir . '/my-key-file', $capturedKeyFile);
+        self::assertSame('KEY', file_get_contents($capturedKeyFile));
 
         unset($factory);
 
-        self::assertFalse(file_exists($target));
+        self::assertFalse(file_exists($capturedKeyFile));
     }
 }
