@@ -3499,34 +3499,49 @@ EOF;
 
         //The populated `extra` volume is reproduced like the Kubernetes initContainer: a one-shot init
         //service populates the named volume from its OCI image, and the main service mounts it read-only
-        //after the init `service_completed_successfully`. The unmounted `other-name` volume must NOT be
-        //declared (it is not mounted by any container).
-        Assert::assertArrayHasKey('extra-foobarproject-volume', $parsed['volumes']);
-        Assert::assertArrayNotHasKey(
-            'other-name-foobarproject-volume',
-            $parsed['volumes'],
-            'The unmounted "other-name" volume must not be declared',
+        //after the init `service_completed_successfully`. Volume/init names carry the project prefix (the
+        //`php-pods` service key stays unprefixed), so the checks are anchored on php-pods' depends_on
+        //rather than on literal names.
+        $php = (array) $parsed['services']['php-pods'];
+        $phpDependsOn = (array) ($php['depends_on'] ?? []);
+        $initNames = array_values(array_filter(
+            array_keys($phpDependsOn),
+            static fn ($name): bool => str_ends_with((string) $name, '-volume-init'),
+        ));
+        Assert::assertCount(
+            1,
+            $initNames,
+            'php-pods must depend on exactly one populated-volume init service',
+        );
+        $initName = (string) $initNames[0];
+        Assert::assertSame(
+            'service_completed_successfully',
+            $phpDependsOn[$initName]['condition'] ?? null,
         );
 
-        Assert::assertArrayHasKey(
-            'extra-foobarproject-volume-init',
-            $parsed['services'],
-            'The populated volume must be filled by a dedicated init service',
-        );
-        $initService = (array) $parsed['services']['extra-foobarproject-volume-init'];
-        Assert::assertDoesNotMatchRegularExpression('#^[a-z][a-z0-9+.\-]*://#i', (string) $initService['image']);
+        //The init service runs the volume image (no URL scheme) and copies the baked data into the named
+        //volume at MOUNT_PATH.
+        $initService = (array) ($parsed['services'][$initName] ?? []);
+        Assert::assertNotEmpty($initService, "Init service \"$initName\" is not declared");
+        Assert::assertDoesNotMatchRegularExpression('#^[a-z][a-z0-9+.\-]*://#i', (string) ($initService['image'] ?? ''));
         Assert::assertSame('none', $initService['network_mode'] ?? null);
         Assert::assertSame('no', (string) ($initService['restart'] ?? ''));
         Assert::assertSame('/opt/extra', $initService['environment']['MOUNT_PATH'] ?? null);
-        Assert::assertContains('extra-foobarproject-volume:/opt/extra', (array) ($initService['volumes'] ?? []));
 
-        //The main php-pods service mounts the populated volume read-only and depends on the init service.
-        $php = (array) $parsed['services']['php-pods'];
-        Assert::assertContains('extra-foobarproject-volume:/opt/extra:ro', (array) ($php['volumes'] ?? []));
-        Assert::assertSame(
-            'service_completed_successfully',
-            $php['depends_on']['extra-foobarproject-volume-init']['condition'] ?? null,
-        );
+        //The named volume (init name minus the `-init` suffix) is declared and mounted read-only by php-pods.
+        $populatedVolume = substr($initName, 0, -strlen('-init'));
+        Assert::assertArrayHasKey($populatedVolume, (array) ($parsed['volumes'] ?? []));
+        Assert::assertContains($populatedVolume . ':/opt/extra', (array) ($initService['volumes'] ?? []));
+        Assert::assertContains($populatedVolume . ':/opt/extra:ro', (array) ($php['volumes'] ?? []));
+
+        //The unmounted `other-name` volume must NOT be declared (no container mounts it).
+        foreach (array_keys((array) ($parsed['volumes'] ?? [])) as $declaredVolume) {
+            Assert::assertStringNotContainsString(
+                'other-name',
+                (string) $declaredVolume,
+                'The unmounted "other-name" volume must not be declared',
+            );
+        }
 
         //Configs and secrets carry exactly one entry per map/secret: no per-key "__" duplication.
         foreach (['configs', 'secrets'] as $section) {
