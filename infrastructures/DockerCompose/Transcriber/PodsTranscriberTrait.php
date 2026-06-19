@@ -39,7 +39,10 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 
 use function array_map;
+use function array_values;
+use function implode;
 use function iterator_to_array;
+use function preg_replace;
 
 /**
  * Trait factorising the shared Pod -> Compose service(s) logic used by the deployment transcribers of the
@@ -68,6 +71,9 @@ trait PodsTranscriberTrait
      * Resolve the fully qualified image reference (`url:tag`) of a container, falling back to its declared
      * image/version when the image was not built by the build stage.
      *
+     * The registry attached to a built image is the registry API URL (e.g. `https://foo.bar`), so any
+     * leading `scheme://` is stripped: a Docker image reference is a `host[:port]/name`, never a URL.
+     *
      * @param array<string, array<string, Image>>|Image[][] $images
      */
     private static function resolveImageUrl(Container $container, array $images): string
@@ -77,7 +83,9 @@ trait PodsTranscriberTrait
         if (isset($images[$container->getImage()][$version])) {
             $image = $images[$container->getImage()][$version];
 
-            return $image->getUrl() . ':' . $image->getTag();
+            $url = (string) preg_replace('#^[a-z][a-z0-9+.\-]*://#i', '', $image->getUrl());
+
+            return $url . ':' . $image->getTag();
         }
 
         return $container->getImage() . ':' . $version;
@@ -116,11 +124,11 @@ trait PodsTranscriberTrait
         }
 
         if (!empty($secrets)) {
-            $spec['secrets'] = $secrets;
+            $spec['secrets'] = array_values(array_unique($secrets));
         }
 
         if (!empty($configs)) {
-            $spec['configs'] = $configs;
+            $spec['configs'] = array_values(array_unique($configs));
         }
 
         if (!empty($environment)) {
@@ -167,15 +175,15 @@ trait PodsTranscriberTrait
         }
 
         if (!empty($volumes)) {
-            $spec['volumes'] = $volumes;
+            $spec['volumes'] = array_values(array_unique($volumes));
         }
 
         if (!empty($secrets)) {
-            $spec['secrets'] = $secrets;
+            $spec['secrets'] = array_values(array_unique($secrets));
         }
 
         if (!empty($configs)) {
-            $spec['configs'] = $configs;
+            $spec['configs'] = array_values(array_unique($configs));
         }
     }
 
@@ -195,10 +203,10 @@ trait PodsTranscriberTrait
         }
 
         $test = match ($healthCheck->getType()) {
-            HealthCheckType::Command => array_map(
-                static fn (string $part): string => $part,
-                ['CMD', ...($healthCheck->getCommand() ?? [])],
-            ),
+            HealthCheckType::Command => [
+                'CMD-SHELL',
+                implode(' ', $healthCheck->getCommand() ?? []),
+            ],
             HealthCheckType::Tcp => [
                 'CMD-SHELL',
                 'nc -z localhost ' . $port . ' || exit 1',

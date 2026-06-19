@@ -116,9 +116,9 @@ final class Accumulator implements AccumulatorInterface
         return $this->dedicatedNetworkName;
     }
 
-    public function getNetworksToWire(): array
+    public function getNetworkName(): string
     {
-        return [$this->projectName . '_' . $this->dedicatedNetworkName];
+        return $this->projectName . '_' . $this->dedicatedNetworkName;
     }
 
     public function addService(string $name, array $spec): AccumulatorInterface
@@ -224,9 +224,14 @@ final class Accumulator implements AccumulatorInterface
         if (!empty($this->services)) {
             $compose['services'] = $this->services;
             //The dedicated network is an internal bridge so containers are reachable only through Traefik
-            //(which the deploy playbook connects to it) or an explicitly published host port.
+            //(which the deploy playbook connects to it) or an explicitly published host port. Its name is
+            //pinned with an explicit `name:` to the per-project value (`<project>_<network>`) so Compose
+            //does not prefix it again with the project name; that resolved name is what the deploy playbook
+            //connects Traefik to.
+            $networkName = $this->getNetworkName();
             $compose['networks'] = [
-                $this->dedicatedNetworkName => [
+                $networkName => [
+                    'name' => $networkName,
                     'driver' => $this->networkDriver,
                     'internal' => true,
                 ],

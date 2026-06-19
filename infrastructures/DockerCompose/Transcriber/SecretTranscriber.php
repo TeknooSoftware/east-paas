@@ -54,11 +54,10 @@ use const PHP_EOL;
  * in their options) to Compose `secrets` entries backed by files pushed to the host.
  *
  * Each secret becomes a single Compose secret `{ <prefixed>-secret: { file: ./secrets/<prefixed>-secret } }`
- * (the name consumed by the deployment transcribers) plus, when its options carry several keys, one
- * Compose secret per key (`<prefixed>-secret__<key>`) so individual keys can be mounted or injected as env
- * vars. A `base64:` prefixed value is decoded before being written, mirroring the Kubernetes
- * SecretTranscriber convention. The per-key entries also cover the `tls.crt`/`tls.key` pair consumed by the
- * IngressTranscriber for per-ingress TLS.
+ * (the name consumed by the deployment transcribers) backed by a file holding the bare value (single key)
+ * or a newline-joined `key=value` env-file representation (multiple keys). A `base64:` prefixed value is
+ * decoded before being written, mirroring the Kubernetes SecretTranscriber convention. Per-ingress TLS is
+ * handled independently by the IngressTranscriber, which reads the secret options directly.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -133,33 +132,16 @@ class SecretTranscriber implements DeploymentInterface
                 try {
                     $baseName = (string) $prefixer($secret->getName() . self::NAME_SUFFIX);
                     $options = $secret->getOptions();
-                    $entries = [];
 
-                    //One Compose secret per key, so a single key can be mounted/injected individually
-                    //(this also exposes the tls.crt/tls.key files used by the ingress transcriber). Each
-                    //value is written to its own file under secrets/ and referenced as `{ file: ... }`.
-                    foreach ($options as $key => $value) {
-                        $secretName = $baseName . '__' . (string) $key;
-
-                        $accumulator->addSecret(
-                            $secretName,
-                            new MountedFile('secrets/' . $secretName, self::decode($value)),
-                        );
-
-                        $entries[$secretName] = ['file' => './secrets/' . $secretName];
-                    }
-
-                    //A single aggregated Compose secret matching the name consumed by the deployment
-                    //transcribers (`<prefixed>-secret`); its file holds the first option's value when only
-                    //one key is present, otherwise the serialized set of keys.
+                    //A single Compose secret matching the name consumed by the deployment transcribers
+                    //(`<prefixed>-secret`); its file holds the bare value when only one key is present,
+                    //otherwise the newline-joined `key=value` representation of every option.
                     $accumulator->addSecret(
                         $baseName,
                         new MountedFile('secrets/' . $baseName, self::aggregate($options)),
                     );
 
-                    $entries[$baseName] = ['file' => './secrets/' . $baseName];
-
-                    $promise->success(['secrets' => $entries]);
+                    $promise->success(['secrets' => [$baseName => ['file' => './secrets/' . $baseName]]]);
                 } catch (Throwable $error) {
                     $promise->fail($error);
                 }

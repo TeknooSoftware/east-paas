@@ -60,7 +60,7 @@ class DeploymentTranscriber implements DeploymentInterface
         DefaultsBag $defaultsBag,
         string $namespace,
     ): TranscriberInterface {
-        $networkName = $accumulator->getDedicatedNetworkName();
+        $networkName = $accumulator->getNetworkName();
 
         $compiledDeployment->foreachPod(
             static function (

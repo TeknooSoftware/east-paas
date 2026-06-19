@@ -94,7 +94,7 @@ class JobTranscriber implements DeploymentInterface
         DefaultsBag $defaultsBag,
         string $namespace,
     ): TranscriberInterface {
-        $networkName = $accumulator->getDedicatedNetworkName();
+        $networkName = $accumulator->getNetworkName();
 
         $compiledDeployment->foreachJob(
             static function (

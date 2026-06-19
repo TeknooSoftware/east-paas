@@ -46,10 +46,9 @@ use const PHP_EOL;
  * "Deployment transcriber" translating CompiledDeployment's maps (key/value configuration) to Compose
  * `configs` entries backed by files pushed to the host.
  *
- * Each map option becomes a file `configs/<prefixed>-map__<key>` and a per-key Compose config; an
- * aggregated Compose config `{ <prefixed>-map: { file: ./configs/<prefixed>-map } }` (the name consumed by
- * the deployment transcribers' map references) holds the bare value (single key) or a newline-joined
- * `key=value` env-file representation (multiple keys).
+ * Each map becomes a single Compose config `{ <prefixed>-map: { file: ./configs/<prefixed>-map } }` (the
+ * name consumed by the deployment transcribers' map references) backed by a file holding the bare value
+ * (single key) or a newline-joined `key=value` env-file representation (multiple keys).
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -102,27 +101,13 @@ class ConfigMapTranscriber implements DeploymentInterface
                 try {
                     $baseName = (string) $prefixer($map->getName() . self::NAME_SUFFIX);
                     $options = $map->getOptions();
-                    $entries = [];
-
-                    foreach ($options as $key => $value) {
-                        $configName = $baseName . '__' . (string) $key;
-
-                        $accumulator->addConfig(
-                            $configName,
-                            new MountedFile('configs/' . $configName, self::scalarToString($value)),
-                        );
-
-                        $entries[$configName] = ['file' => './configs/' . $configName];
-                    }
 
                     $accumulator->addConfig(
                         $baseName,
                         new MountedFile('configs/' . $baseName, self::aggregate($options)),
                     );
 
-                    $entries[$baseName] = ['file' => './configs/' . $baseName];
-
-                    $promise->success(['configs' => $entries]);
+                    $promise->success(['configs' => [$baseName => ['file' => './configs/' . $baseName]]]);
                 } catch (Throwable $error) {
                     $promise->fail($error);
                 }

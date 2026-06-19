@@ -3444,10 +3444,120 @@ EOF;
             );
         }
 
-        //The private network is declared as an internal bridge so containers are reachable only through Traefik.
-        Assert::assertArrayHasKey('private', $parsed['networks']);
-        Assert::assertEquals('bridge', $parsed['networks']['private']['driver'] ?? null);
-        Assert::assertTrue($parsed['networks']['private']['internal'] ?? false);
+        //The dedicated network is declared once, named per project+environment (`<project>_private`) and
+        //pinned with an explicit `name:` so Compose does not prefix it again; it is an internal bridge so
+        //containers are reachable only through Traefik or an explicitly published host port.
+        Assert::assertCount(1, $parsed['networks']);
+        $networkName = (string) array_key_first($parsed['networks']);
+        Assert::assertStringEndsWith('_private', $networkName);
+        Assert::assertNotSame('private', $networkName, 'The network must be named per project, not bare "private"');
+        $networkSpec = (array) $parsed['networks'][$networkName];
+        Assert::assertSame($networkName, $networkSpec['name'] ?? null);
+        Assert::assertEquals('bridge', $networkSpec['driver'] ?? null);
+        Assert::assertTrue($networkSpec['internal'] ?? false);
+
+        //Every service attached to the network references that same project-qualified name.
+        foreach ($parsed['services'] as $serviceSpec) {
+            $serviceSpec = (array) $serviceSpec;
+            if (isset($serviceSpec['networks'])) {
+                Assert::assertSame([$networkName], (array) $serviceSpec['networks']);
+            }
+        }
+
+        //No image reference carries a URL scheme: a Compose image is a host[:port]/name, never a URL.
+        foreach ($parsed['services'] as $serviceSpec) {
+            $serviceSpec = (array) $serviceSpec;
+            if (isset($serviceSpec['image'])) {
+                Assert::assertDoesNotMatchRegularExpression(
+                    '#^[a-z][a-z0-9+.\-]*://#i',
+                    (string) $serviceSpec['image'],
+                    'Image reference must not start with a scheme such as https://',
+                );
+            }
+        }
+
+        //Every volume mounted by a service is declared in the top-level `volumes:` section.
+        $declaredVolumes = array_keys((array) ($parsed['volumes'] ?? []));
+        foreach ($parsed['services'] as $serviceName => $serviceSpec) {
+            $serviceSpec = (array) $serviceSpec;
+            foreach ((array) ($serviceSpec['volumes'] ?? []) as $mount) {
+                if (!is_string($mount) || !str_contains($mount, ':')) {
+                    continue;
+                }
+                $volumeName = explode(':', $mount, 2)[0];
+                //Only named volumes (not bind mounts starting with "." or "/") must be declared.
+                if ('' === $volumeName || str_starts_with($volumeName, '.') || str_starts_with($volumeName, '/')) {
+                    continue;
+                }
+                Assert::assertContains(
+                    $volumeName,
+                    $declaredVolumes,
+                    "Volume \"$volumeName\" mounted by \"$serviceName\" is not declared in top-level volumes",
+                );
+            }
+        }
+
+        //Configs and secrets carry exactly one entry per map/secret: no per-key "__" duplication.
+        foreach (['configs', 'secrets'] as $section) {
+            foreach (array_keys((array) ($parsed[$section] ?? [])) as $name) {
+                Assert::assertStringNotContainsString(
+                    '__',
+                    (string) $name,
+                    "The $section section must not contain per-key \"__\" entries",
+                );
+            }
+        }
+
+        //One entry PER map/secret (keys grouped inside it), neither exploded into one-per-key nor
+        //fused into a single entry. The complete paas file declares 2 maps (map1, map2) and 3
+        //map-provider secrets (map-vault, map-vault2, volume-vault).
+        $configNames = array_keys((array) ($parsed['configs'] ?? []));
+        $secretNames = array_keys((array) ($parsed['secrets'] ?? []));
+        Assert::assertCount(2, $configNames, 'Expected exactly one config per declared map (2)');
+        Assert::assertCount(3, $secretNames, 'Expected exactly one secret per declared map-secret (3)');
+        foreach (['map1-map', 'map2-map'] as $suffix) {
+            Assert::assertNotEmpty(
+                array_filter($configNames, static fn (string $n): bool => str_ends_with($n, $suffix)),
+                "The config for \"$suffix\" is missing",
+            );
+        }
+        foreach (['map-vault-secret', 'map-vault2-secret', 'volume-vault-secret'] as $suffix) {
+            Assert::assertNotEmpty(
+                array_filter($secretNames, static fn (string $n): bool => str_ends_with($n, $suffix)),
+                "The secret for \"$suffix\" is missing",
+            );
+        }
+
+        //Service config/secret reference lists carry no duplicates.
+        foreach ($parsed['services'] as $serviceName => $serviceSpec) {
+            $serviceSpec = (array) $serviceSpec;
+            foreach (['configs', 'secrets'] as $section) {
+                $refs = (array) ($serviceSpec[$section] ?? []);
+                Assert::assertSame(
+                    array_values(array_unique($refs)),
+                    array_values($refs),
+                    "Service \"$serviceName\" has duplicate $section references",
+                );
+            }
+        }
+
+        //Command health checks use the shell form (CMD-SHELL).
+        foreach ($parsed['services'] as $serviceSpec) {
+            $serviceSpec = (array) $serviceSpec;
+            $test = (array) ($serviceSpec['healthcheck']['test'] ?? []);
+            if (!empty($test)) {
+                Assert::assertContains($test[0], ['CMD-SHELL'], 'Health check must use the CMD-SHELL form');
+            }
+        }
+
+        //The rendered deploy playbook is self-contained: the loop variables are defined in its vars: block.
+        foreach (['paas_files', 'paas_reset_volumes', 'paas_jobs'] as $var) {
+            Assert::assertStringContainsString(
+                $var . ':',
+                $this->composeArtifacts['deploy.yml'],
+                "The deploy playbook does not define $var",
+            );
+        }
     }
 
     #[Then('some traefik configuration has been created')]
@@ -3465,6 +3575,13 @@ EOF;
             'The expose Ansible playbook has not been generated',
         );
         Assert::assertNotEmpty($this->composeArtifacts['expose.yml']);
+
+        //The rendered expose playbook is self-contained: paas_certs is defined in its vars: block.
+        Assert::assertStringContainsString(
+            'paas_certs:',
+            $this->composeArtifacts['expose.yml'],
+            'The expose playbook does not define paas_certs',
+        );
 
         $traefik = (string) reset($this->traefikArtifacts);
         $parsed = (array) Yaml::parse($traefik);

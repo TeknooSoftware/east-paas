@@ -10,6 +10,9 @@
     paas_project_dir: "{% deployRoot %}/{% project %}"
     paas_network: "{% network %}"
     paas_traefik_container: "{% traefikContainer %}"
+    paas_files: {% paasFiles %}
+    paas_reset_volumes: {% paasResetVolumes %}
+    paas_jobs: {% paasJobs %}
   tasks:
     - name: Ensure the project directory exists on the host
       ansible.builtin.file:

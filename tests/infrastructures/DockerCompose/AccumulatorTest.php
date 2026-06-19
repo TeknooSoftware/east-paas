@@ -60,9 +60,9 @@ class AccumulatorTest extends TestCase
         self::assertSame('private', new Accumulator('foo-bar')->getDedicatedNetworkName());
     }
 
-    public function testGetNetworksToWire(): void
+    public function testGetNetworkName(): void
     {
-        self::assertSame(['foo-bar_private'], $this->buildAccumulator()->getNetworksToWire());
+        self::assertSame('foo-bar_private', $this->buildAccumulator()->getNetworkName());
     }
 
     public function testAddersAreFluent(): void
@@ -94,7 +94,7 @@ class AccumulatorTest extends TestCase
         $accumulator
             ->addService('php', [
                 'image' => 'php:8.4',
-                'networks' => ['private'],
+                'networks' => ['foo-bar_private'],
                 'expose' => [9000],
             ])
             ->addVolume('data', [])
@@ -106,12 +106,16 @@ class AccumulatorTest extends TestCase
                 'services' => [
                     'php' => [
                         'image' => 'php:8.4',
-                        'networks' => ['private'],
+                        'networks' => ['foo-bar_private'],
                         'expose' => [9000],
                     ],
                 ],
                 'networks' => [
-                    'private' => ['driver' => 'bridge', 'internal' => true],
+                    'foo-bar_private' => [
+                        'name' => 'foo-bar_private',
+                        'driver' => 'bridge',
+                        'internal' => true,
+                    ],
                 ],
                 'volumes' => [
                     'data' => [],

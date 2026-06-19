@@ -8,6 +8,7 @@
     paas_project: "{% project %}"
     paas_traefik_dynamic_dir: "{% traefikDynamicDir %}"
     paas_traefik_certs_dir: "{% traefikCertsDir %}"
+    paas_certs: {% paasCerts %}
   tasks:
     - name: Ensure the Traefik certificates directory exists on the host
       ansible.builtin.file:

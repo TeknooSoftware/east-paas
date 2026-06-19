@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PopulatedVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
@@ -39,11 +40,13 @@ use Throwable;
  * "Deployment transcriber" translating CompiledDeployment's persistent volumes to named Compose volumes
  * (`local` driver).
  *
- * Only persistent volumes are declared here: secret and map volumes are mounted on the consuming services
- * (Compose `secrets:`/`configs:`) by the deployment transcribers, and populated/embedded volumes are baked
- * into the OCI image at build time. `storageSize`/`allowWriteMany` are advisory on a single local host and
- * are not enforced; `resetOnDeployment` is recorded in the volume's `x-paas-reset` marker so the deploy
- * playbook removes the volume before bringing the stack up.
+ * Persistent volumes are declared by their bare (prefixed) name. Populated/embedded volumes — whose content
+ * is baked into an OCI image at build time and mounted by the deployment transcribers under the `-volume`
+ * suffix — are declared here too (as named `local` volumes) so the services that mount them reference a
+ * defined volume. Secret and map volumes are not declared: they are mounted as Compose `secrets:`/`configs:`
+ * by the deployment transcribers. `storageSize`/`allowWriteMany` are advisory on a single local host and are
+ * not enforced; `resetOnDeployment` is recorded in the volume's `x-paas-reset` marker so the deploy playbook
+ * removes the volume before bringing the stack up.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -53,6 +56,10 @@ use Throwable;
 class VolumeTranscriber implements DeploymentInterface
 {
     use CommonTrait;
+
+    //Suffix mirroring PodsTranscriberTrait::VOLUME_SUFFIX, applied to populated/embedded volume names so a
+    //declared volume matches the name the deployment transcribers mount into the services.
+    private const string VOLUME_SUFFIX = '-volume';
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
@@ -70,20 +77,29 @@ class VolumeTranscriber implements DeploymentInterface
                 $accumulator,
                 $promise,
             ): void {
-                if (!$volume instanceof PersistentVolumeInterface) {
+                //Secret and map volumes become Compose secrets:/configs:, not named volumes.
+                $isPersistent = $volume instanceof PersistentVolumeInterface;
+                $isPopulated = $volume instanceof PopulatedVolumeInterface;
+                if (!$isPersistent && !$isPopulated) {
                     return;
                 }
 
                 $prefixer = self::createPrefixer($prefix);
 
                 try {
-                    $volumeName = (string) $prefixer($volume->getName());
+                    //Populated/embedded volumes are mounted under the `-volume` suffix; persistent volumes
+                    //keep their bare name.
+                    if ($isPersistent) {
+                        $volumeName = (string) $prefixer($volume->getName());
+                    } else {
+                        $volumeName = (string) $prefixer($volume->getName() . self::VOLUME_SUFFIX);
+                    }
 
                     $spec = [
                         'driver' => 'local',
                     ];
 
-                    if ($volume->isResetOnDeployment()) {
+                    if ($volume instanceof PersistentVolumeInterface && $volume->isResetOnDeployment()) {
                         $spec['x-paas-reset'] = true;
                     }
 

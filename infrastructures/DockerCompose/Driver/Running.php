@@ -173,6 +173,39 @@ class Running implements StateInterface
                 );
             }
 
+            //Resolve each pushed file's `src` to its absolute working-dir path so the playbook `copy` tasks
+            //can read the local file; `dest`/`mode` are preserved. These derived lists are baked into the
+            //rendered playbook's `vars:` block so it is self-contained (no reliance on Ansible --extra-vars):
+            //the locally written secret/config files (paas_files), the volumes flagged resetOnDeployment
+            //(paas_reset_volumes), the during-deployment job services (paas_jobs) and, on the expose stage,
+            //the per-ingress TLS cert/key files (paas_certs).
+            $resolveCopySources = static fn (FileToCopy $entry): array =>
+                $entry->withResolvedSource($workingAbsoluteDir)->toArray();
+
+            if ($runExposing) {
+                $playbookVars = [
+                    '{% paasCerts %}' => json_encode(
+                        array_map($resolveCopySources, $accumulator->getCertificatesToCopy()),
+                        JSON_THROW_ON_ERROR,
+                    ),
+                ];
+            } else {
+                $playbookVars = [
+                    '{% paasFiles %}' => json_encode(
+                        array_map($resolveCopySources, $accumulator->getFilesToCopy()),
+                        JSON_THROW_ON_ERROR,
+                    ),
+                    '{% paasResetVolumes %}' => json_encode(
+                        $accumulator->getResetVolumes(),
+                        JSON_THROW_ON_ERROR,
+                    ),
+                    '{% paasJobs %}' => json_encode(
+                        $accumulator->getJobsToRun(),
+                        JSON_THROW_ON_ERROR,
+                    ),
+                ];
+            }
+
             $playbookAbsolutePath = $workingAbsoluteDir . '/' . $stage . '.yml';
             $this->workspaceFilesystem->write(
                 $workingDir . '/' . $stage . '.yml',
@@ -181,6 +214,7 @@ class Running implements StateInterface
                     $accumulator,
                     $composeAbsolutePath,
                     $traefikConfigAbsolutePath,
+                    $playbookVars,
                 ),
             );
 
@@ -221,31 +255,11 @@ class Running implements StateInterface
                 onFail: static fn (#[SensitiveParameter] Throwable $error): mixed => $mainPromise->fail($error),
             );
 
-            //Thread the accumulator's derived data into the playbook variables it loops over: the locally
-            //written secret/config files (paas_files), the volumes flagged resetOnDeployment
-            //(paas_reset_volumes), the during-deployment job services (paas_jobs) and the per-ingress TLS
-            //cert/key files (paas_certs). Each file `src` is resolved to its absolute working-dir path so
-            //the Ansible `copy` tasks can read the local file; `dest`/`mode` are preserved.
-            $resolveCopySources = static fn (FileToCopy $entry): array =>
-                $entry->withResolvedSource($workingAbsoluteDir)->toArray();
-
+            //The playbook is self-contained (paas_files/paas_reset_volumes/paas_jobs/paas_certs are rendered
+            //into its vars: block above); only paas_project is still forwarded as an extra var.
             $extraVars = [
                 'paas_project' => $accumulator->getProjectName(),
             ];
-
-            if ($runExposing) {
-                $extraVars['paas_certs'] = array_map(
-                    $resolveCopySources,
-                    $accumulator->getCertificatesToCopy(),
-                );
-            } else {
-                $extraVars['paas_files'] = array_map(
-                    $resolveCopySources,
-                    $accumulator->getFilesToCopy(),
-                );
-                $extraVars['paas_reset_volumes'] = $accumulator->getResetVolumes();
-                $extraVars['paas_jobs'] = $accumulator->getJobsToRun();
-            }
 
             $runner->run(
                 playbookPath: $playbookAbsolutePath,
@@ -260,6 +274,9 @@ class Running implements StateInterface
     /**
      * Render the playbook template by substituting the {% %} placeholders.
      */
+    /**
+     * @param array<string, string> $playbookVars placeholder => already-encoded (JSON) value
+     */
     private function renderPlaybook(): Closure
     {
         return function (
@@ -267,21 +284,20 @@ class Running implements StateInterface
             AccumulatorInterface $accumulator,
             string $composePath,
             string $traefikConfigPath = '',
+            array $playbookVars = [],
         ): string {
             $template = $this->templatesFilesystem->read($this->templates[$stage]);
-
-            $networks = $accumulator->getNetworksToWire();
 
             $replacements = [
                 '{% project %}' => $accumulator->getProjectName(),
                 '{% deployRoot %}' => $this->deployRoot,
-                '{% network %}' => $networks[0] ?? '',
+                '{% network %}' => $accumulator->getNetworkName(),
                 '{% traefikContainer %}' => $this->traefikContainer,
                 '{% traefikDynamicDir %}' => $this->traefikDynamicDir,
                 '{% traefikCertsDir %}' => $this->traefikCertsDir,
                 '{% traefikConfigFile %}' => $traefikConfigPath,
                 '{% composeFile %}' => $composePath,
-            ];
+            ] + $playbookVars;
 
             return str_replace(
                 array_keys($replacements),

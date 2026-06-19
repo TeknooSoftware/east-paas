@@ -34,9 +34,9 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
  * full Compose Specification file, the Traefik dynamic configuration, the files to push to the host and
  * the per-ingress TLS certificates, before the driver serializes them and runs the Ansible playbooks.
  *
- * Services reach each other on a per-project, dedicated, internal Docker network whose declared name is
- * exposed by getDedicatedNetworkName() (Compose prefixes it with the project name on the host). The deploy
- * playbook connects Traefik to the resolved network name returned by getNetworksToWire().
+ * Services reach each other on a per-project, dedicated, internal Docker network whose full name
+ * (`<project>_<network>`) is exposed by getNetworkName() and pinned in the Compose file with an explicit
+ * `name:`. The deploy playbook connects Traefik to that same name returned by getNetworksToWire().
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -51,10 +51,15 @@ interface AccumulatorInterface
     public function getProjectName(): string;
 
     /**
-     * Declared name of the per-project, dedicated, internal network every service attaches to (Compose
-     * prefixes it with the project name on the host).
+     * Declared (short) name of the per-project, dedicated, internal network, e.g. `private`.
      */
     public function getDedicatedNetworkName(): string;
+
+    /**
+     * Full, project-qualified name of the dedicated network (`<project>_<network>`), used both as the
+     * Compose network key/`name:` and as the name every service attaches to.
+     */
+    public function getNetworkName(): string;
 
     /**
      * @param array<string, mixed> $spec
@@ -141,12 +146,4 @@ interface AccumulatorInterface
      * @return array<int, string>
      */
     public function getJobsToRun(): array;
-
-    /**
-     * Host-resolved names of the project's networks to which the deploy playbook connects Traefik (Compose
-     * prefixes the declared network with the project name, e.g. `{project}_private`).
-     *
-     * @return array<int, string>
-     */
-    public function getNetworksToWire(): array;
 }

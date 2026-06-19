@@ -92,10 +92,7 @@ class SecretTranscriberTest extends TestCase
         self::assertSame(
             [
                 'secrets' => [
-                    'prj-db-secret__password' => ['file' => './secrets/prj-db-secret__password'],
                     'prj-db-secret' => ['file' => './secrets/prj-db-secret'],
-                    'prj-tls-secret__tls.crt' => ['file' => './secrets/prj-tls-secret__tls.crt'],
-                    'prj-tls-secret__tls.key' => ['file' => './secrets/prj-tls-secret__tls.key'],
                     'prj-tls-secret' => ['file' => './secrets/prj-tls-secret'],
                 ],
             ],
@@ -103,11 +100,11 @@ class SecretTranscriberTest extends TestCase
         );
 
         $files = $generation->getFiles();
-        self::assertSame('p4ss', $files['secrets/prj-db-secret__password']);
         self::assertSame('p4ss', $files['secrets/prj-db-secret']);
-        self::assertSame('CERT', $files['secrets/prj-tls-secret__tls.crt']);
-        self::assertSame('KEY', $files['secrets/prj-tls-secret__tls.key']);
         self::assertSame("tls.crt=CERT\ntls.key=KEY", $files['secrets/prj-tls-secret']);
+        self::assertArrayNotHasKey('secrets/prj-db-secret__password', $files);
+        self::assertArrayNotHasKey('secrets/prj-tls-secret__tls.crt', $files);
+        self::assertArrayNotHasKey('secrets/prj-tls-secret__tls.key', $files);
     }
 
     public function testTranscribeIgnoresNonMapProvider(): void

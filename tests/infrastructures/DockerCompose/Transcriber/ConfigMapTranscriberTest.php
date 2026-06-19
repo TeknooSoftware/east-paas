@@ -77,8 +77,6 @@ class ConfigMapTranscriberTest extends TestCase
         self::assertSame(
             [
                 'configs' => [
-                    'prj-app-map__DEBUG' => ['file' => './configs/prj-app-map__DEBUG'],
-                    'prj-app-map__TZ' => ['file' => './configs/prj-app-map__TZ'],
                     'prj-app-map' => ['file' => './configs/prj-app-map'],
                 ],
             ],
@@ -86,8 +84,56 @@ class ConfigMapTranscriberTest extends TestCase
         );
 
         $files = $generation->getFiles();
-        self::assertSame('true', $files['configs/prj-app-map__DEBUG']);
-        self::assertSame('UTC', $files['configs/prj-app-map__TZ']);
         self::assertSame("DEBUG=true\nTZ=UTC", $files['configs/prj-app-map']);
+        self::assertArrayNotHasKey('configs/prj-app-map__DEBUG', $files);
+        self::assertArrayNotHasKey('configs/prj-app-map__TZ', $files);
+    }
+
+    public function testTranscribeKeepsOneConfigPerMapWithoutFusing(): void
+    {
+        //Two maps, the first with 3 keys and the second with 2 keys: the result must be exactly two
+        //configs (one per map), each carrying its own keys — never 5 single-key configs, never one
+        //fused config.
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachMap')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Map('first', ['a' => '1', 'b' => '2', 'c' => '3']), 'prj');
+                $callback(new Map('second', ['x' => '10', 'y' => '20']), 'prj');
+
+                return $cd;
+            });
+
+        $generation = new Accumulator('default-prj', 'private');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->exactly(2))->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $generation,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+
+        self::assertSame(
+            [
+                'configs' => [
+                    'prj-first-map' => ['file' => './configs/prj-first-map'],
+                    'prj-second-map' => ['file' => './configs/prj-second-map'],
+                ],
+            ],
+            $generation->getComposeFile(),
+        );
+
+        $files = $generation->getFiles();
+        //Each map keeps all of its own keys, grouped in its own file; the two maps are not merged.
+        self::assertSame("a=1\nb=2\nc=3", $files['configs/prj-first-map']);
+        self::assertSame("x=10\ny=20", $files['configs/prj-second-map']);
+        foreach (array_keys($files) as $path) {
+            self::assertStringNotContainsString('__', $path);
+        }
     }
 }

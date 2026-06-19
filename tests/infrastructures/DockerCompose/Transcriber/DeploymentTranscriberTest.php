@@ -94,14 +94,18 @@ class DeploymentTranscriberTest extends TestCase
                 'services' => [
                     'php' => [
                         'image' => 'registry/php:8.3',
-                        'networks' => ['private'],
+                        'networks' => ['default-prj_private'],
                         'expose' => [9000],
                         'environment' => ['APP_ENV' => 'prod'],
                         'restart' => 'always',
                     ],
                 ],
                 'networks' => [
-                    'private' => ['driver' => 'bridge', 'internal' => true],
+                    'default-prj_private' => [
+                        'name' => 'default-prj_private',
+                        'driver' => 'bridge',
+                        'internal' => true,
+                    ],
                 ],
             ],
             $generation->getComposeFile(),
@@ -143,7 +147,7 @@ class DeploymentTranscriberTest extends TestCase
 
         $services = $generation->getComposeFile()['services'];
 
-        self::assertSame(['private'], $services['web']['networks']);
+        self::assertSame(['default-prj_private'], $services['web']['networks']);
         self::assertSame([80], $services['web']['expose']);
         self::assertArrayHasKey('web-waf', $services);
         self::assertSame('service:web', $services['web-waf']['network_mode']);
