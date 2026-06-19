@@ -1,0 +1,159 @@
+services:
+    a-prefix-extra-foobarproject-volume-init:
+        image: foo.bar/extra-foobarproject
+        environment:
+            MOUNT_PATH: /opt/extra
+        volumes:
+            - 'a-prefix-extra-foobarproject-volume:/opt/extra'
+        network_mode: none
+        restart: 'no'
+    php-pods:
+        image: 'foo.bar/php-run:7.4-09597-1e225-prod'
+        networks:
+            - behat-test-foobarproject_private
+        expose:
+            - 8080
+        secrets:
+            - a-prefix-map-vault2-secret
+            - a-prefix-map-vault-secret
+            - a-prefix-volume-vault-secret
+        configs:
+            - a-prefix-map2-map
+            - a-prefix-map1-map
+        environment:
+            SERVER_SCRIPT: /opt/app/src/server.php
+        volumes:
+            - 'a-prefix-extra-foobarproject-volume:/opt/extra:ro'
+            - 'a-prefix-data-09597-1e225:/opt/data'
+            - 'a-prefix-data-replicated:/opt/data-replicated'
+        depends_on:
+            a-prefix-extra-foobarproject-volume-init:
+                condition: service_completed_successfully
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'ps aux php'
+            start_period: 10s
+            interval: 30s
+            retries: 1
+        deploy:
+            replicas: 2
+        ports:
+            - '9876:8080'
+    shell:
+        image: 'registry.hub.docker.com/bash:alpine'
+        networks:
+            - behat-test-foobarproject_private
+    demo:
+        image: 'foo.bar/nginx:alpine-2a975-5be1e-prod'
+        networks:
+            - behat-test-foobarproject_private
+        expose:
+            - 8080
+            - 8181
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'curl -fk https://localhost:8080/status || exit 1'
+            start_period: 10s
+            interval: 30s
+            retries: 2
+        group_add:
+            - '1000'
+    demo-waf:
+        image: 'registry.hub.docker.com/library/waf:alpine'
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'nc -z localhost 8181 || exit 1'
+            start_period: 10s
+            interval: 30s
+            retries: 1
+        group_add:
+            - '1000'
+        network_mode: 'service:demo'
+    demo-blackfire:
+        image: 'blackfire/blackfire:2-prod'
+        environment:
+            BLACKFIRE_SERVER_ID: foo
+            BLACKFIRE_SERVER_TOKEN: bar
+        group_add:
+            - '1000'
+        network_mode: 'service:demo'
+    a-prefix-job-init-init-var:
+        image: 'registry.hub.docker.com/bash:alpine'
+        networks:
+            - behat-test-foobarproject_private
+        profiles:
+            - jobs
+        restart: 'no'
+        x-paas-job:
+            parallel: true
+            completions: 3
+            time_limit: 10
+    a-prefix-job-init-update:
+        image: 'registry.hub.docker.com/bash:alpine'
+        networks:
+            - behat-test-foobarproject_private
+        profiles:
+            - jobs
+        restart: 'no'
+        x-paas-job:
+            parallel: true
+            completions: 3
+            time_limit: 10
+    a-prefix-job-translation-php-translation:
+        image: 'foo.bar/php-run:7.4-b424d-43879-43879-prod'
+        networks:
+            - behat-test-foobarproject_private
+        configs:
+            - a-prefix-map2-map
+            - a-prefix-map1-map
+        environment:
+            SERVER_SCRIPT: /opt/app/src/server.php
+        volumes:
+            - 'a-prefix-extra-foobarproject-volume:/opt/extra:ro'
+            - 'a-prefix-data-b424d-43879-43879:/opt/data'
+            - 'a-prefix-data-replicated:/opt/data-replicated'
+        secrets:
+            - a-prefix-volume-vault-secret
+        depends_on:
+            a-prefix-extra-foobarproject-volume-init:
+                condition: service_completed_successfully
+        profiles:
+            - jobs
+        restart: 'no'
+        x-paas-job:
+            parallel: false
+            completions: 1
+            success_exit_codes:
+                - 0
+                - 5
+            failure_exit_codes:
+                - 1
+networks:
+    behat-test-foobarproject_private:
+        name: behat-test-foobarproject_private
+        driver: bridge
+        internal: true
+volumes:
+    a-prefix-data-09597-1e225:
+        driver: local
+    a-prefix-data-replicated:
+        driver: local
+    a-prefix-data-b424d-43879-43879:
+        driver: local
+    a-prefix-extra-foobarproject-volume:
+        driver: local
+configs:
+    a-prefix-map1-map:
+        file: ./configs/a-prefix-map1-map
+    a-prefix-map2-map:
+        file: ./configs/a-prefix-map2-map
+secrets:
+    a-prefix-map-vault-secret:
+        file: ./secrets/a-prefix-map-vault-secret
+    a-prefix-map-vault2-secret:
+        file: ./secrets/a-prefix-map-vault2-secret
+    a-prefix-volume-vault-secret:
+        file: ./secrets/a-prefix-volume-vault-secret

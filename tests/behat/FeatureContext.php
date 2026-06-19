@@ -231,6 +231,12 @@ class FeatureContext implements Context
      */
     private array $traefikArtifacts = [];
 
+    /**
+     * @var array<string, string> captured config/secret files referenced by the Compose Specification,
+     *      keyed by their forward-slash relative path ("configs/<name>", "secrets/<name>")
+     */
+    private array $referencedFiles = [];
+
     public bool $slowDb = false;
 
     public bool $slowBuilder = false;
@@ -1856,6 +1862,7 @@ EOF,
     {
         $this->composeArtifacts = [];
         $this->traefikArtifacts = [];
+        $this->referencedFiles = [];
 
         $capture = function (string $playbookPath): void {
             $workingDir = \dirname($playbookPath);
@@ -1870,6 +1877,33 @@ EOF,
             $composePath = $workingDir . '/compose.yaml';
             if ('deploy.yml' === $playbookName && \is_file($composePath)) {
                 $this->composeArtifacts['compose.yaml'] = (string) \file_get_contents($composePath);
+
+                //The config/secret files referenced by the Compose Specification are written next to it under
+                //"configs/" and "secrets/" (Accumulator::getFiles()); capture their content keyed by the same
+                //forward-slash relative path so they can be golden-compared like the Kubernetes ConfigMap/Secret
+                //manifests. Only the deploy stage writes them.
+                foreach (['configs', 'secrets'] as $subDir) {
+                    $absSubDir = $workingDir . '/' . $subDir;
+                    if (!\is_dir($absSubDir)) {
+                        continue;
+                    }
+
+                    $iterator = new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($absSubDir, \FilesystemIterator::SKIP_DOTS),
+                    );
+                    foreach ($iterator as $file) {
+                        if (!$file->isFile()) {
+                            continue;
+                        }
+
+                        $relative = $subDir . '/' . \str_replace(
+                            '\\',
+                            '/',
+                            \substr((string) $file->getPathname(), \strlen($absSubDir) + 1),
+                        );
+                        $this->referencedFiles[$relative] = (string) \file_get_contents((string) $file->getPathname());
+                    }
+                }
             }
 
             //The Traefik dynamic configuration is serialized to "<project>.yml" alongside the playbook on the
@@ -3398,6 +3432,39 @@ EOF;
         );
     }
 
+    /**
+     * Replace the per-run, host-dependent working directory ("<sysTmp>/east-paas-compose-<uniqid>") baked
+     * into the rendered playbooks by a stable "__WORKDIR__" placeholder so deploy.yml/expose.yml (and the
+     * JSON paas_files/paas_certs "src" lists they embed) can be golden-compared.
+     */
+    private function normalizeComposePlaybook(string $text): string
+    {
+        return (string) preg_replace(
+            '#[^"\s]*/east-paas-compose-[0-9a-f]+\.[0-9a-f]+#',
+            '__WORKDIR__',
+            $text,
+        );
+    }
+
+    /**
+     * Load the expected Docker Compose artifacts for the current scenario's variant flags, mirroring
+     * compareCD()'s use of expectedCD.php for Kubernetes.
+     *
+     * @return array{compose.yaml: string, deploy.yml: string, expose.yml: string, traefik: string, referencedFiles: array<string, string>}
+     */
+    private function loadExpectedComposeArtifacts(): array
+    {
+        return (include('expectedCompose.php'))(
+            self::$projectPrefix,
+            self::$quotasDefined,
+            self::$defaultsDefined,
+            strtolower(trim((string) preg_replace('#[^A-Za-z0-9-]+#', '', (string) self::$projectName))),
+            self::$jobsDefined,
+            self::$conditionsDefined,
+            self::$ingressProvider,
+        );
+    }
+
     #[Then('some docker compose configuration has been created')]
     public function someDockerComposeConfigurationHasBeenCreated(): void
     {
@@ -3412,198 +3479,38 @@ EOF;
             $this->composeArtifacts,
             'The compose.yaml file has not been generated',
         );
-
-        $compose = $this->composeArtifacts['compose.yaml'];
-
-        //The deploy playbook must have been generated and must drive Docker Compose with the project name.
         Assert::assertArrayHasKey(
             'deploy.yml',
             $this->composeArtifacts,
             'The deploy Ansible playbook has not been generated',
         );
-        Assert::assertNotEmpty($this->composeArtifacts['deploy.yml']);
-        Assert::assertTrue(
-            str_contains($this->composeArtifacts['deploy.yml'], 'docker compose')
-            || str_contains($this->composeArtifacts['deploy.yml'], 'docker_compose'),
-            'The deploy playbook does not drive Docker Compose',
-        );
 
-        //Golden structural assertions on the generated Compose Specification file.
-        $parsed = (array) Yaml::parse($compose);
-        Assert::assertArrayHasKey('services', $parsed);
-        Assert::assertArrayHasKey('networks', $parsed);
-        Assert::assertNotEmpty($parsed['services']);
+        $expected = $this->loadExpectedComposeArtifacts();
 
-        //Every service either joins the dedicated private network or shares a pod anchor's network namespace
-        //(sidecars use "network_mode: service:<anchor>" to replicate Kubernetes pod network sharing).
-        foreach ($parsed['services'] as $serviceName => $serviceSpec) {
-            $serviceSpec = (array) $serviceSpec;
-            Assert::assertTrue(
-                isset($serviceSpec['networks']) || isset($serviceSpec['network_mode']),
-                "Service \"$serviceName\" is neither attached to a network nor sharing a pod network namespace",
-            );
-        }
-
-        //The dedicated network is declared once, named per project+environment (`<project>_private`) and
-        //pinned with an explicit `name:` so Compose does not prefix it again; it is an internal bridge so
-        //containers are reachable only through Traefik or an explicitly published host port.
-        Assert::assertCount(1, $parsed['networks']);
-        $networkName = (string) array_key_first($parsed['networks']);
-        Assert::assertStringEndsWith('_private', $networkName);
-        Assert::assertNotSame('private', $networkName, 'The network must be named per project, not bare "private"');
-        $networkSpec = (array) $parsed['networks'][$networkName];
-        Assert::assertSame($networkName, $networkSpec['name'] ?? null);
-        Assert::assertEquals('bridge', $networkSpec['driver'] ?? null);
-        Assert::assertTrue($networkSpec['internal'] ?? false);
-
-        //Every service attached to the network references that same project-qualified name.
-        foreach ($parsed['services'] as $serviceSpec) {
-            $serviceSpec = (array) $serviceSpec;
-            if (isset($serviceSpec['networks'])) {
-                Assert::assertSame([$networkName], (array) $serviceSpec['networks']);
-            }
-        }
-
-        //No image reference carries a URL scheme: a Compose image is a host[:port]/name, never a URL.
-        foreach ($parsed['services'] as $serviceSpec) {
-            $serviceSpec = (array) $serviceSpec;
-            if (isset($serviceSpec['image'])) {
-                Assert::assertDoesNotMatchRegularExpression(
-                    '#^[a-z][a-z0-9+.\-]*://#i',
-                    (string) $serviceSpec['image'],
-                    'Image reference must not start with a scheme such as https://',
-                );
-            }
-        }
-
-        //Every volume mounted by a service is declared in the top-level `volumes:` section.
-        $declaredVolumes = array_keys((array) ($parsed['volumes'] ?? []));
-        foreach ($parsed['services'] as $serviceName => $serviceSpec) {
-            $serviceSpec = (array) $serviceSpec;
-            foreach ((array) ($serviceSpec['volumes'] ?? []) as $mount) {
-                if (!is_string($mount) || !str_contains($mount, ':')) {
-                    continue;
-                }
-                $volumeName = explode(':', $mount, 2)[0];
-                //Only named volumes (not bind mounts starting with "." or "/") must be declared.
-                if ('' === $volumeName || str_starts_with($volumeName, '.') || str_starts_with($volumeName, '/')) {
-                    continue;
-                }
-                Assert::assertContains(
-                    $volumeName,
-                    $declaredVolumes,
-                    "Volume \"$volumeName\" mounted by \"$serviceName\" is not declared in top-level volumes",
-                );
-            }
-        }
-
-        //The populated `extra` volume is reproduced like the Kubernetes initContainer: a one-shot init
-        //service populates the named volume from its OCI image, and the main service mounts it read-only
-        //after the init `service_completed_successfully`. Volume/init names carry the project prefix (the
-        //`php-pods` service key stays unprefixed), so the checks are anchored on php-pods' depends_on
-        //rather than on literal names.
-        $php = (array) $parsed['services']['php-pods'];
-        $phpDependsOn = (array) ($php['depends_on'] ?? []);
-        $initNames = array_values(array_filter(
-            array_keys($phpDependsOn),
-            static fn ($name): bool => str_ends_with((string) $name, '-volume-init'),
-        ));
-        Assert::assertCount(
-            1,
-            $initNames,
-            'php-pods must depend on exactly one populated-volume init service',
-        );
-        $initName = (string) $initNames[0];
+        //Full golden comparison (like the Kubernetes manifests): the generated Compose Specification must
+        //match the reviewed expected file byte for byte.
         Assert::assertSame(
-            'service_completed_successfully',
-            $phpDependsOn[$initName]['condition'] ?? null,
+            $expected['compose.yaml'],
+            $this->composeArtifacts['compose.yaml'],
+            'The generated compose.yaml does not match the expected golden file',
         );
 
-        //The init service runs the volume image (no URL scheme) and copies the baked data into the named
-        //volume at MOUNT_PATH.
-        $initService = (array) ($parsed['services'][$initName] ?? []);
-        Assert::assertNotEmpty($initService, "Init service \"$initName\" is not declared");
-        Assert::assertDoesNotMatchRegularExpression('#^[a-z][a-z0-9+.\-]*://#i', (string) ($initService['image'] ?? ''));
-        Assert::assertSame('none', $initService['network_mode'] ?? null);
-        Assert::assertSame('no', (string) ($initService['restart'] ?? ''));
-        Assert::assertSame('/opt/extra', $initService['environment']['MOUNT_PATH'] ?? null);
+        //The deploy playbook is compared after normalizing the per-run working directory (uniqid) baked into
+        //its "src" paths; everything else (vars block, paas_files/paas_reset_volumes/paas_jobs, tasks) is golden.
+        Assert::assertSame(
+            $expected['deploy.yml'],
+            $this->normalizeComposePlaybook($this->composeArtifacts['deploy.yml']),
+            'The generated deploy.yml playbook does not match the expected golden file',
+        );
 
-        //The named volume (init name minus the `-init` suffix) is declared and mounted read-only by php-pods.
-        $populatedVolume = substr($initName, 0, -strlen('-init'));
-        Assert::assertArrayHasKey($populatedVolume, (array) ($parsed['volumes'] ?? []));
-        Assert::assertContains($populatedVolume . ':/opt/extra', (array) ($initService['volumes'] ?? []));
-        Assert::assertContains($populatedVolume . ':/opt/extra:ro', (array) ($php['volumes'] ?? []));
-
-        //The unmounted `other-name` volume must NOT be declared (no container mounts it).
-        foreach (array_keys((array) ($parsed['volumes'] ?? [])) as $declaredVolume) {
-            Assert::assertStringNotContainsString(
-                'other-name',
-                (string) $declaredVolume,
-                'The unmounted "other-name" volume must not be declared',
-            );
-        }
-
-        //Configs and secrets carry exactly one entry per map/secret: no per-key "__" duplication.
-        foreach (['configs', 'secrets'] as $section) {
-            foreach (array_keys((array) ($parsed[$section] ?? [])) as $name) {
-                Assert::assertStringNotContainsString(
-                    '__',
-                    (string) $name,
-                    "The $section section must not contain per-key \"__\" entries",
-                );
-            }
-        }
-
-        //One entry PER map/secret (keys grouped inside it), neither exploded into one-per-key nor
-        //fused into a single entry. The complete paas file declares 2 maps (map1, map2) and 3
-        //map-provider secrets (map-vault, map-vault2, volume-vault).
-        $configNames = array_keys((array) ($parsed['configs'] ?? []));
-        $secretNames = array_keys((array) ($parsed['secrets'] ?? []));
-        Assert::assertCount(2, $configNames, 'Expected exactly one config per declared map (2)');
-        Assert::assertCount(3, $secretNames, 'Expected exactly one secret per declared map-secret (3)');
-        foreach (['map1-map', 'map2-map'] as $suffix) {
-            Assert::assertNotEmpty(
-                array_filter($configNames, static fn (string $n): bool => str_ends_with($n, $suffix)),
-                "The config for \"$suffix\" is missing",
-            );
-        }
-        foreach (['map-vault-secret', 'map-vault2-secret', 'volume-vault-secret'] as $suffix) {
-            Assert::assertNotEmpty(
-                array_filter($secretNames, static fn (string $n): bool => str_ends_with($n, $suffix)),
-                "The secret for \"$suffix\" is missing",
-            );
-        }
-
-        //Service config/secret reference lists carry no duplicates.
-        foreach ($parsed['services'] as $serviceName => $serviceSpec) {
-            $serviceSpec = (array) $serviceSpec;
-            foreach (['configs', 'secrets'] as $section) {
-                $refs = (array) ($serviceSpec[$section] ?? []);
-                Assert::assertSame(
-                    array_values(array_unique($refs)),
-                    array_values($refs),
-                    "Service \"$serviceName\" has duplicate $section references",
-                );
-            }
-        }
-
-        //Command health checks use the shell form (CMD-SHELL).
-        foreach ($parsed['services'] as $serviceSpec) {
-            $serviceSpec = (array) $serviceSpec;
-            $test = (array) ($serviceSpec['healthcheck']['test'] ?? []);
-            if (!empty($test)) {
-                Assert::assertContains($test[0], ['CMD-SHELL'], 'Health check must use the CMD-SHELL form');
-            }
-        }
-
-        //The rendered deploy playbook is self-contained: the loop variables are defined in its vars: block.
-        foreach (['paas_files', 'paas_reset_volumes', 'paas_jobs'] as $var) {
-            Assert::assertStringContainsString(
-                $var . ':',
-                $this->composeArtifacts['deploy.yml'],
-                "The deploy playbook does not define $var",
-            );
-        }
+        //Every config/secret file referenced by the Compose Specification must match its expected content.
+        $actualReferencedFiles = $this->referencedFiles;
+        ksort($actualReferencedFiles);
+        Assert::assertSame(
+            $expected['referencedFiles'],
+            $actualReferencedFiles,
+            'The referenced config/secret files do not match the expected golden files',
+        );
     }
 
     #[Then('some traefik configuration has been created')]
@@ -3620,33 +3527,29 @@ EOF;
             $this->composeArtifacts,
             'The expose Ansible playbook has not been generated',
         );
-        Assert::assertNotEmpty($this->composeArtifacts['expose.yml']);
 
-        //The rendered expose playbook is self-contained: paas_certs is defined in its vars: block.
-        Assert::assertStringContainsString(
-            'paas_certs:',
-            $this->composeArtifacts['expose.yml'],
-            'The expose playbook does not define paas_certs',
+        $expected = $this->loadExpectedComposeArtifacts();
+
+        //The expose playbook is compared after normalizing the per-run working directory (uniqid) baked into
+        //its "src" path; the vars block (paas_certs) and tasks are golden.
+        Assert::assertSame(
+            $expected['expose.yml'],
+            $this->normalizeComposePlaybook($this->composeArtifacts['expose.yml']),
+            'The generated expose.yml playbook does not match the expected golden file',
         );
 
-        $traefik = (string) reset($this->traefikArtifacts);
-        $parsed = (array) Yaml::parse($traefik);
-
-        Assert::assertArrayHasKey('http', $parsed);
-        Assert::assertArrayHasKey('routers', $parsed['http']);
-        Assert::assertArrayHasKey('services', $parsed['http']);
-        Assert::assertNotEmpty($parsed['http']['routers']);
-        Assert::assertNotEmpty($parsed['http']['services']);
-
-        //Routers must carry a Host(...) rule and reference an entrypoint.
-        foreach ($parsed['http']['routers'] as $routerName => $routerSpec) {
-            Assert::assertArrayHasKey('rule', $routerSpec, "Router \"$routerName\" has no rule");
-            Assert::assertTrue(
-                str_contains((string) $routerSpec['rule'], 'Host('),
-                "Router \"$routerName\" rule does not contain a Host(...) matcher",
-            );
-            Assert::assertArrayHasKey('entryPoints', $routerSpec, "Router \"$routerName\" has no entrypoint");
-        }
+        //Exactly one Traefik dynamic configuration file ("<project>.yml") is produced, and it must match the
+        //expected golden file (routers, services, TLS) byte for byte.
+        Assert::assertCount(
+            1,
+            $this->traefikArtifacts,
+            'Exactly one Traefik dynamic configuration file is expected',
+        );
+        Assert::assertSame(
+            $expected['traefik'],
+            (string) reset($this->traefikArtifacts),
+            'The generated Traefik dynamic configuration does not match the expected golden file',
+        );
     }
 
     #[When('I export the job :jobId with :group data')]
