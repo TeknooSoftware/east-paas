@@ -31,6 +31,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\DeploymentTranscriber;
@@ -153,5 +154,83 @@ class DeploymentTranscriberTest extends TestCase
         self::assertSame('service:web', $services['web-waf']['network_mode']);
         self::assertArrayNotHasKey('networks', $services['web-waf']);
         self::assertArrayNotHasKey('expose', $services['web-waf']);
+    }
+
+    public function testTranscribePopulatedVolumeAddsInitService(): void
+    {
+        //The container's volume instance has no registry; the registry-qualified one is provided through
+        //the foreachPod $volumes map (keyed <container>_<volumeKey>), mirroring CompiledDeployment.
+        $containerVolume = new Volume(
+            name: 'extra-app',
+            paths: ['data'],
+            localPath: '/data',
+            mountPath: '/opt/extra',
+        );
+        $deploymentVolume = $containerVolume->withRegistry('https://reg.example');
+
+        $pod = new Pod(
+            name: 'php',
+            replicas: 1,
+            containers: [
+                new Container(
+                    name: 'php-run',
+                    image: 'registry/php',
+                    version: '8.3',
+                    listen: [9000],
+                    volumes: ['extra' => $containerVolume],
+                    variables: [],
+                ),
+            ],
+        );
+
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachPod')
+            ->willReturnCallback(
+                function (callable $callback) use ($cd, $pod, $deploymentVolume): CompiledDeploymentInterface {
+                    $callback($pod, [], ['php-run_extra' => $deploymentVolume], 'prj');
+
+                    return $cd;
+                },
+            );
+
+        $generation = new Accumulator('default-prj', 'private');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $generation,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+
+        $compose = $generation->getComposeFile();
+
+        //Main service mounts the populated volume read-only and waits for the init service.
+        self::assertSame(['prj-extra-app-volume:/opt/extra:ro'], $compose['services']['php']['volumes']);
+        self::assertSame(
+            ['prj-extra-app-volume-init' => ['condition' => 'service_completed_successfully']],
+            $compose['services']['php']['depends_on'],
+        );
+
+        //Init service runs the volume image (registry from the deployment volume, scheme stripped) and
+        //copies the baked data into the named volume at MOUNT_PATH.
+        self::assertSame(
+            [
+                'image' => 'reg.example/extra-app',
+                'environment' => ['MOUNT_PATH' => '/opt/extra'],
+                'volumes' => ['prj-extra-app-volume:/opt/extra'],
+                'network_mode' => 'none',
+                'restart' => 'no',
+            ],
+            $compose['services']['prj-extra-app-volume-init'],
+        );
+
+        //The named volume is declared as a local volume.
+        self::assertSame(['driver' => 'local'], $compose['volumes']['prj-extra-app-volume']);
     }
 }

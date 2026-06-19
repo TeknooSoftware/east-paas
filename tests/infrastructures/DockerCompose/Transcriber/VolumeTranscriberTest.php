@@ -30,6 +30,7 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
@@ -62,6 +63,8 @@ class VolumeTranscriberTest extends TestCase
                 );
                 //Secret volumes are mounted on services, not declared as Compose volumes
                 $callback('creds', new SecretVolume('creds', '/run/creds', 'my-secret'), 'prj');
+                //Populated/embedded volumes are declared (and populated) by the pod transcription, not here
+                $callback('extra', new Volume('extra', ['data'], '/data', '/opt/extra'), 'prj');
 
                 return $cd;
             });

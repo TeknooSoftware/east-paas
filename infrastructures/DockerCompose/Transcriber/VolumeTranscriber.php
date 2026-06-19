@@ -27,7 +27,6 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PopulatedVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
@@ -40,13 +39,12 @@ use Throwable;
  * "Deployment transcriber" translating CompiledDeployment's persistent volumes to named Compose volumes
  * (`local` driver).
  *
- * Persistent volumes are declared by their bare (prefixed) name. Populated/embedded volumes — whose content
- * is baked into an OCI image at build time and mounted by the deployment transcribers under the `-volume`
- * suffix — are declared here too (as named `local` volumes) so the services that mount them reference a
- * defined volume. Secret and map volumes are not declared: they are mounted as Compose `secrets:`/`configs:`
- * by the deployment transcribers. `storageSize`/`allowWriteMany` are advisory on a single local host and are
- * not enforced; `resetOnDeployment` is recorded in the volume's `x-paas-reset` marker so the deploy playbook
- * removes the volume before bringing the stack up.
+ * Only persistent volumes are declared here, by their bare (prefixed) name. Populated/embedded volumes are
+ * handled by the pod transcription (`PodsTranscriberTrait::convertVolumes`), which declares their named
+ * volume and an init service that populates it from the volume's OCI image. Secret and map volumes are not
+ * declared: they are mounted as Compose `secrets:`/`configs:`. `storageSize`/`allowWriteMany` are advisory
+ * on a single local host and are not enforced; `resetOnDeployment` is recorded in the volume's
+ * `x-paas-reset` marker so the deploy playbook removes the volume before bringing the stack up.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -56,10 +54,6 @@ use Throwable;
 class VolumeTranscriber implements DeploymentInterface
 {
     use CommonTrait;
-
-    //Suffix mirroring PodsTranscriberTrait::VOLUME_SUFFIX, applied to populated/embedded volume names so a
-    //declared volume matches the name the deployment transcribers mount into the services.
-    private const string VOLUME_SUFFIX = '-volume';
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
@@ -77,29 +71,23 @@ class VolumeTranscriber implements DeploymentInterface
                 $accumulator,
                 $promise,
             ): void {
-                //Secret and map volumes become Compose secrets:/configs:, not named volumes.
-                $isPersistent = $volume instanceof PersistentVolumeInterface;
-                $isPopulated = $volume instanceof PopulatedVolumeInterface;
-                if (!$isPersistent && !$isPopulated) {
+                //Only persistent volumes become named Compose volumes here; populated/embedded volumes are
+                //declared (and populated via an init service) by the pod transcription, and secret/map
+                //volumes become Compose secrets:/configs:.
+                if (!$volume instanceof PersistentVolumeInterface) {
                     return;
                 }
 
                 $prefixer = self::createPrefixer($prefix);
 
                 try {
-                    //Populated/embedded volumes are mounted under the `-volume` suffix; persistent volumes
-                    //keep their bare name.
-                    if ($isPersistent) {
-                        $volumeName = (string) $prefixer($volume->getName());
-                    } else {
-                        $volumeName = (string) $prefixer($volume->getName() . self::VOLUME_SUFFIX);
-                    }
+                    $volumeName = (string) $prefixer($volume->getName());
 
                     $spec = [
                         'driver' => 'local',
                     ];
 
-                    if ($volume instanceof PersistentVolumeInterface && $volume->isResetOnDeployment()) {
+                    if ($volume->isResetOnDeployment()) {
                         $spec['x-paas-reset'] = true;
                     }
 

@@ -30,6 +30,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
@@ -97,6 +98,10 @@ class JobTranscriber implements DeploymentInterface
         $networkName = $accumulator->getNetworkName();
 
         $compiledDeployment->foreachJob(
+            /**
+             * @param array<string, array<string, Image>> $images
+             * @param array<string, VolumeInterface> $volumes
+             */
             static function (
                 Job $job,
                 array $images,
@@ -125,6 +130,8 @@ class JobTranscriber implements DeploymentInterface
                             images: $images,
                             prefixer: $prefixer,
                             networkName: $networkName,
+                            accumulator: $accumulator,
+                            deploymentVolumes: $volumes,
                         );
 
                         foreach ($services as $serviceName => $serviceSpec) {

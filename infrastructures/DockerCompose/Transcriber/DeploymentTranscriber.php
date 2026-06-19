@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
@@ -63,6 +64,10 @@ class DeploymentTranscriber implements DeploymentInterface
         $networkName = $accumulator->getNetworkName();
 
         $compiledDeployment->foreachPod(
+            /**
+             * @param array<string, array<string, Image>> $images
+             * @param array<string, VolumeInterface> $volumes
+             */
             static function (
                 Pod $pod,
                 array $images,
@@ -82,6 +87,8 @@ class DeploymentTranscriber implements DeploymentInterface
                         images: $images,
                         prefixer: $prefixer,
                         networkName: $networkName,
+                        accumulator: $accumulator,
+                        deploymentVolumes: $volumes,
                     );
 
                     foreach ($services as $serviceName => $serviceSpec) {

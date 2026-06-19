@@ -36,7 +36,9 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Resource;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\SecretReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 
 use function array_map;
 use function array_values;
@@ -68,11 +70,17 @@ trait PodsTranscriberTrait
     private const string VOLUME_SUFFIX = '-volume';
 
     /**
+     * Strip a leading `scheme://` (e.g. the registry API URL `https://foo.bar`) from an image reference:
+     * a Docker image reference is a `host[:port]/name`, never a URL.
+     */
+    private static function stripScheme(string $url): string
+    {
+        return (string) preg_replace('#^[a-z][a-z0-9+.\-]*://#i', '', $url);
+    }
+
+    /**
      * Resolve the fully qualified image reference (`url:tag`) of a container, falling back to its declared
      * image/version when the image was not built by the build stage.
-     *
-     * The registry attached to a built image is the registry API URL (e.g. `https://foo.bar`), so any
-     * leading `scheme://` is stripped: a Docker image reference is a `host[:port]/name`, never a URL.
      *
      * @param array<string, array<string, Image>>|Image[][] $images
      */
@@ -83,9 +91,7 @@ trait PodsTranscriberTrait
         if (isset($images[$container->getImage()][$version])) {
             $image = $images[$container->getImage()][$version];
 
-            $url = (string) preg_replace('#^[a-z][a-z0-9+.\-]*://#i', '', $image->getUrl());
-
-            return $url . ':' . $image->getTag();
+            return self::stripScheme($image->getUrl()) . ':' . $image->getTag();
         }
 
         return $container->getImage() . ':' . $version;
@@ -140,19 +146,34 @@ trait PodsTranscriberTrait
      * Map a container's volumes to Compose `volumes:`/`secrets:`/`configs:` mounts, using each volume's
      * declared mount path.
      *
+     * Populated/embedded volumes carry pre-existing data baked into a per-volume OCI image. They are
+     * reproduced like the Kubernetes initContainer pattern: a one-shot init service runs that image (its
+     * own CMD copies the baked data to `$MOUNT_PATH`) to populate a named volume, which the main service
+     * mounts read-only after the init `service_completed_successfully`. The registry-qualified image URL
+     * is taken from the deployment-level volume (`$deploymentVolumes["<container>_<key>"]`), since the
+     * container's own volume instance has no registry.
+     *
      * @param array<string, mixed> $spec
      * @param callable(string): string $prefixer
+     * @param array<array-key, mixed> $deploymentVolumes deployment volumes keyed `<container>_<key>`
      */
-    private static function convertVolumes(array &$spec, Container $container, callable $prefixer): void
-    {
+    private static function convertVolumes(
+        array &$spec,
+        Container $container,
+        callable $prefixer,
+        AccumulatorInterface $accumulator,
+        array $deploymentVolumes,
+    ): void {
         /** @var list<string> $volumes */
         $volumes = $spec['volumes'] ?? [];
         /** @var list<string> $secrets */
         $secrets = $spec['secrets'] ?? [];
         /** @var list<string> $configs */
         $configs = $spec['configs'] ?? [];
+        /** @var array<string, array<string, string>> $dependsOn */
+        $dependsOn = $spec['depends_on'] ?? [];
 
-        foreach ($container->getVolumes() as $volume) {
+        foreach ($container->getVolumes() as $volumeKey => $volume) {
             if ($volume instanceof PersistentVolumeInterface) {
                 $volumes[] = $prefixer($volume->getName()) . ':' . $volume->getMountPath();
 
@@ -171,7 +192,34 @@ trait PodsTranscriberTrait
                 continue;
             }
 
-            $volumes[] = $prefixer($volume->getName() . self::VOLUME_SUFFIX) . ':' . $volume->getMountPath();
+            //Populated/embedded volume: populate a named volume from its image through an init service.
+            $volumeName = (string) $prefixer($volume->getName() . self::VOLUME_SUFFIX);
+            $mountPath = $volume->getMountPath();
+
+            //The registry-qualified image lives on the deployment-level volume; the container's own
+            //instance has no registry. Fall back to the container volume if the lookup misses.
+            $urlSource = $deploymentVolumes[$container->getName() . '_' . $volumeKey] ?? $volume;
+            $imageUrl = '';
+            if ($urlSource instanceof Volume) {
+                $imageUrl = self::stripScheme($urlSource->getUrl());
+            } elseif ($volume instanceof Volume) {
+                $imageUrl = self::stripScheme($volume->getUrl());
+            }
+
+            $accumulator->addVolume($volumeName, ['driver' => 'local']);
+
+            $initServiceName = $volumeName . '-init';
+            $accumulator->addService($initServiceName, [
+                'image' => $imageUrl,
+                'environment' => ['MOUNT_PATH' => $mountPath],
+                'volumes' => [$volumeName . ':' . $mountPath],
+                'network_mode' => 'none',
+                'restart' => 'no',
+            ]);
+
+            //Main service mounts the populated volume read-only, after the init service has populated it.
+            $volumes[] = $volumeName . ':' . $mountPath . ':ro';
+            $dependsOn[$initServiceName] = ['condition' => 'service_completed_successfully'];
         }
 
         if (!empty($volumes)) {
@@ -184,6 +232,10 @@ trait PodsTranscriberTrait
 
         if (!empty($configs)) {
             $spec['configs'] = array_values(array_unique($configs));
+        }
+
+        if (!empty($dependsOn)) {
+            $spec['depends_on'] = $dependsOn;
         }
     }
 
@@ -275,6 +327,7 @@ trait PodsTranscriberTrait
      *
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param callable(string): string $prefixer
+     * @param array<array-key, mixed> $deploymentVolumes deployment volumes keyed `<container>_<key>`
      * @return array<string, mixed>
      */
     private static function containerToService(
@@ -283,6 +336,8 @@ trait PodsTranscriberTrait
         array $images,
         callable $prefixer,
         string $networkName,
+        AccumulatorInterface $accumulator,
+        array $deploymentVolumes,
     ): array {
         $spec = [
             'image' => self::resolveImageUrl($container, $images),
@@ -294,7 +349,7 @@ trait PodsTranscriberTrait
         }
 
         self::convertVariables($spec, $container->getVariables(), $prefixer);
-        self::convertVolumes($spec, $container, $prefixer);
+        self::convertVolumes($spec, $container, $prefixer, $accumulator, $deploymentVolumes);
 
         if (null !== ($healthCheck = $container->getHealthCheck())) {
             $spec['healthcheck'] = self::convertHealthCheck($healthCheck);
@@ -335,6 +390,7 @@ trait PodsTranscriberTrait
      *
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param callable(string): string $prefixer
+     * @param array<array-key, mixed> $deploymentVolumes deployment volumes keyed `<container>_<key>`
      * @return array<string, array<string, mixed>>
      */
     protected static function podToServices(
@@ -342,6 +398,8 @@ trait PodsTranscriberTrait
         array $images,
         callable $prefixer,
         string $networkName,
+        AccumulatorInterface $accumulator,
+        array $deploymentVolumes = [],
     ): array {
         /** @var array<int, Container> $containers */
         $containers = iterator_to_array($pod, false);
@@ -357,6 +415,8 @@ trait PodsTranscriberTrait
                     images: $images,
                     prefixer: $prefixer,
                     networkName: $networkName,
+                    accumulator: $accumulator,
+                    deploymentVolumes: $deploymentVolumes,
                 );
 
                 continue;
@@ -368,6 +428,8 @@ trait PodsTranscriberTrait
                 images: $images,
                 prefixer: $prefixer,
                 networkName: $networkName,
+                accumulator: $accumulator,
+                deploymentVolumes: $deploymentVolumes,
             );
 
             unset($sidecar['networks'], $sidecar['expose']);

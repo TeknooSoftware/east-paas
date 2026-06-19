@@ -3497,6 +3497,37 @@ EOF;
             }
         }
 
+        //The populated `extra` volume is reproduced like the Kubernetes initContainer: a one-shot init
+        //service populates the named volume from its OCI image, and the main service mounts it read-only
+        //after the init `service_completed_successfully`. The unmounted `other-name` volume must NOT be
+        //declared (it is not mounted by any container).
+        Assert::assertArrayHasKey('extra-foobarproject-volume', $parsed['volumes']);
+        Assert::assertArrayNotHasKey(
+            'other-name-foobarproject-volume',
+            $parsed['volumes'],
+            'The unmounted "other-name" volume must not be declared',
+        );
+
+        Assert::assertArrayHasKey(
+            'extra-foobarproject-volume-init',
+            $parsed['services'],
+            'The populated volume must be filled by a dedicated init service',
+        );
+        $initService = (array) $parsed['services']['extra-foobarproject-volume-init'];
+        Assert::assertDoesNotMatchRegularExpression('#^[a-z][a-z0-9+.\-]*://#i', (string) $initService['image']);
+        Assert::assertSame('none', $initService['network_mode'] ?? null);
+        Assert::assertSame('no', (string) ($initService['restart'] ?? ''));
+        Assert::assertSame('/opt/extra', $initService['environment']['MOUNT_PATH'] ?? null);
+        Assert::assertContains('extra-foobarproject-volume:/opt/extra', (array) ($initService['volumes'] ?? []));
+
+        //The main php-pods service mounts the populated volume read-only and depends on the init service.
+        $php = (array) $parsed['services']['php-pods'];
+        Assert::assertContains('extra-foobarproject-volume:/opt/extra:ro', (array) ($php['volumes'] ?? []));
+        Assert::assertSame(
+            'service_completed_successfully',
+            $php['depends_on']['extra-foobarproject-volume-init']['condition'] ?? null,
+        );
+
         //Configs and secrets carry exactly one entry per map/secret: no per-key "__" duplication.
         foreach (['configs', 'secrets'] as $section) {
             foreach (array_keys((array) ($parsed[$section] ?? [])) as $name) {
