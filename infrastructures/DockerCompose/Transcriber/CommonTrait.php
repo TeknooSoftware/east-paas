@@ -56,9 +56,7 @@ trait CommonTrait
     }
 
     /**
-     * Lowercases the value and replaces every character outside `[a-z0-9-]` by a dash, collapsing repeated
-     * dashes and trimming leading/trailing dashes, to produce a DNS-safe Compose project/service/network
-     * name.
+     * Produce a DNS-safe Compose project/service/network name.
      */
     private static function sanitizeDns(string $value): string
     {

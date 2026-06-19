@@ -45,11 +45,11 @@ CompiledDeployment ─► DockerCompose\Driver (Generator → Running)
                         │  deploy():  transcribers tagged Generic / Deployment
                         │  expose():  transcribers tagged Exposing
                         ▼
-                     Generation (in-memory accumulator)
+                     Accumulator (in-memory)
                         • compose: services / networks / volumes / configs / secrets
                         • traefik: http / tcp / udp routers + services, tls
                         • files:   map<path, content> (secrets, configs, TLS certs)
-                        • networksToWire: string[]
+                        • network name: string
                         ▼
                      Driver serializes the accumulator to YAML, writes the playbook,
                      a single-host inventory and all pushed files into a per-run temp dir
@@ -64,7 +64,7 @@ CompiledDeployment ─► DockerCompose\Driver (Generator → Running)
 ```
 
 Unlike Kubernetes (where each manifest is `apply()`-ed immediately against a live `Client`), the Compose
-transcribers only **accumulate** into a `Generation` builder. The driver then serializes the accumulator
+transcribers only **accumulate** into an `Accumulator` builder. The driver then serializes the accumulator
 (`Symfony\Component\Yaml\Yaml::dump($array, 8, 4)` — inline depth 8, 4-space indent) and runs
 `ansible-playbook` **once per stage**.
 
@@ -130,7 +130,7 @@ Compose project & network naming
   cannot reach the host or the outside world unless a service explicitly publishes a host port. External
   reachability is provided **only** through Traefik.
 
-* **Connect-per-project.** The driver records the resolved private network name (`wireNetworkToTraefik()`)
+* **Connect-per-project.** The driver exposes the resolved private network name (`getNetworkName()`)
   so the deploy playbook runs `docker network connect <project>_private <traefik-container>`, making Traefik
   join every dedicated project network. The command is idempotent (an "already exists in network" error is
   ignored). See `documentation/traefik.ingress.md` for the Traefik side.

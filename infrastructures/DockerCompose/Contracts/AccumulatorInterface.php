@@ -36,7 +36,7 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
  *
  * Services reach each other on a per-project, dedicated, internal Docker network whose full name
  * (`<project>_<network>`) is exposed by getNetworkName() and pinned in the Compose file with an explicit
- * `name:`. The deploy playbook connects Traefik to that same name returned by getNetworksToWire().
+ * `name:`. The deploy playbook connects Traefik to that same name returned by getNetworkName().
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
