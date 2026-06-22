@@ -1,0 +1,287 @@
+<?php
+
+/*
+ * East Paas.
+ *
+ * LICENSE
+ *
+ * This source file is subject to the 3-Clause BSD license
+ * it is available in LICENSE file at the root of this package
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to richard@teknoo.software so we can send you a copy immediately.
+ *
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
+ *
+ * @link        https://teknoo.software/east-collection/paas Project website
+ *
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
+ * @author      Richard Déloge <richard@teknoo.software>
+ */
+
+declare(strict_types=1);
+
+namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
+
+use DomainException;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use Psr\Container\ContainerInterface;
+use Teknoo\East\Paas\Cluster\Directory;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberCollectionInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver as DriverAlias; //To prevent a bug into PHP-DI
+use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory as RunnerFactoryAlias;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\TranscriberCollection as TranscriberCollectionAlias;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ConfigMapTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\DeploymentTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\IngressTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\JobTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\SecretTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ServiceTranscriber;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\VolumeTranscriber;
+
+use function DI\decorate;
+use function DI\get;
+use function is_a;
+use function is_array;
+use function is_iterable;
+use function iterator_to_array;
+use function sys_get_temp_dir;
+use function uniqid;
+
+return [
+    RunnerFactoryInterface::class => static function (ContainerInterface $container): RunnerFactoryInterface {
+        $tmpDir = sys_get_temp_dir();
+        if ($container->has('teknoo.east.paas.worker.tmp_dir')) {
+            $tmpDir = (string) $container->get('teknoo.east.paas.worker.tmp_dir');
+        }
+
+        $playbookBinary = 'ansible-playbook';
+        if ($container->has('teknoo.east.paas.docker-compose.ansible.binary')) {
+            $playbookBinary = (string) $container->get('teknoo.east.paas.docker-compose.ansible.binary');
+        }
+
+        $timeout = null;
+        if ($container->has('teknoo.east.paas.docker-compose.timeout')) {
+            $timeout = (float) $container->get('teknoo.east.paas.docker-compose.timeout');
+        }
+
+        return new RunnerFactoryAlias(
+            filesystem: new Filesystem(new LocalFilesystemAdapter($tmpDir)),
+            tmpDir: $tmpDir,
+            playbookBinary: $playbookBinary,
+            timeout: $timeout,
+        );
+    },
+
+    SecretTranscriber::class . ':class' => SecretTranscriber::class,
+    SecretTranscriber::class => static function (ContainerInterface $container): SecretTranscriber {
+        $className = $container->get(SecretTranscriber::class . ':class');
+        if (!is_a($className, SecretTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a secret transcriber");
+        }
+
+        return new $className();
+    },
+
+    ConfigMapTranscriber::class . ':class' => ConfigMapTranscriber::class,
+    ConfigMapTranscriber::class => static function (ContainerInterface $container): ConfigMapTranscriber {
+        $className = $container->get(ConfigMapTranscriber::class . ':class');
+        if (!is_a($className, ConfigMapTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a configMap transcriber");
+        }
+
+        return new $className();
+    },
+
+    VolumeTranscriber::class . ':class' => VolumeTranscriber::class,
+    VolumeTranscriber::class => static function (ContainerInterface $container): VolumeTranscriber {
+        $className = $container->get(VolumeTranscriber::class . ':class');
+        if (!is_a($className, VolumeTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a volume transcriber");
+        }
+
+        return new $className();
+    },
+
+    DeploymentTranscriber::class . ':class' => DeploymentTranscriber::class,
+    DeploymentTranscriber::class => static function (ContainerInterface $container): DeploymentTranscriber {
+        $className = $container->get(DeploymentTranscriber::class . ':class');
+        if (!is_a($className, DeploymentTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a deployment transcriber");
+        }
+
+        return new $className();
+    },
+
+    JobTranscriber::class . ':class' => JobTranscriber::class,
+    JobTranscriber::class => static function (ContainerInterface $container): JobTranscriber {
+        $className = $container->get(JobTranscriber::class . ':class');
+        if (!is_a($className, JobTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a job transcriber");
+        }
+
+        return new $className();
+    },
+
+    ServiceTranscriber::class . ':class' => ServiceTranscriber::class,
+    ServiceTranscriber::class => static function (ContainerInterface $container): ServiceTranscriber {
+        $className = $container->get(ServiceTranscriber::class . ':class');
+        if (!is_a($className, ServiceTranscriber::class, true)) {
+            throw new DomainException("The class $className is not a service transcriber");
+        }
+
+        return new $className();
+    },
+
+    IngressTranscriber::class . ':class' => IngressTranscriber::class,
+    IngressTranscriber::class => static function (ContainerInterface $container): IngressTranscriber {
+        $className = $container->get(IngressTranscriber::class . ':class');
+        if (!is_a($className, IngressTranscriber::class, true)) {
+            throw new DomainException("The class $className is not an ingress transcriber");
+        }
+
+        $webEntrypoint = 'web';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.entrypoint.web')) {
+            $webEntrypoint = (string) $container->get('teknoo.east.paas.docker-compose.traefik.entrypoint.web');
+        }
+
+        $secureEntrypoint = 'websecure';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.entrypoint.websecure')) {
+            $secureEntrypoint = (string) $container->get(
+                'teknoo.east.paas.docker-compose.traefik.entrypoint.websecure',
+            );
+        }
+
+        $defaultCertResolver = null;
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.default_certresolver')) {
+            $defaultCertResolver = (string) $container->get(
+                'teknoo.east.paas.docker-compose.traefik.default_certresolver',
+            );
+        }
+
+        $httpsBackendInsecureSkipVerify = false;
+        if ($container->has('teknoo.east.paas.docker-compose.https_backend.insecure_skip_verify')) {
+            $httpsBackendInsecureSkipVerify = (bool) $container->get(
+                'teknoo.east.paas.docker-compose.https_backend.insecure_skip_verify',
+            );
+        }
+
+        $defaultServiceName = null;
+        if ($container->has('teknoo.east.paas.docker-compose.ingress.default_service.name')) {
+            $defaultServiceName = (string) $container->get(
+                'teknoo.east.paas.docker-compose.ingress.default_service.name',
+            );
+        }
+
+        $defaultServicePort = null;
+        if ($container->has('teknoo.east.paas.docker-compose.ingress.default_service.port')) {
+            $defaultServicePort = (int) $container->get(
+                'teknoo.east.paas.docker-compose.ingress.default_service.port',
+            );
+        }
+
+        $defaultMiddlewares = [];
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.default_middlewares')) {
+            $defaultMiddlewares = $container->get(
+                'teknoo.east.paas.docker-compose.traefik.default_middlewares',
+            );
+
+            if (!is_iterable($defaultMiddlewares) && !is_array($defaultMiddlewares)) {
+                throw new DomainException(
+                    '`teknoo.east.paas.docker-compose.traefik.default_middlewares` must be an array or iterable',
+                );
+            }
+
+            if (!is_array($defaultMiddlewares)) {
+                $defaultMiddlewares = iterator_to_array($defaultMiddlewares);
+            }
+        }
+
+        return new $className(
+            webEntrypoint: $webEntrypoint,
+            secureEntrypoint: $secureEntrypoint,
+            defaultCertResolver: $defaultCertResolver,
+            defaultServiceName: $defaultServiceName,
+            defaultServicePort: $defaultServicePort,
+            httpsBackendInsecureSkipVerify: $httpsBackendInsecureSkipVerify,
+            defaultMiddlewares: $defaultMiddlewares,
+        );
+    },
+
+    TranscriberCollectionInterface::class => get(TranscriberCollectionAlias::class),
+
+    TranscriberCollectionAlias::class => static function (
+        ContainerInterface $container
+    ): TranscriberCollectionAlias {
+        $collection = new TranscriberCollectionAlias();
+        $collection->add(10, $container->get(SecretTranscriber::class));
+        $collection->add(10, $container->get(ConfigMapTranscriber::class));
+        $collection->add(10, $container->get(VolumeTranscriber::class));
+        $collection->add(30, $container->get(DeploymentTranscriber::class));
+        $collection->add(32, $container->get(JobTranscriber::class));
+        $collection->add(35, $container->get(ServiceTranscriber::class));
+        $collection->add(50, $container->get(IngressTranscriber::class));
+
+        return $collection;
+    },
+
+    DriverAlias::class => static function (ContainerInterface $container): DriverAlias {
+        $tmpDir = sys_get_temp_dir();
+        if ($container->has('teknoo.east.paas.worker.tmp_dir')) {
+            $tmpDir = (string) $container->get('teknoo.east.paas.worker.tmp_dir');
+        }
+
+        $deployRoot = '/opt/paas';
+        if ($container->has('teknoo.east.paas.docker-compose.deploy_root')) {
+            $deployRoot = (string) $container->get('teknoo.east.paas.docker-compose.deploy_root');
+        }
+
+        $networkDriver = 'bridge';
+        if ($container->has('teknoo.east.paas.docker-compose.network.driver')) {
+            $networkDriver = (string) $container->get('teknoo.east.paas.docker-compose.network.driver');
+        }
+
+        $traefikContainer = 'traefik';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.container')) {
+            $traefikContainer = (string) $container->get('teknoo.east.paas.docker-compose.traefik.container');
+        }
+
+        $traefikDynamicDir = '/etc/traefik/dynamic';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.dynamic_dir')) {
+            $traefikDynamicDir = (string) $container->get('teknoo.east.paas.docker-compose.traefik.dynamic_dir');
+        }
+
+        $traefikCertsDir = '/etc/traefik/certs';
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.certs_dir')) {
+            $traefikCertsDir = (string) $container->get('teknoo.east.paas.docker-compose.traefik.certs_dir');
+        }
+
+        return new DriverAlias(
+            runnerFactory: $container->get(RunnerFactoryInterface::class),
+            transcribers: $container->get(TranscriberCollectionInterface::class),
+            workspaceFilesystem: new Filesystem(new LocalFilesystemAdapter($tmpDir)),
+            templatesFilesystem: new Filesystem(new LocalFilesystemAdapter(__DIR__ . '/templates')),
+            workspaceRoot: $tmpDir,
+            tmpDirFactory: static fn (): string => 'east-paas-compose-' . uniqid('', true),
+            templates: [
+                'deploy' => 'deploy.yml.template',
+                'expose' => 'expose.yml.template',
+            ],
+            deployRoot: $deployRoot,
+            networkDriver: $networkDriver,
+            traefikContainer: $traefikContainer,
+            traefikDynamicDir: $traefikDynamicDir,
+            traefikCertsDir: $traefikCertsDir,
+        );
+    },
+
+    Directory::class => decorate(static function (Directory $previous, ContainerInterface $container): Directory {
+        $previous->register('docker-compose', $container->get(DriverAlias::class));
+
+        return $previous;
+    }),
+];

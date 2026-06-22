@@ -13,6 +13,7 @@ di_bridge:
     - '%kernel.project_dir%/infrastructures/Flysystem/di.php'
     - '%kernel.project_dir%/infrastructures/Git/di.php'
     - '%kernel.project_dir%/infrastructures/Kubernetes/di.php'
+    - '%kernel.project_dir%/infrastructures/DockerCompose/di.php'
     - '%kernel.project_dir%/infrastructures/Image/di.php'
     - '%kernel.project_dir%/infrastructures/ProjectBuilding/di.php'
     - '%kernel.project_dir%/infrastructures/PhpSecLib/di.php'

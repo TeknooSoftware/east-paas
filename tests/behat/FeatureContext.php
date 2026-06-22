@@ -44,6 +44,8 @@ use Doctrine\Persistence\Mapping\ClassMetadataFactory;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use JsonException;
+use League\Flysystem\Filesystem;
+use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\Generator\Generator;
@@ -62,6 +64,7 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use Symfony\Component\Yaml\Yaml;
 use Teknoo\DI\SymfonyBridge\DIBridgeBundle;
 use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
@@ -90,6 +93,10 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberCollectionInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver as DockerComposeDriver;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
@@ -217,6 +224,22 @@ class FeatureContext implements Context
     private static string $hncSuffix = '';
 
     private array $manifests = [];
+
+    /**
+     * @var array<string, string> captured Docker Compose artifacts (compose.yaml + playbooks) keyed by file name
+     */
+    private array $composeArtifacts = [];
+
+    /**
+     * @var array<string, string> captured Traefik dynamic-configuration artifacts keyed by file name
+     */
+    private array $traefikArtifacts = [];
+
+    /**
+     * @var array<string, string> captured config/secret files referenced by the Compose Specification,
+     *      keyed by their forward-slash relative path ("configs/<name>", "secrets/<name>")
+     */
+    private array $referencedFiles = [];
 
     public bool $slowDb = false;
 
@@ -636,6 +659,8 @@ class FeatureContext implements Context
     public function iHaveAConfiguredPlatform(): void
     {
         $this->clusterType = 'behat';
+        $this->composeArtifacts = [];
+        $this->traefikArtifacts = [];
 
         $this->buildRepository(Account::class);
         $this->buildRepository(Cluster::class);
@@ -764,6 +789,25 @@ class FeatureContext implements Context
         $this->clusterName = $name;
         $this->envName = $id;
 
+        //The Docker Compose driver connects over SSH: use an "ssh://user@host:port" address and map the
+        //ClusterCredentials to SSH (clientKey = private key, username/password = SSH login).
+        $isDockerCompose = 'docker-compose' === $this->clusterType;
+        $address = $isDockerCompose ? 'ssh://deployer@docker-host.behat.test:22' : 'https://foo-bar';
+        if ($isDockerCompose) {
+            $credentials = new ClusterCredentials(
+                clientKey: "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEBEHAT\n-----END OPENSSH PRIVATE KEY-----\n",
+                username: 'deployer',
+                password: 'behatBecomePassword',
+            )->setId('cluster-auth-id');
+        } else {
+            $credentials = new ClusterCredentials(
+                caCertificate: 'caCertValue',
+                clientCertificate: 'fooBar',
+                clientKey: 'barKey',
+                token: 'fooBar',
+            )->setId('cluster-auth-id');
+        }
+
         $this->project->setClusters([
             $this->cluster = new Cluster()
                 ->setId('cluster-id')
@@ -773,15 +817,8 @@ class FeatureContext implements Context
                 ->setNamespace('behat-test')
                 ->useHierarchicalNamespaces(self::$useHnc)
                 ->setEnvironment($this->environment = new Environment($this->envName))
-                ->setAddress('https://foo-bar')
-                ->setIdentity(
-                    new ClusterCredentials(
-                        caCertificate: 'caCertValue',
-                        clientCertificate: 'fooBar',
-                        clientKey: 'barKey',
-                        token: 'fooBar',
-                    )->setId('cluster-auth-id')
-                )
+                ->setAddress($address)
+                ->setIdentity($credentials)
         ]);
     }
 
@@ -1824,6 +1861,138 @@ EOF,
         );
 
         $this->clusterType = 'kubernetes';
+    }
+
+    #[Given('a docker-compose orchestrator')]
+    public function aDockerComposeOrchestrator(): void
+    {
+        $this->composeArtifacts = [];
+        $this->traefikArtifacts = [];
+        $this->referencedFiles = [];
+
+        //Drive the real DockerCompose Driver against an in-memory Flysystem instead of the disk-backed
+        //LocalFilesystemAdapter wired by di.php, so the scenario never alters the filesystem. The fake runner
+        //reads the artifacts the Driver wrote back from this same in-memory filesystem.
+        $workspaceFilesystem = new Filesystem(new InMemoryFilesystemAdapter());
+
+        $templatesDir = \dirname(__DIR__, 2) . '/infrastructures/DockerCompose/templates';
+        $templatesFilesystem = new Filesystem(new InMemoryFilesystemAdapter());
+        $templatesFilesystem->write(
+            'deploy.yml.template',
+            (string) \file_get_contents($templatesDir . '/deploy.yml.template'),
+        );
+        $templatesFilesystem->write(
+            'expose.yml.template',
+            (string) \file_get_contents($templatesDir . '/expose.yml.template'),
+        );
+
+        $capture = function (string $playbookPath) use ($workspaceFilesystem): void {
+            //The Driver builds the runner-facing playbook path as "{workspaceRoot}/{workingDir}/{stage}.yml"
+            //but writes through the filesystem with the relative "{workingDir}/...". workingDir is a single
+            //path segment, so basename(dirname()) recovers it whatever the (here empty) workspaceRoot is.
+            $playbookName = \basename($playbookPath);
+            $workingDir = \basename(\dirname($playbookPath));
+
+            $playbookRelative = $workingDir . '/' . $playbookName;
+            if ($workspaceFilesystem->fileExists($playbookRelative)) {
+                $this->composeArtifacts[$playbookName] = $workspaceFilesystem->read($playbookRelative);
+            }
+
+            //The full Compose Specification file is produced during the deploy stage (services, networks,
+            //volumes, ...); the expose stage rewrites a near-empty compose.yaml, so only the deploy one is kept.
+            $composeRelative = $workingDir . '/compose.yaml';
+            if ('deploy.yml' === $playbookName && $workspaceFilesystem->fileExists($composeRelative)) {
+                $this->composeArtifacts['compose.yaml'] = $workspaceFilesystem->read($composeRelative);
+
+                //The config/secret files referenced by the Compose Specification are written next to it under
+                //"configs/" and "secrets/" (Accumulator::getFiles()); capture their content keyed by the same
+                //forward-slash relative path so they can be golden-compared like the Kubernetes ConfigMap/Secret
+                //manifests. Only the deploy stage writes them.
+                foreach (['configs', 'secrets'] as $subDir) {
+                    $base = $workingDir . '/' . $subDir;
+                    foreach ($workspaceFilesystem->listContents($base, true) as $item) {
+                        if (!$item->isFile()) {
+                            continue;
+                        }
+
+                        $relative = $subDir . '/' . \substr($item->path(), \strlen($base) + 1);
+                        $this->referencedFiles[$relative] = $workspaceFilesystem->read($item->path());
+                    }
+                }
+            }
+
+            //The Traefik dynamic configuration is serialized to "<project>.yml" alongside the playbook on the
+            //expose stage; capture every "*.yml" sibling but the playbooks themselves (deploy.yml/expose.yml).
+            foreach ($workspaceFilesystem->listContents($workingDir, false) as $item) {
+                if (!$item->isFile()) {
+                    continue;
+                }
+
+                $name = \basename($item->path());
+                if (!\str_ends_with($name, '.yml') || 'deploy.yml' === $name || 'expose.yml' === $name) {
+                    continue;
+                }
+
+                $this->traefikArtifacts[$name] = $workspaceFilesystem->read($item->path());
+            }
+        };
+
+        $runner = new class ($capture) implements RunnerInterface {
+            /**
+             * @param callable(string): void $capture
+             */
+            public function __construct(
+                private $capture,
+            ) {
+            }
+
+            public function run(
+                string $playbookPath,
+                string $inventoryPath,
+                array $extraVars,
+                ?ClusterCredentials $credentials,
+                PromiseInterface $promise,
+            ): RunnerInterface {
+                ($this->capture)($playbookPath);
+
+                $promise->success('docker-compose fake runner: playbook captured, nothing executed');
+
+                return $this;
+            }
+        };
+
+        $runnerFactory = new class ($runner) implements RunnerFactoryInterface {
+            public function __construct(
+                private readonly RunnerInterface $runner,
+            ) {
+            }
+
+            public function __invoke(
+                string $url,
+                ?ClusterCredentials $credentials,
+            ): RunnerInterface {
+                return $this->runner;
+            }
+        };
+
+        //Build the Driver directly with the in-memory filesystems and register it on the Directory (mirroring
+        //aClusterClient), overriding the disk-backed driver di.php would otherwise provide.
+        $driver = new DockerComposeDriver(
+            runnerFactory: $runnerFactory,
+            transcribers: $this->sfContainer->get(TranscriberCollectionInterface::class),
+            workspaceFilesystem: $workspaceFilesystem,
+            templatesFilesystem: $templatesFilesystem,
+            workspaceRoot: '',
+            tmpDirFactory: static fn (): string => 'east-paas-compose-' . uniqid('', true),
+            templates: [
+                'deploy' => 'deploy.yml.template',
+                'expose' => 'expose.yml.template',
+            ],
+        );
+
+        $this->sfContainer->get(Directory::class)->register('docker-compose', $driver);
+
+        $this->clusterType = 'docker-compose';
     }
 
     #[Given('a cluster supporting hierarchical namespace')]
@@ -3293,6 +3462,126 @@ EOF;
         Assert::assertEquals(
             $expectedPretty,
             $json,
+        );
+    }
+
+    /**
+     * Replace the per-run, host-dependent working directory ("<sysTmp>/east-paas-compose-<uniqid>") baked
+     * into the rendered playbooks by a stable "__WORKDIR__" placeholder so deploy.yml/expose.yml (and the
+     * JSON paas_files/paas_certs "src" lists they embed) can be golden-compared.
+     */
+    private function normalizeComposePlaybook(string $text): string
+    {
+        return (string) preg_replace(
+            '#[^"\s]*/east-paas-compose-[0-9a-f]+\.[0-9a-f]+#',
+            '__WORKDIR__',
+            $text,
+        );
+    }
+
+    /**
+     * Load the expected Docker Compose artifacts for the current scenario's variant flags, mirroring
+     * compareCD()'s use of expectedCD.php for Kubernetes.
+     *
+     * @return array{compose.yaml: string, deploy.yml: string, expose.yml: string, traefik: string, referencedFiles: array<string, string>}
+     */
+    private function loadExpectedComposeArtifacts(): array
+    {
+        return (include('expectedCompose.php'))(
+            self::$projectPrefix,
+            self::$quotasDefined,
+            self::$defaultsDefined,
+            strtolower(trim((string) preg_replace('#[^A-Za-z0-9-]+#', '', (string) self::$projectName))),
+            self::$jobsDefined,
+            self::$conditionsDefined,
+            self::$ingressProvider,
+        );
+    }
+
+    #[Then('some docker compose configuration has been created')]
+    public function someDockerComposeConfigurationHasBeenCreated(): void
+    {
+        //The fake RunnerInterface captured the artifacts written by the driver into its working directory
+        //(mirroring the $this->manifests capture for Kubernetes) instead of running Ansible/Docker.
+        Assert::assertNotEmpty(
+            $this->composeArtifacts,
+            'No Docker Compose artifact has been captured by the fake runner',
+        );
+        Assert::assertArrayHasKey(
+            'compose.yaml',
+            $this->composeArtifacts,
+            'The compose.yaml file has not been generated',
+        );
+        Assert::assertArrayHasKey(
+            'deploy.yml',
+            $this->composeArtifacts,
+            'The deploy Ansible playbook has not been generated',
+        );
+
+        $expected = $this->loadExpectedComposeArtifacts();
+
+        //Full golden comparison (like the Kubernetes manifests): the generated Compose Specification must
+        //match the reviewed expected file byte for byte.
+        Assert::assertSame(
+            $expected['compose.yaml'],
+            $this->composeArtifacts['compose.yaml'],
+            'The generated compose.yaml does not match the expected golden file',
+        );
+
+        //The deploy playbook is compared after normalizing the per-run working directory (uniqid) baked into
+        //its "src" paths; everything else (vars block, paas_files/paas_reset_volumes/paas_jobs, tasks) is golden.
+        Assert::assertSame(
+            $expected['deploy.yml'],
+            $this->normalizeComposePlaybook($this->composeArtifacts['deploy.yml']),
+            'The generated deploy.yml playbook does not match the expected golden file',
+        );
+
+        //Every config/secret file referenced by the Compose Specification must match its expected content.
+        $actualReferencedFiles = $this->referencedFiles;
+        ksort($actualReferencedFiles);
+        Assert::assertSame(
+            $expected['referencedFiles'],
+            $actualReferencedFiles,
+            'The referenced config/secret files do not match the expected golden files',
+        );
+    }
+
+    #[Then('some traefik configuration has been created')]
+    public function someTraefikConfigurationHasBeenCreated(): void
+    {
+        Assert::assertNotEmpty(
+            $this->traefikArtifacts,
+            'No Traefik dynamic configuration artifact has been captured by the fake runner',
+        );
+
+        //The expose playbook must have been generated to drop the Traefik dynamic file in the watched directory.
+        Assert::assertArrayHasKey(
+            'expose.yml',
+            $this->composeArtifacts,
+            'The expose Ansible playbook has not been generated',
+        );
+
+        $expected = $this->loadExpectedComposeArtifacts();
+
+        //The expose playbook is compared after normalizing the per-run working directory (uniqid) baked into
+        //its "src" path; the vars block (paas_certs) and tasks are golden.
+        Assert::assertSame(
+            $expected['expose.yml'],
+            $this->normalizeComposePlaybook($this->composeArtifacts['expose.yml']),
+            'The generated expose.yml playbook does not match the expected golden file',
+        );
+
+        //Exactly one Traefik dynamic configuration file ("<project>.yml") is produced, and it must match the
+        //expected golden file (routers, services, TLS) byte for byte.
+        Assert::assertCount(
+            1,
+            $this->traefikArtifacts,
+            'Exactly one Traefik dynamic configuration file is expected',
+        );
+        Assert::assertSame(
+            $expected['traefik'],
+            (string) reset($this->traefikArtifacts),
+            'The generated Traefik dynamic configuration does not match the expected golden file',
         );
     }
 

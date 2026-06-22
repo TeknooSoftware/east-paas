@@ -1,0 +1,36 @@
+http:
+    routers:
+        demo:
+            rule: 'Host(`demo-paas.teknoo.software`) || Host(`alias1.demo-paas.teknoo.software`) || Host(`alias2.demo-paas.teknoo.software`)'
+            entryPoints:
+                - websecure
+            service: demo-default
+            tls: {  }
+        demo-php-service-9876:
+            rule: '(Host(`demo-paas.teknoo.software`) || Host(`alias1.demo-paas.teknoo.software`) || Host(`alias2.demo-paas.teknoo.software`)) && PathPrefix(`/php`)'
+            entryPoints:
+                - websecure
+            service: demo-php-service-9876
+            tls: {  }
+        demo-secure:
+            rule: Host(`demo-secure.teknoo.software`)
+            entryPoints:
+                - websecure
+            service: demo-secure-default
+            tls: {  }
+    services:
+        demo-default:
+            loadBalancer:
+                servers:
+                    -
+                        url: 'http://demo:8080'
+        demo-php-service-9876:
+            loadBalancer:
+                servers:
+                    -
+                        url: 'http://php-service:9876'
+        demo-secure-default:
+            loadBalancer:
+                servers:
+                    -
+                        url: 'https://demo:8181'

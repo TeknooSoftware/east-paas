@@ -66,7 +66,7 @@ class Secret implements ImmutableInterface
     }
 
     /**
-     * @return array<string|int, mixed>
+     * @return array<string|int, array<string, string>>
      */
     public function getOptions(): array
     {
