@@ -11,6 +11,7 @@
 - New DI parameters under `teknoo.east.paas.docker-compose.*` (ansible binary, timeout, deploy root, network
   driver, Traefik container/dirs/entrypoints/certresolver, https backend verify) — all optional with defaults.
 - See `documentation/docker-compose.deployment.md` and `documentation/traefik.ingress.md`.
+*(This feature has been written assisted by Local AI and Claude)*
 
 ## [5.6.2] - 2026-06-03
 ### Stable Release
