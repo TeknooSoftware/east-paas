@@ -12,7 +12,8 @@ Introduction
 This library is able to fetch a project on a source repository (like `Git`) in a temporary folder, read a deployment
 file (by default, called `.paas.yaml`) run some hooks to install vendors (with `composer`, `npm`, `pip`, etc..), compile
 or other  (`make`, `symfony console`), warmup cache, create OCI image (with `buildah` or `docker build`) and deploy the
-project them in a cluster (`kubernetes`).
+project them in a cluster (`kubernetes`) or on a plain `Docker` host (`docker-compose`, via `Ansible` and
+`Traefik`).
 
 The deployment on `Kubernetes` includes :
 - `Namespace`
@@ -20,7 +21,8 @@ The deployment on `Kubernetes` includes :
 - `ConfigMap` and `Secrets`
 - `Service` and `Ingress`
 
-`Teknoo East PaaS` is compatible with `Docker` or any `OCI implementation` (like `BuildAh`) and `Kubernetes`.
+`Teknoo East PaaS` is compatible with `Docker` or any `OCI implementation` (like `BuildAh`), `Kubernetes` and
+plain `Docker` hosts (through `Docker Compose`, deployed over `Ansible`/`SSH` and exposed with `Traefik v3`).
 An implementation with `Docker Swarm` can be added.
 
 `Teknoo East PaaS` is bundled with a default implementation with `Symfony` 6.4 or newer and `Doctrine ODM MongoDB` to
@@ -81,6 +83,9 @@ Defaults implementations
   _(Or any tools compliant with the Docker build command line)_
 * `Kubernetes` (thanks to `Teknoo Kubernetes Client` and any `PSR Http Client` implementation) :
   to deploy an application to a cluster
+* `Docker Compose` (thanks to `Ansible` over `SSH`, and `Traefik v3` as ingress) :
+  to deploy an application to a plain `Docker` host as a `Compose Specification` stack. Registered under the
+  cluster type `docker-compose`. See `docker-compose.deployment.md` and `traefik.ingress.md`.
 * `PhpSecLib` : To implement `Security` contracts and encrypt or decrypt message through the bus.
 * `Composer/Npm/PIP/Make/Symfony Console` (thanks to `Symfony Process`) to provide some hooks to build projects
 

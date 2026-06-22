@@ -15,7 +15,7 @@ Teknoo Software - PaaS library
 This library is able to fetch a project on a source repository (like `Git`) in a temporary folder, reads a deployment
 file (by default, called `.paas.yaml`) run some hooks to install vendors (with `composer`, `npm`, `pip`, etc..), 
 compiles (`make`, `symfony console`), warmup cache, creates OCI image (with `buildah` or `docker build`) and deploy the
-project them in a cluster (`kubernetes`, but with non bundled driver, `Docker Swarm`).
+project them in a cluster (`kubernetes`) or on a plain `Docker` host (`docker-compose`, via `Ansible` and `Traefik`).
 
 The deployment on `Kubernetes` includes :
 - `Namespace`
@@ -24,8 +24,9 @@ The deployment on `Kubernetes` includes :
 - `Service` and `Ingress`
 - `Quota`
 
-`Teknoo East PaaS` is compatible with `Docker` or any `OCI implementation` (like `BuildAh`) and `Kubernetes`.
-Implementation of other cluster orchestration like `Docker Swarm` can be added.
+`Teknoo East PaaS` is compatible with `Docker` or any `OCI implementation` (like `BuildAh`), `Kubernetes` and
+plain `Docker` hosts (through `Docker Compose`, deployed over `Ansible`/`SSH` and exposed with `Traefik v3`).
+An implementation with `Docker Swarm` can be added.
 
 `Teknoo East PaaS` is bundled with a default implementation with `Symfony` 6.4 or newer and `Doctrine ODM MongoDB` to
 persist data.

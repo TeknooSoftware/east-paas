@@ -1,5 +1,17 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta1] - 2026-06-22
+### Beta Release
+- Add a `docker-compose` cluster driver to deploy a `CompiledDeployment` to a plain `Docker` host as a
+  `Compose Specification` stack, instead of `Kubernetes`.
+  - Connects to the remote host over `SSH` and applies the deployment via `Ansible` playbooks (one per stage).
+  - Exposes services through `Traefik v3` using a watched dynamic-configuration directory and a
+    connect-per-project network model.
+  - Registered under cluster `type: docker-compose`; SSH credentials taken from the cluster `identity`.
+- New DI parameters under `teknoo.east.paas.docker-compose.*` (ansible binary, timeout, deploy root, network
+  driver, Traefik container/dirs/entrypoints/certresolver, https backend verify) — all optional with defaults.
+- See `documentation/docker-compose.deployment.md` and `documentation/traefik.ingress.md`.
+
 ## [5.6.2] - 2026-06-03
 ### Stable Release
 - Add `HTTPS` as `transport`/`protocol` for services

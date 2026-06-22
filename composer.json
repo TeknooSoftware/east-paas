@@ -97,7 +97,12 @@
         "symfony/var-exporter": "^6.4.24||^7.4||^8",
         "symfony/yaml": "^6.4.24||^7.4||^8",
         "teknoo/bridge-phpdi-symfony": "^7.1.2",
-        "teknoo/kubernetes-client": "^2.0.3"
+        "teknoo/kubernetes-client": "^2.0.3",
+        "league/flysystem-memory": "^3.31"
+    },
+    "suggest": {
+        "teknoo/kubernetes-client": "Kubernetes Client driver: run Kubernetes deployments",
+        "symfony/scheduler": "platform-side scheduling of scheduled jobs"
     },
     "autoload": {
         "psr-4": {
@@ -108,6 +113,7 @@
             "Teknoo\\East\\Paas\\Infrastructures\\Flysystem\\": "infrastructures/Flysystem/",
             "Teknoo\\East\\Paas\\Infrastructures\\Git\\": "infrastructures/Git/",
             "Teknoo\\East\\Paas\\Infrastructures\\Kubernetes\\": "infrastructures/Kubernetes/",
+            "Teknoo\\East\\Paas\\Infrastructures\\DockerCompose\\": "infrastructures/DockerCompose/",
             "Teknoo\\East\\Paas\\Infrastructures\\Laminas\\": "infrastructures/Laminas/",
             "Teknoo\\East\\Paas\\Infrastructures\\PhpSecLib\\": "infrastructures/PhpSecLib/",
             "Teknoo\\East\\Paas\\Infrastructures\\Symfony\\": "infrastructures/Symfony/Components/",
@@ -125,6 +131,7 @@
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Flysystem\\": "tests/infrastructures/Flysystem/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Git\\": "tests/infrastructures/Git/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Kubernetes\\": "tests/infrastructures/Kubernetes/",
+            "Teknoo\\Tests\\East\\Paas\\Infrastructures\\DockerCompose\\": "tests/infrastructures/DockerCompose/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Laminas\\": "tests/infrastructures/Laminas/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\PhpSecLib\\": "tests/infrastructures/PhpSecLib/",
             "Teknoo\\Tests\\East\\Paas\\Infrastructures\\Symfony\\": "tests/infrastructures/Symfony/Components/",

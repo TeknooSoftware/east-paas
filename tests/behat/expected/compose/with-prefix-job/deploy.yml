@@ -1,0 +1,77 @@
+---
+# East PaaS - Docker Compose deploy playbook
+# Rendered by the DockerCompose driver; {% %} placeholders are substituted before execution.
+- name: Deploy behat-test-a-prefix-foobarproject on the Docker host
+  hosts: all
+  gather_facts: false
+  vars:
+    paas_project: "behat-test-a-prefix-foobarproject"
+    paas_deploy_root: "/opt/paas"
+    paas_project_dir: "/opt/paas/behat-test-a-prefix-foobarproject"
+    paas_network: "behat-test-a-prefix-foobarproject_private"
+    paas_traefik_container: "traefik"
+    paas_files: [{"src":"__WORKDIR__\/secrets\/a-prefix-map-vault-secret","dest":"secrets\/a-prefix-map-vault-secret","mode":"0600"},{"src":"__WORKDIR__\/secrets\/a-prefix-map-vault2-secret","dest":"secrets\/a-prefix-map-vault2-secret","mode":"0600"},{"src":"__WORKDIR__\/secrets\/a-prefix-volume-vault-secret","dest":"secrets\/a-prefix-volume-vault-secret","mode":"0600"},{"src":"__WORKDIR__\/configs\/a-prefix-map1-map","dest":"configs\/a-prefix-map1-map","mode":"0640"},{"src":"__WORKDIR__\/configs\/a-prefix-map2-map","dest":"configs\/a-prefix-map2-map","mode":"0640"}]
+    paas_reset_volumes: []
+    paas_jobs: ["a-prefix-job-init-init-var","a-prefix-job-init-update","a-prefix-job-translation-php-translation"]
+  tasks:
+    - name: Ensure the project directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}"
+        state: directory
+        mode: "0750"
+
+    - name: Ensure the secrets directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/secrets"
+        state: directory
+        mode: "0700"
+
+    - name: Ensure the configs directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/configs"
+        state: directory
+        mode: "0750"
+
+    - name: Push the Compose Specification file
+      ansible.builtin.copy:
+        src: "__WORKDIR__/compose.yaml"
+        dest: "{{ paas_project_dir }}/compose.yaml"
+        mode: "0640"
+
+    - name: Push the configuration and secret files
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ paas_project_dir }}/{{ item.dest }}"
+        mode: "{{ item.mode }}"
+      loop: "{{ paas_files | default([]) }}"
+      no_log: true
+
+    - name: Remove volumes flagged for reset before bringing the stack up
+      community.docker.docker_volume:
+        name: "{{ paas_project }}_{{ item }}"
+        state: absent
+      loop: "{{ paas_reset_volumes | default([]) }}"
+
+    - name: Bring the Compose stack up
+      ansible.builtin.command:
+        cmd: docker compose -p {{ paas_project }} up -d --remove-orphans
+        chdir: "{{ paas_project_dir }}"
+      register: paas_compose_up
+      changed_when: true
+
+    - name: Run during-deployment jobs
+      ansible.builtin.command:
+        cmd: docker compose -p {{ paas_project }} --profile jobs run --rm {{ item }}
+        chdir: "{{ paas_project_dir }}"
+      loop: "{{ paas_jobs | default([]) }}"
+      register: paas_jobs_result
+      changed_when: true
+
+    - name: Connect Traefik to the project's private network (idempotent)
+      ansible.builtin.command:
+        cmd: docker network connect {{ paas_network }} {{ paas_traefik_container }}
+      register: paas_network_connect
+      changed_when: "'endpoint' in paas_network_connect.stdout"
+      failed_when:
+        - paas_network_connect.rc != 0
+        - "'already exists in network' not in paas_network_connect.stderr"

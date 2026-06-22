@@ -1,0 +1,37 @@
+---
+# East PaaS - Docker Compose expose playbook
+# Rendered by the DockerCompose driver; {% %} placeholders are substituted before execution.
+- name: Expose behat-test-foobarproject through Traefik on the Docker host
+  hosts: all
+  gather_facts: false
+  vars:
+    paas_project: "behat-test-foobarproject"
+    paas_traefik_dynamic_dir: "/etc/traefik/dynamic"
+    paas_traefik_certs_dir: "/etc/traefik/certs"
+    paas_certs: []
+  tasks:
+    - name: Ensure the Traefik certificates directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_traefik_certs_dir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Push the TLS certificate and key files into the Traefik certificates directory
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ paas_traefik_certs_dir }}/{{ item.dest }}"
+        mode: "0600"
+      loop: "{{ paas_certs | default([]) }}"
+      no_log: true
+
+    - name: Ensure the Traefik watched directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_traefik_dynamic_dir }}"
+        state: directory
+        mode: "0750"
+
+    - name: Push the Traefik dynamic configuration file into the watched directory
+      ansible.builtin.copy:
+        src: "__WORKDIR__/behat-test-foobarproject.yml"
+        dest: "{{ paas_traefik_dynamic_dir }}/{{ paas_project }}.yml"
+        mode: "0640"
