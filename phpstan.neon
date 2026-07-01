@@ -49,11 +49,11 @@ parameters:
             message: '#cast mixed to#'
             path: infrastructures/Symfony/Components/Form/Type/
         -
-            message: '#ClassFinderDenormalizer::denormalize#'
-            path: infrastructures/Symfony/Components/Normalizer/ClassFinderDenormalizer.php
-        -
             message: '#Parameter \&\$array by-ref type#'
             path: infrastructures/Symfony/Components/Configuration/PropertyAccessor.php
+        -
+            message: '#Cannot call method decrypt#'
+            path: infrastructures/Symfony/Components/Messenger/Handler/Psr11
         -
             message: '#mixed#'
             path: src/Job/JobUnit.php
