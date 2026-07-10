@@ -100,7 +100,7 @@ class ClusterType extends AbstractType
                         }
 
                         if (
-                            'kubernetes' === $form->getParent()->get('type')->getData()
+                            'kubernetes' === $form->getParent()?->get('type')?->getData()
                             && !preg_match('/^https:\/\/[a-zA-Z0-9-_\.]+/iS', (string) $value)
                         ) {
                             $context->buildViolation('The address must start with https for kubernetes clusters.')
