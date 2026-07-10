@@ -163,9 +163,9 @@ class Project implements
         return (string) $this->prefix;
     }
 
-    public function setPrefix(string $prefix): Project
+    public function setPrefix(?string $prefix): Project
     {
-        $this->prefix = $prefix;
+        $this->prefix = (string) $prefix;
         return $this;
     }
 

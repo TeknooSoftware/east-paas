@@ -38,7 +38,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Blank;
 use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Teknoo\East\Paas\Object\Cluster;
 use Traversable;
 
@@ -46,6 +47,7 @@ use function array_map;
 use function is_array;
 use function is_bool;
 use function iterator_to_array;
+use function preg_match;
 
 /**
  * Symfony form to edit East PaaS Cluster
@@ -88,10 +90,27 @@ class ClusterType extends AbstractType
                 'required' => true,
                 'constraints' => [
                     new NotBlank(),
-                    new Regex('/^https:\/\/[a-zA-Z0-9-_\.]+/iS')
+                    new Callback(function ($value, ExecutionContextInterface $context): void {
+                        $form = $context->getObject();
+                        if (
+                            !$form instanceof FormInterface
+                            || !$form->has('type')
+                        ) {
+                            return;
+                        }
+
+                        if (
+                            'kubernetes' === $form->getParent()->get('type')->getData()
+                            && !preg_match('/^https:\/\/[a-zA-Z0-9-_\.]+/iS', (string) $value)
+                        ) {
+                            $context->buildViolation('The address must start with https for kubernetes clusters.')
+                                ->addViolation();
+                        }
+                    }),
                 ],
             ]
         );
+
         $builder->add('environment', EnvironmentType::class, ['required' => true]);
         $builder->add('identity', ClusterCredentialsType::class, ['required' => true]);
         $builder->add(

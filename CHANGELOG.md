@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta2] - 2026-07-10
+### Beta Release
+- Fix issue in ClusterType to disable constraint requiring address begin by `https:` if the cluster is not kubernetes
+
 ## [5.7.0-beta1] - 2026-06-22
 ### Beta Release
 - Add a `docker-compose` cluster driver to deploy a `CompiledDeployment` to a plain `Docker` host as a
