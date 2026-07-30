@@ -100,7 +100,7 @@ class SecretTranscriberTest extends TestCase
         );
 
         $files = $generation->getFiles();
-        self::assertSame('p4ss', $files['secrets/prj-db-secret']);
+        self::assertSame('password=p4ss', $files['secrets/prj-db-secret']);
         self::assertSame("tls.crt=CERT\ntls.key=KEY", $files['secrets/prj-tls-secret']);
         self::assertArrayNotHasKey('secrets/prj-db-secret__password', $files);
         self::assertArrayNotHasKey('secrets/prj-tls-secret__tls.crt', $files);

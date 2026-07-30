@@ -37,12 +37,10 @@ use Throwable;
 
 use function array_map;
 use function base64_decode;
-use function count;
 use function implode;
 use function is_array;
 use function is_scalar;
 use function is_string;
-use function reset;
 use function str_starts_with;
 use function strlen;
 use function substr;
@@ -54,8 +52,8 @@ use const PHP_EOL;
  * in their options) to Compose `secrets` entries backed by files pushed to the host.
  *
  * Each secret becomes a single Compose secret `{ <prefixed>-secret: { file: ./secrets/<prefixed>-secret } }`
- * (the name consumed by the deployment transcribers) backed by a file holding the bare value (single key)
- * or a newline-joined `key=value` env-file representation (multiple keys). A `base64:` prefixed value is
+ * (the name consumed by the deployment transcribers) backed by a file holding a newline-joined
+ * `key=value` env-file representation of every option. A `base64:` prefixed value is
  * decoded before being written, mirroring the Kubernetes SecretTranscriber convention. Per-ingress TLS is
  * handled independently by the IngressTranscriber, which reads the secret options directly.
  *
@@ -95,17 +93,13 @@ class SecretTranscriber implements DeploymentInterface
     }
 
     /**
-     * Build the content of the aggregated secret file: the bare value when a single key is present,
-     * otherwise a newline-joined `key=value` env-file representation of every option.
+     * Build the content of the aggregated secret file: a newline-joined `key=value` env-file representation
+     * of every option, regardless of how many keys are present.
      *
      * @param array<string|int, mixed> $options
      */
     private static function aggregate(array $options): string
     {
-        if (1 === count($options)) {
-            return self::decode(reset($options));
-        }
-
         $lines = [];
         foreach ($options as $key => $value) {
             $lines[] = (string) $key . '=' . self::decode($value);
@@ -133,9 +127,6 @@ class SecretTranscriber implements DeploymentInterface
                     $baseName = (string) $prefixer($secret->getName() . self::NAME_SUFFIX);
                     $options = $secret->getOptions();
 
-                    //A single Compose secret matching the name consumed by the deployment transcribers
-                    //(`<prefixed>-secret`); its file holds the bare value when only one key is present,
-                    //otherwise the newline-joined `key=value` representation of every option.
                     $accumulator->addSecret(
                         $baseName,
                         new MountedFile('secrets/' . $baseName, self::aggregate($options)),

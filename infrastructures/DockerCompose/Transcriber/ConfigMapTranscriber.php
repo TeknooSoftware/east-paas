@@ -35,10 +35,8 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
-use function count;
 use function implode;
 use function is_scalar;
-use function reset;
 
 use const PHP_EOL;
 
@@ -71,14 +69,13 @@ class ConfigMapTranscriber implements DeploymentInterface
     }
 
     /**
+     * Build the content of the aggregated secret file: a newline-joined `key=value` env-file representation
+     *  of every option, regardless of how many keys are present.
+     *
      * @param array<string|int, mixed> $options
      */
     private static function aggregate(array $options): string
     {
-        if (1 === count($options)) {
-            return self::scalarToString(reset($options));
-        }
-
         $lines = [];
         foreach ($options as $key => $value) {
             $lines[] = (string) $key . '=' . self::scalarToString($value);

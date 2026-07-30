@@ -89,6 +89,47 @@ class ConfigMapTranscriberTest extends TestCase
         self::assertArrayNotHasKey('configs/prj-app-map__TZ', $files);
     }
 
+    public function testTranscribeSingleKeyMap(): void
+    {
+        //A single-key map must produce `key=value` format (not the bare value), matching the
+        //multi-key behaviour so that Docker Compose `envFrom` secrets/configs always read env-files.
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachMap')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Map('single', ['ONLY_KEY' => 'only_value']), 'prj');
+
+                return $cd;
+            });
+
+        $generation = new Accumulator('default-prj', 'private');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $generation,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+
+        self::assertSame(
+            [
+                'configs' => [
+                    'prj-single-map' => ['file' => './configs/prj-single-map'],
+                ],
+            ],
+            $generation->getComposeFile(),
+        );
+
+        $files = $generation->getFiles();
+        self::assertSame('ONLY_KEY=only_value', $files['configs/prj-single-map']);
+        self::assertArrayNotHasKey('configs/prj-single-map__ONLY_KEY', $files);
+    }
+
     public function testTranscribeKeepsOneConfigPerMapWithoutFusing(): void
     {
         //Two maps, the first with 3 keys and the second with 2 keys: the result must be exactly two

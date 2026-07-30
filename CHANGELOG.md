@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta4] - 2026-07-30
+### Beta Release
+- Fix issue in ConfigMapTranscriber and SecretTranscriber about DockerCompose when the map value has only one key.
+
 ## [5.7.0-beta3] - 2026-07-10
 ### Beta Release
 - Fix issue in ClusterType to disable constraint requiring address begin by `https:` if the cluster is not kubernetes
