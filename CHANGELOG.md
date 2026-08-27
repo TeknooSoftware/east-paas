@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta6] - 2026-08-27
+### Beta Release
+- Tag Error
+
 ## [5.7.0-beta5] - 2026-08-27
 ### Beta Release
 - PHPSecLib v4
