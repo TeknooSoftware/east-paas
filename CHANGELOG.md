@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta5] - 2026-08-27
+### Beta Release
+- PHPSecLib v4
+
 ## [5.7.0-beta4] - 2026-07-30
 ### Beta Release
 - Fix issue in ConfigMapTranscriber and SecretTranscriber about DockerCompose when the map value has only one key.

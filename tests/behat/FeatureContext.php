@@ -119,7 +119,7 @@ use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 use Traversable;
-use phpseclib3\Crypt\RSA;
+use phpseclib4\Crypt\RSA;
 
 use function base64_encode;
 use function dirname;

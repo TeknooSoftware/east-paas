@@ -62,7 +62,7 @@
         "league/mime-type-detection": "^1.16",
         "php-http/discovery": "^1.20",
         "php-http/mock-client": "^1.6.1",
-        "phpseclib/phpseclib": "^3.0.49",
+        "phpseclib/phpseclib": "^4",
         "symfony/cache": "^6.4.24||^7.4||^8.1",
         "symfony/cache-contracts": "^3.6",
         "symfony/config": "^6.4.24||^7.4||^8.1",

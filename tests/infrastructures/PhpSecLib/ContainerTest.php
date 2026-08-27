@@ -27,8 +27,8 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\PhpSecLib;
 
 use DI\Container;
 use DI\ContainerBuilder;
-use phpseclib3\Crypt\DSA;
-use phpseclib3\Crypt\RSA;
+use phpseclib4\Crypt\DSA;
+use phpseclib4\Crypt\RSA;
 use Teknoo\East\Paas\Contracts\Recipe\Step\History\SendHistoryInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Job\SendJobInterface;
 use Teknoo\East\Paas\Contracts\Response\ErrorFactoryInterface;

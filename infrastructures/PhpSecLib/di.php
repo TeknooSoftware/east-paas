@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\PhpSecLib;
 
-use phpseclib3\Crypt\DSA;
-use phpseclib3\Crypt\RSA;
+use phpseclib4\Crypt\DSA;
+use phpseclib4\Crypt\RSA;
 use Psr\Container\ContainerInterface;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;

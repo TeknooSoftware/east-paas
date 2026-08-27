@@ -25,9 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\PhpSecLib\Security;
 
-use phpseclib3\Crypt\Common\PrivateKey;
-use phpseclib3\Crypt\Common\PublicKey;
-use phpseclib3\Crypt\RSA;
+use phpseclib4\Crypt\Common\PrivateKey;
+use phpseclib4\Crypt\Common\PublicKey;
+use phpseclib4\Crypt\RSA;
+use phpseclib4\File\Common\Signable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -168,15 +169,15 @@ class EncryptionTest extends TestCase
                 return 'foo';
             }
 
-            public function verify($content, $signature): void
+            public function verify(string $content, array|string $signature): bool
             {
             }
 
-            public function toString($type, array $options = []): void
+            public function toString($type, array $options = []): string
             {
             }
 
-            public function getFingerprint($algorithm): void
+            public function getFingerprint(string $algorithm): string
             {
             }
         };
@@ -224,15 +225,15 @@ class EncryptionTest extends TestCase
                 throw new RuntimeException('foo');
             }
 
-            public function verify($content, $signature): void
+            public function verify(string $content, array|string $signature): bool
             {
             }
 
-            public function toString($type, array $options = []): void
+            public function toString($type, array $options = []): string
             {
             }
 
-            public function getFingerprint($algorithm): void
+            public function getFingerprint(string $algorithm): string
             {
             }
         };
@@ -481,19 +482,19 @@ class EncryptionTest extends TestCase
                 throw new RuntimeException('foo');
             }
 
-            public function sign($content): void
+            public function sign(string|Signable $source): string|array
             {
             }
 
-            public function getPublicKey(): void
+            public function getPublicKey(): PublicKey
             {
             }
 
-            public function toString($type, array $options = []): void
+            public function toString(string $type, array $options = []): string
             {
             }
 
-            public function withPassword($password = false): void
+            public function withPassword(#[\SensitiveParameter] ?string $password = null): PrivateKey
             {
             }
         };

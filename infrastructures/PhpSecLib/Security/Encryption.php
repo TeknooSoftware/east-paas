@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\PhpSecLib\Security;
 
-use phpseclib3\Crypt\Common\PrivateKey;
-use phpseclib3\Crypt\Common\PublicKey;
+use phpseclib4\Crypt\Common\PrivateKey;
+use phpseclib4\Crypt\Common\PublicKey;
 use SensitiveParameter;
 use Teknoo\East\Paas\Contracts\Security\EncryptionInterface;
 use Teknoo\East\Paas\Contracts\Security\SensitiveContentInterface;
