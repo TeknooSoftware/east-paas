@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use DomainException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
@@ -38,6 +39,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
+use Teknoo\East\Paas\Compilation\Compiler\DefaultsCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PopulatedVolumeInterface;
 use Teknoo\Kubernetes\Client;
@@ -416,7 +418,16 @@ trait PodsTranscriberTrait
         ];
 
         if (self::supportsHostUsers($versionLevel)) {
-            $spec['hostUsers'] = false;
+            try {
+                $reference = $defaultsBag->getReference(DefaultsCompiler::CONFIG_KEY_DISABLE_USER_ISOLATION);
+                if (!empty($defaultsBag->resolve($reference))) {
+                    $spec['hostUsers'] = true;
+                } else {
+                    $spec['hostUsers'] = false;
+                }
+            } catch (DomainException) {
+                $spec['hostUsers'] = false;
+            }
         }
 
         $restartPolicy = $pod->getRestartPolicy() ?? $defaultRestartPolicy;

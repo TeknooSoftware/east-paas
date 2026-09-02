@@ -74,6 +74,7 @@ class YamlValidator
         'containers',
         'count',
         'defaults',
+        'disable-user-isolation',
         'enhancements',
         'extends',
         'fail-on',

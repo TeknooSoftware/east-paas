@@ -17,6 +17,7 @@ defaults:
   storage-provider: foo
   storage-size: 1Gi
   oci-registry-config-name: 'paas-config'
+  disable-user-isolation: false
   clusters:
     cluster-east:
       storage-provider: foo

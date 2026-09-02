@@ -1380,6 +1380,13 @@ EOF,
         self::$defaultsDefined = 'generic';
     }
 
+    #[Given('a project with a complete paas file with defaults and no isolation')]
+    public function aProjectWithAPaasFileWithDefaultsAndNoIsolation(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with.defaults-no-isolation.yaml';
+        self::$defaultsDefined = 'no-isolation';
+    }
+
     #[Given('a project with a complete paas file with defaults for the cluster')]
     public function aProjectWithAPaasFileWithDefaultsForTheCluster(): void
     {
@@ -2134,6 +2141,7 @@ EOF;
         $storageClass = match (self::$defaultsDefined) {
             'system' => 'system-defaults-storage-identifiers',
             'generic' => 'user-default-behat-provider',
+            'no-isolation' => 'user-default-behat-provider',
             'cluster' => 'cluster-default-behat-provider',
             'job-generic' => 'job-default-behat-provider',
             'job-cluster' => 'job-cluster-default-behat-provider',
@@ -2142,7 +2150,7 @@ EOF;
 
         $imagePullSecrets = match (self::$defaultsDefined) {
             'system' => ', "imagePullSecrets": [{"name": "system-oci-registry-behat"}]',
-            'generic', 'cluster' => ', "imagePullSecrets": [{"name": "oci-registry-behat"}]',
+            'generic', 'cluster', 'no-isolation' => ', "imagePullSecrets": [{"name": "oci-registry-behat"}]',
             'job-generic', 'job-cluster' => ', "imagePullSecrets": [{"name": "oci-registry-behat-job"}]',
             default => '',
         };
@@ -2324,7 +2332,11 @@ EOF;
 
         $hostUsersInline = '';
         if ($useHostUsers) {
-            $hostUsersInline = ', "hostUsers": false';
+            if ('no-isolation' === self::$defaultsDefined) {
+                $hostUsersInline = ', "hostUsers": true';
+            } else {
+                $hostUsersInline = ', "hostUsers": false';
+            }
         }
 
         if ($useImageVolumes) {

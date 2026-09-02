@@ -58,9 +58,18 @@ class DefaultsCompilerTest extends TestCase
         $definitions = [];
 
         $bag = $this->createMock(DefaultsBag::class);
-        $bag->expects($this->once())
+        $bag->expects($this->exactly(2))
             ->method('set')
-            ->with('oci-registry-config-name', null)
+            ->with(
+                $this->logicalOr(
+                    $this->equalTo('oci-registry-config-name'),
+                    $this->equalTo('disable-user-isolation')
+                ),
+                $this->logicalOr(
+                    $this->equalTo(null),
+                    $this->equalTo(0)
+                ),
+            )
             ->willReturnSelf();
 
         $this->assertInstanceOf(DefaultsCompiler::class, $this->buildCompiler(null, null, null)->compile(
@@ -78,7 +87,7 @@ class DefaultsCompilerTest extends TestCase
         $definitions = [];
 
         $bag = $this->createMock(DefaultsBag::class);
-        $bag->expects($this->exactly(3))
+        $bag->expects($this->exactly(4))
             ->method('set')
             ->willReturnSelf();
 
@@ -101,7 +110,7 @@ class DefaultsCompilerTest extends TestCase
         ];
 
         $bag = $this->createMock(DefaultsBag::class);
-        $bag->expects($this->exactly(6))
+        $bag->expects($this->exactly(7))
             ->method('set')
             ->willReturnSelf();
 
@@ -129,7 +138,7 @@ class DefaultsCompilerTest extends TestCase
         ];
 
         $bag = $this->createMock(DefaultsBag::class);
-        $bag->expects($this->exactly(7))
+        $bag->expects($this->exactly(8))
             ->method('set')
             ->willReturnSelf();
 

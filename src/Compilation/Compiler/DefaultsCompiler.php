@@ -52,6 +52,8 @@ class DefaultsCompiler implements CompilerInterface
 
     private const string CONFIG_KEY_CLUSTERS = 'clusters';
 
+    public const string CONFIG_KEY_DISABLE_USER_ISOLATION = 'disable-user-isolation';
+
     public function __construct(
         private readonly ?string $storageIdentifier,
         private readonly ?string $storageSize,
@@ -70,6 +72,7 @@ class DefaultsCompiler implements CompilerInterface
         }
 
         $bag->set(self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME, $this->defaultOciRegistryConfig);
+        $bag->set(self::CONFIG_KEY_DISABLE_USER_ISOLATION, '0');
     }
 
     /**
@@ -81,11 +84,12 @@ class DefaultsCompiler implements CompilerInterface
             self::CONFIG_KEY_STORAGE_PROVIDER,
             self::CONFIG_KEY_STORAGE_SIZE,
             self::CONFIG_KEY_OCI_REGISTRY_CONFIG_NAME,
+            self::CONFIG_KEY_DISABLE_USER_ISOLATION,
         ];
 
         foreach ($keys as $key) {
             if (!empty($definitions[$key])) {
-                $defaultsBag->set($key, $definitions[$key]);
+                $defaultsBag->set($key, (string) $definitions[$key]);
             }
         }
     }

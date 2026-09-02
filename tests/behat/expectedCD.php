@@ -46,7 +46,7 @@ return static function (
     string $provider,
 ): CompiledDeployment {
     $cd = new CompiledDeployment(
-        version: $withJob || $withCondition || 'traefik' === $provider ? 1.1 : 1,
+        version: $withJob || $withCondition || 'traefik' === $provider || 'no-isolation' === $withDefaults ? 1.1 : 1,
         prefix: $prefix,
         projectName: $projectName,
     );
@@ -601,6 +601,7 @@ return static function (
                     'storage-provider' => 'system-defaults-storage-identifiers',
                     'storage-size' => '987Gi',
                     'oci-registry-config-name' => 'system-oci-registry-behat',
+                    'disable-user-isolation' => '0',
                 ]
             ),
             'generic' => new DefaultsBag(
@@ -608,6 +609,7 @@ return static function (
                     'storage-provider' => 'user-default-behat-provider',
                     'storage-size' => '123Gi',
                     'oci-registry-config-name' => 'oci-registry-behat',
+                    'disable-user-isolation' => '0',
                 ]
             ),
             'cluster' => (static function (): DefaultsBag {
@@ -616,6 +618,7 @@ return static function (
                         'storage-provider' => 'user-default-behat-provider',
                         'storage-size' => '123Gi',
                         'oci-registry-config-name' => 'oci-registry-behat',
+                        'disable-user-isolation' => '0',
                     ]
                 );
                 $parent->forCluster('behat-cluster')
@@ -628,6 +631,7 @@ return static function (
                     'storage-provider' => 'job-default-behat-provider',
                     'storage-size' => '45Gi',
                     'oci-registry-config-name' => 'oci-registry-behat-job',
+                    'disable-user-isolation' => '0',
                 ]
             ),
             'job-cluster' => (static function (): DefaultsBag {
@@ -636,6 +640,7 @@ return static function (
                         'storage-provider' => 'job-default-behat-provider',
                         'storage-size' => '45Gi',
                         'oci-registry-config-name' => 'oci-registry-behat-job',
+                        'disable-user-isolation' => '0',
                     ]
                 );
                 $parent->forCluster('behat-cluster')
@@ -643,10 +648,19 @@ return static function (
 
                 return $parent;
             })(),
+            'no-isolation' => new DefaultsBag(
+                values: [
+                    'storage-provider' => 'user-default-behat-provider',
+                    'storage-size' => '123Gi',
+                    'oci-registry-config-name' => 'oci-registry-behat',
+                    'disable-user-isolation' => '1',
+                ]
+            ),
             default => new DefaultsBag(
                 values: [
                     'storage-provider' => 'nfs',
                     'oci-registry-config-name' => null,
+                    'disable-user-isolation' => '0',
                 ]
             ),
         },
