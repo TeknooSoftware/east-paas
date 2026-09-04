@@ -93,10 +93,11 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
 use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
-use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver as DockerComposeDriver;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\SymfonyProcessRunner;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
@@ -146,6 +147,34 @@ use function var_export;
 class FeatureContext implements Context
 {
     public const int STR_REPEAT_FOR_SIMULATION = 100000;
+
+    /**
+     * Deterministic name of the SSH private key file the real RunnerFactory materializes in the in-memory
+     * workspace, so the "--private-key" argument passed to `ansible-playbook` is assertable.
+     */
+    private const string COMPOSE_KEY_FILE_NAME = 'east-paas-ansible-behat';
+
+    /**
+     * Timeout given to the real RunnerFactory; asserted to prove it reaches the Process factory.
+     */
+    private const float COMPOSE_ANSIBLE_TIMEOUT = 300.0;
+
+    /**
+     * SSH private key carried by the docker-compose ClusterCredentials; asserted after the real
+     * RunnerFactory materialized it into the workspace filesystem.
+     */
+    private const string COMPOSE_SSH_PRIVATE_KEY = "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEBEHAT\n-----END OPENSSH PRIVATE KEY-----\n";
+
+    /**
+     * SSH login of the docker-compose ClusterCredentials, resolved by the real RunnerFactory into the
+     * "--user" argument.
+     */
+    private const string COMPOSE_SSH_USER = 'deployer';
+
+    /**
+     * Host part of the docker-compose cluster address, rendered into the Ansible inventory.
+     */
+    private const string COMPOSE_SSH_HOST = 'docker-host.behat.test';
 
     private ?KernelInterface $kernel = null;
 
@@ -240,6 +269,23 @@ class FeatureContext implements Context
      *      keyed by their forward-slash relative path ("configs/<name>", "secrets/<name>")
      */
     private array $referencedFiles = [];
+
+    /**
+     * @var array<int, array{command: array<int, string>, timeout: ?float}> every `ansible-playbook` command
+     *      line built by the real SymfonyProcessRunner, captured by the mocked Process factory
+     */
+    private array $ansibleRuns = [];
+
+    /**
+     * @var array<string, string> rendered inventory.ini keyed by stage ("deploy", "expose")
+     */
+    private array $ansibleInventories = [];
+
+    /**
+     * @var string|null content of the SSH private key materialized by the real RunnerFactory, read back
+     *      before its __destruct() removes it
+     */
+    private ?string $ansibleKeyFileContent = null;
 
     public bool $slowDb = false;
 
@@ -661,6 +707,9 @@ class FeatureContext implements Context
         $this->clusterType = 'behat';
         $this->composeArtifacts = [];
         $this->traefikArtifacts = [];
+        $this->ansibleRuns = [];
+        $this->ansibleInventories = [];
+        $this->ansibleKeyFileContent = null;
 
         $this->buildRepository(Account::class);
         $this->buildRepository(Cluster::class);
@@ -783,6 +832,15 @@ class FeatureContext implements Context
         }
     }
 
+    /**
+     * SSH address of the docker-compose cluster, in the "ssh://user@host:port" form the Driver parses to
+     * build the Ansible inventory and the RunnerFactory parses to fall back on an SSH user.
+     */
+    private function composeClusterAddress(): string
+    {
+        return 'ssh://' . self::COMPOSE_SSH_USER . '@' . self::COMPOSE_SSH_HOST . ':22';
+    }
+
     #[Given('a cluster :name dedicated to the environment :id')]
     public function aClusterDedicatedToTheEnvironment(?string $name, ?string $id): void
     {
@@ -792,11 +850,11 @@ class FeatureContext implements Context
         //The Docker Compose driver connects over SSH: use an "ssh://user@host:port" address and map the
         //ClusterCredentials to SSH (clientKey = private key, username/password = SSH login).
         $isDockerCompose = 'docker-compose' === $this->clusterType;
-        $address = $isDockerCompose ? 'ssh://deployer@docker-host.behat.test:22' : 'https://foo-bar';
+        $address = $isDockerCompose ? $this->composeClusterAddress() : 'https://foo-bar';
         if ($isDockerCompose) {
             $credentials = new ClusterCredentials(
-                clientKey: "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEBEHAT\n-----END OPENSSH PRIVATE KEY-----\n",
-                username: 'deployer',
+                clientKey: self::COMPOSE_SSH_PRIVATE_KEY,
+                username: self::COMPOSE_SSH_USER,
                 password: 'behatBecomePassword',
             )->setId('cluster-auth-id');
         } else {
@@ -997,79 +1055,163 @@ EOF,
         array $defaults = [],
         array $quotas = [],
     ): array {
-        return [
-            '@class' => OriJob::class,
-            'id' => $jobId,
-            'project' => [
-                '@class' => OriProject::class,
-                'id' => $this->projectId,
-                'name' => self::$projectName,
-            ],
-            'prefix' => self::$projectPrefix,
-            'environment' => [
-                '@class' => Environment::class,
-                'name' => $this->envName,
-            ],
-            'source_repository' => [
-                '@class' => GitRepository::class,
-                'id' => 'git-id',
-                'pull_url' => $this->repositoryUrl,
-                'default_branch' => 'main',
-                'identity' => null,
-            ],
-            'images_repository' => [
-                '@class' => ImageRegistry::class,
-                'id' => '',
-                'api_url' => 'https://foo.bar',
-                'identity' => [
-                    '@class' => XRegistryAuth::class,
-                    'id' => 'xauth-id',
-                    'username' => 'fooBar',
-                    'password' => 'fooBar',
-                    'email' => 'fooBar',
-                    'auth' => '',
-                    'server_address' => 'fooBar',
+        $isDockerCompose = 'docker-compose' === $this->clusterType;
+
+        if ($isDockerCompose) {
+            return [
+                '@class' => OriJob::class,
+                'id' => $jobId,
+                'project' => [
+                    '@class' => OriProject::class,
+                    'id' => $this->projectId,
+                    'name' => self::$projectName,
                 ],
-            ],
-            'clusters' => [
-                [
-                    '@class' => Cluster::class,
-                    'id' => 'cluster-id',
-                    'name' => $this->clusterName,
-                    'type' => $this->clusterType,
-                    'address' => 'https://foo-bar',
+                'prefix' => self::$projectPrefix,
+                'environment' => [
+                    '@class' => Environment::class,
+                    'name' => $this->envName,
+                ],
+                'source_repository' => [
+                    '@class' => GitRepository::class,
+                    'id' => 'git-id',
+                    'pull_url' => $this->repositoryUrl,
+                    'default_branch' => 'main',
+                    'identity' => null,
+                ],
+                'images_repository' => [
+                    '@class' => ImageRegistry::class,
+                    'id' => '',
+                    'api_url' => 'https://foo.bar',
                     'identity' => [
-                        '@class' => ClusterCredentials::class,
-                        'id' => 'cluster-auth-id',
-                        'ca_certificate' => 'caCertValue',
-                        'client_certificate' => 'fooBar',
-                        'client_key' => 'barKey',
-                        'token' => 'fooBar',
-                        'username' => '',
-                        'password' => '',
+                        '@class' => XRegistryAuth::class,
+                        'id' => 'xauth-id',
+                        'username' => 'fooBar',
+                        'password' => 'fooBar',
+                        'email' => 'fooBar',
+                        'auth' => '',
+                        'server_address' => 'fooBar',
                     ],
-                    'environment' => [
-                        '@class' => Environment::class,
-                        'name' => $this->envName,
-                    ],
-                    'locked' => false,
-                    'namespace' => 'behat-test',
-                    'use_hierarchical_namespaces' => $hnc,
                 ],
-            ],
-            'history' => [
-                'message' => 'teknoo.east.paas.jobs.configured',
-                'date' => '2018-10-01 02:03:04 UTC',
-                'is_final' => false,
-                'extra' => [],
-                'previous' => null,
-                'serial_number' => 0,
-            ],
-            'extra' => $extra,
-            'defaults' => $defaults,
-            'quotas' => $quotas,
-            'variables' => $variables,
-        ];
+                'clusters' => [
+                    [
+                        '@class' => Cluster::class,
+                        'id' => 'cluster-id',
+                        'name' => $this->clusterName,
+                        'type' => $this->clusterType,
+                        //The Docker Compose driver connects over SSH, so the serialized job must carry the same
+                        //"ssh://user@host:port" address and SSH-shaped credentials as the Cluster object built by
+                        //aClusterDedicatedToTheEnvironment(); this is the copy the worker actually deploys with.
+                        'address' => $isDockerCompose ? $this->composeClusterAddress() : 'https://foo-bar',
+                        'identity' => [
+                            '@class' => ClusterCredentials::class,
+                            'id' => 'cluster-auth-id',
+                            'ca_certificate' => '',
+                            'client_certificate' => '',
+                            'client_key' => self::COMPOSE_SSH_PRIVATE_KEY,
+                            'token' => '',
+                            'username' => self::COMPOSE_SSH_USER,
+                            'password' => 'behatBecomePassword',
+                        ],
+                        'environment' => [
+                            '@class' => Environment::class,
+                            'name' => $this->envName,
+                        ],
+                        'locked' => false,
+                        'namespace' => 'behat-test',
+                        'use_hierarchical_namespaces' => $hnc,
+                    ],
+                ],
+                'history' => [
+                    'message' => 'teknoo.east.paas.jobs.configured',
+                    'date' => '2018-10-01 02:03:04 UTC',
+                    'is_final' => false,
+                    'extra' => [],
+                    'previous' => null,
+                    'serial_number' => 0,
+                ],
+                'extra' => $extra,
+                'defaults' => $defaults,
+                'quotas' => $quotas,
+                'variables' => $variables,
+            ];
+        } else {
+            return [
+                '@class' => OriJob::class,
+                'id' => $jobId,
+                'project' => [
+                    '@class' => OriProject::class,
+                    'id' => $this->projectId,
+                    'name' => self::$projectName,
+                ],
+                'prefix' => self::$projectPrefix,
+                'environment' => [
+                    '@class' => Environment::class,
+                    'name' => $this->envName,
+                ],
+                'source_repository' => [
+                    '@class' => GitRepository::class,
+                    'id' => 'git-id',
+                    'pull_url' => $this->repositoryUrl,
+                    'default_branch' => 'main',
+                    'identity' => null,
+                ],
+                'images_repository' => [
+                    '@class' => ImageRegistry::class,
+                    'id' => '',
+                    'api_url' => 'https://foo.bar',
+                    'identity' => [
+                        '@class' => XRegistryAuth::class,
+                        'id' => 'xauth-id',
+                        'username' => 'fooBar',
+                        'password' => 'fooBar',
+                        'email' => 'fooBar',
+                        'auth' => '',
+                        'server_address' => 'fooBar',
+                    ],
+                ],
+                'clusters' => [
+                    [
+                        '@class' => Cluster::class,
+                        'id' => 'cluster-id',
+                        'name' => $this->clusterName,
+                        'type' => $this->clusterType,
+                        //The Docker Compose driver connects over SSH, so the serialized job must carry the same
+                        //"ssh://user@host:port" address and SSH-shaped credentials as the Cluster object built by
+                        //aClusterDedicatedToTheEnvironment(); this is the copy the worker actually deploys with.
+                        'address' => $isDockerCompose ? $this->composeClusterAddress() : 'https://foo-bar',
+                        'identity' => [
+                            '@class' => ClusterCredentials::class,
+                            'id' => 'cluster-auth-id',
+                            'ca_certificate' => 'caCertValue',
+                            'client_certificate' => 'fooBar',
+                            'client_key' => 'barKey',
+                            'token' => 'fooBar',
+                            'username' => '',
+                            'password' => '',
+                        ],
+                        'environment' => [
+                            '@class' => Environment::class,
+                            'name' => $this->envName,
+                        ],
+                        'locked' => false,
+                        'namespace' => 'behat-test',
+                        'use_hierarchical_namespaces' => $hnc,
+                    ],
+                ],
+                'history' => [
+                    'message' => 'teknoo.east.paas.jobs.configured',
+                    'date' => '2018-10-01 02:03:04 UTC',
+                    'is_final' => false,
+                    'extra' => [],
+                    'previous' => null,
+                    'serial_number' => 0,
+                ],
+                'extra' => $extra,
+                'defaults' => $defaults,
+                'quotas' => $quotas,
+                'variables' => $variables,
+            ];
+        }
     }
 
     #[Then('with the job normalized in the body')]
@@ -1876,10 +2018,13 @@ EOF,
         $this->composeArtifacts = [];
         $this->traefikArtifacts = [];
         $this->referencedFiles = [];
+        $this->ansibleRuns = [];
+        $this->ansibleInventories = [];
+        $this->ansibleKeyFileContent = null;
 
         //Drive the real DockerCompose Driver against an in-memory Flysystem instead of the disk-backed
-        //LocalFilesystemAdapter wired by di.php, so the scenario never alters the filesystem. The fake runner
-        //reads the artifacts the Driver wrote back from this same in-memory filesystem.
+        //LocalFilesystemAdapter wired by di.php, so the scenario never alters the filesystem. The mocked
+        //Ansible process reads the artifacts the Driver wrote back from this same in-memory filesystem.
         $workspaceFilesystem = new Filesystem(new InMemoryFilesystemAdapter());
 
         $templatesDir = \dirname(__DIR__, 2) . '/infrastructures/DockerCompose/templates';
@@ -1944,43 +2089,71 @@ EOF,
             }
         };
 
-        $runner = new class ($capture) implements RunnerInterface {
-            /**
-             * @param callable(string): void $capture
-             */
-            public function __construct(
-                private $capture,
-            ) {
+        //The only mocked seam of the runner layer: the Symfony Process. Everything above it (the real
+        //RunnerFactory resolving the SSH user and materializing the private key, and the real
+        //SymfonyProcessRunner building the `ansible-playbook` command line) is exercised for real, so the
+        //Driver's outputs are proven to reach the process layer.
+        $processFactory = function (array $command, ?float $timeout) use ($workspaceFilesystem, $capture): Process {
+            $this->ansibleRuns[] = [
+                'command' => $command,
+                'timeout' => $timeout,
+            ];
+
+            //$command[1] is the playbook absolute path, $command[3] the inventory one; both live in the
+            //per-run working directory, recovered with the same basename(dirname()) trick as $capture.
+            $stage = \basename($command[1], '.yml');
+            $inventoryRelative = \basename(\dirname($command[3])) . '/inventory.ini';
+            if ($workspaceFilesystem->fileExists($inventoryRelative)) {
+                $this->ansibleInventories[$stage] = $workspaceFilesystem->read($inventoryRelative);
             }
 
-            public function run(
-                string $playbookPath,
-                string $inventoryPath,
-                array $extraVars,
-                ?ClusterCredentials $credentials,
-                PromiseInterface $promise,
-            ): RunnerInterface {
-                ($this->capture)($playbookPath);
-
-                $promise->success('docker-compose fake runner: playbook captured, nothing executed');
-
-                return $this;
+            //The materialized SSH private key must be read here: RunnerFactory::__destruct() deletes it as
+            //soon as the factory goes out of scope.
+            if ($workspaceFilesystem->fileExists(self::COMPOSE_KEY_FILE_NAME)) {
+                $this->ansibleKeyFileContent = $workspaceFilesystem->read(self::COMPOSE_KEY_FILE_NAME);
             }
+
+            ($capture)($command[1]);
+
+            //A fresh mock per call: the Driver runs two stages (deploy then expose) through two distinct
+            //runners, so a single shared Process mock could not honour per-call expectations.
+            $process = new Generator()->testDouble(
+                type: Process::class,
+                mockObject: true,
+                callOriginalConstructor: false,
+            );
+
+            $process->expects(new AnyInvokedCountMatcher())->method('run');
+            $process->method('isSuccessful')->willReturn(true);
+            $process->method('getOutput')->willReturn('PLAY RECAP behat : ok=6 changed=4 failed=0');
+            $process->method('getErrorOutput')->willReturn('');
+
+            return $process;
         };
 
-        $runnerFactory = new class ($runner) implements RunnerFactoryInterface {
-            public function __construct(
-                private readonly RunnerInterface $runner,
-            ) {
-            }
-
-            public function __invoke(
-                string $url,
-                ?ClusterCredentials $credentials,
-            ): RunnerInterface {
-                return $this->runner;
-            }
-        };
+        //The real factory, pointed at the same in-memory workspace so the private key never touches the disk,
+        //with a deterministic key file name making the "--private-key" argument assertable. The name cannot
+        //collide with the per-run "east-paas-compose-*" working directories $capture scans.
+        $runnerFactory = new RunnerFactory(
+            filesystem: $workspaceFilesystem,
+            tmpDir: '',
+            playbookBinary: 'ansible-playbook',
+            timeout: self::COMPOSE_ANSIBLE_TIMEOUT,
+            keyFileNameFactory: static fn (): string => self::COMPOSE_KEY_FILE_NAME,
+            //Only overridden to inject the mocked $processFactory: the runner itself is the real one.
+            runnerBuilder: static fn (
+                string $playbookBinary,
+                ?float $timeout,
+                ?string $sshUser,
+                ?string $privateKeyFile,
+            ): RunnerInterface => new SymfonyProcessRunner(
+                playbookBinary: $playbookBinary,
+                timeout: $timeout,
+                sshUser: $sshUser,
+                privateKeyFile: $privateKeyFile,
+                processFactory: $processFactory,
+            ),
+        );
 
         //Build the Driver directly with the in-memory filesystems and register it on the Directory (mirroring
         //aClusterClient), overriding the disk-backed driver di.php would otherwise provide.
@@ -3513,11 +3686,11 @@ EOF;
     #[Then('some docker compose configuration has been created')]
     public function someDockerComposeConfigurationHasBeenCreated(): void
     {
-        //The fake RunnerInterface captured the artifacts written by the driver into its working directory
+        //The mocked Ansible process captured the artifacts written by the driver into its working directory
         //(mirroring the $this->manifests capture for Kubernetes) instead of running Ansible/Docker.
         Assert::assertNotEmpty(
             $this->composeArtifacts,
-            'No Docker Compose artifact has been captured by the fake runner',
+            'No Docker Compose artifact has been captured by the mocked Ansible process',
         );
         Assert::assertArrayHasKey(
             'compose.yaml',
@@ -3556,6 +3729,8 @@ EOF;
             $actualReferencedFiles,
             'The referenced config/secret files do not match the expected golden files',
         );
+
+        $this->assertAnsibleRun('deploy');
     }
 
     #[Then('some traefik configuration has been created')]
@@ -3563,7 +3738,7 @@ EOF;
     {
         Assert::assertNotEmpty(
             $this->traefikArtifacts,
-            'No Traefik dynamic configuration artifact has been captured by the fake runner',
+            'No Traefik dynamic configuration artifact has been captured by the mocked Ansible process',
         );
 
         //The expose playbook must have been generated to drop the Traefik dynamic file in the watched directory.
@@ -3594,6 +3769,87 @@ EOF;
             $expected['traefik'],
             (string) reset($this->traefikArtifacts),
             'The generated Traefik dynamic configuration does not match the expected golden file',
+        );
+
+        $this->assertAnsibleRun('expose');
+    }
+
+    /**
+     * Assert the `ansible-playbook` invocation the real SymfonyProcessRunner built for a stage, plus the
+     * inventory and SSH private key the real RunnerFactory produced for it.
+     *
+     * @throws JsonException
+     */
+    private function assertAnsibleRun(string $stage): void
+    {
+        $runs = array_values(
+            array_filter(
+                $this->ansibleRuns,
+                static fn (array $run): bool => $stage . '.yml' === basename((string) $run['command'][1]),
+            )
+        );
+
+        Assert::assertCount(
+            1,
+            $runs,
+            'Exactly one ansible-playbook invocation is expected for the ' . $stage . ' stage',
+        );
+
+        $run = $runs[0];
+
+        Assert::assertSame(
+            self::COMPOSE_ANSIBLE_TIMEOUT,
+            $run['timeout'],
+            'The configured timeout has not been forwarded to the Process factory',
+        );
+
+        //The project name is pinned by the playbook golden file, so reading it back from the (already
+        //compared) playbook keeps this assertion variant-agnostic while tying both checks together: the
+        //value Ansible receives as --extra-vars must be the very one rendered into the playbook.
+        Assert::assertSame(
+            1,
+            preg_match(
+                '#^\s*paas_project:\s*"([^"]+)"#m',
+                $this->composeArtifacts[$stage . '.yml'],
+                $matches,
+            ),
+            'The ' . $stage . ' playbook does not declare a paas_project var',
+        );
+
+        Assert::assertSame(
+            [
+                'ansible-playbook',
+                '__WORKDIR__/' . $stage . '.yml',
+                '--inventory',
+                '__WORKDIR__/inventory.ini',
+                '--extra-vars',
+                json_encode(['paas_project' => $matches[1]], JSON_THROW_ON_ERROR),
+                '--user',
+                self::COMPOSE_SSH_USER,
+                '--private-key',
+                '/' . self::COMPOSE_KEY_FILE_NAME,
+            ],
+            array_map(
+                fn (string $argument): string => $this->normalizeComposePlaybook($argument),
+                $run['command'],
+            ),
+            'The ansible-playbook command line built for the ' . $stage . ' stage is not the expected one',
+        );
+
+        //The single-host inventory built from the cluster address "ssh://deployer@docker-host.behat.test:22".
+        Assert::assertSame(
+            "[docker_host]\n"
+            . self::COMPOSE_SSH_HOST . ' ansible_host=' . self::COMPOSE_SSH_HOST . " ansible_port=22\n",
+            $this->ansibleInventories[$stage] ?? null,
+            'The rendered Ansible inventory is not the expected one',
+        );
+
+        //The private key of the ClusterCredentials must have been materialized in the workspace, at the path
+        //passed to --private-key above.
+        Assert::assertSame(
+            self::COMPOSE_SSH_PRIVATE_KEY,
+            $this->ansibleKeyFileContent,
+            'The SSH private key has not been materialized from the cluster credentials',
         );
     }
 

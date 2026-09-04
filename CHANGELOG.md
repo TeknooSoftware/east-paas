@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta8] - 2026-09-04
+### Beta Release
+- Improve behavior test about docker compose
+
 ## [5.7.0-beta7] - 2026-09-02
 ### Beta Release
 - Add default "disable-user-isolation" to disable host users isolation (on kubernetes 1.36+)
