@@ -33,9 +33,9 @@ use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
 use Closure;
-use DI\Container as DiContainer;
 use DateTime;
 use DateTimeZone;
+use DI\Container as DiContainer;
 use Doctrine\ODM\MongoDB\Query\Builder as QueryBuilder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
@@ -46,6 +46,7 @@ use Exception;
 use JsonException;
 use League\Flysystem\Filesystem;
 use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
+use phpseclib4\Crypt\RSA;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\Generator\Generator;
@@ -64,21 +65,20 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
-use Symfony\Component\Yaml\Yaml;
 use Teknoo\DI\SymfonyBridge\DIBridgeBundle;
-use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
 use Teknoo\East\Common\Contracts\Object\ObjectInterface;
 use Teknoo\East\Common\Object\User;
-use Teknoo\East\FoundationBundle\EastFoundationBundle;
+use Teknoo\East\CommonBundle\TeknooEastCommonBundle;
 use Teknoo\East\Foundation\Time\DatesService;
+use Teknoo\East\FoundationBundle\EastFoundationBundle;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
-use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirement\Set;
+use Teknoo\East\Paas\Compilation\Compiler\FeaturesRequirementCompiler;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
-use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Compilation\ConductorInterface;
 use Teknoo\East\Paas\Contracts\Compilation\FeaturesRequirement\ValidatorInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
@@ -89,15 +89,15 @@ use Teknoo\East\Paas\Contracts\Recipe\Step\Job\DispatchResultInterface;
 use Teknoo\East\Paas\Contracts\Repository\CloningAgentInterface;
 use Teknoo\East\Paas\Contracts\Workspace\FileInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
-use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
-use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
-use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
-use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberCollectionInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver as DockerComposeDriver;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\SymfonyProcessRunner;
+use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Account;
+use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Job;
+use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
+use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
@@ -115,31 +115,45 @@ use Teknoo\East\Paas\Object\XRegistryAuth;
 use Teknoo\Immutable\ImmutableTrait;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\Model;
-use Teknoo\Kubernetes\RepositoryRegistry;
 use Teknoo\Kubernetes\Repository\Repository;
+use Teknoo\Kubernetes\RepositoryRegistry;
 use Teknoo\Recipe\Promise\PromiseInterface;
-use Throwable;
 use Traversable;
-use phpseclib4\Crypt\RSA;
 
+use function array_filter;
+use function array_map;
+use function array_values;
 use function base64_encode;
-use function dirname;
+use function basename;
 use function ceil;
+use function dirname;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
 use function is_readable;
 use function json_decode;
 use function json_encode;
+use function ksort;
 use function microtime;
+use function preg_match;
 use function preg_replace;
 use function random_int;
+use function reset;
 use function round;
+use function str_ends_with;
+use function str_repeat;
 use function str_replace;
 use function strlen;
 use function strtolower;
+use function substr;
 use function trim;
+use function uniqid;
 use function var_export;
+use function version_compare;
+
+use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
+use const PHP_EOL;
 
 /**
  * Defines application features from the specific context.
@@ -850,7 +864,12 @@ class FeatureContext implements Context
         //The Docker Compose driver connects over SSH: use an "ssh://user@host:port" address and map the
         //ClusterCredentials to SSH (clientKey = private key, username/password = SSH login).
         $isDockerCompose = 'docker-compose' === $this->clusterType;
-        $address = $isDockerCompose ? $this->composeClusterAddress() : 'https://foo-bar';
+        if ($isDockerCompose) {
+            $address = $this->composeClusterAddress();
+        } else {
+            $address = 'https://foo-bar';
+        }
+
         if ($isDockerCompose) {
             $credentials = new ClusterCredentials(
                 clientKey: self::COMPOSE_SSH_PRIVATE_KEY,
@@ -1101,7 +1120,7 @@ EOF,
                         //The Docker Compose driver connects over SSH, so the serialized job must carry the same
                         //"ssh://user@host:port" address and SSH-shaped credentials as the Cluster object built by
                         //aClusterDedicatedToTheEnvironment(); this is the copy the worker actually deploys with.
-                        'address' => $isDockerCompose ? $this->composeClusterAddress() : 'https://foo-bar',
+                        'address' => $this->composeClusterAddress(),
                         'identity' => [
                             '@class' => ClusterCredentials::class,
                             'id' => 'cluster-auth-id',
@@ -1178,7 +1197,7 @@ EOF,
                         //The Docker Compose driver connects over SSH, so the serialized job must carry the same
                         //"ssh://user@host:port" address and SSH-shaped credentials as the Cluster object built by
                         //aClusterDedicatedToTheEnvironment(); this is the copy the worker actually deploys with.
-                        'address' => $isDockerCompose ? $this->composeClusterAddress() : 'https://foo-bar',
+                        'address' => 'https://foo-bar',
                         'identity' => [
                             '@class' => ClusterCredentials::class,
                             'id' => 'cluster-auth-id',
@@ -2018,32 +2037,29 @@ EOF,
         $this->composeArtifacts = [];
         $this->traefikArtifacts = [];
         $this->referencedFiles = [];
-        $this->ansibleRuns = [];
-        $this->ansibleInventories = [];
-        $this->ansibleKeyFileContent = null;
 
         //Drive the real DockerCompose Driver against an in-memory Flysystem instead of the disk-backed
         //LocalFilesystemAdapter wired by di.php, so the scenario never alters the filesystem. The mocked
         //Ansible process reads the artifacts the Driver wrote back from this same in-memory filesystem.
         $workspaceFilesystem = new Filesystem(new InMemoryFilesystemAdapter());
 
-        $templatesDir = \dirname(__DIR__, 2) . '/infrastructures/DockerCompose/templates';
+        $templatesDir = dirname(__DIR__, 2) . '/infrastructures/DockerCompose/templates';
         $templatesFilesystem = new Filesystem(new InMemoryFilesystemAdapter());
         $templatesFilesystem->write(
             'deploy.yml.template',
-            (string) \file_get_contents($templatesDir . '/deploy.yml.template'),
+            (string) file_get_contents($templatesDir . '/deploy.yml.template'),
         );
         $templatesFilesystem->write(
             'expose.yml.template',
-            (string) \file_get_contents($templatesDir . '/expose.yml.template'),
+            (string) file_get_contents($templatesDir . '/expose.yml.template'),
         );
 
         $capture = function (string $playbookPath) use ($workspaceFilesystem): void {
             //The Driver builds the runner-facing playbook path as "{workspaceRoot}/{workingDir}/{stage}.yml"
             //but writes through the filesystem with the relative "{workingDir}/...". workingDir is a single
             //path segment, so basename(dirname()) recovers it whatever the (here empty) workspaceRoot is.
-            $playbookName = \basename($playbookPath);
-            $workingDir = \basename(\dirname($playbookPath));
+            $playbookName = basename($playbookPath);
+            $workingDir = basename(dirname($playbookPath));
 
             $playbookRelative = $workingDir . '/' . $playbookName;
             if ($workspaceFilesystem->fileExists($playbookRelative)) {
@@ -2067,7 +2083,7 @@ EOF,
                             continue;
                         }
 
-                        $relative = $subDir . '/' . \substr($item->path(), \strlen($base) + 1);
+                        $relative = $subDir . '/' . substr($item->path(), strlen($base) + 1);
                         $this->referencedFiles[$relative] = $workspaceFilesystem->read($item->path());
                     }
                 }
@@ -2080,8 +2096,8 @@ EOF,
                     continue;
                 }
 
-                $name = \basename($item->path());
-                if (!\str_ends_with($name, '.yml') || 'deploy.yml' === $name || 'expose.yml' === $name) {
+                $name = basename($item->path());
+                if (!str_ends_with($name, '.yml') || 'deploy.yml' === $name || 'expose.yml' === $name) {
                     continue;
                 }
 
@@ -2101,8 +2117,8 @@ EOF,
 
             //$command[1] is the playbook absolute path, $command[3] the inventory one; both live in the
             //per-run working directory, recovered with the same basename(dirname()) trick as $capture.
-            $stage = \basename($command[1], '.yml');
-            $inventoryRelative = \basename(\dirname($command[3])) . '/inventory.ini';
+            $stage = basename($command[1], '.yml');
+            $inventoryRelative = basename(dirname($command[3])) . '/inventory.ini';
             if ($workspaceFilesystem->fileExists($inventoryRelative)) {
                 $this->ansibleInventories[$stage] = $workspaceFilesystem->read($inventoryRelative);
             }
