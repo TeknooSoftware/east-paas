@@ -87,7 +87,7 @@ class RunnerFactoryTest extends TestCase
             ->method('write')
             ->with(
                 $this->anything(),
-                'PRIVATE-KEY-CONTENT',
+                'PRIVATE-KEY-CONTENT' . \PHP_EOL,
                 ['visibility' => Visibility::PRIVATE],
             );
 
@@ -190,7 +190,7 @@ class RunnerFactoryTest extends TestCase
             ->method('write')
             ->with(
                 'my-key-file',
-                'KEY',
+                'KEY' . \PHP_EOL,
                 ['visibility' => Visibility::PRIVATE],
             );
         $filesystem->expects($this->once())

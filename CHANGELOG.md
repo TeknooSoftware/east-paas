@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta9] - 2026-09-09
+### Beta Release
+- Improve EOL on PK file
+
 ## [5.7.0-beta8] - 2026-09-04
 ### Beta Release
 - Improve behavior test about docker compose

@@ -33,8 +33,10 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 
 use function parse_url;
+use function trim;
 use function uniqid;
 
+use const PHP_EOL;
 use const PHP_URL_USER;
 
 /**
@@ -157,7 +159,7 @@ final class RunnerFactory implements RunnerFactoryInterface
 
         $this->filesystem->write(
             $fileName,
-            $value,
+            trim($value) . PHP_EOL,
             ['visibility' => Visibility::PRIVATE],
         );
 
