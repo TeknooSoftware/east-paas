@@ -1,5 +1,9 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta10] - 2026-09-11
+### Beta Release
+- Improve logs
+
 ## [5.7.0-beta9] - 2026-09-09
 ### Beta Release
 - Improve EOL on PK file

@@ -120,7 +120,13 @@ final class SymfonyProcessRunner implements RunnerInterface
         if (!$process->isSuccessful()) {
             $promise->fail(
                 new RuntimeException(
-                    trim($process->getErrorOutput()) ?: 'Ansible playbook execution failed',
+                    trim(
+                        $process->getOutput()
+                        . PHP_EOL
+                        . $process->getErrorOutput()
+                        . PHP_EOL
+                        . 'Ansible playbook execution failed'
+                    ) . PHP_EOL
                 )
             );
 
