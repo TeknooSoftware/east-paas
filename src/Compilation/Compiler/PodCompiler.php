@@ -58,6 +58,7 @@ use function array_map;
 use function array_pop;
 use function explode;
 use function implode;
+use function in_array;
 use function is_string;
 use function trim;
 
@@ -134,7 +135,11 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 
     private const string KEY_PERSISTENT = 'persistent';
 
+    private const string KEY_POD = 'pod';
+
     private const string KEY_PORT = 'port';
+
+    private const string KEY_PORTS = 'ports';
 
     private const string KEY_PROBE = 'probe';
 
@@ -150,6 +155,8 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
 
     private const string KEY_SECURITY = 'security';
 
+    private const string KEY_SERVICES = 'services';
+
     private const string KEY_STORAGE_IDENTIFIER = 'storage-provider';
 
     private const string KEY_STORAGE_SIZE = 'storage-size';
@@ -157,6 +164,8 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     private const string KEY_STRATEGY = 'strategy';
 
     private const string KEY_SUCCESS = 'success';
+
+    private const string KEY_TARGET = 'target';
 
     private const string KEY_TCP = 'tcp';
 
@@ -189,7 +198,78 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     public function __construct(
         private readonly array $podsLibrary,
         private readonly array $containersLibrary,
+        private readonly ?ServiceCompiler $serviceCompiler = null,
     ) {
+    }
+
+    /**
+     * Shortcut available since PaaS v1.2 : a `services` list in a container definition will generate services
+     * (named `{pod}-{container}`, then `{pod}-{container}-2`, ...), targeting this pod. Ports' targets are
+     * automatically added to the `listen` list of the container.
+     *
+     * @param array<int, array<string, mixed>> $servicesConfig
+     * @param int[] $listen
+     * @return array<string, array<string, mixed>>
+     */
+    private function prepareServicesShortcut(
+        string $podName,
+        string $containerName,
+        array $servicesConfig,
+        array &$listen,
+    ): array {
+        $definitions = [];
+        $counter = 0;
+        foreach ($servicesConfig as $serviceConfig) {
+            $serviceName = $podName . '-' . $containerName;
+            if (++$counter > 1) {
+                $serviceName .= '-' . $counter;
+            }
+
+            foreach ($serviceConfig[self::KEY_PORTS] ?? [] as $port) {
+                $target = (int) $port[self::KEY_TARGET];
+                if (!in_array($target, $listen, true)) {
+                    $listen[] = $target;
+                }
+            }
+
+            $serviceConfig[self::KEY_POD] = $podName;
+            $definitions[$serviceName] = $serviceConfig;
+        }
+
+        return $definitions;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $definitions
+     */
+    private function compileServicesShortcut(
+        string $containerName,
+        array $definitions,
+        CompiledDeploymentInterface $compiledDeployment,
+        JobWorkspaceInterface $workspace,
+        JobUnitInterface $job,
+        ResourceManager $resourceManager,
+        DefaultsBag $defaultsBag,
+    ): void {
+        if (empty($definitions)) {
+            return;
+        }
+
+        if (null === $this->serviceCompiler) {
+            throw new DomainException(
+                "teknoo.east.paas.error.recipe.job.services-shortcut-unavailable:$containerName",
+                400
+            );
+        }
+
+        $this->serviceCompiler->compile(
+            definitions: $definitions,
+            compiledDeployment: $compiledDeployment,
+            workspace: $workspace,
+            job: $job,
+            resourceManager: $resourceManager,
+            defaultsBag: $defaultsBag,
+        );
     }
 
     /**
@@ -432,6 +512,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
     public function processSetOfPods(
         #[SensitiveParameter] array &$definitions,
         CompiledDeploymentInterface $compiledDeployment,
+        #[SensitiveParameter] JobWorkspaceInterface $workspace,
         #[SensitiveParameter] JobUnitInterface $job,
         ResourceManager $resourceManager,
         DefaultsBag $defaultsBag,
@@ -551,16 +632,36 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
                         resourceTypeToExclude: array_keys($resourcesRequired),
                     );
 
+                    $listen = array_map(intval(...), (array)($config[self::KEY_LISTEN] ?? []));
+                    $servicesDefinitions = $this->prepareServicesShortcut(
+                        podName: (string) $nameSet,
+                        containerName: (string) $name,
+                        servicesConfig: (array) ($config[self::KEY_SERVICES] ?? []),
+                        listen: $listen,
+                    );
+
                     $containers[] = new Container(
                         name: $name,
                         image: $image,
                         version: $version,
-                        listen: array_map(intval(...), (array)($config[self::KEY_LISTEN] ?? [])),
+                        listen: $listen,
                         volumes: $containerVolumes,
                         variables: $variables,
                         healthCheck: $healthCheck,
                         resources: $resourceSet,
                     );
+
+                    if (!empty($servicesDefinitions)) {
+                        $this->compileServicesShortcut(
+                            containerName: (string)$name,
+                            definitions: $servicesDefinitions,
+                            compiledDeployment: $compiledDeployment,
+                            workspace: $workspace,
+                            job: $job,
+                            resourceManager: $resourceManager,
+                            defaultsBag: $defaultsBag,
+                        );
+                    }
                 }
 
                 unset($config);
@@ -615,6 +716,7 @@ class PodCompiler implements CompilerInterface, ExtenderInterface
         $this->processSetOfPods(
             definitions: $definitions,
             compiledDeployment: $compiledDeployment,
+            workspace: $workspace,
             job: $job,
             resourceManager: $resourceManager,
             defaultsBag: $defaultsBag,

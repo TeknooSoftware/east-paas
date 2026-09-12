@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Compilation;
 
 use DomainException;
+use Teknoo\East\Paas\Compilation\Exception\AlreadyDefinedException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
@@ -231,6 +232,10 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
     public function addService(string $name, Service $service): CompiledDeploymentInterface
     {
+        if (isset($this->services[$name])) {
+            throw new AlreadyDefinedException("Service $name is already defined in the deployment", 400);
+        }
+
         $this->services[$name] = $service;
 
         return $this;
@@ -238,6 +243,10 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
     public function addIngress(string $name, Ingress $ingress): CompiledDeploymentInterface
     {
+        if (isset($this->ingresses[$name])) {
+            throw new AlreadyDefinedException("Ingress $name is already defined in the deployment", 400);
+        }
+
         $this->ingresses[$name] = $ingress;
 
         return $this;

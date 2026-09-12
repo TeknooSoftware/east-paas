@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Contracts\Compilation;
 
+use Teknoo\East\Paas\Compilation\Exception\AlreadyDefinedException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
@@ -83,8 +84,14 @@ interface CompiledDeploymentInterface
 
     public function addMap(string $name, Map $map): CompiledDeploymentInterface;
 
+    /**
+     * @throws AlreadyDefinedException if a service with the same name is already defined
+     */
     public function addService(string $name, Service $service): CompiledDeploymentInterface;
 
+    /**
+     * @throws AlreadyDefinedException if an ingress with the same name is already defined
+     */
     public function addIngress(string $name, Ingress $ingress): CompiledDeploymentInterface;
 
     public function foreachHook(callable $callback): CompiledDeploymentInterface;

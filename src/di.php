@@ -295,7 +295,11 @@ return [
             [],
         );
 
-        return new PodCompiler($podslibrary, $containerslibrary);
+        return new PodCompiler(
+            $podslibrary,
+            $containerslibrary,
+            $container->get(ServiceCompiler::class),
+        );
     },
 
     DefaultsCompiler::class => static function (ContainerInterface $container): DefaultsCompiler {
@@ -340,7 +344,8 @@ return [
                 $container,
                 'teknoo.east.paas.compilation.services_extends.library',
                 [],
-            )
+            ),
+            $container->get(IngressCompiler::class),
         );
     },
     VolumeCompiler::class => create(),
@@ -368,18 +373,22 @@ return [
             }
         };
 
-        $collection->add(['v1', 'v1.1'], '[paas][requires]', $container->get(FeaturesRequirementCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[paas][quotas]', $container->get(QuotaCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[defaults]', $container->get(DefaultsCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[maps]', $container->get(MapCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[secrets]', $container->get(SecretCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[volumes]', $container->get(VolumeCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[images]', $container->get(ImageCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[builds]', $container->get(HookCompiler::class));
-        $collection->add(['v1.1'], '[jobs]', $container->get(JobCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[pods]', $container->get(PodCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[services]', $container->get(ServiceCompiler::class));
-        $collection->add(['v1', 'v1.1'], '[ingresses]', $container->get(IngressCompiler::class));
+        $collection->add(
+            ['v1', 'v1.1', 'v1.2'],
+            '[paas][requires]',
+            $container->get(FeaturesRequirementCompiler::class),
+        );
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[paas][quotas]', $container->get(QuotaCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[defaults]', $container->get(DefaultsCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[maps]', $container->get(MapCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[secrets]', $container->get(SecretCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[volumes]', $container->get(VolumeCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[images]', $container->get(ImageCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[builds]', $container->get(HookCompiler::class));
+        $collection->add(['v1.1', 'v1.2'], '[jobs]', $container->get(JobCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[pods]', $container->get(PodCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[services]', $container->get(ServiceCompiler::class));
+        $collection->add(['v1', 'v1.1', 'v1.2'], '[ingresses]', $container->get(IngressCompiler::class));
 
         return $collection;
     },
@@ -394,7 +403,7 @@ return [
         }
 
         $xsdCollections = [];
-        foreach (['v1', 'v1.1'] as $version) {
+        foreach (['v1', 'v1.1', 'v1.2'] as $version) {
             $file = $xsdFilePath . $version . '.paas_validation.xsd';
             if (!file_exists($file) || !is_readable($file)) {
                 throw new InvalidArgumentException(

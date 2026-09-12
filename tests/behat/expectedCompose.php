@@ -40,8 +40,11 @@ return static function (
     bool $withJob,
     bool $withCondition,
     string $provider,
+    bool $withExposeShortcuts = false,
 ): array {
-    if ('' !== $withQuota) {
+    if ($withExposeShortcuts) {
+        $variant = 'with-expose-shortcuts';
+    } elseif ('' !== $withQuota) {
         //Quota variants only ever run without prefix/job in the suite; a prefixed/jobbed quota scenario would
         //load this (wrong) golden and fail loudly, flagging that a new fixture must be generated.
         $variant = 'quota-' . $withQuota;

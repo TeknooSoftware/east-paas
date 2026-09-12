@@ -44,9 +44,22 @@ return static function (
     bool $withJob,
     bool $withCondition,
     string $provider,
+    bool $withExposeShortcuts = false,
 ): CompiledDeployment {
+    $version = 1;
+    if ($withJob || $withCondition || 'traefik' === $provider || 'no-isolation' === $withDefaults) {
+        $version = 1.1;
+    }
+
+    if ($withExposeShortcuts) {
+        $version = 1.2;
+    }
+
+    $phpServiceName = $withExposeShortcuts ? 'php-pods-php-run' : 'php-service';
+    $demoServiceName = $withExposeShortcuts ? 'demo-nginx' : 'demo';
+
     $cd = new CompiledDeployment(
-        version: $withJob || $withCondition || 'traefik' === $provider || 'no-isolation' === $withDefaults ? 1.1 : 1,
+        version: $version,
         prefix: $prefix,
         projectName: $projectName,
     );
@@ -516,9 +529,9 @@ return static function (
     );
 
     $cd->addService(
-        name: 'php-service',
+        name: $phpServiceName,
         service: new CompiledDeployment\Expose\Service(
-            name: 'php-service',
+            name: $phpServiceName,
             podName: 'php-pods',
             ports: [
                 9876 => 8080,
@@ -532,9 +545,9 @@ return static function (
     );
 
     $cd->addService(
-        name: 'demo',
+        name: $demoServiceName,
         service: new CompiledDeployment\Expose\Service(
-            name: 'demo',
+            name: $demoServiceName,
             podName: 'demo',
             ports: [
                 8080 => 8080,
@@ -546,17 +559,17 @@ return static function (
     );
 
     $cd->addIngress(
-        name: 'demo',
+        name: $demoServiceName,
         ingress: new CompiledDeployment\Expose\Ingress(
-            name: 'demo',
+            name: $demoServiceName,
             host: 'demo-paas.teknoo.software',
             provider: null,
-            defaultServiceName: 'demo',
+            defaultServiceName: $demoServiceName,
             defaultServicePort: 8080,
             paths: [
                 new CompiledDeployment\Expose\IngressPath(
                     path: '/php',
-                    serviceName: 'php-service',
+                    serviceName: $phpServiceName,
                     servicePort: 9876,
                 ),
             ],
@@ -586,7 +599,7 @@ return static function (
             name: 'demo-secure',
             host: 'demo-secure.teknoo.software',
             provider: $provider,
-            defaultServiceName: 'demo',
+            defaultServiceName: $demoServiceName,
             defaultServicePort: 8181,
             paths: [],
             tlsSecret: 'demo-vault',

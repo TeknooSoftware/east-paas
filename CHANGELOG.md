@@ -1,5 +1,27 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta11] - 2026-09-12
+### Beta Release
+- Add the PaaS configuration version `v1.2`, a superset of `v1.1`, with two shortcuts to expose pods:
+  - `services` in a container (`pods.<pod>.containers.<container>.services`), a list of services (only `internal`,
+    `protocol`, `ports`, `ingress` and `enhancements` are allowed). The `PodCompiler` completes the `listen` list of
+    the container with ports' targets and forwards the services to the `ServiceCompiler`, with a generated name
+    (`{pod}-{container}`, then `{pod}-{container}-2`, ...) and the `pod` option set.
+  - `ingress` in a service (in the top-level `services` map or in a container's `services` list), an ingress
+    definition without `service` (the enclosing service is used, on the optional `port` or its first listened port),
+    forwarded by the `ServiceCompiler` to the `IngressCompiler` with the service's name.
+  - A `v1.1` file with explicit `services` and `ingresses` produces the same compiled deployment than a `v1.2` file
+    using these shortcuts.
+- The default version, when `paas.version` is not defined in the `.paas.yaml` file, is now `v1.2`.
+- `CompiledDeployment::addService()` and `addIngress()` throw now an `AlreadyDefinedException` (HTTP 400) when a
+  service or an ingress with the same name is already defined (for example an explicit definition and a `v1.2`
+  shortcut generating the same name), instead of silently overriding it.
+- `ingress` is now a reserved key in the `.paas.yaml` file (like `services` or `ingresses`), whatever the version.
+- Fix documentation examples: `paas.resources` was never accepted by the validator, it is `paas.quotas` (with
+  `requires` instead of `require`).
+- `PodCompiler` accepts a `ServiceCompiler` and `ServiceCompiler` accepts an `IngressCompiler` as optional constructor
+  argument, `PodCompiler::processSetOfPods()` requires now the `JobWorkspaceInterface` instance.
+
 ## [5.7.0-beta10] - 2026-09-11
 ### Beta Release
 - Improve logs

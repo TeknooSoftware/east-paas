@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment;
+use Teknoo\East\Paas\Compilation\Exception\AlreadyDefinedException;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
@@ -287,6 +288,15 @@ class CompiledDeploymentTest extends TestCase
         ));
     }
 
+    public function testAddServiceWithDuplicatedName(): void
+    {
+        $object = $this->buildObject()->addService('foo', $this->createStub(Service::class));
+
+        $this->expectException(AlreadyDefinedException::class);
+        $this->expectExceptionMessage('Service foo is already defined in the deployment');
+        $object->addService('foo', $this->createStub(Service::class));
+    }
+
     public function testAddSecretWrongSecret(): void
     {
         $this->expectException(TypeError::class);
@@ -345,6 +355,15 @@ class CompiledDeploymentTest extends TestCase
             'foo',
             $this->createStub(Ingress::class)
         ));
+    }
+
+    public function testAddIngressWithDuplicatedName(): void
+    {
+        $object = $this->buildObject()->addIngress('foo', $this->createStub(Ingress::class));
+
+        $this->expectException(AlreadyDefinedException::class);
+        $this->expectExceptionMessage('Ingress foo is already defined in the deployment');
+        $object->addIngress('foo', $this->createStub(Ingress::class));
     }
 
     public function testAddPodWrongContainer(): void

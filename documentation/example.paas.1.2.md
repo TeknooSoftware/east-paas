@@ -5,8 +5,32 @@ Teknoo Software - PaaS library
 
 Project demo available [here](https://github.com/TeknooSoftware/east-paas-project-demo).
 
+### What's new in v1.2
+
+The version `v1.2` is a superset of `v1.1`: any valid `v1.1` file is a valid `v1.2` file. It only adds two
+shortcuts, to reduce the size of the `.paas.yaml` file when a pod must be exposed. They generate exactly the same
+deployment than the explicit definitions in `services` and `ingresses`:
+
+* `services` in a container (`pods.<pod>.containers.<container>.services`): a list of services, exposing this pod.
+  Each entry accepts only `internal`, `protocol`, `ports`, `ingress` and `enhancements`. The `pod` option is
+  automatically set to the pod's name and the name of the service is generated from the pod's name and the
+  container's name: `{pod}-{container}` for the first entry, `{pod}-{container}-2`, `{pod}-{container}-3`... for
+  the next ones. Ports' `target` are automatically added to the container's `listen` list (so `listen` can be
+  omitted if all ports are exposed via a service).
+* `ingress` in a service (in the top-level `services` map or in a container's `services` list): an ingress
+  definition, using the enclosing service as default service. It accepts all ingress options except `extends`
+  and `service`, plus an optional `port` to select the service's listened port to use (the first listened port
+  by default). The ingress is named as the service.
+
+A generated name must not collide with an explicit definition in `services` or `ingresses` (or with another
+generated name): the compilation fails with an error `... is already defined in the deployment`.
+
+Since `v1.2`, `ingress` is a reserved key in the `.paas.yaml` file (like `services`, `ingresses`, `listen`...),
+whatever the version of the file. Do not use it as name for a pod, a container, a service, a volume, a map or a
+secret.
+
       paas: #Dedicated to compiler
-        version: v1.1
+        version: v1.2
         quotas: #Quotas of resources allowed for this deployment
             - category: compute
               type: cpu
@@ -124,8 +148,14 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                   php-run: #Container name
                       image: registry.teknoo.software/php-run #Container image to use
                       version: 7.4
-                      listen: #Port listen by the container
-                          - 8080
+                      services: #Shortcut (since v1.2) to expose this pod, `pod` is automatically set
+                          - internal: false #If false, a load balancer is use to access it from outside
+                            protocol: 'HTTPS' #Or UDP or HTTPS
+                            ports:
+                                - listen: 9876 #Port listened
+                                  target: 8080 #Pod's port targeted
+                            #The service will be named `php-pods-php-run`, a second entry will be named
+                            #`php-pods-php-run-2`, and so on.
                       volumes: #Volumes to link
                           extra:
                               from: 'extra'
@@ -197,9 +227,32 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
                   nginx:
                       image: registry.hub.docker.com/library/nginx
                       version: alpine
-                      listen: #Port listen by the container
-                          - 8080
-                          - 8181
+                      #`listen` is omitted, it is automatically filled with 8080 and 8181 from the service's ports
+                      services: #The service will be named `demo-nginx`
+                          - ports:
+                                - listen: 8080 #Port listened
+                                  target: 8080 #Pod's port targeted
+                                - listen: 8181 #Port listened
+                                  target: 8181 #Pod's port targeted
+                            ingress: #Shortcut (since v1.2), the ingress is named `demo-nginx`
+                                host: demo-paas.teknoo.software
+                                tls:
+                                    secret: "demo-vault" #Configure the orchestrator to fetch value from vault
+                                #The default service is `demo-nginx`, on the first listened port (8080)
+                                meta:
+                                    letsencrypt: true
+                                    annotations:
+                                        foo2: bar
+                                aliases:
+                                    - demo-paas.teknoo.software
+                                    - alias1.demo-paas.teknoo.software
+                                    - alias1.demo-paas.teknoo.software
+                                    - alias2.demo-paas.teknoo.software
+                                paths:
+                                    - path: /php
+                                      service:
+                                          name: php-pods-php-run #Generated name of the service defined above
+                                          port: 9876
                       volumes:
                           www:
                               mount-path: '/var'
@@ -320,53 +373,25 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
 
       #Pods expositions
       services:
-          php-service: #Service name
-              pod: "php-pods" #Pod name, use service name by default
-              internal: false #If false, a load balancer is use to access it from outside
-              protocol: 'HTTPS' #Or UDP or HTTPS
-              ports:
-                  - listen: 9876 #Port listened
-                    target: 8080 #Pod's port targeted
           demo-udp: #Service name
+              pod: "demo" #Pod name, use service name by default
               protocol: 'UDP' #Or UDP or HTTPS'
               ports:
                   - listen: 6666 #Port listened
                     target: 6666 #Pod's port targeted
-          demo: #Service name
-              ports:
-                  - listen: 8080 #Port listened
-                    target: 8080 #Pod's port targeted
-                  - listen: 8181 #Port listened
-                    target: 8181 #Pod's port targeted
+              ingress: #Shortcut (since v1.2), the ingress is named `demo-udp`
+                  host: demo-udp.teknoo.software
+                  port: 6666 #Optional, the service's listened port to use, the first one by default
+                  tls:
+                      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
     
       #Ingresses configuration
       ingresses:
-          demo: #rule name
-              host: demo-paas.teknoo.software
-              tls:
-                  secret: "demo-vault" #Configure the orchestrator to fetch value from vault
-              service: #default service
-                  name: demo
-                  port: 8080
-              meta:
-                  letsencrypt: true
-                  annotations:
-                      foo2: bar
-              aliases:
-                  - demo-paas.teknoo.software
-                  - alias1.demo-paas.teknoo.software
-                  - alias1.demo-paas.teknoo.software
-                  - alias2.demo-paas.teknoo.software
-              paths:
-                  - path: /php
-                    service:
-                        name: php-service
-                        port: 9876
           demo-secure: #rule name
               host: demo-secure.teknoo.software
               https-backend: true
               tls:
                   secret: "demo-vault" #Configure the orchestrator to fetch value from vault
               service: #default service
-                  name: demo
+                  name: demo-nginx #Generated name of the service defined in the container `nginx` of the pod `demo`
                   port: 8181

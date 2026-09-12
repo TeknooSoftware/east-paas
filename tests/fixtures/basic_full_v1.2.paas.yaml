@@ -1,0 +1,325 @@
+paas: #Dedicated to compiler
+  version: v1.2
+  requires:
+    - set1
+    - set2
+  quotas:
+    - category: compute
+      type: cpu
+      capacity: 2
+      requires: 1
+    - category: memory
+      type: memory
+      capacity: 512Mi
+
+#Defaults
+defaults:
+  storage-provider: foo
+  storage-size: 1Gi
+  oci-registry-config-name: 'paas-config'
+  disable-user-isolation: false
+  clusters:
+    cluster-east:
+      storage-provider: foo
+      storage-size: 2Gi
+      oci-registry-config-name: 'paas-config'
+    cluster-west:
+      storage-provider: bar
+
+#Config
+maps:
+  map1:
+    key1: value1
+    key2: ${FOO}
+  map2:
+    foo: bar
+    bar: foo
+
+#Secrets provider
+secrets:
+  map-vault:
+    provider: map #Internal secrets, must be passed in this file
+    options:
+      key1: value1
+      key2: ${FOO}
+  map-vault2:
+    provider: map #Internal secrets, must be passed in this file
+    options:
+      hello: world
+  volume-vault:
+    provider: map
+    type: foo
+    options:
+      foo: bar
+      bar: foo
+
+#Custom image, not available in the library
+images:
+  foo:
+    build-name: foo
+    tag: latest
+    path: '/images/${FOO}'
+
+#Hook to build the project before container, Called in this order
+builds:
+  composer-build: #Name of the step
+    composer:
+      action: install #Hook to call
+      arguments:
+        - 'no-dev'
+        - 'optimize-autoloader'
+        - 'classmap-authoritative'
+  custom-hook:
+    hook-id: foo bar
+
+#Volume to build to use with container
+volumes:
+  extra: #Name of the volume
+    local-path: "/foo/bar" #optional local path where store data in the volume
+    add: #folder or file, from .paas.yaml where is located to add to the volume
+      - 'extra'
+  other-name: #Name of the volume
+    add: #folder or file, from .paas.yaml where is located to add to the volume
+      - 'vendor'
+
+#Pods (set of container)
+pods:
+  php-pods: #podset name
+    replicas: 2 #instance of pods
+    upgrade:
+        max-upgrading-pods: 2
+        max-unavailable-pods: 1
+    containers:
+      php-run: #Container name
+        image: registry.teknoo.software/php-run #Container image to use
+        version: 7.4
+        listen: #Port listen by the container
+          - 8080
+        services: #Shortcut (since v1.2) to define services exposing this container, named `{pod}-{container}[-n]`
+          - internal: false #If false, a load balancer is use to access it from outside
+            protocol: 'HTTPS' #Or UDP or HTTPS
+            ports:
+              - listen: 9876 #Port listened
+                target: 8080 #Pod's port targeted, automatically added to the container's `listen` list
+        volumes: #Volumes to link
+          extra:
+            from: 'extra'
+            mount-path: '/opt/extra' #Path where volume will be mount
+          app:
+            mount-path: '/opt/app' #Path where data will be stored
+            add: #folder or file, from .paas.yaml where is located to add to the volume
+              - 'src'
+              - 'var'
+              - 'vendor'
+              - 'composer.json'
+              - 'composer.lock'
+              - 'composer.phar'
+            writables:
+              - 'var/*'
+          data: #Persistent volume, can not be pre-populated
+            mount-path: '/opt/data'
+            persistent: true
+            storage-size: 3Gi
+          map:
+            mount-path: '/map'
+            from-map: 'map2'
+          vault:
+            mount-path: '/vault'
+            from-secret: 'volume-vault'
+        variables: #To define some environment variables
+          SERVER_SCRIPT: '/opt/app/src/server.php'
+          from-maps:
+            KEY0: 'map1.key0'
+          import-maps:
+            - 'map2'
+          from-secrets: #To fetch some value from secret/vault
+            KEY1: 'map-vault.key1'
+            KEY2: 'map-vault.key2'
+          import-secrets:
+            - 'map-vault2'
+        healthcheck:
+          initial-delay-seconds: 15
+          period-seconds: 35
+          probe:
+            command: ['ps', 'aux', 'php']
+        resources:
+            - type: cpu
+              require: 0.2
+              limit: 0.5
+            - type: memory
+              require: 64Mi
+              limit: 125Mi
+  demo:
+    replicas: 1
+    restart-policy: always
+    containers:
+      nginx:
+        image: registry.hub.docker.com/library/nginx
+        version: alpine
+        services: #`listen` is not needed, ports' targets are automatically added
+          - ports:
+              - listen: 8080 #Port listened
+                target: 8080 #Pod's port targeted
+              - listen: 8181 #Port listened
+                target: 8181 #Pod's port targeted
+            ingress: #Shortcut (since v1.2) to define an ingress on this service, named as the service
+              host: demo-paas.teknoo.software
+              tls:
+                secret: "demo-vault" #Configure the orchestrator to fetch value from vault
+              meta:
+                letsencrypt: true
+              aliases:
+                - alias1.foo.com
+                - alias2.foo.com
+              paths:
+                - path: /php
+                  service:
+                    name: php-pods-php-run
+                    port: 9876
+        volumes:
+          www:
+            mount-path: '/var'
+            add:
+              - 'nginx/www'
+          config:
+            mount-path: '/etc/nginx/conf.d/'
+            add:
+              - 'nginx/conf.d/default.conf'
+        healthcheck:
+          initial-delay-seconds: 10
+          period-seconds: 30
+          probe:
+            http:
+              port: 8080
+              path: '/status'
+              is-secure: true
+          threshold:
+            success: 3
+            failure: 2
+        resources:
+            - type: cpu
+              require: 0.2
+              limit: 0.5
+            - type: memory
+              require: 64Mi
+              limit: 125Mi
+      waf:
+        image: registry.hub.docker.com/library/waf
+        version: alpine
+        listen: #Port listen by the container
+          - 8181
+        healthcheck:
+          initial-delay-seconds: 10
+          period-seconds: 30
+          probe:
+            tcp:
+              port: 8181
+      blackfire:
+        image: 'blackfire/blackfire'
+        version: '2'
+        listen:
+          - 8307
+        variables:
+          BLACKFIRE_SERVER_ID: 'foo'
+          BLACKFIRE_SERVER_TOKEN: 'bar'
+
+jobs:
+  job-init:
+    completions:
+      mode: indexed
+      count: 3
+      time-limit: 10
+      shelf-life: 20 #optional time in second to delete the job when it is completed (successful or not), 120s by default
+    is-parallel: true
+    pods:
+      init-var:
+        replicas: 1
+        containers:
+          init:
+            image: registry.hub.docker.com/bash
+            version: alpine
+      update:
+        containers:
+          update:
+            image: registry.hub.docker.com/alpine
+            version: alpine
+  job-translation:
+    planning: during-deployment
+    completions:
+      success-on: [0, 5]
+      fail-on: [1]
+      limit-on: "php-translation"
+      shelf-life: null
+    pods:
+      php-translation:
+        restart-policy: on-failure
+        containers:
+          php-translation:
+            image: registry.teknoo.software/php-cli #Container image to use
+            version: 7.4
+            volumes: #Volumes to link
+              extra:
+                from: 'extra'
+                mount-path: '/opt/extra' #Path where volume will be mount
+              app:
+                mount-path: '/opt/app' #Path where data will be stored
+                add: #folder or file, from .paas.yaml where is located to add to the volume
+                  - 'src'
+                  - 'var'
+                  - 'vendor'
+                  - 'composer.json'
+                  - 'composer.lock'
+                  - 'composer.phar'
+                writables:
+                  - 'var/*'
+              data: #Persistent volume, can not be pre-populated
+                mount-path: '/opt/data'
+                persistent: true
+                storage-size: 3Gi
+              data-replicated: #Persistent volume, can not be pre-populated
+                name: data-replicated #to share this volume between
+                write-many: true
+                mount-path: '/opt/data-replicated'
+                persistent: true
+                storage-provider: 'replicated-provider'
+                storage-size: 3Gi
+              map:
+                mount-path: '/map'
+                from-map: 'map2'
+              vault:
+                mount-path: '/vault'
+                from-secret: 'volume-vault'
+  job-backup:
+    planning: scheduled
+    schedule: '0 0 /3 * * *'
+    pods:
+      backup:
+        containers:
+          backup:
+            image: registry.hub.docker.com/backup
+            version: alpine
+
+#Pods expositions
+services:
+  demo-udp: #Service name
+    pod: "demo" #Pod name, use service name by default
+    protocol: 'UDP' #Or UDP or HTTPS
+    ports:
+      - listen: 6666 #Port listened
+        target: 6666 #Pod's port targeted
+    ingress: #Shortcut (since v1.2) to define an ingress on this service, named as the service
+      host: demo-udp.teknoo.software
+      port: 6666 #Optional, the service's port to use (first listened port by default)
+      tls:
+        secret: "demo-vault" #Configure the orchestrator to fetch value from vault
+
+#Ingresses configuration
+ingresses:
+  demo-secure: #rule name
+    host: demo-secure.teknoo.software
+    https-backend: true
+    tls:
+      secret: "demo-vault" #Configure the orchestrator to fetch value from vault
+    service: #default service
+      name: demo-nginx
+      port: 8181

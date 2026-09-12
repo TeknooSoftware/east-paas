@@ -232,6 +232,8 @@ class FeatureContext implements Context
 
     private static bool $conditionsDefined = false;
 
+    private static bool $exposeShortcutsDefined = false;
+
     private static string $defaultsDefined = '';
 
     private static string $versionLevel = '1.30';
@@ -515,6 +517,7 @@ class FeatureContext implements Context
         self::$clusterGitVersion = null;
         self::$jobsDefined = false;
         self::$conditionsDefined = false;
+        self::$exposeShortcutsDefined = false;
         self::$CDCompared = false;
 
         if (!empty($_ENV['TEKNOO_PAAS_SECURITY_ALGORITHM'])) {
@@ -1054,6 +1057,15 @@ class FeatureContext implements Context
             'if{ENV=prod} error' => <<<EOF
 {"type":"https:\/\/teknoo.software\/probs\/issue","title":"DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}node', attribute 'name': 'if{ENV=prod}' is not a valid value of the atomic type '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}paas_token'.","status":400,"detail":["DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}node', attribute 'name': 'if{ENV=prod}' is not a valid value of the atomic type '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}paas_token'."]}
 EOF,
+            'expose shortcuts validation error' => <<<EOF
+{"type":"https:\/\/teknoo.software\/probs\/issue","title":"DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}services': This element is not expected.","status":400,"detail":["DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}services': This element is not expected."]}
+EOF,
+            'duplicated service error' => <<<EOF
+{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Service demo-nginx is already defined in the deployment"]}
+EOF,
+            'duplicated ingress error' => <<<EOF
+{"type":"https:\/\/teknoo.software\/probs\/issue","title":"teknoo.east.paas.error.recipe.configuration.compilation_error","status":400,"detail":["teknoo.east.paas.error.recipe.configuration.compilation_error","Ingress demo-nginx is already defined in the deployment"]}
+EOF,
             'job validation error' => <<<EOF
 {"type":"https:\/\/teknoo.software\/probs\/issue","title":"DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}jobs': This element is not expected.","status":400,"detail":["DOMDocument::schemaValidateSource(): Element '{http:\/\/xml.teknoo.software\/schemas\/east\/paas-validation}jobs': This element is not expected."]}
 EOF,
@@ -1489,6 +1501,38 @@ EOF,
     {
         $this->paasFile = __DIR__ . '/paas.with-conditions-and-wrong-version.yaml';
         self::$conditionsDefined = true;
+        self::$quotasDefined = '';
+    }
+
+    #[Given('a project with a paas file using expose shortcuts')]
+    public function aProjectWithAPaasFileUsingExposeShortcuts(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-expose-shortcuts.yaml';
+        self::$exposeShortcutsDefined = true;
+        self::$quotasDefined = '';
+    }
+
+    #[Given('a project with a paas file using expose shortcuts with wrong version')]
+    public function aProjectWithAPaasFileUsingExposeShortcutsWithWrongVersion(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-expose-shortcuts-and-wrong-version.yaml';
+        self::$exposeShortcutsDefined = true;
+        self::$quotasDefined = '';
+    }
+
+    #[Given('a project with a paas file using expose shortcuts and a duplicated service')]
+    public function aProjectWithAPaasFileUsingExposeShortcutsAndADuplicatedService(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-duplicated-service.yaml';
+        self::$exposeShortcutsDefined = true;
+        self::$quotasDefined = '';
+    }
+
+    #[Given('a project with a paas file using expose shortcuts and a duplicated ingress')]
+    public function aProjectWithAPaasFileUsingExposeShortcutsAndADuplicatedIngress(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-duplicated-ingress.yaml';
+        self::$exposeShortcutsDefined = true;
         self::$quotasDefined = '';
     }
 
@@ -2244,6 +2288,7 @@ EOF,
             self::$jobsDefined,
             self::$conditionsDefined,
             self::$ingressProvider,
+            self::$exposeShortcutsDefined,
         );
         //TO avoid circural references in var_export
         $tcd = clone $cd;
@@ -2515,6 +2560,17 @@ EOF;
             'traefik' => 'https-',
             default => '',
         };
+
+        if (self::$exposeShortcutsDefined) {
+            $phpServiceName = 'php-pods-php-run';
+        } else {
+            $phpServiceName = 'php-service';
+        }
+        if (self::$exposeShortcutsDefined) {
+            $demoServiceName = 'demo-nginx';
+        } else {
+            $demoServiceName = 'demo';
+        }
 
         $useImageVolumes = version_compare($versionLevel, '1.32', '>=');
         $useHostUsers = version_compare($versionLevel, '1.36', '>=');
@@ -3435,10 +3491,10 @@ EOF;
     "Teknoo\\Kubernetes\\Model\\Service": [
         {
             "metadata": {
-                "name": "{$prefix}php-service",
+                "name": "{$prefix}{$phpServiceName}",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "{$prefix}php-service"
+                    "name": "{$prefix}{$phpServiceName}"
                 }
             },
             "spec": {
@@ -3448,7 +3504,7 @@ EOF;
                 "type": "LoadBalancer",
                 "ports": [
                     {
-                        "name": "{$phpServicePrefix}php-service-9876",
+                        "name": "{$phpServicePrefix}{$phpServiceName}-9876",
                         "protocol": "TCP",
                         "port": 9876,
                         "targetPort": 8080
@@ -3458,10 +3514,10 @@ EOF;
         },
         {
             "metadata": {
-                "name": "{$prefix}demo",
+                "name": "{$prefix}{$demoServiceName}",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "{$prefix}demo"
+                    "name": "{$prefix}{$demoServiceName}"
                 }
             },
             "spec": {
@@ -3471,13 +3527,13 @@ EOF;
                 "type": "ClusterIP",
                 "ports": [
                     {
-                        "name": "demo-8080",
+                        "name": "{$demoServiceName}-8080",
                         "protocol": "TCP",
                         "port": 8080,
                         "targetPort": 8080
                     },
                     {
-                        "name": "demo-8181",
+                        "name": "{$demoServiceName}-8181",
                         "protocol": "TCP",
                         "port": 8181,
                         "targetPort": 8181
@@ -3489,10 +3545,10 @@ EOF;
     "Teknoo\\Kubernetes\\Model\\Ingress": [
         {
             "metadata": {
-                "name": "{$prefix}demo-ingress",
+                "name": "{$prefix}{$demoServiceName}-ingress",
                 "namespace": "behat-test{$hncSuffix}",
                 "labels": {
-                    "name": "{$prefix}demo"
+                    "name": "{$prefix}{$demoServiceName}"
                 },
                 "annotations": {
                     "foo2": "bar",
@@ -3510,7 +3566,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "{$prefix}demo",
+                                            "name": "{$prefix}{$demoServiceName}",
                                             "port": {
                                                 "number": 8080
                                             }
@@ -3522,7 +3578,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "{$prefix}php-service",
+                                            "name": "{$prefix}{$phpServiceName}",
                                             "port": {
                                                 "number": 9876
                                             }
@@ -3541,7 +3597,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "{$prefix}demo",
+                                            "name": "{$prefix}{$demoServiceName}",
                                             "port": {
                                                 "number": 8080
                                             }
@@ -3553,7 +3609,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "{$prefix}php-service",
+                                            "name": "{$prefix}{$phpServiceName}",
                                             "port": {
                                                 "number": 9876
                                             }
@@ -3572,7 +3628,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "{$prefix}demo",
+                                            "name": "{$prefix}{$demoServiceName}",
                                             "port": {
                                                 "number": 8080
                                             }
@@ -3584,7 +3640,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "{$prefix}php-service",
+                                            "name": "{$prefix}{$phpServiceName}",
                                             "port": {
                                                 "number": 9876
                                             }
@@ -3630,7 +3686,7 @@ EOF;
                                     "pathType": "Prefix",
                                     "backend": {
                                         "service": {
-                                            "name": "{$prefix}demo",
+                                            "name": "{$prefix}{$demoServiceName}",
                                             "port": {
                                                 "number": 8181
                                             }
@@ -3696,6 +3752,7 @@ EOF;
             self::$jobsDefined,
             self::$conditionsDefined,
             self::$ingressProvider,
+            self::$exposeShortcutsDefined,
         );
     }
 

@@ -1180,8 +1180,10 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf(CompilerCollectionInterface::class, $collection = $container->get(CompilerCollectionInterface::class));
 
+        $versions = [];
         foreach ($collection as $version => $compilers) {
             $this->assertIsString($version);
+            $versions[] = $version;
 
             $this->assertIsArray($compilers);
             foreach ($compilers as $pattern => $compiler) {
@@ -1190,6 +1192,8 @@ class ContainerTest extends TestCase
                 $this->assertInstanceOf(CompilerInterface::class, $compiler);
             }
         }
+
+        $this->assertEquals(['v1', 'v1.1', 'v1.2'], $versions);
     }
 
     public function testConductor(): void

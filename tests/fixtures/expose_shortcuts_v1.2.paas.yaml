@@ -1,0 +1,95 @@
+paas:
+  version: v1.2
+
+pods:
+  php-pods:
+    replicas: 2
+    containers:
+      php-run:
+        image: registry.teknoo.software/php-run
+        version: 7.4
+        listen: #8443 is automatically added from the second service's target
+          - 8080
+          - 9000
+        variables:
+          FOO: bar
+        services:
+          - internal: false
+            protocol: HTTPS
+            ports:
+              - listen: 9876
+                target: 8080
+              - listen: 9443
+                target: 8443
+          - protocol: TCP
+            ports:
+              - listen: 9000
+                target: 9000
+      sidecar:
+        image: registry.hub.docker.com/library/busybox
+        version: stable
+        services:
+          - ports:
+              - listen: 8181
+                target: 8181
+  demo:
+    replicas: 1
+    containers:
+      nginx:
+        image: registry.hub.docker.com/library/nginx
+        version: alpine
+        healthcheck:
+          initial-delay-seconds: 10
+          period-seconds: 30
+          probe:
+            http:
+              port: 8080
+              path: '/status'
+        services:
+          - ports:
+              - listen: 8080
+                target: 8080
+              - listen: 8181
+                target: 8181
+            ingress:
+              host: demo-paas.teknoo.software
+              tls:
+                secret: demo-vault
+              meta:
+                letsencrypt: true
+                annotations:
+                  foo: bar
+              aliases:
+                - alias1.demo-paas.teknoo.software
+                - alias2.demo-paas.teknoo.software
+              paths:
+                - path: /php
+                  service:
+                    name: php-pods-php-run
+                    port: 9876
+
+services:
+  legacy:
+    pod: demo
+    internal: false
+    ports:
+      - listen: 80
+        target: 8080
+      - listen: 443
+        target: 8080
+    ingress:
+      host: legacy.teknoo.software
+      https-backend: true
+      port: 443
+      tls:
+        secret: demo-vault
+
+ingresses:
+  demo-secure:
+    host: demo-secure.teknoo.software
+    https-backend: true
+    tls:
+      secret: demo-vault
+    service:
+      name: demo-nginx
+      port: 8181

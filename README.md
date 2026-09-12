@@ -41,6 +41,7 @@ An example of integration with `Symfony` file is available [here](documentation/
 
 Example of **.paas.yaml** configuration file present into git repository to deploy
 ---------------------------------------------------------------------------------
+An example of the `.paas.yaml` file in v1.2 is available [here](documentation/example.paas.1.2.md)
 An example of the `.paas.yaml` file in v1.1 is available [here](documentation/example.paas.1.1.md)
 An example of the `.paas.yaml` file in v1.0 is available [here](documentation/example.paas.1.0.md)
 

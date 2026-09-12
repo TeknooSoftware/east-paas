@@ -91,6 +91,13 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
     private const string CONFIG_KEY_PREFIX = 'prefix';
 
+    private const string DEFAULT_VERSION = 'v1.2';
+
+    /**
+     * @var string[]
+     */
+    private const array SUPPORTED_VERSIONS = ['v1', 'v1.0', 'v1.1', 'v1.2'];
+
     private JobUnitInterface $job;
 
     private JobWorkspaceInterface $workspace;
@@ -155,7 +162,11 @@ class Conductor implements ConductorInterface, AutomatedInterface
             $parsedPromise = new Promise(
                 onSuccess: function (array $result): array {
                     /** @var string $version */
-                    $version = str_replace('.0', '', ($result['paas'][self::CONFIG_KEY_VERSION] ?? 'v1.1'));
+                    $version = str_replace(
+                        '.0',
+                        '',
+                        ($result['paas'][self::CONFIG_KEY_VERSION] ?? self::DEFAULT_VERSION),
+                    );
                     if (!isset($this->compilers[$version])) {
                         throw new UnsupportedVersion("Unsupported PaaS version {$version}", 400);
                     }
@@ -198,7 +209,11 @@ class Conductor implements ConductorInterface, AutomatedInterface
              */
             $extendedPromise = new Promise(
                 onSuccess: static function (array $result, PromiseInterface $next) use ($job): JobUnitInterface {
-                    $version = str_replace('.0', '', ($result['paas'][self::CONFIG_KEY_VERSION] ?? 'v1.1'));
+                    $version = str_replace(
+                        '.0',
+                        '',
+                        ($result['paas'][self::CONFIG_KEY_VERSION] ?? self::DEFAULT_VERSION),
+                    );
                     if ($version === 'v1') {
                         $next->success($result);
 
@@ -224,7 +239,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
                 onSuccess: fn ($result, PromiseInterface $next): YamlValidator => $this->validator->validate(
                     $result,
                     $this->factory->getSchema(
-                        str_replace('.0', '', ($result['paas'][self::CONFIG_KEY_VERSION] ?? 'v1.1'))
+                        str_replace('.0', '', ($result['paas'][self::CONFIG_KEY_VERSION] ?? self::DEFAULT_VERSION))
                     ),
                     $next
                 ),
@@ -257,14 +272,14 @@ class Conductor implements ConductorInterface, AutomatedInterface
             $this->configuration,
             self::CONFIG_PAAS,
             [
-                self::CONFIG_KEY_VERSION => 'v1.1',
+                self::CONFIG_KEY_VERSION => self::DEFAULT_VERSION,
                 self::CONFIG_KEY_PREFIX => null,
             ],
             function ($paas) use ($promise): void {
                 if (
                     empty($this->configuration)
                     || !isset($paas[self::CONFIG_KEY_VERSION])
-                    || !in_array($paas[self::CONFIG_KEY_VERSION], ['v1', 'v1.0', 'v1.1'], true)
+                    || !in_array($paas[self::CONFIG_KEY_VERSION], self::SUPPORTED_VERSIONS, true)
                 ) {
                     $promise->fail(new UnsupportedVersion('Unsupported PaaS version', 400));
 

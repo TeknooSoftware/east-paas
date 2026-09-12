@@ -7,11 +7,11 @@ Project demo available [here](https://github.com/TeknooSoftware/east-paas-projec
 
       paas: #Dedicated to compiler
         version: v1
-        resources:
+        quotas: #Quotas of resources allowed for this deployment
             - category: compute
               type: cpu
               capacity: 2
-              require: 1
+              requires: 1
             - category: memory
               type: memory
               capacity: 512Mi

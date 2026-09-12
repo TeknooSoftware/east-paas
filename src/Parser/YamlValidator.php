@@ -93,6 +93,7 @@ class YamlValidator
         'images',
         'import-maps',
         'import-secrets',
+        'ingress',
         'ingresses',
         'initial-delay-seconds',
         'internal',

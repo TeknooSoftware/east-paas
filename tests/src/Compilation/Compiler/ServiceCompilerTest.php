@@ -34,6 +34,7 @@ use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\Compiler\IngressCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
 use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -49,7 +50,7 @@ use function func_get_args;
 #[CoversClass(ServiceCompiler::class)]
 class ServiceCompilerTest extends TestCase
 {
-    public function buildCompiler(): ServiceCompiler
+    public function buildCompiler(?IngressCompiler $ingressCompiler = null): ServiceCompiler
     {
         return new ServiceCompiler(
             [
@@ -62,6 +63,146 @@ class ServiceCompilerTest extends TestCase
                     ],
                 ],
             ],
+            $ingressCompiler,
+        );
+    }
+
+    private function getDefinitionsWithIngressShortcut(): array
+    {
+        return [
+            'php-react' => [
+                'internal' => false,
+                'ports' => [
+                    ['listen' => 80, 'target' => 8080],
+                    ['listen' => 443, 'target' => 8443],
+                ],
+                'ingress' => [
+                    'host' => 'foo.bar',
+                    'tls' => ['secret' => 'foo'],
+                    'meta' => ['letsencrypt' => true],
+                ],
+            ],
+            'php-secure' => [
+                'pod' => 'php-react',
+                'ports' => [
+                    ['listen' => 80, 'target' => 8080],
+                    ['listen' => 443, 'target' => 8443],
+                ],
+                'ingress' => [
+                    'host' => 'secure.foo.bar',
+                    'https-backend' => true,
+                    'port' => 443,
+                    'tls' => ['secret' => 'foo'],
+                    'paths' => [
+                        [
+                            'path' => '/api',
+                            'service' => ['name' => 'php-react', 'port' => 80],
+                        ],
+                    ],
+                ],
+            ],
+            'php-internal' => [
+                'internal' => true,
+                'ports' => [
+                    ['listen' => 80, 'target' => 8080],
+                ],
+            ],
+        ];
+    }
+
+    public function testCompileWithIngressShortcut(): void
+    {
+        $definitions = $this->getDefinitionsWithIngressShortcut();
+
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->exactly(3))->method('addService');
+
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $resourceManager = $this->createStub(ResourceManager::class);
+        $defaultsBag = $this->createStub(DefaultsBag::class);
+
+        $ingressCompiler = $this->createMock(IngressCompiler::class);
+        $compiledIngresses = [];
+        $ingressCompiler->expects($this->exactly(2))
+            ->method('compile')
+            ->willReturnCallback(
+                function (
+                    array &$definitions,
+                    CompiledDeploymentInterface $cd,
+                    JobWorkspaceInterface $ws,
+                    JobUnitInterface $ju,
+                    ResourceManager $rm,
+                    DefaultsBag $db,
+                ) use (
+                    &$compiledIngresses,
+                    $compiledDeployment,
+                    $workspace,
+                    $jobUnit,
+                    $resourceManager,
+                    $defaultsBag,
+                    $ingressCompiler,
+                ): IngressCompiler {
+                    $this->assertSame($compiledDeployment, $cd);
+                    $this->assertSame($workspace, $ws);
+                    $this->assertSame($jobUnit, $ju);
+                    $this->assertSame($resourceManager, $rm);
+                    $this->assertSame($defaultsBag, $db);
+                    $compiledIngresses += $definitions;
+
+                    return $ingressCompiler;
+                }
+            );
+
+        $this->assertInstanceOf(ServiceCompiler::class, $this->buildCompiler($ingressCompiler)->compile(
+            $definitions,
+            $compiledDeployment,
+            $workspace,
+            $jobUnit,
+            $resourceManager,
+            $defaultsBag,
+        ));
+
+        $this->assertEquals(
+            [
+                'php-react' => [
+                    'host' => 'foo.bar',
+                    'tls' => ['secret' => 'foo'],
+                    'meta' => ['letsencrypt' => true],
+                    'service' => ['name' => 'php-react', 'port' => 80],
+                ],
+                'php-secure' => [
+                    'host' => 'secure.foo.bar',
+                    'https-backend' => true,
+                    'tls' => ['secret' => 'foo'],
+                    'paths' => [
+                        [
+                            'path' => '/api',
+                            'service' => ['name' => 'php-react', 'port' => 80],
+                        ],
+                    ],
+                    'service' => ['name' => 'php-secure', 'port' => 443],
+                ],
+            ],
+            $compiledIngresses,
+        );
+    }
+
+    public function testCompileWithIngressShortcutWithoutIngressCompiler(): void
+    {
+        $definitions = $this->getDefinitionsWithIngressShortcut();
+
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->once())->method('addService');
+
+        $this->expectException(DomainException::class);
+        $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
         );
     }
 

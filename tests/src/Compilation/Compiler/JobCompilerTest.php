@@ -185,6 +185,7 @@ class JobCompilerTest extends TestCase
                 function (
                     #[SensitiveParameter] array &$definitions,
                     CompiledDeploymentInterface $compiledDeployment,
+                    #[SensitiveParameter] JobWorkspaceInterface $workspace,
                     #[SensitiveParameter] JobUnitInterface $job,
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,
@@ -240,6 +241,7 @@ class JobCompilerTest extends TestCase
                 function (
                     #[SensitiveParameter] array &$definitions,
                     CompiledDeploymentInterface $compiledDeployment,
+                    #[SensitiveParameter] JobWorkspaceInterface $workspace,
                     #[SensitiveParameter] JobUnitInterface $job,
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,
@@ -300,6 +302,7 @@ class JobCompilerTest extends TestCase
                 function (
                     #[SensitiveParameter] array &$definitions,
                     CompiledDeploymentInterface $compiledDeployment,
+                    #[SensitiveParameter] JobWorkspaceInterface $workspace,
                     #[SensitiveParameter] JobUnitInterface $job,
                     ResourceManager $resourceManager,
                     DefaultsBag $defaultsBag,

@@ -35,6 +35,8 @@ use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\PodCompiler;
 use Teknoo\East\Paas\Compilation\Compiler\ResourceManager;
+use Teknoo\East\Paas\Compilation\Compiler\ServiceCompiler;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
@@ -48,7 +50,7 @@ use Teknoo\Recipe\Promise\PromiseInterface;
 #[CoversClass(PodCompiler::class)]
 class PodCompilerTest extends TestCase
 {
-    public function buildCompiler(): PodCompiler
+    public function buildCompiler(?ServiceCompiler $serviceCompiler = null): PodCompiler
     {
         return new PodCompiler(
             [
@@ -65,8 +67,281 @@ class PodCompilerTest extends TestCase
                 'bar-ext' => [
                     'image' => 'mongo-react',
                 ]
-            ]
+            ],
+            $serviceCompiler,
         );
+    }
+
+    private function getDefinitionsWithServicesShortcut(): array
+    {
+        return [
+            'php-pods' => [
+                'replicas' => 2,
+                'containers' => [
+                    'php-run' => [
+                        'image' => 'php-run',
+                        'version' => '8.4',
+                        'listen' => [8080, 9000],
+                        'services' => [
+                            [
+                                'internal' => false,
+                                'protocol' => 'TCP',
+                                'ports' => [
+                                    ['listen' => 80, 'target' => 8080],
+                                    ['listen' => 443, 'target' => 8443],
+                                ],
+                            ],
+                            [
+                                'ports' => [
+                                    ['listen' => 9000, 'target' => 9000],
+                                ],
+                                'ingress' => [
+                                    'host' => 'foo.bar',
+                                    'tls' => ['secret' => 'foo'],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'sidecar' => [
+                        'image' => 'sidecar',
+                        'services' => [
+                            [
+                                'ports' => [
+                                    ['listen' => 8181, 'target' => 8181],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'no-service' => [
+                        'image' => 'nothing',
+                        'listen' => [22],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public function testCompileWithServicesShortcut(): void
+    {
+        $definitions = $this->getDefinitionsWithServicesShortcut();
+
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->once())
+            ->method('addPod')
+            ->willReturnCallback(
+                function (string $name, Pod $pod) use ($compiledDeployment): CompiledDeploymentInterface {
+                    $this->assertEquals('php-pods', $name);
+                    $listens = [];
+                    foreach ($pod as $container) {
+                        $listens[$container->getName()] = $container->getListen();
+                    }
+
+                    $this->assertEquals(
+                        [
+                            'php-run' => [8080, 9000, 8443],
+                            'sidecar' => [8181],
+                            'no-service' => [22],
+                        ],
+                        $listens,
+                    );
+
+                    return $compiledDeployment;
+                }
+            );
+
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+        $jobUnit = $this->createStub(JobUnitInterface::class);
+        $resourceManager = $this->createStub(ResourceManager::class);
+        $defaultsBag = $this->createStub(DefaultsBag::class);
+
+        $serviceCompiler = $this->createMock(ServiceCompiler::class);
+        $compiledServices = [];
+        $serviceCompiler->expects($this->exactly(2))
+            ->method('compile')
+            ->willReturnCallback(
+                function (
+                    array &$definitions,
+                    CompiledDeploymentInterface $cd,
+                    JobWorkspaceInterface $ws,
+                    JobUnitInterface $ju,
+                    ResourceManager $rm,
+                    DefaultsBag $db,
+                ) use (
+                    &$compiledServices,
+                    $compiledDeployment,
+                    $workspace,
+                    $jobUnit,
+                    $resourceManager,
+                    $defaultsBag,
+                    $serviceCompiler,
+                ): ServiceCompiler {
+                    $this->assertSame($compiledDeployment, $cd);
+                    $this->assertSame($workspace, $ws);
+                    $this->assertSame($jobUnit, $ju);
+                    $this->assertSame($resourceManager, $rm);
+                    $this->assertSame($defaultsBag, $db);
+                    $compiledServices += $definitions;
+
+                    return $serviceCompiler;
+                }
+            );
+
+        $this->assertInstanceOf(PodCompiler::class, $this->buildCompiler($serviceCompiler)->compile(
+            $definitions,
+            $compiledDeployment,
+            $workspace,
+            $jobUnit,
+            $resourceManager,
+            $defaultsBag,
+        ));
+
+        $this->assertEquals(
+            [
+                'php-pods-php-run' => [
+                    'internal' => false,
+                    'protocol' => 'TCP',
+                    'ports' => [
+                        ['listen' => 80, 'target' => 8080],
+                        ['listen' => 443, 'target' => 8443],
+                    ],
+                    'pod' => 'php-pods',
+                ],
+                'php-pods-php-run-2' => [
+                    'ports' => [
+                        ['listen' => 9000, 'target' => 9000],
+                    ],
+                    'ingress' => [
+                        'host' => 'foo.bar',
+                        'tls' => ['secret' => 'foo'],
+                    ],
+                    'pod' => 'php-pods',
+                ],
+                'php-pods-sidecar' => [
+                    'ports' => [
+                        ['listen' => 8181, 'target' => 8181],
+                    ],
+                    'pod' => 'php-pods',
+                ],
+            ],
+            $compiledServices,
+        );
+    }
+
+    public function testListenCompletionFromServicesShortcut(): void
+    {
+        $service = [
+            'internal' => false,
+            'protocol' => 'HTTPS',
+            'ports' => [
+                ['listen' => 9876, 'target' => 8080],
+            ],
+        ];
+
+        $definitions = [
+            'php-pods' => [
+                'containers' => [
+                    'without-listen' => [
+                        'image' => 'php',
+                        'services' => [$service],
+                    ],
+                    'with-same-listen' => [
+                        'image' => 'php',
+                        'listen' => [8080],
+                        'services' => [$service],
+                    ],
+                    'with-other-listen' => [
+                        'image' => 'php',
+                        'listen' => [8181],
+                        'services' => [$service],
+                    ],
+                ],
+            ],
+        ];
+
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->once())
+            ->method('addPod')
+            ->willReturnCallback(
+                function (string $name, Pod $pod) use ($compiledDeployment): CompiledDeploymentInterface {
+                    $listens = [];
+                    foreach ($pod as $container) {
+                        $listens[$container->getName()] = $container->getListen();
+                    }
+
+                    $this->assertSame(
+                        [
+                            'without-listen' => [8080],
+                            'with-same-listen' => [8080],
+                            'with-other-listen' => [8181, 8080],
+                        ],
+                        $listens,
+                    );
+
+                    return $compiledDeployment;
+                }
+            );
+
+        $serviceCompiler = $this->createMock(ServiceCompiler::class);
+        $serviceCompiler->expects($this->exactly(3))
+            ->method('compile')
+            ->willReturnCallback(
+                function (array &$definitions) use ($serviceCompiler, $service): ServiceCompiler {
+                    $this->assertCount(1, $definitions);
+                    $this->assertSame(
+                        $service + ['pod' => 'php-pods'],
+                        current($definitions),
+                    );
+
+                    return $serviceCompiler;
+                }
+            );
+
+        $this->assertInstanceOf(PodCompiler::class, $this->buildCompiler($serviceCompiler)->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
+        ));
+    }
+
+    public function testCompileWithServicesShortcutWithoutServiceCompiler(): void
+    {
+        $definitions = $this->getDefinitionsWithServicesShortcut();
+
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->never())->method('addPod');
+
+        $this->expectException(DomainException::class);
+        $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
+        );
+    }
+
+    public function testCompileWithEmptyServicesShortcutWithoutServiceCompiler(): void
+    {
+        $definitions = $this->getDefinitionsWithServicesShortcut();
+        foreach ($definitions['php-pods']['containers'] as &$container) {
+            $container['services'] = [];
+        }
+
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->once())->method('addPod');
+
+        $this->assertInstanceOf(PodCompiler::class, $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
+        ));
     }
 
     private function getDefinitionsArray(): array

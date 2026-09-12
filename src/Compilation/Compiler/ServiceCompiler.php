@@ -37,6 +37,7 @@ use Teknoo\East\Paas\Contracts\Compilation\ExtenderInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 
+use function array_key_first;
 use function is_string;
 use function strtoupper;
 
@@ -67,12 +68,65 @@ class ServiceCompiler implements CompilerInterface, ExtenderInterface
 
     private const string KEY_EXTENDS = 'extends';
 
+    private const string KEY_INGRESS = 'ingress';
+
+    private const string KEY_SERVICE = 'service';
+
+    private const string KEY_NAME = 'name';
+
+    private const string KEY_PORT = 'port';
+
     /**
      * @param array<string, array<string, mixed>> $library
      */
     public function __construct(
         public readonly array $library,
+        private readonly ?IngressCompiler $ingressCompiler = null,
     ) {
+    }
+
+    /**
+     * Shortcut available since PaaS v1.2 : an `ingress` option in a service definition will generate an ingress,
+     * named as the service, with the service as default service (on the port defined in the `port` option or the
+     * first listened port of the service)
+     *
+     * @param array<string, mixed> $ingressConfig
+     * @param array<int, int> $ports
+     */
+    private function compileIngressShortcut(
+        string $serviceName,
+        array $ingressConfig,
+        array $ports,
+        CompiledDeploymentInterface $compiledDeployment,
+        JobWorkspaceInterface $workspace,
+        JobUnitInterface $job,
+        ResourceManager $resourceManager,
+        DefaultsBag $defaultsBag,
+    ): void {
+        if (null === $this->ingressCompiler) {
+            throw new DomainException(
+                "teknoo.east.paas.error.recipe.job.ingress-shortcut-unavailable:$serviceName",
+                400
+            );
+        }
+
+        $port = (int) ($ingressConfig[self::KEY_PORT] ?? array_key_first($ports));
+        unset($ingressConfig[self::KEY_PORT]);
+
+        $ingressConfig[self::KEY_SERVICE] = [
+            self::KEY_NAME => $serviceName,
+            self::KEY_PORT => $port,
+        ];
+
+        $definitions = [$serviceName => $ingressConfig];
+        $this->ingressCompiler->compile(
+            definitions: $definitions,
+            compiledDeployment: $compiledDeployment,
+            workspace: $workspace,
+            job: $job,
+            resourceManager: $resourceManager,
+            defaultsBag: $defaultsBag,
+        );
     }
 
     public function compile(
@@ -99,6 +153,19 @@ class ServiceCompiler implements CompilerInterface, ExtenderInterface
                     !isset($config[self::KEY_INTERNAL]) || !empty($config[self::KEY_INTERNAL])
                 )
             );
+
+            if (!empty($config[self::KEY_INGRESS])) {
+                $this->compileIngressShortcut(
+                    serviceName: $name,
+                    ingressConfig: $config[self::KEY_INGRESS],
+                    ports: $ports,
+                    compiledDeployment: $compiledDeployment,
+                    workspace: $workspace,
+                    job: $job,
+                    resourceManager: $resourceManager,
+                    defaultsBag: $defaultsBag,
+                );
+            }
         }
 
         return $this;

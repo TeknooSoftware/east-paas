@@ -1,0 +1,106 @@
+services:
+    extra-foobarproject-volume-init:
+        image: foo.bar/extra-foobarproject
+        environment:
+            MOUNT_PATH: /opt/extra
+        volumes:
+            - 'extra-foobarproject-volume:/opt/extra'
+        network_mode: none
+        restart: 'no'
+    php-pods:
+        image: 'foo.bar/php-run:7.4-09597-1e225-prod'
+        networks:
+            - behat-test-foobarproject_private
+        expose:
+            - 8080
+        secrets:
+            - map-vault2-secret
+            - map-vault-secret
+            - volume-vault-secret
+        configs:
+            - map2-map
+            - map1-map
+        environment:
+            SERVER_SCRIPT: /opt/app/src/server.php
+        volumes:
+            - 'extra-foobarproject-volume:/opt/extra:ro'
+            - 'data-09597-1e225:/opt/data'
+            - 'data-replicated:/opt/data-replicated'
+        depends_on:
+            extra-foobarproject-volume-init:
+                condition: service_completed_successfully
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'ps aux php'
+            start_period: 10s
+            interval: 30s
+            retries: 1
+        deploy:
+            replicas: 2
+        ports:
+            - '9876:8080'
+    shell:
+        image: 'registry.hub.docker.com/bash:alpine'
+        networks:
+            - behat-test-foobarproject_private
+    demo:
+        image: 'foo.bar/nginx:alpine-2a975-5be1e-prod'
+        networks:
+            - behat-test-foobarproject_private
+        expose:
+            - 8080
+            - 8181
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'curl -fk https://localhost:8080/status || exit 1'
+            start_period: 10s
+            interval: 30s
+            retries: 2
+        group_add:
+            - '1000'
+    demo-waf:
+        image: 'registry.hub.docker.com/library/waf:alpine'
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'nc -z localhost 8181 || exit 1'
+            start_period: 10s
+            interval: 30s
+            retries: 1
+        group_add:
+            - '1000'
+        network_mode: 'service:demo'
+    demo-blackfire:
+        image: 'blackfire/blackfire:2-prod'
+        environment:
+            BLACKFIRE_SERVER_ID: foo
+            BLACKFIRE_SERVER_TOKEN: bar
+        group_add:
+            - '1000'
+        network_mode: 'service:demo'
+networks:
+    behat-test-foobarproject_private:
+        name: behat-test-foobarproject_private
+        driver: bridge
+        internal: true
+volumes:
+    data-09597-1e225:
+        driver: local
+    data-replicated:
+        driver: local
+    extra-foobarproject-volume:
+        driver: local
+configs:
+    map1-map:
+        file: ./configs/map1-map
+    map2-map:
+        file: ./configs/map2-map
+secrets:
+    map-vault-secret:
+        file: ./secrets/map-vault-secret
+    map-vault2-secret:
+        file: ./secrets/map-vault2-secret
+    volume-vault-secret:
+        file: ./secrets/volume-vault-secret

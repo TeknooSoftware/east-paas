@@ -1,0 +1,36 @@
+http:
+    routers:
+        demo-nginx:
+            rule: 'Host(`demo-paas.teknoo.software`) || Host(`alias1.demo-paas.teknoo.software`) || Host(`alias2.demo-paas.teknoo.software`)'
+            entryPoints:
+                - websecure
+            service: demo-nginx-default
+            tls: {  }
+        demo-nginx-php-pods-php-run-9876:
+            rule: '(Host(`demo-paas.teknoo.software`) || Host(`alias1.demo-paas.teknoo.software`) || Host(`alias2.demo-paas.teknoo.software`)) && PathPrefix(`/php`)'
+            entryPoints:
+                - websecure
+            service: demo-nginx-php-pods-php-run-9876
+            tls: {  }
+        demo-secure:
+            rule: Host(`demo-secure.teknoo.software`)
+            entryPoints:
+                - websecure
+            service: demo-secure-default
+            tls: {  }
+    services:
+        demo-nginx-default:
+            loadBalancer:
+                servers:
+                    -
+                        url: 'http://demo-nginx:8080'
+        demo-nginx-php-pods-php-run-9876:
+            loadBalancer:
+                servers:
+                    -
+                        url: 'http://php-pods-php-run:9876'
+        demo-secure-default:
+            loadBalancer:
+                servers:
+                    -
+                        url: 'https://demo-nginx:8181'

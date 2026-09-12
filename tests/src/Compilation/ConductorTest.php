@@ -189,6 +189,7 @@ class ConductorTest extends TestCase
             [
                 'v1' => $compilers,
                 'v1.1' => $compilers,
+                'v1.2' => $compilers,
             ],
         );
     }
@@ -519,6 +520,152 @@ EOF;
         $workspace = $this->createStub(JobWorkspaceInterface::class);
 
         $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
+
+        $this->getYamlParser(true)
+            ->method('parse')
+            ->willReturnCallback(
+                function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
+                    $promise->success($result);
+
+                    return $this->getYamlParser(true);
+                }
+            );
+
+        $jobUnit->expects($this->once())
+            ->method('filteringConditions')
+            ->willReturnCallback(
+                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
+                    $promise->success($configuration);
+
+                    return $jobUnit;
+                }
+            );
+
+        $this->getYamlValidator()
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise): YamlValidator {
+                    $promise->success($configuration);
+
+                    return $this->getYamlValidator();
+                }
+            );
+
+        $jobUnit->expects($this->once())
+            ->method('updateVariablesIn')
+            ->with($result)
+            ->willReturnCallback(
+                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
+                    $result['image']['foo']['path'] = '/image/foo';
+                    $promise->success($result);
+
+                    return $jobUnit;
+                }
+            );
+
+        $this->assertInstanceOf(ConductorInterface::class, $conductor->prepare(
+            $yaml,
+            $promise
+        ));
+    }
+
+    public function testPrepareInV1dot2(): void
+    {
+        $yaml = <<<'EOF'
+paas:
+  version: v1.2
+/*...*/
+EOF;
+
+        $result = $this->getResultArray();
+        $result['paas']['version'] = 'v1.2';
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+
+        $conductor = $this->buildConductor()->configure($jobUnit, $workspace);
+
+        $this->getYamlParser(true)
+            ->method('parse')
+            ->willReturnCallback(
+                function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
+                    $promise->success($result);
+
+                    return $this->getYamlParser(true);
+                }
+            );
+
+        $jobUnit->expects($this->once())
+            ->method('filteringConditions')
+            ->willReturnCallback(
+                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
+                    $promise->success($configuration);
+
+                    return $jobUnit;
+                }
+            );
+
+        $this->getYamlValidator()
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise): YamlValidator {
+                    $promise->success($configuration);
+
+                    return $this->getYamlValidator();
+                }
+            );
+
+        $jobUnit->expects($this->once())
+            ->method('updateVariablesIn')
+            ->with($result)
+            ->willReturnCallback(
+                function (array $result, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
+                    $result['image']['foo']['path'] = '/image/foo';
+                    $promise->success($result);
+
+                    return $jobUnit;
+                }
+            );
+
+        $this->assertInstanceOf(ConductorInterface::class, $conductor->prepare(
+            $yaml,
+            $promise
+        ));
+    }
+
+    public function testPrepareWithoutVersionUseV1dot2ByDefault(): void
+    {
+        $yaml = <<<'EOF'
+/*...*/
+EOF;
+
+        $result = $this->getResultArray();
+        unset($result['paas']);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $workspace = $this->createStub(JobWorkspaceInterface::class);
+
+        $conductor = new Conductor(
+            $this->getCompiledDeploymentFactory(true),
+            $this->getPropertyAccessorMock(true),
+            $this->getYamlParser(true),
+            $this->getYamlValidator(true),
+            $this->getResourceFactory(true),
+            [
+                'v1.2' => [
+                    '[secrets]' => $this->createStub(CompilerInterface::class),
+                ],
+            ],
+        );
+        $conductor = $conductor->configure($jobUnit, $workspace);
 
         $this->getYamlParser(true)
             ->method('parse')
@@ -959,6 +1106,22 @@ EOF;
     public function testCompileDeployment(): void
     {
         $result = $this->getResultArray();
+
+        $conductor = $this->prepareTestForCompile($result);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())
+            ->method('success')
+            ->with(self::callback(fn ($x): bool => $x instanceof CompiledDeploymentInterface));
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(ConductorInterface::class, $conductor->compileDeployment($promise));
+    }
+
+    public function testCompileDeploymentInV1dot2(): void
+    {
+        $result = $this->getResultArray();
+        $result['paas']['version'] = 'v1.2';
 
         $conductor = $this->prepareTestForCompile($result);
 

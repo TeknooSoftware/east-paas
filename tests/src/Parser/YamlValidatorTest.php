@@ -63,6 +63,97 @@ class YamlValidatorTest extends TestCase
         return file_get_contents($fileName);
     }
 
+    private function getYamlArrayV1dot2(): array
+    {
+        $fileName = dirname(__DIR__, 2) . '/fixtures/basic_full_v1.2.paas.yaml';
+        $conf = file_get_contents($fileName);
+        return new Parser()->parse($conf);
+    }
+
+    private function getXsdFileV1dot2(): string
+    {
+        $fileName = dirname(__DIR__, 3) . '/src/Contracts/Compilation/xsd/v1.2.paas_validation.xsd';
+
+        return file_get_contents($fileName);
+    }
+
+    public function testValidConfInV1dot2(): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with($configuration);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
+            $promise
+        ));
+    }
+
+    public function testValidConfInV1dot1WithSchemaV1dot2(): void
+    {
+        $configuration = $this->getYamlArray();
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with($configuration);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
+            $promise
+        ));
+    }
+
+    public function testNotValidConfInV1dot2WithSchemaV1dot1(): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(ValidationException::class));
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFile(),
+            $promise
+        ));
+    }
+
+    public function testNotValidConfInV1dot2WithServiceShortcutWithNotAllowedOption(): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+        $configuration['pods']['php-pods']['containers']['php-run']['services'][0]['pod'] = 'foo';
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(ValidationException::class));
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
+            $promise
+        ));
+    }
+
+    public function testNotValidConfInV1dot2WithIngressShortcutWithNotAllowedOption(): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+        $configuration['services']['demo-udp']['ingress']['service'] = ['name' => 'foo', 'port' => 80];
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(ValidationException::class));
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
+            $promise
+        ));
+    }
+
     public function testValidConf(): void
     {
         $configuration = $this->getYamlArray();

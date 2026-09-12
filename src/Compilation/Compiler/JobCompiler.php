@@ -112,6 +112,7 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
             $this->podCompiler->processSetOfPods(
                 definitions: $config[self::KEY_PODS],
                 compiledDeployment: $compiledDeployment,
+                workspace: $workspace,
                 job: $job,
                 resourceManager: $resourceManager,
                 defaultsBag: $defaultsBag,
