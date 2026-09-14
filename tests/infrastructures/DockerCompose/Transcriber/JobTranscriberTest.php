@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
@@ -34,6 +35,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\JobTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -145,5 +147,38 @@ class JobTranscriberTest extends TestCase
         );
 
         self::assertSame([], $generation->getComposeFile());
+    }
+
+
+    public function testTranscribeFailure(): void
+    {
+        $job = $this->buildJob(Planning::DuringDeployment);
+
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $job): CompiledDeploymentInterface {
+                $callback($job, [], [], 'prj');
+
+                return $cd;
+            });
+
+        $accumulator = $this->createMock(AccumulatorInterface::class);
+        $accumulator->method('getNetworkName')->willReturn('default-prj-private');
+        $accumulator->expects($this->once())
+            ->method('addService')
+            ->willThrowException(new RuntimeException('boom'));
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(RuntimeException::class));
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $accumulator,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
     }
 }

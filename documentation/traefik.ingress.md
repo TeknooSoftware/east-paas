@@ -5,10 +5,10 @@ Introduction
 ------------
 
 The Docker Compose deployment driver (`type: docker-compose`, see
-`documentation/docker-compose.deployment.md`) does **not** publish application services on host ports.
-Internal services live on a dedicated, `internal: true` network and are reachable only by their Compose DNS
-name. **External reachability is provided exclusively by [Traefik v3](https://doc.traefik.io/traefik/)**,
-configured through its **file provider**.
+`documentation/docker-compose.deployment.md`) publishes host ports only for public (`internal: false`)
+services. Services live on a dedicated per-project network and are reachable by their Compose DNS name.
+**HTTP(S) reachability is provided by [Traefik v3](https://doc.traefik.io/traefik/)**, configured through
+its **file provider**.
 
 The driver itself never installs or manages Traefik. It assumes a Traefik v3 instance is **already running**
 on the Docker host and:
@@ -40,11 +40,6 @@ entryPoints:
     address: ":80"
   websecure:
     address: ":443"
-  # Optional, only if you expose raw TCP / UDP services (see "Raw TCP / UDP" below):
-  tcp:
-    address: ":7000"
-  udp:
-    address: ":7001/udp"
 
 providers:
   file:
@@ -67,10 +62,9 @@ certificatesResolvers:
 
 Key points (exact Traefik v3 keys):
 
-* **Entrypoints.** `entryPoints.<name>.address` uses the `":port"` form (`":443"`, `":7001/udp"`). The
-  entrypoint **names** must match the driver settings
-  `teknoo.east.paas.docker-compose.traefik.entrypoint.{web,websecure,tcp,udp}` (defaults `web`,
-  `websecure`, `tcp`, `udp`).
+* **Entrypoints.** `entryPoints.<name>.address` uses the `":port"` form (`":443"`). The entrypoint
+  **names** must match the driver settings `teknoo.east.paas.docker-compose.traefik.entrypoint.{web,websecure}`
+  (defaults `web`, `websecure`).
 * **File provider.** `providers.file.directory` + `watch: true`. `directory` and `filename` are mutually
   exclusive — use `directory`. This directory must equal
   `teknoo.east.paas.docker-compose.traefik.dynamic_dir` (default `/etc/traefik/dynamic`).
@@ -85,20 +79,25 @@ Key points (exact Traefik v3 keys):
 Connect-per-project network model
 ---------------------------------
 
-Each project/environment gets its own dedicated `internal: true` Compose network (real name
-`"{project}_private"`). For Traefik to reach the services on that network, it must be a member of it.
+Each project/environment gets its own dedicated Compose network (real name `"{project}-private"`,
+`internal: true` when `teknoo.east.paas.docker-compose.network.internal` is enabled). For Traefik to reach
+the services on that network, it must be a member of it.
 
 The deploy playbook therefore runs (idempotently):
 
 ```bash
-docker network connect <project>_private <traefik-container>
+docker network connect <project>-private <traefik-container>
 ```
 
 `<traefik-container>` is the value of `teknoo.east.paas.docker-compose.traefik.container` (default
 `traefik`). Make sure your Traefik container has a stable, predictable name/id.
 
-> Because Traefik joins each project's network, the `loadBalancer` URLs in the generated dynamic file point
-> at the **Compose service DNS names** on that network (e.g. `http://php-fpm:9000`), not at host ports.
+> Because Traefik joins **every** project's network, a bare Compose service name would be ambiguous
+> (two projects may both have a `php` pod). The `loadBalancer` URLs in the generated dynamic file therefore
+> use the network-qualified Docker DNS name `<pod>.<project>-private` and the **container** port of the
+> PaaS service (e.g. `http://php-fpm.demo-prod-private:9000`), never host ports. For the same reason every
+> router / service / serversTransport name is prefixed by the project name (Traefik's file provider
+> merges all the files of the directory and rejects duplicated names).
 
 Watched-directory contract
 --------------------------
@@ -107,8 +106,10 @@ Watched-directory contract
   sanitised Compose project name (`sanitizeDns("{namespace}-{projectName}")`).
 * The file is dropped into `teknoo.east.paas.docker-compose.traefik.dynamic_dir`.
 * TLS cert/key files (for non-ACME ingresses) are dropped into
-  `teknoo.east.paas.docker-compose.traefik.certs_dir` (default `/etc/traefik/certs`) and referenced from the
-  dynamic file by path.
+  `teknoo.east.paas.docker-compose.traefik.certs_dir` (default `/etc/traefik/certs`) on the host and
+  referenced from the dynamic file by their path **as seen by Traefik**
+  (`teknoo.east.paas.docker-compose.traefik.certs_mount_dir`, defaulting to the same path): bind-mount the
+  host directory into the Traefik container at that path.
 * `watch: true` makes Traefik hot-reload the file. A redeploy of the same project/environment **overwrites**
   the same `<project>.yml`, so stale routers are cleaned up automatically.
 
@@ -116,35 +117,41 @@ Generated dynamic configuration
 -------------------------------
 
 The `IngressTranscriber` (expose stage, priority 50) turns each `Ingress` into Traefik v3 `http` routers and
-services. The `ServiceTranscriber` (priority 40) adds `tcp` / `udp` routers for external raw services.
+services. Raw TCP / UDP services are not routed by Traefik: a public service publishes its host ports
+directly through Compose `ports:` (see the deployment driver documentation).
 
 ### HTTP routers & services
 
-For an ingress `host: example.com`, `aliases: [www.example.com]`, default service `php` on port `9000`:
+For an ingress `my-ingress` of the project `demo-prod`, `host: example.com`, `aliases: [www.example.com]`,
+default PaaS service `php` (port `9000`, backed by the pod `php-pod` on its container port `9000`):
 
 ```yaml
 # <project>.yml  (Traefik v3 DYNAMIC configuration, file provider)
 http:
   routers:
-    my-ingress:
+    demo-prod-my-ingress:
       rule: "Host(`example.com`) || Host(`www.example.com`)"
       entryPoints:
         - web            # or "websecure" when TLS is enabled (see below)
-      service: my-ingress-default
+      service: demo-prod-my-ingress-default
   services:
-    my-ingress-default:
+    demo-prod-my-ingress-default:
       loadBalancer:
         servers:
-          - url: "http://php:9000"
+          - url: "http://php-pod.demo-prod-private:9000"
 ```
 
-* One **router** per ingress, with `rule: "Host(\`host\`) || Host(\`alias\`)…"`.
+* One **router** per ingress, with `rule: "Host(\`host\`) || Host(\`alias\`)…"`, named
+  `<project>-<ingress>`.
 * `entryPoints` is `[web]` for plain HTTP, `[websecure]` when TLS is enabled.
-* `service` points at `<ingress>-default`, whose `loadBalancer.servers[].url` targets the Compose service
-  DNS name and target port.
+* `service` points at `<project>-<ingress>-default`, whose `loadBalancer.servers[].url` targets the pod
+  backing the PaaS service (`<pod>.<project>-private`) on the **container** port mapped by the service
+  (`listen` → `target`). A service name unknown to the deployment (e.g. a platform-wide default backend
+  living outside the stack) is used as-is.
 * `httpsBackend: true` switches the backend scheme to `https`. When
   `teknoo.east.paas.docker-compose.https_backend.insecure_skip_verify` is `true`, the service references a
-  `serversTransport` (so you can disable backend certificate verification).
+  generated `serversTransport` (`http.serversTransports.<pod>-<network>-transport`, `insecureSkipVerify:
+  true`).
 
 ### Path mapping
 
@@ -154,23 +161,23 @@ the longest/most specific path first by computed priority):
 ```yaml
 http:
   routers:
-    my-ingress:
+    demo-prod-my-ingress:
       rule: "Host(`example.com`) || Host(`www.example.com`)"
       entryPoints: [web]
-      service: my-ingress-default
-    my-ingress-api-8080:
+      service: demo-prod-my-ingress-default
+    demo-prod-my-ingress-api-8080:
       rule: "(Host(`example.com`) || Host(`www.example.com`)) && PathPrefix(`/api`)"
       entryPoints: [web]
-      service: my-ingress-api-8080
+      service: demo-prod-my-ingress-api-8080
   services:
-    my-ingress-default:
+    demo-prod-my-ingress-default:
       loadBalancer:
         servers:
-          - url: "http://php:9000"
-    my-ingress-api-8080:
+          - url: "http://php-pod.demo-prod-private:9000"
+    demo-prod-my-ingress-api-8080:
       loadBalancer:
         servers:
-          - url: "http://api:8080"
+          - url: "http://api-pod.demo-prod-private:8080"
 ```
 
 ### TLS via provided certificate files
@@ -182,25 +189,26 @@ the `websecure` entrypoint and enables TLS:
 ```yaml
 http:
   routers:
-    my-ingress:
+    demo-prod-my-ingress:
       rule: "Host(`example.com`)"
       entryPoints:
         - websecure
-      service: my-ingress-default
+      service: demo-prod-my-ingress-default
       tls: {}            # default TLS store; cert provided via tls.certificates below
   services:
-    my-ingress-default:
+    demo-prod-my-ingress-default:
       loadBalancer:
         servers:
-          - url: "http://php:9000"
+          - url: "http://php-pod.demo-prod-private:9000"
 tls:
   certificates:
-    - certFile: "certs/my-ingress.crt"
-      keyFile: "certs/my-ingress.key"
+    - certFile: "/etc/traefik/certs/demo-prod-my-ingress.crt"
+      keyFile: "/etc/traefik/certs/demo-prod-my-ingress.key"
 ```
 
-The `tls.certificates[].certFile` / `keyFile` paths are resolved relative to Traefik's working directory;
-the driver pushes the actual files into `teknoo.east.paas.docker-compose.traefik.certs_dir`.
+The driver pushes the actual files into `teknoo.east.paas.docker-compose.traefik.certs_dir` on the host;
+the `tls.certificates[].certFile` / `keyFile` paths are the ones Traefik sees
+(`teknoo.east.paas.docker-compose.traefik.certs_mount_dir`, the same path by default).
 
 > The expected secret option keys are exactly **`tls.crt`** and **`tls.key`** (PEM). Values may be provided
 > base64-encoded with a `base64:` prefix; the driver decodes them before writing.
@@ -213,11 +221,11 @@ the ACME resolver instead of static files:
 ```yaml
 http:
   routers:
-    my-ingress:
+    demo-prod-my-ingress:
       rule: "Host(`example.com`) || Host(`www.example.com`)"
       entryPoints:
         - websecure
-      service: my-ingress-default
+      service: demo-prod-my-ingress-default
       tls:
         certResolver: letsencrypt
         domains:
@@ -225,10 +233,10 @@ http:
             sans:
               - www.example.com
   services:
-    my-ingress-default:
+    demo-prod-my-ingress-default:
       loadBalancer:
         servers:
-          - url: "http://php:9000"
+          - url: "http://php-pod.demo-prod-private:9000"
 ```
 
 `certResolver` is the name declared in your **static** `certificatesResolvers` block (configured via
@@ -240,44 +248,14 @@ http:
 
 ### Raw TCP / UDP services
 
-For an **external** service whose protocol is raw TCP or UDP (not HTTP/HTTPS), the `ServiceTranscriber`
-emits a Traefik TCP/UDP router + service bound to the configured entrypoint:
+Traefik is only used for HTTP(S) ingresses. A public (`internal: false`) PaaS service, whatever its
+protocol, publishes its ports directly on the host through Compose `ports: <listen>:<target>` (`/udp` for
+UDP) on the pod's Compose service. This requires a non-replicated pod (a host port can be bound by a single
+container): for a replicated pod the publication is skipped with a warning in the deploy result.
 
-```yaml
-tcp:
-  routers:
-    my-tcp-svc-5432:
-      entryPoints:
-        - tcp
-      rule: "HostSNI(`*`)"
-      service: my-tcp-svc-5432
-  services:
-    my-tcp-svc-5432:
-      loadBalancer:
-        servers:
-          - address: "my-tcp-svc:5432"
-
-udp:
-  routers:
-    my-udp-svc-514:
-      entryPoints:
-        - udp
-      service: my-udp-svc-514
-  services:
-    my-udp-svc-514:
-      loadBalancer:
-        servers:
-          - address: "my-udp-svc:514"
-```
-
-* TCP routers require a routing rule — `HostSNI(\`*\`)` matches any SNI. UDP routers have **no** rule in
-  Traefik v3 (UDP is connectionless).
-* TCP/UDP services use `loadBalancer.servers[].address` (`host:port`), **not** `url`.
-* These require the matching `tcp` / `udp` **entrypoints** in the static config (see above). As an
-  alternative the consuming service may publish a host port directly via Compose `ports:`.
-
-> A bare **external HTTP(S)** service with **no** ingress stays reachable only internally — Traefik cannot
-> invent a host rule for it. Add an `Ingress` (with `host`) to expose an HTTP service externally.
+> A bare **external HTTP(S)** service with **no** ingress is only reachable on its published host port —
+> Traefik cannot invent a host rule for it. Add an `Ingress` (with `host`) to expose an HTTP service through
+> Traefik.
 
 Middlewares & annotations
 -------------------------

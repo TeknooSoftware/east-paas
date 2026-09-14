@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
@@ -33,6 +34,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\VolumeTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -122,5 +124,35 @@ class VolumeTranscriberTest extends TestCase
         );
 
         self::assertSame([], $generation->getComposeFile());
+    }
+
+
+    public function testTranscribeFailure(): void
+    {
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachVolume')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback('data', new PersistentVolume('data', '/var/data', 'local', '5Gi'), 'prj');
+
+                return $cd;
+            });
+
+        $accumulator = $this->createMock(AccumulatorInterface::class);
+        $accumulator->expects($this->once())
+            ->method('addVolume')
+            ->willThrowException(new RuntimeException('boom'));
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(RuntimeException::class));
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $accumulator,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
     }
 }

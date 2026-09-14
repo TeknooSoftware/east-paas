@@ -28,7 +28,10 @@ namespace Teknoo\Tests\East\Paas\Behat;
 use RuntimeException;
 
 use function file_get_contents;
+use function file_put_contents;
+use function getenv;
 use function is_dir;
+use function mkdir;
 use function ksort;
 use function scandir;
 
@@ -59,6 +62,13 @@ return static function (
     }
 
     $dir = __DIR__ . '/expected/compose/' . $variant;
+    if (!is_dir($dir) && !empty(getenv('DUMP_COMPOSE'))) {
+        mkdir($dir, 0755, true);
+        foreach (['compose.yaml', 'deploy.yml', 'expose.yml', 'traefik.yml'] as $name) {
+            file_put_contents($dir . '/' . $name, '');
+        }
+    }
+
     if (!is_dir($dir)) {
         throw new RuntimeException(
             "Missing Docker Compose golden fixture for variant \"$variant\" (dir: $dir). "
@@ -68,6 +78,26 @@ return static function (
 
     $read = static fn (string $name): string => (string) file_get_contents($dir . '/' . $name);
 
+    //Referenced files are nested (one file per secret/map key under "secrets/<name>/" or "configs/<name>/",
+    //plus per-container env files under "secrets/"): walk the refs tree recursively.
+    $walk = static function (string $absDir, string $relDir, array &$files) use (&$walk): void {
+        foreach ((array) scandir($absDir) as $entry) {
+            if ('.' === $entry || '..' === $entry) {
+                continue;
+            }
+
+            $absPath = $absDir . '/' . $entry;
+            $relPath = $relDir . '/' . $entry;
+            if (is_dir($absPath)) {
+                $walk($absPath, $relPath, $files);
+
+                continue;
+            }
+
+            $files[$relPath] = (string) file_get_contents($absPath);
+        }
+    };
+
     $referencedFiles = [];
     foreach (['configs', 'secrets'] as $subDir) {
         $absSubDir = $dir . '/refs/' . $subDir;
@@ -75,17 +105,12 @@ return static function (
             continue;
         }
 
-        foreach ((array) scandir($absSubDir) as $entry) {
-            if ('.' === $entry || '..' === $entry) {
-                continue;
-            }
-
-            $referencedFiles[$subDir . '/' . $entry] = (string) file_get_contents($absSubDir . '/' . $entry);
-        }
+        $walk($absSubDir, $subDir, $referencedFiles);
     }
     ksort($referencedFiles);
 
     return [
+        'dir' => $dir,
         'compose.yaml' => $read('compose.yaml'),
         'deploy.yml' => $read('deploy.yml'),
         'expose.yml' => $read('expose.yml'),

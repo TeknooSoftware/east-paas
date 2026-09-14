@@ -10,22 +10,33 @@ services:
     php-pods:
         image: 'foo.bar/php-run:7.4-09597-1e225-prod'
         networks:
-            - behat-test-a-prefix-foobarproject_private
+            behat-test-a-prefix-foobarproject-private:
+                aliases:
+                    - php-service
         expose:
             - 8080
-        secrets:
-            - a-prefix-map-vault2-secret
-            - a-prefix-map-vault-secret
-            - a-prefix-volume-vault-secret
-        configs:
-            - a-prefix-map2-map
-            - a-prefix-map1-map
+        env_file:
+            - ./secrets/php-pods-php-run.env
         environment:
             SERVER_SCRIPT: /opt/app/src/server.php
         volumes:
             - 'a-prefix-extra-foobarproject-volume:/opt/extra:ro'
             - 'a-prefix-data-09597-1e225:/opt/data'
             - 'a-prefix-data-replicated:/opt/data-replicated'
+        secrets:
+            -
+                source: a-prefix-volume-vault-secret-foo
+                target: /vault/foo
+            -
+                source: a-prefix-volume-vault-secret-bar
+                target: /vault/bar
+        configs:
+            -
+                source: a-prefix-map2-map-foo
+                target: /map/foo
+            -
+                source: a-prefix-map2-map-bar
+                target: /map/bar
         depends_on:
             a-prefix-extra-foobarproject-volume-init:
                 condition: service_completed_successfully
@@ -35,19 +46,18 @@ services:
                 - 'ps aux php'
             start_period: 10s
             interval: 30s
+            timeout: 5s
             retries: 1
         deploy:
             replicas: 2
-        ports:
-            - '9876:8080'
     shell:
         image: 'registry.hub.docker.com/bash:alpine'
         networks:
-            - behat-test-a-prefix-foobarproject_private
+            - behat-test-a-prefix-foobarproject-private
     demo:
         image: 'foo.bar/nginx:alpine-2a975-5be1e-prod'
         networks:
-            - behat-test-a-prefix-foobarproject_private
+            - behat-test-a-prefix-foobarproject-private
         expose:
             - 8080
             - 8181
@@ -57,6 +67,7 @@ services:
                 - 'curl -fk https://localhost:8080/status || exit 1'
             start_period: 10s
             interval: 30s
+            timeout: 5s
             retries: 2
         group_add:
             - '1000'
@@ -68,6 +79,7 @@ services:
                 - 'nc -z localhost 8181 || exit 1'
             start_period: 10s
             interval: 30s
+            timeout: 5s
             retries: 1
         group_add:
             - '1000'
@@ -83,7 +95,7 @@ services:
     a-prefix-job-init-init-var:
         image: 'registry.hub.docker.com/bash:alpine'
         networks:
-            - behat-test-a-prefix-foobarproject_private
+            - behat-test-a-prefix-foobarproject-private
         profiles:
             - jobs
         restart: 'no'
@@ -94,7 +106,7 @@ services:
     a-prefix-job-init-update:
         image: 'registry.hub.docker.com/bash:alpine'
         networks:
-            - behat-test-a-prefix-foobarproject_private
+            - behat-test-a-prefix-foobarproject-private
         profiles:
             - jobs
         restart: 'no'
@@ -105,10 +117,9 @@ services:
     a-prefix-job-translation-php-translation:
         image: 'foo.bar/php-run:7.4-b424d-43879-43879-prod'
         networks:
-            - behat-test-a-prefix-foobarproject_private
-        configs:
-            - a-prefix-map2-map
-            - a-prefix-map1-map
+            - behat-test-a-prefix-foobarproject-private
+        env_file:
+            - ./secrets/a-prefix-job-translation-php-translation-php-translation.env
         environment:
             SERVER_SCRIPT: /opt/app/src/server.php
         volumes:
@@ -116,7 +127,19 @@ services:
             - 'a-prefix-data-b424d-43879-43879:/opt/data'
             - 'a-prefix-data-replicated:/opt/data-replicated'
         secrets:
-            - a-prefix-volume-vault-secret
+            -
+                source: a-prefix-volume-vault-secret-foo
+                target: /vault/foo
+            -
+                source: a-prefix-volume-vault-secret-bar
+                target: /vault/bar
+        configs:
+            -
+                source: a-prefix-map2-map-foo
+                target: /map/foo
+            -
+                source: a-prefix-map2-map-bar
+                target: /map/bar
         depends_on:
             a-prefix-extra-foobarproject-volume-init:
                 condition: service_completed_successfully
@@ -132,10 +155,9 @@ services:
             failure_exit_codes:
                 - 1
 networks:
-    behat-test-a-prefix-foobarproject_private:
-        name: behat-test-a-prefix-foobarproject_private
+    behat-test-a-prefix-foobarproject-private:
+        name: behat-test-a-prefix-foobarproject-private
         driver: bridge
-        internal: true
 volumes:
     a-prefix-data-09597-1e225:
         driver: local
@@ -146,14 +168,22 @@ volumes:
     a-prefix-extra-foobarproject-volume:
         driver: local
 configs:
-    a-prefix-map1-map:
-        file: ./configs/a-prefix-map1-map
-    a-prefix-map2-map:
-        file: ./configs/a-prefix-map2-map
+    a-prefix-map1-map-key1:
+        file: ./configs/a-prefix-map1-map/key1
+    a-prefix-map1-map-key2:
+        file: ./configs/a-prefix-map1-map/key2
+    a-prefix-map2-map-foo:
+        file: ./configs/a-prefix-map2-map/foo
+    a-prefix-map2-map-bar:
+        file: ./configs/a-prefix-map2-map/bar
 secrets:
-    a-prefix-map-vault-secret:
-        file: ./secrets/a-prefix-map-vault-secret
-    a-prefix-map-vault2-secret:
-        file: ./secrets/a-prefix-map-vault2-secret
-    a-prefix-volume-vault-secret:
-        file: ./secrets/a-prefix-volume-vault-secret
+    a-prefix-map-vault-secret-key1:
+        file: ./secrets/a-prefix-map-vault-secret/key1
+    a-prefix-map-vault-secret-key2:
+        file: ./secrets/a-prefix-map-vault-secret/key2
+    a-prefix-map-vault2-secret-hello:
+        file: ./secrets/a-prefix-map-vault2-secret/hello
+    a-prefix-volume-vault-secret-foo:
+        file: ./secrets/a-prefix-volume-vault-secret/foo
+    a-prefix-volume-vault-secret-bar:
+        file: ./secrets/a-prefix-volume-vault-secret/bar

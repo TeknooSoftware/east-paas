@@ -30,9 +30,8 @@ use function strtolower;
 use function trim;
 
 /**
- * Trait factorising common helpers shared by the Docker Compose transcribers: a name prefixer, a DNS-safe
- * name sanitiser (Compose project / service / network names) and a result cleaner removing sensitive
- * information to prevent secret leaks or massive data output in the job History.
+ * Trait factorising common helpers shared by the Docker Compose transcribers: a name prefixer and a DNS-safe
+ * name sanitiser (Compose project / service / network names).
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -65,26 +64,5 @@ trait CommonTrait
         $value = (string) preg_replace('#-+#', '-', $value);
 
         return trim($value, '-');
-    }
-
-    /**
-     * @param array<string, mixed> $result
-     * @return array<string, mixed>
-     */
-    private static function cleanResult(?array $result): array
-    {
-        if (null !== $result && isset($result['secrets'])) {
-            $result['secrets'] = '#removed#';
-        }
-
-        if (null !== $result && isset($result['configs'])) {
-            $result['configs'] = '#removed#';
-        }
-
-        if (null !== $result && isset($result['files'])) {
-            $result['files'] = '#removed#';
-        }
-
-        return $result ?? [];
     }
 }

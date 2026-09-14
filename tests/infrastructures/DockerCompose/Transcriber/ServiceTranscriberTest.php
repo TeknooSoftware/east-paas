@@ -27,8 +27,10 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
@@ -68,9 +70,9 @@ class ServiceTranscriberTest extends TestCase
         //published on those same keys.
         $accumulator = new Accumulator('default-prj', 'private');
         $accumulator
-            ->addService('php-pod', ['image' => 'php'])
-            ->addService('nginx-pod', ['image' => 'nginx'])
-            ->addService('db-pod', ['image' => 'postgres']);
+            ->addService('php-pod', ['image' => 'php', 'networks' => ['default-prj-private']])
+            ->addService('nginx-pod', ['image' => 'nginx', 'networks' => ['default-prj-private']])
+            ->addService('db-pod', ['image' => 'postgres', 'networks' => ['default-prj-private']]);
 
         $promise = $this->createMock(PromiseInterface::class);
         $promise->expects($this->exactly(3))->method('success');
@@ -97,6 +99,55 @@ class ServiceTranscriberTest extends TestCase
 
         //No Traefik configuration is produced by this transcriber.
         self::assertSame([], $accumulator->getTraefikConfig());
+    }
+
+    public function testTranscribeUdpAndReplicatedPods(): void
+    {
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->method('foreachPod')->willReturnCallback(
+            function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Pod('dns-pod', 1, [new Container('dns', 'registry/dns', '1', [53], [], [])]), [], [], 'prj');
+                $callback(new Pod('php-pod', 2, [new Container('php', 'registry/php', '8', [9000], [], [])]), [], [], 'prj');
+
+                return $cd;
+            },
+        );
+        $cd->expects($this->once())
+            ->method('foreachService')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Service('dns-svc', 'dns-pod', [53 => 53], Transport::Udp, false), 'prj');
+                //Replicated pod: a host port cannot be bound by several containers, skipped with a warning
+                $callback(new Service('php-svc', 'php-pod', [9000 => 9000], Transport::Tcp, false), 'prj');
+
+                return $cd;
+            });
+
+        $accumulator = new Accumulator('default-prj', 'private');
+        $accumulator
+            ->addService('dns-pod', ['image' => 'dns', 'networks' => ['default-prj-private']])
+            ->addService('php-pod', ['image' => 'php', 'networks' => ['default-prj-private']]);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->exactly(2))->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $accumulator,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+
+        $services = $accumulator->getComposeFile()['services'];
+        self::assertSame(['53:53/udp'], $services['dns-pod']['ports']);
+        self::assertArrayNotHasKey('ports', $services['php-pod']);
+        self::assertSame(
+            ['default-prj-private' => ['aliases' => ['php-svc']]],
+            $services['php-pod']['networks'],
+        );
+        self::assertCount(1, $accumulator->getWarnings());
+        self::assertStringContainsString('php-svc', $accumulator->getWarnings()[0]);
     }
 
     public function testTranscribeFailure(): void

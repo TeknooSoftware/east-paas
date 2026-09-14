@@ -222,4 +222,70 @@ class RunnerFactoryTest extends TestCase
 
         unset($factory);
     }
+
+    public function testInvokeMaterializesKnownHostsFromCaCertificate(): void
+    {
+        $writes = [];
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->expects($this->exactly(2))
+            ->method('write')
+            ->willReturnCallback(function (string $path, string $content, array $config) use (&$writes): void {
+                $writes[] = [$path, $content, $config];
+            });
+
+        $capturedKnownHosts = null;
+        $factory = $this->buildFactory(
+            runnerBuilder: function (
+                string $binary,
+                ?float $timeout,
+                ?string $sshUser,
+                ?string $privateKeyFile,
+                ?string $knownHostsFile,
+            ) use (&$capturedKnownHosts): RunnerInterface {
+                $capturedKnownHosts = $knownHostsFile;
+
+                return $this->createStub(RunnerInterface::class);
+            },
+            filesystem: $filesystem,
+        );
+
+        $credentials = new ClusterCredentials(
+            caCertificate: "ssh-ed25519 AAAAC3Nza host-comment\n\n# ignored\n"
+                . "[other.host]:2200 ecdsa-sha2-nistp256 AAAAE2Vj\n",
+            clientKey: 'KEY',
+            username: 'deployer',
+        );
+
+        $factory('ssh://docker.example.com:2222', $credentials);
+
+        self::assertNotNull($capturedKnownHosts);
+        self::assertTrue(str_starts_with($capturedKnownHosts, $this->tmpDir . '/'));
+        //Second write is the known_hosts file: a bare public key is bound to the address host (non-default
+        //port form), a full known_hosts line is kept as-is, blank/comment lines are dropped.
+        self::assertSame(
+            "[docker.example.com]:2222 ssh-ed25519 AAAAC3Nza host-comment\n"
+            . "[other.host]:2200 ecdsa-sha2-nistp256 AAAAE2Vj\n",
+            $writes[1][1],
+        );
+        self::assertSame(['visibility' => Visibility::PRIVATE], $writes[1][2]);
+
+        unset($factory);
+    }
+
+    public function testInvokeKnownHostsUsesBareHostOnDefaultPort(): void
+    {
+        $writes = [];
+        $filesystem = $this->createStub(FilesystemOperator::class);
+        $filesystem->method('write')
+            ->willReturnCallback(function (string $path, string $content) use (&$writes): void {
+                $writes[] = $content;
+            });
+
+        $factory = $this->buildFactory(filesystem: $filesystem);
+        $factory('docker.example.com', new ClusterCredentials(caCertificate: 'ssh-rsa AAAAB3'));
+
+        self::assertSame(["docker.example.com ssh-rsa AAAAB3\n"], $writes);
+
+        unset($factory);
+    }
 }

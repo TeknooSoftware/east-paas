@@ -44,6 +44,10 @@ use const PHP_EOL;
  * `Process`. A fake `Process` can be substituted in tests/Behat. This is the default `RunnerInterface`
  * built by `RunnerFactory`; the DI container may inject another implementation behind the same contract.
  *
+ * The process runs non-interactively: colors are disabled and the SSH host key checking is either enforced
+ * against the materialized `known_hosts` file (when the credentials carry the host public key) or disabled
+ * (Ansible would otherwise prompt for an unknown host and hang the worker).
+ *
  * Success/failure is resolved exactly like `Infrastructures\Image\ImageWrapper\Running::waitProcess()`:
  * a successful process resolves the promise with its output, a failed process fails it with a
  * `RuntimeException` carrying the error output.
@@ -71,6 +75,7 @@ final class SymfonyProcessRunner implements RunnerInterface
         #[SensitiveParameter]
         private readonly ?string $privateKeyFile = null,
         ?callable $processFactory = null,
+        private readonly ?string $knownHostsFile = null,
     ) {
         if (null !== $processFactory) {
             $this->processFactory = $processFactory;
@@ -80,6 +85,27 @@ final class SymfonyProcessRunner implements RunnerInterface
                 timeout: $timeout,
             );
         }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildEnvironment(): array
+    {
+        $env = [
+            'ANSIBLE_NOCOLOR' => '1',
+            'ANSIBLE_FORCE_COLOR' => '0',
+        ];
+
+        if (!empty($this->knownHostsFile)) {
+            $env['ANSIBLE_HOST_KEY_CHECKING'] = 'True';
+            $env['ANSIBLE_SSH_COMMON_ARGS'] = '-o UserKnownHostsFile=' . $this->knownHostsFile
+                . ' -o StrictHostKeyChecking=yes';
+        } else {
+            $env['ANSIBLE_HOST_KEY_CHECKING'] = 'False';
+        }
+
+        return $env;
     }
 
     public function run(
@@ -110,6 +136,7 @@ final class SymfonyProcessRunner implements RunnerInterface
             }
 
             $process = ($this->processFactory)($command, $this->timeout);
+            $process->setEnv($this->buildEnvironment());
             $process->run();
         } catch (Throwable $error) {
             $promise->fail($error);

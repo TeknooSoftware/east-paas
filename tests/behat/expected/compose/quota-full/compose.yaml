@@ -10,22 +10,33 @@ services:
     php-pods:
         image: 'foo.bar/php-run:7.4-09597-1e225-prod'
         networks:
-            - behat-test-foobarproject_private
+            behat-test-foobarproject-private:
+                aliases:
+                    - php-service
         expose:
             - 8080
-        secrets:
-            - map-vault2-secret
-            - map-vault-secret
-            - volume-vault-secret
-        configs:
-            - map2-map
-            - map1-map
+        env_file:
+            - ./secrets/php-pods-php-run.env
         environment:
             SERVER_SCRIPT: /opt/app/src/server.php
         volumes:
             - 'extra-foobarproject-volume:/opt/extra:ro'
             - 'data-09597-1e225:/opt/data'
             - 'data-replicated:/opt/data-replicated'
+        secrets:
+            -
+                source: volume-vault-secret-foo
+                target: /vault/foo
+            -
+                source: volume-vault-secret-bar
+                target: /vault/bar
+        configs:
+            -
+                source: map2-map-foo
+                target: /map/foo
+            -
+                source: map2-map-bar
+                target: /map/bar
         depends_on:
             extra-foobarproject-volume-init:
                 condition: service_completed_successfully
@@ -35,34 +46,33 @@ services:
                 - 'ps aux php'
             start_period: 10s
             interval: 30s
+            timeout: 5s
             retries: 1
         deploy:
             resources:
                 reservations:
-                    cpu: 200m
-                    memory: 64Mi
+                    cpus: '0.2'
+                    memory: 64M
                 limits:
-                    cpu: 500m
-                    memory: 96Mi
+                    cpus: '0.5'
+                    memory: 96M
             replicas: 2
-        ports:
-            - '9876:8080'
     shell:
         image: 'registry.hub.docker.com/bash:alpine'
         networks:
-            - behat-test-foobarproject_private
+            - behat-test-foobarproject-private
         deploy:
             resources:
                 reservations:
-                    cpu: 100m
-                    memory: 32Mi
+                    cpus: '0.1'
+                    memory: 32M
                 limits:
-                    cpu: 100m
-                    memory: 32Mi
+                    cpus: '0.1'
+                    memory: 32M
     demo:
         image: 'foo.bar/nginx:alpine-2a975-5be1e-prod'
         networks:
-            - behat-test-foobarproject_private
+            - behat-test-foobarproject-private
         expose:
             - 8080
             - 8181
@@ -72,15 +82,16 @@ services:
                 - 'curl -fk https://localhost:8080/status || exit 1'
             start_period: 10s
             interval: 30s
+            timeout: 5s
             retries: 2
         deploy:
             resources:
                 reservations:
-                    cpu: 200m
-                    memory: 64Mi
+                    cpus: '0.2'
+                    memory: 64M
                 limits:
-                    cpu: 200m
-                    memory: 64Mi
+                    cpus: '0.2'
+                    memory: 64M
         group_add:
             - '1000'
     demo-waf:
@@ -91,15 +102,16 @@ services:
                 - 'nc -z localhost 8181 || exit 1'
             start_period: 10s
             interval: 30s
+            timeout: 5s
             retries: 1
         deploy:
             resources:
                 reservations:
-                    cpu: 100m
-                    memory: 64Mi
+                    cpus: '0.1'
+                    memory: 64M
                 limits:
-                    cpu: 100m
-                    memory: 64Mi
+                    cpus: '0.1'
+                    memory: 64M
         group_add:
             - '1000'
         network_mode: 'service:demo'
@@ -111,19 +123,18 @@ services:
         deploy:
             resources:
                 reservations:
-                    cpu: 100m
-                    memory: 128Mi
+                    cpus: '0.1'
+                    memory: 128M
                 limits:
-                    cpu: 100m
-                    memory: 128Mi
+                    cpus: '0.1'
+                    memory: 128M
         group_add:
             - '1000'
         network_mode: 'service:demo'
 networks:
-    behat-test-foobarproject_private:
-        name: behat-test-foobarproject_private
+    behat-test-foobarproject-private:
+        name: behat-test-foobarproject-private
         driver: bridge
-        internal: true
 volumes:
     data-09597-1e225:
         driver: local
@@ -132,14 +143,22 @@ volumes:
     extra-foobarproject-volume:
         driver: local
 configs:
-    map1-map:
-        file: ./configs/map1-map
-    map2-map:
-        file: ./configs/map2-map
+    map1-map-key1:
+        file: ./configs/map1-map/key1
+    map1-map-key2:
+        file: ./configs/map1-map/key2
+    map2-map-foo:
+        file: ./configs/map2-map/foo
+    map2-map-bar:
+        file: ./configs/map2-map/bar
 secrets:
-    map-vault-secret:
-        file: ./secrets/map-vault-secret
-    map-vault2-secret:
-        file: ./secrets/map-vault2-secret
-    volume-vault-secret:
-        file: ./secrets/volume-vault-secret
+    map-vault-secret-key1:
+        file: ./secrets/map-vault-secret/key1
+    map-vault-secret-key2:
+        file: ./secrets/map-vault-secret/key2
+    map-vault2-secret-hello:
+        file: ./secrets/map-vault2-secret/hello
+    volume-vault-secret-foo:
+        file: ./secrets/volume-vault-secret/foo
+    volume-vault-secret-bar:
+        file: ./secrets/volume-vault-secret/bar

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
+use Closure;
 use League\Flysystem\FilesystemOperator;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Cluster\DriverInterface;
@@ -87,9 +88,9 @@ class Driver implements DriverInterface, AutomatedInterface
     private ?string $namespace = null;
 
     /**
-     * @var (callable(): string)|null
+     * @var Closure(): string
      */
-    private $tmpDirFactory = null;
+    private readonly Closure $tmpDirFactory;
 
     /**
      * @param FilesystemOperator $workspaceFilesystem filesystem rooted at the worker temp dir, used to write
@@ -101,6 +102,10 @@ class Driver implements DriverInterface, AutomatedInterface
      *        (relative to the workspace filesystem root)
      * @param array<string, string> $templates relative names of the Ansible playbook templates inside the
      *        templates filesystem, keyed by stage (`deploy`, `expose`)
+     * @param bool $networkInternal declare the dedicated project network with `internal: true` (no egress
+     *        from the containers, reachable only through Traefik)
+     * @param string|null $traefikCertsMountDir directory where Traefik sees the pushed TLS cert/key files
+     *        (defaults to $traefikCertsDir, when the host directory is bind-mounted at the same path)
      */
     public function __construct(
         private readonly RunnerFactoryInterface $runnerFactory,
@@ -115,8 +120,10 @@ class Driver implements DriverInterface, AutomatedInterface
         private readonly string $traefikContainer = 'traefik',
         private readonly string $traefikDynamicDir = '/etc/traefik/dynamic',
         private readonly string $traefikCertsDir = '/etc/traefik/certs',
+        private readonly bool $networkInternal = false,
+        private readonly ?string $traefikCertsMountDir = null,
     ) {
-        $this->tmpDirFactory = $tmpDirFactory;
+        $this->tmpDirFactory = $tmpDirFactory(...);
 
         $this->initializeStateProxy();
         $this->updateStates();

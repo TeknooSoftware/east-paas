@@ -29,6 +29,8 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Transport;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
@@ -37,6 +39,8 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\IngressTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+use function array_keys;
+use function array_map;
 use function base64_encode;
 
 /**
@@ -102,30 +106,30 @@ class IngressTranscriberTest extends TestCase
             [
                 'http' => [
                     'routers' => [
-                        'prj-web' => [
+                        'default-prj-web' => [
                             'rule' => 'Host(`demo.example.com`) || Host(`www.example.com`)',
                             'entryPoints' => ['web'],
-                            'service' => 'prj-web-default',
+                            'service' => 'default-prj-web-default',
                         ],
-                        'prj-web-api-8080' => [
+                        'default-prj-web-api-8080' => [
                             'rule' => '(Host(`demo.example.com`) || Host(`www.example.com`)) '
                                 . '&& PathPrefix(`/api`)',
                             'entryPoints' => ['web'],
-                            'service' => 'prj-web-api-8080',
+                            'service' => 'default-prj-web-api-8080',
                         ],
                     ],
                     'services' => [
-                        'prj-web-default' => [
+                        'default-prj-web-default' => [
                             'loadBalancer' => [
                                 'servers' => [
-                                    ['url' => 'http://prj-front:80'],
+                                    ['url' => 'http://front:80'],
                                 ],
                             ],
                         ],
-                        'prj-web-api-8080' => [
+                        'default-prj-web-api-8080' => [
                             'loadBalancer' => [
                                 'servers' => [
-                                    ['url' => 'http://prj-api:8080'],
+                                    ['url' => 'http://api:8080'],
                                 ],
                             ],
                         ],
@@ -136,6 +140,77 @@ class IngressTranscriberTest extends TestCase
         );
 
         self::assertSame([], $generation->getFiles());
+    }
+
+    public function testTranscribeResolvesServicesToPodsOnTheProjectNetwork(): void
+    {
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->method('foreachSecret')->willReturnCallback(
+            fn (callable $callback): CompiledDeploymentInterface => $cd,
+        );
+        $cd->method('foreachService')->willReturnCallback(
+            function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Service('front', 'nginx-pod', [80 => 8080], Transport::Tcp, true), 'prj');
+                $callback(new Service('api', 'php-pod', [8080 => 9000, 8443 => 9443], Transport::Tcp, true), 'prj');
+
+                return $cd;
+            },
+        );
+        $cd->expects($this->once())
+            ->method('foreachIngress')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(
+                    new Ingress(
+                        name: 'web',
+                        host: 'demo.example.com',
+                        provider: null,
+                        defaultServiceName: 'front',
+                        defaultServicePort: 80,
+                        paths: [
+                            new IngressPath('/api', 'api', 8080),
+                            //Unknown port on a known service: used as-is
+                            new IngressPath('/other', 'api', 7000),
+                            //Unknown service: used as-is (e.g. a platform-wide service outside the stack)
+                            new IngressPath('/ext', 'external', 3000),
+                        ],
+                        tlsSecret: null,
+                        httpsBackend: false,
+                        meta: [],
+                        aliases: [],
+                    ),
+                    'prj',
+                );
+
+                return $cd;
+            });
+
+        $generation = new Accumulator('default-prj', 'private');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $generation,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+
+        $services = $generation->getTraefikConfig()['http']['services'];
+        self::assertSame(
+            [
+                'default-prj-web-default' => 'http://nginx-pod.default-prj-private:8080',
+                'default-prj-web-api-8080' => 'http://php-pod.default-prj-private:9000',
+                'default-prj-web-api-7000' => 'http://php-pod.default-prj-private:7000',
+                'default-prj-web-external-3000' => 'http://external:3000',
+            ],
+            array_map(
+                static fn (array $service): string => $service['loadBalancer']['servers'][0]['url'],
+                $services,
+            ),
+        );
     }
 
     public function testTranscribeTlsFromSecret(): void
@@ -196,29 +271,32 @@ class IngressTranscriberTest extends TestCase
             [
                 'http' => [
                     'routers' => [
-                        'prj-secure' => [
+                        'default-prj-secure' => [
                             'rule' => 'Host(`secure.example.com`)',
                             'entryPoints' => ['websecure'],
-                            'service' => 'prj-secure-default',
+                            'service' => 'default-prj-secure-default',
                             'tls' => [],
                         ],
                     ],
                     'services' => [
-                        'prj-secure-default' => [
+                        'default-prj-secure-default' => [
                             'loadBalancer' => [
                                 'servers' => [
-                                    ['url' => 'https://prj-app:8443'],
+                                    ['url' => 'https://app:8443'],
                                 ],
-                                'serversTransport' => 'prj-app-transport',
+                                'serversTransport' => 'app-transport',
                             ],
                         ],
+                    ],
+                    'serversTransports' => [
+                        'app-transport' => ['insecureSkipVerify' => true],
                     ],
                 ],
                 'tls' => [
                     'certificates' => [
                         [
-                            'certFile' => 'certs/prj-secure.crt',
-                            'keyFile' => 'certs/prj-secure.key',
+                            'certFile' => '/etc/traefik/certs/default-prj-secure.crt',
+                            'keyFile' => '/etc/traefik/certs/default-prj-secure.key',
                         ],
                     ],
                 ],
@@ -228,8 +306,8 @@ class IngressTranscriberTest extends TestCase
 
         self::assertSame(
             [
-                'certs/prj-secure.crt' => 'CERT-DATA',
-                'certs/prj-secure.key' => 'KEY-DATA',
+                'certs/default-prj-secure.crt' => 'CERT-DATA',
+                'certs/default-prj-secure.key' => 'KEY-DATA',
             ],
             $generation->getFiles(),
         );
@@ -281,10 +359,10 @@ class IngressTranscriberTest extends TestCase
             [
                 'http' => [
                     'routers' => [
-                        'prj-acme' => [
+                        'default-prj-acme' => [
                             'rule' => 'Host(`acme.example.com`) || Host(`www.acme.example.com`)',
                             'entryPoints' => ['websecure'],
-                            'service' => 'prj-acme-default',
+                            'service' => 'default-prj-acme-default',
                             'tls' => [
                                 'certResolver' => 'letsencrypt',
                                 'domains' => [
@@ -297,10 +375,10 @@ class IngressTranscriberTest extends TestCase
                         ],
                     ],
                     'services' => [
-                        'prj-acme-default' => [
+                        'default-prj-acme-default' => [
                             'loadBalancer' => [
                                 'servers' => [
-                                    ['url' => 'http://prj-app:80'],
+                                    ['url' => 'http://app:80'],
                                 ],
                             ],
                         ],
@@ -356,5 +434,140 @@ class IngressTranscriberTest extends TestCase
             defaultsBag: $this->createStub(DefaultsBag::class),
             namespace: 'default',
         );
+    }
+
+
+    public function testTranscribeWithPlatformDefaultServiceMiddlewaresAndTlsOnPaths(): void
+    {
+        $transcriber = new IngressTranscriber(
+            defaultServiceName: 'fallback',
+            defaultServicePort: 8080,
+            defaultMiddlewares: ['auth@file'],
+        );
+
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->method('foreachSecret')->willReturnCallback(
+            function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Secret('cert', 'map', ['tls.crt' => 'CERT', 'tls.key' => 'KEY'], 'tls'), 'prj');
+
+                return $cd;
+            },
+        );
+        $cd->method('foreachService')->willReturnCallback(
+            function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Service('fallback', 'front-pod', [8080 => 80], Transport::Tcp, true), 'prj');
+
+                return $cd;
+            },
+        );
+        $cd->expects($this->once())
+            ->method('foreachIngress')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(
+                    new Ingress(
+                        name: 'web',
+                        host: 'demo.example.com',
+                        provider: null,
+                        defaultServiceName: null,
+                        defaultServicePort: null,
+                        paths: [new IngressPath('/api', 'api', 9000)],
+                        tlsSecret: 'cert',
+                        httpsBackend: false,
+                    ),
+                    'prj',
+                );
+
+                return $cd;
+            });
+
+        $generation = new Accumulator('default-prj', 'private');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $generation,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+
+        self::assertSame(
+            [
+                'routers' => [
+                    'default-prj-web' => [
+                        'rule' => 'Host(`demo.example.com`)',
+                        'entryPoints' => ['websecure'],
+                        'service' => 'default-prj-web-default',
+                        'middlewares' => ['auth@file'],
+                        'tls' => [],
+                    ],
+                    'default-prj-web-api-9000' => [
+                        'rule' => '(Host(`demo.example.com`)) && PathPrefix(`/api`)',
+                        'entryPoints' => ['websecure'],
+                        'service' => 'default-prj-web-api-9000',
+                        'middlewares' => ['auth@file'],
+                        'tls' => [],
+                    ],
+                ],
+                'services' => [
+                    'default-prj-web-default' => [
+                        'loadBalancer' => [
+                            'servers' => [['url' => 'http://front-pod.default-prj-private:80']],
+                        ],
+                    ],
+                    'default-prj-web-api-9000' => [
+                        'loadBalancer' => [
+                            'servers' => [['url' => 'http://api:9000']],
+                        ],
+                    ],
+                ],
+            ],
+            $generation->getTraefikConfig()['http'],
+        );
+    }
+
+    public function testTranscribeWithoutAnyDefaultServiceOnlyEmitsPathRouters(): void
+    {
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->method('foreachSecret')->willReturnCallback(
+            fn (callable $callback): CompiledDeploymentInterface => $cd,
+        );
+        $cd->expects($this->once())
+            ->method('foreachIngress')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(
+                    new Ingress(
+                        name: 'web',
+                        host: 'demo.example.com',
+                        provider: null,
+                        defaultServiceName: null,
+                        defaultServicePort: null,
+                        paths: [new IngressPath('/api', 'api', 9000)],
+                        tlsSecret: null,
+                        httpsBackend: false,
+                    ),
+                    'prj',
+                );
+
+                return $cd;
+            });
+
+        $generation = new Accumulator('default-prj', 'private');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+
+        new IngressTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $generation,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+
+        self::assertSame(['default-prj-web-api-9000'], array_keys($generation->getTraefikConfig()['http']['routers']));
     }
 }

@@ -44,11 +44,16 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver\Generator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Driver\Running;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\GeneratorStateException;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\InvalidConfigurationException;
 use Teknoo\East\Paas\Object\ClusterCredentials;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Traversable;
 use TypeError;
 
+use function array_key_first;
+use function basename;
+use function explode;
+use function json_encode;
 use function preg_match;
 
 /**
@@ -327,6 +332,10 @@ class DriverTest extends TestCase
                 $writes[$path] = $content;
             }
         );
+        //The per-run working directory (secrets, keys, inventory) is removed once the playbook has run
+        $workspaceFilesystem->expects($this->once())
+            ->method('deleteDirectory')
+            ->with($this->matchesRegularExpression('#^run-[^/]+$#'));
 
         $runnerFactory = $this->createStub(RunnerFactoryInterface::class);
         $runnerFactory->method('__invoke')->willReturn($runner);
@@ -398,5 +407,264 @@ class DriverTest extends TestCase
         self::assertIsArray($captured);
         self::assertArrayHasKey('traefik', $captured);
         self::assertSame($expectedTraefik, $captured['traefik']);
+    }
+
+    /**
+     * @return array{0: RunnerFactoryInterface, 1: array<string, string>}
+     */
+    private function buildCapturingRunnerFactory(mixed $runnerOutput, array &$writes): RunnerFactoryInterface
+    {
+        $runner = $this->createStub(RunnerInterface::class);
+        $runner->method('run')->willReturnCallback(
+            function (...$args) use ($runner, $runnerOutput): RunnerInterface {
+                $args[4]->success($runnerOutput);
+
+                return $runner;
+            }
+        );
+
+        $runnerFactory = $this->createStub(RunnerFactoryInterface::class);
+        $runnerFactory->method('__invoke')->willReturn($runner);
+
+        return $runnerFactory;
+    }
+
+    private function buildCompiledDeploymentStub(): CompiledDeploymentInterface
+    {
+        $cd = $this->createStub(CompiledDeploymentInterface::class);
+        $cd->method('withJobSettings')->willReturnCallback(
+            function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(1.0, 'prefix', 'my-project');
+
+                return $cd;
+            }
+        );
+
+        return $cd;
+    }
+
+    public function testDeployFailsWhenTheJobSettingsDoNotResolveAnAccumulator(): void
+    {
+        //withJobSettings never calls back: no Accumulator can be built
+        $cd = $this->createStub(CompiledDeploymentInterface::class);
+        $cd->method('withJobSettings')->willReturnSelf();
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())
+            ->method('fail')
+            ->with($this->isInstanceOf(InvalidConfigurationException::class));
+
+        $driver = $this->buildDriver()->configure(
+            'ssh://host',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'default',
+            false,
+        );
+
+        $driver->deploy($cd, $promise);
+    }
+
+    public function testExposeFailsWhenTheStageTemplateIsMissing(): void
+    {
+        $transcribers = $this->createStub(TranscriberCollectionInterface::class);
+        $transcribers->method('getIterator')->willReturnCallback(
+            function (): Traversable {
+                yield from [];
+            }
+        );
+
+        $driver = new Driver(
+            runnerFactory: $this->createStub(RunnerFactoryInterface::class),
+            transcribers: $transcribers,
+            workspaceFilesystem: $this->createStub(FilesystemOperator::class),
+            templatesFilesystem: $this->createStub(FilesystemOperator::class),
+            workspaceRoot: self::WORKSPACE_ROOT,
+            tmpDirFactory: static fn (): string => 'run',
+            templates: ['deploy' => 'deploy.yml.template'],
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())
+            ->method('fail')
+            ->with($this->isInstanceOf(InvalidConfigurationException::class));
+
+        $driver->configure(
+            'ssh://host',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'default',
+            false,
+        )->expose($this->buildCompiledDeploymentStub(), $promise);
+    }
+
+    public function testDeployFailsWhenATranscriberFails(): void
+    {
+        $deployment = $this->createMock(DeploymentInterface::class);
+        $deployment->expects($this->once())
+            ->method('transcribe')
+            ->willReturnCallback(function (...$args) use ($deployment): DeploymentInterface {
+                $args[2]->fail(new RuntimeException('transcription failed'));
+
+                return $deployment;
+            });
+
+        $transcribers = $this->createStub(TranscriberCollectionInterface::class);
+        $transcribers->method('getIterator')->willReturnCallback(
+            function () use ($deployment): Traversable {
+                yield from [$deployment];
+            }
+        );
+
+        $runnerFactory = $this->createMock(RunnerFactoryInterface::class);
+        $runnerFactory->expects($this->never())->method('__invoke');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())
+            ->method('fail')
+            ->with($this->callback(
+                static fn (RuntimeException $error): bool => 'transcription failed' === $error->getMessage(),
+            ));
+
+        $this->buildDriver($runnerFactory, $transcribers)->configure(
+            'ssh://host',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'default',
+            false,
+        )->deploy($this->buildCompiledDeploymentStub(), $promise);
+    }
+
+    public function testDeployWritesTheAccumulatedFilesAndReportsWarningsAndStructuredOutput(): void
+    {
+        $deployment = $this->createMock(DeploymentInterface::class);
+        $deployment->expects($this->once())
+            ->method('transcribe')
+            ->willReturnCallback(function (...$args) use ($deployment): DeploymentInterface {
+                $args[1]
+                    ->addService('php', ['image' => 'php', 'profiles' => ['jobs']])
+                    ->addVolume('cache', ['driver' => 'local', 'x-paas-reset' => true])
+                    ->addFile('secrets/php.env', 'KEY="value"')
+                    ->addWarning('something partial');
+
+                return $deployment;
+            });
+
+        $transcribers = $this->createStub(TranscriberCollectionInterface::class);
+        $transcribers->method('getIterator')->willReturnCallback(
+            function () use ($deployment): Traversable {
+                yield from [$deployment];
+            }
+        );
+
+        $writes = [];
+        $workspaceFilesystem = $this->createMock(FilesystemOperator::class);
+        $workspaceFilesystem->method('write')->willReturnCallback(
+            function (string $path, string $content) use (&$writes): void {
+                $writes[$path] = $content;
+            }
+        );
+        $workspaceFilesystem->expects($this->once())->method('deleteDirectory');
+
+        $templatesFilesystem = $this->createStub(FilesystemOperator::class);
+        $templatesFilesystem->method('read')->willReturn(
+            "project: {% project %}\nfiles: {% paasFiles %}\nvolumes: {% paasResetVolumes %}\njobs: {% paasJobs %}",
+        );
+
+        $captured = null;
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())
+            ->method('success')
+            ->willReturnCallback(function (array $result) use (&$captured, $promise): PromiseInterface {
+                $captured = $result;
+
+                return $promise;
+            });
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildDriver(
+            $this->buildCapturingRunnerFactory(['recap' => 'ok=3'], $writes),
+            $transcribers,
+            $workspaceFilesystem,
+            $templatesFilesystem,
+        )->configure(
+            'docker.example.com:2200',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'default',
+            false,
+        )->deploy($this->buildCompiledDeploymentStub(), $promise);
+
+        //The accumulated file is written into the run working dir, the playbook embeds its absolute path,
+        //the reset volumes and the job runs; the inventory is built from a scheme-less address.
+        $workingDirs = [];
+        foreach ($writes as $path => $content) {
+            $workingDirs[explode('/', $path, 2)[0]] = true;
+        }
+
+        self::assertCount(1, $workingDirs);
+        $workingDir = (string) array_key_first($workingDirs);
+
+        self::assertSame('KEY="value"', $writes[$workingDir . '/secrets/php.env']);
+        self::assertSame(
+            "[docker_host]\ndocker.example.com ansible_host=docker.example.com ansible_port=2200\n",
+            $writes[$workingDir . '/inventory.ini'],
+        );
+        self::assertSame(
+            "project: default-prefix-my-project\n"
+            . 'files: ' . json_encode([[
+                'src' => self::WORKSPACE_ROOT . '/' . $workingDir . '/secrets/php.env',
+                'dest' => 'secrets/php.env',
+                'mode' => '0600',
+            ]]) . "\n"
+            . 'volumes: ["cache"]' . "\n"
+            . 'jobs: [{"service":"php","run":1,"completions":1,"timeout":0,"ok_codes":[0]}]',
+            $writes[$workingDir . '/deploy.yml'],
+        );
+
+        self::assertIsArray($captured);
+        self::assertSame('{"recap":"ok=3"}', $captured['output']);
+        self::assertSame(['something partial'], $captured['warnings']);
+    }
+
+    public function testInventoryUsesTheDefaultSshPortForABareHost(): void
+    {
+        $transcribers = $this->createStub(TranscriberCollectionInterface::class);
+        $transcribers->method('getIterator')->willReturnCallback(
+            function (): Traversable {
+                yield from [];
+            }
+        );
+
+        $writes = [];
+        $workspaceFilesystem = $this->createStub(FilesystemOperator::class);
+        $workspaceFilesystem->method('write')->willReturnCallback(
+            function (string $path, string $content) use (&$writes): void {
+                $writes[basename($path)] = $content;
+            }
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+
+        $this->buildDriver(
+            $this->buildCapturingRunnerFactory('PLAY RECAP ok', $writes),
+            $transcribers,
+            $workspaceFilesystem,
+        )->configure(
+            'docker.example.com',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'default',
+            false,
+        )->deploy($this->buildCompiledDeploymentStub(), $promise);
+
+        self::assertSame(
+            "[docker_host]\ndocker.example.com ansible_host=docker.example.com ansible_port=22\n",
+            $writes['inventory.ini'],
+        );
     }
 }

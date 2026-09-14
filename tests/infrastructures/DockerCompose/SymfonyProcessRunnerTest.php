@@ -48,6 +48,15 @@ class SymfonyProcessRunnerTest extends TestCase
 
         $process = $this->createMock(Process::class);
         $process->expects($this->once())->method('run');
+        //Non interactive run: no colors, strict host key checking against the materialized known_hosts
+        $process->expects($this->once())
+            ->method('setEnv')
+            ->with([
+                'ANSIBLE_NOCOLOR' => '1',
+                'ANSIBLE_FORCE_COLOR' => '0',
+                'ANSIBLE_HOST_KEY_CHECKING' => 'True',
+                'ANSIBLE_SSH_COMMON_ARGS' => '-o UserKnownHostsFile=/tmp/known_hosts -o StrictHostKeyChecking=yes',
+            ]);
         $process->method('isSuccessful')->willReturn(true);
         $process->method('getOutput')->willReturn('PLAY RECAP ok=2');
         $process->method('getErrorOutput')->willReturn('');
@@ -57,6 +66,7 @@ class SymfonyProcessRunnerTest extends TestCase
             timeout: 300.0,
             sshUser: 'deployer',
             privateKeyFile: '/tmp/key',
+            knownHostsFile: '/tmp/known_hosts',
             processFactory: function (
                 array $command,
                 ?float $timeout
@@ -176,5 +186,21 @@ class SymfonyProcessRunnerTest extends TestCase
             ->with($this->isInstanceOf(RuntimeException::class));
 
         $runner->run('/run/deploy.yml', '/run/inv.ini', [], null, $promise);
+    }
+
+
+    public function testRunWithTheDefaultProcessFactory(): void
+    {
+        //Real Symfony Process, with the `true` binary standing for ansible-playbook
+        $runner = new SymfonyProcessRunner(playbookBinary: 'true', timeout: 5.0);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        self::assertInstanceOf(
+            RunnerInterface::class,
+            $runner->run('/run/deploy.yml', '/run/inv.ini', [], null, $promise),
+        );
     }
 }

@@ -26,10 +26,13 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use RuntimeException;
+use stdClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Map;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber\ConfigMapTranscriber;
 use Teknoo\Recipe\Promise\PromiseInterface;
@@ -60,7 +63,12 @@ class ConfigMapTranscriberTest extends TestCase
         $generation = new Accumulator('default-prj', 'private');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())->method('success')->with([
+            'configs' => [
+                'prj-app-map-DEBUG' => ['file' => './configs/prj-app-map/DEBUG'],
+                'prj-app-map-TZ' => ['file' => './configs/prj-app-map/TZ'],
+            ],
+        ]);
         $promise->expects($this->never())->method('fail');
 
         self::assertInstanceOf(
@@ -74,30 +82,33 @@ class ConfigMapTranscriberTest extends TestCase
             ),
         );
 
+        //One Compose config per key, each backed by its own file (mountable like a Kubernetes ConfigMap)
         self::assertSame(
             [
                 'configs' => [
-                    'prj-app-map' => ['file' => './configs/prj-app-map'],
+                    'prj-app-map-DEBUG' => ['file' => './configs/prj-app-map/DEBUG'],
+                    'prj-app-map-TZ' => ['file' => './configs/prj-app-map/TZ'],
                 ],
             ],
             $generation->getComposeFile(),
         );
 
-        $files = $generation->getFiles();
-        self::assertSame("DEBUG=true\nTZ=UTC", $files['configs/prj-app-map']);
-        self::assertArrayNotHasKey('configs/prj-app-map__DEBUG', $files);
-        self::assertArrayNotHasKey('configs/prj-app-map__TZ', $files);
+        self::assertSame(
+            [
+                'configs/prj-app-map/DEBUG' => 'true',
+                'configs/prj-app-map/TZ' => 'UTC',
+            ],
+            $generation->getFiles(),
+        );
     }
 
-    public function testTranscribeSingleKeyMap(): void
+    public function testTranscribeSanitizesKeysAndJoinsArrayValues(): void
     {
-        //A single-key map must produce `key=value` format (not the bare value), matching the
-        //multi-key behaviour so that Docker Compose `envFrom` secrets/configs always read env-files.
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachMap')
             ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
-                $callback(new Map('single', ['ONLY_KEY' => 'only_value']), 'prj');
+                $callback(new Map('single', ['app/conf.ini' => ['a=1', 'b=2'], 'flag' => true]), '');
 
                 return $cd;
             });
@@ -119,28 +130,26 @@ class ConfigMapTranscriberTest extends TestCase
         self::assertSame(
             [
                 'configs' => [
-                    'prj-single-map' => ['file' => './configs/prj-single-map'],
+                    'single-map-app_conf.ini' => ['file' => './configs/single-map/app_conf.ini'],
+                    'single-map-flag' => ['file' => './configs/single-map/flag'],
                 ],
             ],
             $generation->getComposeFile(),
         );
 
         $files = $generation->getFiles();
-        self::assertSame('ONLY_KEY=only_value', $files['configs/prj-single-map']);
-        self::assertArrayNotHasKey('configs/prj-single-map__ONLY_KEY', $files);
+        self::assertSame("a=1\nb=2", $files['configs/single-map/app_conf.ini']);
+        self::assertSame('1', $files['configs/single-map/flag']);
     }
 
-    public function testTranscribeKeepsOneConfigPerMapWithoutFusing(): void
+    public function testTranscribeKeepsMapsSeparated(): void
     {
-        //Two maps, the first with 3 keys and the second with 2 keys: the result must be exactly two
-        //configs (one per map), each carrying its own keys — never 5 single-key configs, never one
-        //fused config.
         $cd = $this->createMock(CompiledDeploymentInterface::class);
         $cd->expects($this->once())
             ->method('foreachMap')
             ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
-                $callback(new Map('first', ['a' => '1', 'b' => '2', 'c' => '3']), 'prj');
-                $callback(new Map('second', ['x' => '10', 'y' => '20']), 'prj');
+                $callback(new Map('first', ['a' => '1', 'b' => '2']), 'prj');
+                $callback(new Map('second', ['a' => '10']), 'prj');
 
                 return $cd;
             });
@@ -161,20 +170,72 @@ class ConfigMapTranscriberTest extends TestCase
 
         self::assertSame(
             [
-                'configs' => [
-                    'prj-first-map' => ['file' => './configs/prj-first-map'],
-                    'prj-second-map' => ['file' => './configs/prj-second-map'],
-                ],
+                'configs/prj-first-map/a' => '1',
+                'configs/prj-first-map/b' => '2',
+                'configs/prj-second-map/a' => '10',
             ],
-            $generation->getComposeFile(),
+            $generation->getFiles(),
+        );
+    }
+
+
+    public function testTranscribeFailure(): void
+    {
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachMap')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Map('app', ['DEBUG' => 'true']), 'prj');
+
+                return $cd;
+            });
+
+        $accumulator = $this->createMock(AccumulatorInterface::class);
+        $accumulator->expects($this->once())
+            ->method('addConfig')
+            ->willThrowException(new RuntimeException('boom'));
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(RuntimeException::class));
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $accumulator,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+    }
+
+
+    public function testTranscribeWritesAnEmptyFileForANonScalarValue(): void
+    {
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachMap')
+            ->willReturnCallback(function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(new Map('app', ['empty' => null, 'object' => new stdClass()]), '');
+
+                return $cd;
+            });
+
+        $generation = new Accumulator('default-prj', 'private');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $generation,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
         );
 
-        $files = $generation->getFiles();
-        //Each map keeps all of its own keys, grouped in its own file; the two maps are not merged.
-        self::assertSame("a=1\nb=2\nc=3", $files['configs/prj-first-map']);
-        self::assertSame("x=10\ny=20", $files['configs/prj-second-map']);
-        foreach (array_keys($files) as $path) {
-            self::assertStringNotContainsString('__', $path);
-        }
+        self::assertSame(
+            ['configs/app-map/empty' => '', 'configs/app-map/object' => ''],
+            $generation->getFiles(),
+        );
     }
 }

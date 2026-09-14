@@ -52,7 +52,7 @@ class AccumulatorTest extends TestCase
 
     public function testGetNetworkName(): void
     {
-        self::assertSame('foo-bar_private', $this->buildAccumulator()->getNetworkName());
+        self::assertSame('foo-bar-private', $this->buildAccumulator()->getNetworkName());
     }
 
     public function testAddersAreFluent(): void
@@ -73,6 +73,10 @@ class AccumulatorTest extends TestCase
         self::assertInstanceOf(AccumulatorInterface::class, $accumulator->addTraefikRouter('http', 'r', []));
         self::assertInstanceOf(AccumulatorInterface::class, $accumulator->addTraefikService('http', 's', []));
         self::assertInstanceOf(AccumulatorInterface::class, $accumulator->addTlsCertificate('c.crt', 'c.key'));
+        self::assertInstanceOf(
+            AccumulatorInterface::class,
+            $accumulator->addTraefikServersTransport('t', ['insecureSkipVerify' => true]),
+        );
         self::assertInstanceOf(AccumulatorInterface::class, $accumulator->setCertResolver('le'));
         self::assertInstanceOf(AccumulatorInterface::class, $accumulator->addFile('secrets/sec', 'value'));
     }
@@ -84,7 +88,7 @@ class AccumulatorTest extends TestCase
         $accumulator
             ->addService('php', [
                 'image' => 'php:8.4',
-                'networks' => ['foo-bar_private'],
+                'networks' => ['foo-bar-private'],
                 'expose' => [9000],
             ])
             ->addVolume('data', [])
@@ -96,15 +100,14 @@ class AccumulatorTest extends TestCase
                 'services' => [
                     'php' => [
                         'image' => 'php:8.4',
-                        'networks' => ['foo-bar_private'],
+                        'networks' => ['foo-bar-private'],
                         'expose' => [9000],
                     ],
                 ],
                 'networks' => [
-                    'foo-bar_private' => [
-                        'name' => 'foo-bar_private',
+                    'foo-bar-private' => [
+                        'name' => 'foo-bar-private',
                         'driver' => 'bridge',
-                        'internal' => true,
                     ],
                 ],
                 'volumes' => [
@@ -119,6 +122,61 @@ class AccumulatorTest extends TestCase
             ],
             $accumulator->getComposeFile(),
         );
+    }
+
+    public function testGetComposeFileWithInternalNetwork(): void
+    {
+        $accumulator = new Accumulator('foo-bar', 'private', 'bridge', true);
+        $accumulator->addService('php', ['image' => 'php:8.4']);
+
+        self::assertSame(
+            [
+                'foo-bar-private' => [
+                    'name' => 'foo-bar-private',
+                    'driver' => 'bridge',
+                    'internal' => true,
+                ],
+            ],
+            $accumulator->getComposeFile()['networks'],
+        );
+    }
+
+    public function testAddNetworkAliasOnListNetworks(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator
+            ->addService('php', ['image' => 'php', 'networks' => ['foo-bar-private']])
+            ->addNetworkAlias('php', 'php-service')
+            ->addNetworkAlias('php', 'php-service')
+            ->addNetworkAlias('php', 'php')
+            ->addNetworkAlias('unknown', 'foo');
+
+        self::assertSame(
+            ['foo-bar-private' => ['aliases' => ['php-service']]],
+            $accumulator->getComposeFile()['services']['php']['networks'],
+        );
+    }
+
+    public function testAddNetworkAliasKeepsShortFormWhenAliasIsTheServiceName(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator
+            ->addService('php', ['image' => 'php', 'networks' => ['foo-bar-private']])
+            ->addService('sidecar', ['image' => 'php', 'network_mode' => 'service:php'])
+            ->addNetworkAlias('php', 'php')
+            ->addNetworkAlias('sidecar', 'other');
+
+        $services = $accumulator->getComposeFile()['services'];
+        self::assertSame(['foo-bar-private'], $services['php']['networks']);
+        self::assertArrayNotHasKey('networks', $services['sidecar']);
+    }
+
+    public function testWarnings(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        self::assertSame([], $accumulator->getWarnings());
+        self::assertInstanceOf(AccumulatorInterface::class, $accumulator->addWarning('foo'));
+        self::assertSame(['foo'], $accumulator->getWarnings());
     }
 
     public function testGetComposeFileEmpty(): void
@@ -246,8 +304,35 @@ class AccumulatorTest extends TestCase
                 'tls' => [
                     'certificates' => [
                         [
-                            'certFile' => 'certs/example.crt',
-                            'keyFile' => 'certs/example.key',
+                            'certFile' => '/etc/traefik/certs/example.crt',
+                            'keyFile' => '/etc/traefik/certs/example.key',
+                        ],
+                    ],
+                ],
+            ],
+            $accumulator->getTraefikConfig(),
+        );
+    }
+
+    public function testGetTraefikConfigWithServersTransportAndCustomCertsDir(): void
+    {
+        $accumulator = new Accumulator('foo-bar', 'private', 'bridge', false, '/certs');
+        $accumulator
+            ->addTraefikServersTransport('app-transport', ['insecureSkipVerify' => true])
+            ->addTlsCertificate('certs/example.crt', 'certs/example.key');
+
+        self::assertSame(
+            [
+                'http' => [
+                    'serversTransports' => [
+                        'app-transport' => ['insecureSkipVerify' => true],
+                    ],
+                ],
+                'tls' => [
+                    'certificates' => [
+                        [
+                            'certFile' => '/certs/example.crt',
+                            'keyFile' => '/certs/example.key',
                         ],
                     ],
                 ],
@@ -364,8 +449,47 @@ class AccumulatorTest extends TestCase
         $accumulator = $this->buildAccumulator();
         $accumulator
             ->addService('php', ['image' => 'php'])
-            ->addService('migrate', ['image' => 'php', 'profiles' => ['jobs']]);
+            ->addService('migrate', ['image' => 'php', 'profiles' => ['jobs']])
+            ->addService('seed', [
+                'image' => 'php',
+                'profiles' => ['jobs'],
+                'x-paas-job' => [
+                    'parallel' => true,
+                    'completions' => 2,
+                    'time_limit' => 30,
+                    'success_exit_codes' => [0, 3, 3],
+                ],
+            ]);
 
-        self::assertSame(['migrate'], $accumulator->getJobsToRun());
+        self::assertSame(
+            [
+                ['service' => 'migrate', 'run' => 1, 'completions' => 1, 'timeout' => 0, 'ok_codes' => [0]],
+                ['service' => 'seed', 'run' => 1, 'completions' => 2, 'timeout' => 30, 'ok_codes' => [0, 3]],
+                ['service' => 'seed', 'run' => 2, 'completions' => 2, 'timeout' => 30, 'ok_codes' => [0, 3]],
+            ],
+            $accumulator->getJobsToRun(),
+        );
+    }
+
+
+    public function testAddNetworkAliasIgnoresANonArrayNetworksKey(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator
+            ->addService('php', ['image' => 'php', 'networks' => 'foo-bar-private'])
+            ->addNetworkAlias('php', 'php-service');
+
+        self::assertSame('foo-bar-private', $accumulator->getComposeFile()['services']['php']['networks']);
+    }
+
+    public function testGetJobsToRunIgnoresANonArrayJobMeta(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator->addService('job', ['image' => 'php', 'profiles' => ['jobs'], 'x-paas-job' => 'nope']);
+
+        self::assertSame(
+            [['service' => 'job', 'run' => 1, 'completions' => 1, 'timeout' => 0, 'ok_codes' => [0]]],
+            $accumulator->getJobsToRun(),
+        );
     }
 }

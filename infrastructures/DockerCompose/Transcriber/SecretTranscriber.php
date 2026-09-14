@@ -35,27 +35,17 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
-use function array_map;
-use function base64_decode;
-use function implode;
-use function is_array;
-use function is_scalar;
-use function is_string;
-use function str_starts_with;
-use function strlen;
-use function substr;
-
-use const PHP_EOL;
-
 /**
  * "Deployment transcriber" translating CompiledDeployment's secrets (provider `map`, carrying inline values
  * in their options) to Compose `secrets` entries backed by files pushed to the host.
  *
- * Each secret becomes a single Compose secret `{ <prefixed>-secret: { file: ./secrets/<prefixed>-secret } }`
- * (the name consumed by the deployment transcribers) backed by a file holding a newline-joined
- * `key=value` env-file representation of every option. A `base64:` prefixed value is
- * decoded before being written, mirroring the Kubernetes SecretTranscriber convention. Per-ingress TLS is
- * handled independently by the IngressTranscriber, which reads the secret options directly.
+ * Each option key of a secret becomes its own Compose secret
+ * `{ <prefixed>-secret-<key>: { file: ./secrets/<prefixed>-secret/<key> } }`, so a secret volume can be
+ * mounted exactly like Kubernetes does (one file per key under the declared mount path, see
+ * `PodsTranscriberTrait::convertVolumes()`). A `base64:` prefixed value is decoded before being written,
+ * mirroring the Kubernetes SecretTranscriber convention. Environment variables read from secrets are handled
+ * by the pods transcription (per-container env file), per-ingress TLS by the IngressTranscriber, both from
+ * the same decoded values.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -65,48 +55,9 @@ use const PHP_EOL;
 class SecretTranscriber implements DeploymentInterface
 {
     use CommonTrait;
-
-    private const string BASE64_PREFIX = 'base64:';
+    use ValuesCollectorTrait;
 
     private const string NAME_SUFFIX = '-secret';
-
-    private static function decode(mixed $value): string
-    {
-        if (is_array($value)) {
-            return implode(PHP_EOL, array_map(self::decode(...), $value));
-        }
-
-        if (is_string($value) && str_starts_with($value, self::BASE64_PREFIX)) {
-            return (string) base64_decode(substr($value, strlen(self::BASE64_PREFIX)), true);
-        }
-
-        return self::scalarToString($value);
-    }
-
-    private static function scalarToString(mixed $value): string
-    {
-        if (is_scalar($value)) {
-            return (string) $value;
-        }
-
-        return '';
-    }
-
-    /**
-     * Build the content of the aggregated secret file: a newline-joined `key=value` env-file representation
-     * of every option, regardless of how many keys are present.
-     *
-     * @param array<string|int, mixed> $options
-     */
-    private static function aggregate(array $options): string
-    {
-        $lines = [];
-        foreach ($options as $key => $value) {
-            $lines[] = (string) $key . '=' . self::decode($value);
-        }
-
-        return implode(PHP_EOL, $lines);
-    }
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
@@ -117,7 +68,7 @@ class SecretTranscriber implements DeploymentInterface
     ): TranscriberInterface {
         $compiledDeployment->foreachSecret(
             static function (Secret $secret, string $prefix) use ($accumulator, $promise): void {
-                if ('map' !== $secret->getProvider()) {
+                if (self::MAP_PROVIDER !== $secret->getProvider()) {
                     return;
                 }
 
@@ -125,14 +76,21 @@ class SecretTranscriber implements DeploymentInterface
 
                 try {
                     $baseName = (string) $prefixer($secret->getName() . self::NAME_SUFFIX);
-                    $options = $secret->getOptions();
+                    $emitted = [];
 
-                    $accumulator->addSecret(
-                        $baseName,
-                        new MountedFile('secrets/' . $baseName, self::aggregate($options)),
-                    );
+                    foreach ($secret->getOptions() as $key => $value) {
+                        $key = self::sanitizeKey((string) $key);
+                        $path = 'secrets/' . $baseName . '/' . $key;
 
-                    $promise->success(['secrets' => [$baseName => ['file' => './secrets/' . $baseName]]]);
+                        $accumulator->addSecret(
+                            $baseName . '-' . $key,
+                            new MountedFile($path, self::decodeSecretValue($value)),
+                        );
+
+                        $emitted[$baseName . '-' . $key] = ['file' => './' . $path];
+                    }
+
+                    $promise->success(['secrets' => $emitted]);
                 } catch (Throwable $error) {
                     $promise->fail($error);
                 }

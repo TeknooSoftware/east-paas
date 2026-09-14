@@ -97,7 +97,13 @@ class Running implements StateInterface
                 ): AccumulatorInterface {
                     $finalProjectName = $this->sanitizeProjectName($namespace . '-' . $prefix . '-' . $projectName);
 
-                    return new Accumulator($finalProjectName, 'private', $this->networkDriver);
+                    return new Accumulator(
+                        projectName: $finalProjectName,
+                        dedicatedNetworkName: 'private',
+                        networkDriver: $this->networkDriver,
+                        networkInternal: $this->networkInternal,
+                        traefikCertsMountDir: $this->traefikCertsMountDir ?? $this->traefikCertsDir,
+                    );
                 }
             );
 
@@ -134,12 +140,7 @@ class Running implements StateInterface
     private function createWorkingDir(): Closure
     {
         return function (): string {
-            $factory = $this->tmpDirFactory;
-            if (null === $factory) {
-                throw new InvalidConfigurationException('Missing the working directory factory');
-            }
-
-            return $factory();
+            return ($this->tmpDirFactory)();
         };
     }
 
@@ -176,6 +177,7 @@ class Running implements StateInterface
 
             $composeFile = $accumulator->getComposeFile();
             $traefikConfig = $accumulator->getTraefikConfig();
+            $warnings = $accumulator->getWarnings();
 
             $composeAbsolutePath = $workingAbsoluteDir . '/compose.yaml';
             $this->workspaceFilesystem->write(
@@ -250,6 +252,7 @@ class Running implements StateInterface
             }
 
             $runner = ($this->runnerFactory)((string) $this->master, $this->credentials);
+            $workspaceFilesystem = $this->workspaceFilesystem;
 
             //The Compose/Traefik arrays hold only resource definitions and file references; the sensitive
             //file contents (secrets, certs) live in the accumulator's files and are never serialized into
@@ -257,17 +260,24 @@ class Running implements StateInterface
             $onSuccess = static function (array|string $output) use (
                 $composeFile,
                 $traefikConfig,
+                $warnings,
                 $mainPromise,
             ): void {
                 if (!is_string($output)) {
                     $output = json_encode($output, JSON_THROW_ON_ERROR);
                 }
 
-                $mainPromise->success([
+                $result = [
                     'compose' => $composeFile,
                     'traefik' => $traefikConfig,
                     'output' => $output,
-                ]);
+                ];
+
+                if (!empty($warnings)) {
+                    $result['warnings'] = $warnings;
+                }
+
+                $mainPromise->success($result);
             };
 
             /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>|string, mixed, mixed> $runnerPromise */
@@ -282,13 +292,19 @@ class Running implements StateInterface
                 'paas_project' => $accumulator->getProjectName(),
             ];
 
-            $runner->run(
-                playbookPath: $playbookAbsolutePath,
-                inventoryPath: $inventoryAbsolutePath,
-                extraVars: $extraVars,
-                credentials: $this->credentials,
-                promise: $runnerPromise,
-            );
+            try {
+                $runner->run(
+                    playbookPath: $playbookAbsolutePath,
+                    inventoryPath: $inventoryAbsolutePath,
+                    extraVars: $extraVars,
+                    credentials: $this->credentials,
+                    promise: $runnerPromise,
+                );
+            } finally {
+                //The working directory holds the secret values, the TLS private keys and the SSH inventory:
+                //it must not survive the run on the worker, whatever the outcome.
+                $workspaceFilesystem->deleteDirectory($workingDir);
+            }
         };
     }
 
@@ -367,10 +383,11 @@ class Running implements StateInterface
             bool $runDeployment,
             bool $runExposing
         ): void {
-            $accumulator = $this->createAccumulator($compiledDeployment);
             $defaultsBag = $this->defaultsBag ?? new DefaultsBag();
 
             try {
+                $accumulator = $this->createAccumulator($compiledDeployment);
+
                 /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>, mixed, mixed> $promise */
                 $promise = new Promise(
                     onSuccess: static function (): void {

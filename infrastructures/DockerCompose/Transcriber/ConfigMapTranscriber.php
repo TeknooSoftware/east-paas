@@ -35,18 +35,15 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
-use function implode;
-use function is_scalar;
-
-use const PHP_EOL;
-
 /**
  * "Deployment transcriber" translating CompiledDeployment's maps (key/value configuration) to Compose
  * `configs` entries backed by files pushed to the host.
  *
- * Each map becomes a single Compose config `{ <prefixed>-map: { file: ./configs/<prefixed>-map } }` (the
- * name consumed by the deployment transcribers' map references) backed by a file holding the bare value
- * (single key) or a newline-joined `key=value` env-file representation (multiple keys).
+ * Each key of a map becomes its own Compose config
+ * `{ <prefixed>-map-<key>: { file: ./configs/<prefixed>-map/<key> } }`, so a map volume can be mounted
+ * exactly like Kubernetes does (one file per key under the declared mount path, see
+ * `PodsTranscriberTrait::convertVolumes()`). Environment variables read from maps are handled by the pods
+ * transcription (per-container env file).
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -56,33 +53,9 @@ use const PHP_EOL;
 class ConfigMapTranscriber implements DeploymentInterface
 {
     use CommonTrait;
+    use ValuesCollectorTrait;
 
     private const string NAME_SUFFIX = '-map';
-
-    private static function scalarToString(mixed $value): string
-    {
-        if (is_scalar($value)) {
-            return (string) $value;
-        }
-
-        return '';
-    }
-
-    /**
-     * Build the content of the aggregated secret file: a newline-joined `key=value` env-file representation
-     *  of every option, regardless of how many keys are present.
-     *
-     * @param array<string|int, mixed> $options
-     */
-    private static function aggregate(array $options): string
-    {
-        $lines = [];
-        foreach ($options as $key => $value) {
-            $lines[] = (string) $key . '=' . self::scalarToString($value);
-        }
-
-        return implode(PHP_EOL, $lines);
-    }
 
     public function transcribe(
         CompiledDeploymentInterface $compiledDeployment,
@@ -97,14 +70,21 @@ class ConfigMapTranscriber implements DeploymentInterface
 
                 try {
                     $baseName = (string) $prefixer($map->getName() . self::NAME_SUFFIX);
-                    $options = $map->getOptions();
+                    $emitted = [];
 
-                    $accumulator->addConfig(
-                        $baseName,
-                        new MountedFile('configs/' . $baseName, self::aggregate($options)),
-                    );
+                    foreach ($map->getOptions() as $key => $value) {
+                        $key = self::sanitizeKey((string) $key);
+                        $path = 'configs/' . $baseName . '/' . $key;
 
-                    $promise->success(['configs' => [$baseName => ['file' => './configs/' . $baseName]]]);
+                        $accumulator->addConfig(
+                            $baseName . '-' . $key,
+                            new MountedFile($path, self::valueToString($value)),
+                        );
+
+                        $emitted[$baseName . '-' . $key] = ['file' => './' . $path];
+                    }
+
+                    $promise->success(['configs' => $emitted]);
                 } catch (Throwable $error) {
                     $promise->fail($error);
                 }

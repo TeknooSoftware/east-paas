@@ -260,6 +260,18 @@ return [
             $traefikCertsDir = (string) $container->get('teknoo.east.paas.docker-compose.traefik.certs_dir');
         }
 
+        $traefikCertsMountDir = null;
+        if ($container->has('teknoo.east.paas.docker-compose.traefik.certs_mount_dir')) {
+            $traefikCertsMountDir = (string) $container->get(
+                'teknoo.east.paas.docker-compose.traefik.certs_mount_dir',
+            );
+        }
+
+        $networkInternal = false;
+        if ($container->has('teknoo.east.paas.docker-compose.network.internal')) {
+            $networkInternal = (bool) $container->get('teknoo.east.paas.docker-compose.network.internal');
+        }
+
         return new DriverAlias(
             runnerFactory: $container->get(RunnerFactoryInterface::class),
             transcribers: $container->get(TranscriberCollectionInterface::class),
@@ -276,6 +288,8 @@ return [
             traefikContainer: $traefikContainer,
             traefikDynamicDir: $traefikDynamicDir,
             traefikCertsDir: $traefikCertsDir,
+            networkInternal: $networkInternal,
+            traefikCertsMountDir: $traefikCertsMountDir,
         );
     },
 

@@ -31,11 +31,17 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\InlineContent;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 
+use function array_map;
 use function array_merge;
+use function array_unique;
 use function array_values;
 use function basename;
 use function in_array;
 use function is_array;
+use function is_int;
+use function is_numeric;
+use function is_string;
+use function max;
 use function str_starts_with;
 
 /**
@@ -43,8 +49,8 @@ use function str_starts_with;
  * Specification file, the Traefik dynamic configuration, the files to push to the host and the per-ingress
  * TLS certificates, before the driver serializes them and runs the Ansible playbooks.
  *
- * Services reach each other on a per-project, dedicated, internal network (`driver: bridge, internal: true`)
- * declared in the Compose file; Compose prefixes it with the project name on the host. The deploy playbook
+ * Services reach each other on a per-project, dedicated network (`<project>-<network>`, `driver: bridge`,
+ * optionally `internal: true`) declared in the Compose file with an explicit `name:`. The deploy playbook
  * connects Traefik to that resolved network name so it can route ingress traffic to the services.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -75,14 +81,10 @@ final class Accumulator implements AccumulatorInterface
     private array $secrets = [];
 
     /**
-     * @var array{
-     *     http: array{routers: array<string, array<string, mixed>>, services: array<string, array<string, mixed>>},
-     *     tcp: array{routers: array<string, array<string, mixed>>, services: array<string, array<string, mixed>>},
-     *     udp: array{routers: array<string, array<string, mixed>>, services: array<string, array<string, mixed>>}
-     * }
+     * @var array<string, array<string, array<string, array<string, mixed>>>>
      */
     private array $traefik = [
-        'http' => ['routers' => [], 'services' => []],
+        'http' => ['routers' => [], 'services' => [], 'serversTransports' => []],
         'tcp' => ['routers' => [], 'services' => []],
         'udp' => ['routers' => [], 'services' => []],
     ];
@@ -99,10 +101,21 @@ final class Accumulator implements AccumulatorInterface
      */
     private array $files = [];
 
+    /**
+     * @var array<int, string>
+     */
+    private array $warnings = [];
+
+    /**
+     * @param string $traefikCertsMountDir directory where the pushed TLS cert/key files are visible from the
+     *        Traefik process (the path referenced by the dynamic configuration `tls.certificates`)
+     */
     public function __construct(
         private readonly string $projectName,
         private readonly string $dedicatedNetworkName = 'private',
         private readonly string $networkDriver = 'bridge',
+        private readonly bool $networkInternal = false,
+        private readonly string $traefikCertsMountDir = '/etc/traefik/certs',
     ) {
     }
 
@@ -113,7 +126,7 @@ final class Accumulator implements AccumulatorInterface
 
     public function getNetworkName(): string
     {
-        return $this->projectName . '_' . $this->dedicatedNetworkName;
+        return $this->projectName . '-' . $this->dedicatedNetworkName;
     }
 
     public function addService(string $name, array $spec): AccumulatorInterface
@@ -135,6 +148,61 @@ final class Accumulator implements AccumulatorInterface
         }
 
         $this->services[$name]['ports'] = array_values(array_merge($existing, $ports));
+
+        return $this;
+    }
+
+    public function addNetworkAlias(string $name, string $alias): AccumulatorInterface
+    {
+        if (!isset($this->services[$name])) {
+            return $this;
+        }
+
+        //A sidecar sharing its anchor's network namespace (`network_mode: service:<anchor>`) has no
+        //`networks:` of its own, the alias must be declared on the anchor.
+        if (!isset($this->services[$name]['networks'])) {
+            return $this;
+        }
+
+        $networks = $this->services[$name]['networks'];
+        if (!is_array($networks)) {
+            return $this;
+        }
+
+        $normalized = [];
+        foreach ($networks as $key => $value) {
+            if (is_int($key) && is_string($value)) {
+                $normalized[$value] = [];
+
+                continue;
+            }
+
+            $normalized[(string) $key] = is_array($value) ? $value : [];
+        }
+
+        $networkName = $this->getNetworkName();
+        /** @var array<int, string> $aliases */
+        $aliases = [];
+        if (is_array($normalized[$networkName]['aliases'] ?? null)) {
+            foreach ($normalized[$networkName]['aliases'] as $existing) {
+                if (is_string($existing)) {
+                    $aliases[] = $existing;
+                }
+            }
+        }
+
+        if ($alias !== $name) {
+            $aliases[] = $alias;
+        }
+
+        if (empty($aliases)) {
+            //Nothing to declare, keep the short `networks:` list form
+            return $this;
+        }
+
+        $normalized[$networkName] ??= [];
+        $normalized[$networkName]['aliases'] = array_values(array_unique($aliases));
+        $this->services[$name]['networks'] = $normalized;
 
         return $this;
     }
@@ -188,6 +256,13 @@ final class Accumulator implements AccumulatorInterface
         return $this;
     }
 
+    public function addTraefikServersTransport(string $name, array $spec): AccumulatorInterface
+    {
+        $this->traefik['http']['serversTransports'][$name] = $spec;
+
+        return $this;
+    }
+
     public function addTlsCertificate(string $certFile, string $keyFile): AccumulatorInterface
     {
         $this->certificates[] = [
@@ -218,19 +293,22 @@ final class Accumulator implements AccumulatorInterface
 
         if (!empty($this->services)) {
             $compose['services'] = $this->services;
-            //The dedicated network is an internal bridge so containers are reachable only through Traefik
-            //(which the deploy playbook connects to it) or an explicitly published host port. Its name is
-            //pinned with an explicit `name:` to the per-project value (`<project>_<network>`) so Compose
-            //does not prefix it again with the project name; that resolved name is what the deploy playbook
-            //connects Traefik to.
+            //The dedicated network name is pinned with an explicit `name:` to the per-project value
+            //(`<project>-<network>`) so Compose does not prefix it again with the project name; that resolved
+            //name is what the deploy playbook connects Traefik to and what Traefik's `loadBalancer` URLs use
+            //(`<service>.<network>`) to stay unambiguous when Traefik is connected to several projects.
+            //When `internal` is set, containers are reachable only through Traefik and have no egress.
             $networkName = $this->getNetworkName();
-            $compose['networks'] = [
-                $networkName => [
-                    'name' => $networkName,
-                    'driver' => $this->networkDriver,
-                    'internal' => true,
-                ],
+            $network = [
+                'name' => $networkName,
+                'driver' => $this->networkDriver,
             ];
+
+            if ($this->networkInternal) {
+                $network['internal'] = true;
+            }
+
+            $compose['networks'] = [$networkName => $network];
         }
 
         if (!empty($this->volumes)) {
@@ -283,11 +361,13 @@ final class Accumulator implements AccumulatorInterface
         }
 
         if (!empty($this->certificates)) {
+            //The files are pushed by the expose playbook into the host certs directory under their base
+            //name; Traefik must see that directory at `$traefikCertsMountDir`.
             $tls = [];
             foreach ($this->certificates as $certificate) {
                 $tls['certificates'][] = [
-                    'certFile' => $certificate['certFile'],
-                    'keyFile' => $certificate['keyFile'],
+                    'certFile' => $this->traefikCertsMountDir . '/' . basename($certificate['certFile']),
+                    'keyFile' => $this->traefikCertsMountDir . '/' . basename($certificate['keyFile']),
                 ];
             }
 
@@ -304,6 +384,18 @@ final class Accumulator implements AccumulatorInterface
     public function getFiles(): array
     {
         return $this->files;
+    }
+
+    public function addWarning(string $message): AccumulatorInterface
+    {
+        $this->warnings[] = $message;
+
+        return $this;
+    }
+
+    public function getWarnings(): array
+    {
+        return $this->warnings;
     }
 
     public function getFilesToCopy(): array
@@ -357,14 +449,47 @@ final class Accumulator implements AccumulatorInterface
 
     public function getJobsToRun(): array
     {
-        $names = [];
+        $runs = [];
         foreach ($this->services as $name => $spec) {
             $profiles = $spec['profiles'] ?? [];
-            if (is_array($profiles) && in_array('jobs', $profiles, true)) {
-                $names[] = $name;
+            if (!is_array($profiles) || !in_array('jobs', $profiles, true)) {
+                continue;
+            }
+
+            $meta = $spec['x-paas-job'] ?? [];
+            if (!is_array($meta)) {
+                $meta = [];
+            }
+
+            $completions = 1;
+            if (is_numeric($meta['completions'] ?? null)) {
+                $completions = max(1, (int) $meta['completions']);
+            }
+
+            $timeout = 0;
+            if (is_numeric($meta['time_limit'] ?? null)) {
+                $timeout = (int) $meta['time_limit'];
+            }
+
+            /** @var array<int, int> $okCodes */
+            $okCodes = $meta['success_exit_codes'] ?? [];
+            if (!is_array($okCodes) || empty($okCodes)) {
+                $okCodes = [0];
+            }
+
+            //Each completion is a separate, sequential `docker compose run` in the playbook (Compose has no
+            //native Job object; `parallel` is not supported and runs are sequential).
+            for ($run = 1; $run <= $completions; $run++) {
+                $runs[] = [
+                    'service' => $name,
+                    'run' => $run,
+                    'completions' => $completions,
+                    'timeout' => $timeout,
+                    'ok_codes' => array_values(array_unique(array_map('intval', $okCodes))),
+                ];
             }
         }
 
-        return $names;
+        return $runs;
     }
 }

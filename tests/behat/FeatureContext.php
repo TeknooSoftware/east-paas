@@ -130,24 +130,31 @@ use function dirname;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
+use function getenv;
+use function is_dir;
 use function is_readable;
 use function json_decode;
 use function json_encode;
 use function ksort;
 use function microtime;
+use function mkdir;
 use function preg_match;
 use function preg_replace;
 use function random_int;
 use function reset;
+use function rmdir;
 use function round;
+use function scandir;
 use function str_ends_with;
 use function str_repeat;
 use function str_replace;
 use function strlen;
 use function strtolower;
 use function substr;
+use function sys_get_temp_dir;
 use function trim;
 use function uniqid;
+use function unlink;
 use function var_export;
 use function version_compare;
 
@@ -3740,7 +3747,7 @@ EOF;
      * Load the expected Docker Compose artifacts for the current scenario's variant flags, mirroring
      * compareCD()'s use of expectedCD.php for Kubernetes.
      *
-     * @return array{compose.yaml: string, deploy.yml: string, expose.yml: string, traefik: string, referencedFiles: array<string, string>}
+     * @return array{dir: string, compose.yaml: string, deploy.yml: string, expose.yml: string, traefik: string, referencedFiles: array<string, string>}
      */
     private function loadExpectedComposeArtifacts(): array
     {
@@ -3778,6 +3785,12 @@ EOF;
 
         $expected = $this->loadExpectedComposeArtifacts();
 
+        //DUMP_COMPOSE=1 regenerates the golden files from the current output (to be reviewed in the diff).
+        if (!empty(getenv('DUMP_COMPOSE'))) {
+            $this->dumpComposeArtifacts($expected['dir'], 'deploy');
+            $expected = $this->loadExpectedComposeArtifacts();
+        }
+
         //Full golden comparison (like the Kubernetes manifests): the generated Compose Specification must
         //match the reviewed expected file byte for byte.
         Assert::assertSame(
@@ -3785,6 +3798,10 @@ EOF;
             $this->composeArtifacts['compose.yaml'],
             'The generated compose.yaml does not match the expected golden file',
         );
+
+        //The generated Compose Specification must also be accepted by the real Compose (schema validation:
+        //resource keys, quantities, mounts...), when a Docker CLI with the compose plugin is available.
+        $this->validateComposeFileWithDocker();
 
         //The deploy playbook is compared after normalizing the per-run working directory (uniqid) baked into
         //its "src" paths; everything else (vars block, paas_files/paas_reset_volumes/paas_jobs, tasks) is golden.
@@ -3806,6 +3823,109 @@ EOF;
         $this->assertAnsibleRun('deploy');
     }
 
+    /**
+     * Regenerate the golden files of the current variant from the captured artifacts (DUMP_COMPOSE=1).
+     */
+    private function dumpComposeArtifacts(string $dir, string $stage): void
+    {
+        if ('deploy' === $stage) {
+            file_put_contents($dir . '/compose.yaml', $this->composeArtifacts['compose.yaml']);
+            file_put_contents(
+                $dir . '/deploy.yml',
+                $this->normalizeComposePlaybook($this->composeArtifacts['deploy.yml']),
+            );
+
+            $refsDir = $dir . '/refs';
+            if (is_dir($refsDir)) {
+                $this->removeDirectory($refsDir);
+            }
+
+            foreach ($this->referencedFiles as $relative => $content) {
+                $path = $refsDir . '/' . $relative;
+                if (!is_dir(dirname($path))) {
+                    mkdir(dirname($path), 0755, true);
+                }
+
+                file_put_contents($path, $content);
+            }
+
+            return;
+        }
+
+        file_put_contents(
+            $dir . '/expose.yml',
+            $this->normalizeComposePlaybook($this->composeArtifacts['expose.yml']),
+        );
+        file_put_contents($dir . '/traefik.yml', (string) reset($this->traefikArtifacts));
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        foreach ((array) scandir($dir) as $entry) {
+            if ('.' === $entry || '..' === $entry) {
+                continue;
+            }
+
+            $path = $dir . '/' . $entry;
+            if (is_dir($path)) {
+                $this->removeDirectory($path);
+
+                continue;
+            }
+
+            unlink($path);
+        }
+
+        rmdir($dir);
+    }
+
+    /**
+     * Run `docker compose config` on the generated Compose Specification (with its referenced files) to
+     * prove the real Compose accepts it. Skipped when no docker CLI with the compose plugin is available.
+     */
+    private function validateComposeFileWithDocker(): void
+    {
+        static $dockerAvailable = null;
+        if (null === $dockerAvailable) {
+            $probe = new Process(['docker', 'compose', 'version']);
+            $probe->run();
+            $dockerAvailable = $probe->isSuccessful();
+        }
+
+        if (!$dockerAvailable) {
+            return;
+        }
+
+        $dir = sys_get_temp_dir() . '/east-paas-behat-compose-' . uniqid('', true);
+        mkdir($dir, 0700, true);
+
+        try {
+            file_put_contents($dir . '/compose.yaml', $this->composeArtifacts['compose.yaml']);
+            foreach ($this->referencedFiles as $relative => $content) {
+                $path = $dir . '/' . $relative;
+                if (!is_dir(dirname($path))) {
+                    mkdir(dirname($path), 0700, true);
+                }
+
+                file_put_contents($path, $content);
+            }
+
+            $process = new Process(
+                ['docker', 'compose', '--project-directory', $dir, '-f', $dir . '/compose.yaml', 'config', '-q'],
+                $dir,
+            );
+            $process->run();
+
+            Assert::assertTrue(
+                $process->isSuccessful(),
+                'The generated compose.yaml is rejected by `docker compose config`: '
+                    . $process->getErrorOutput() . $process->getOutput(),
+            );
+        } finally {
+            $this->removeDirectory($dir);
+        }
+    }
+
     #[Then('some traefik configuration has been created')]
     public function someTraefikConfigurationHasBeenCreated(): void
     {
@@ -3822,6 +3942,11 @@ EOF;
         );
 
         $expected = $this->loadExpectedComposeArtifacts();
+
+        if (!empty(getenv('DUMP_COMPOSE'))) {
+            $this->dumpComposeArtifacts($expected['dir'], 'expose');
+            $expected = $this->loadExpectedComposeArtifacts();
+        }
 
         //The expose playbook is compared after normalizing the per-run working directory (uniqid) baked into
         //its "src" path; the vars block (paas_certs) and tasks are golden.

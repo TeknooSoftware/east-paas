@@ -46,8 +46,9 @@ use Throwable;
  * Scheduled jobs (`Planning::Scheduled`) are skipped: they are re-dispatched platform-side by the East PaaS
  * worker (`symfony/scheduler`) rather than emitted into the Compose file. Each job pod becomes one or more
  * services (anchor + sidecars) with `restart: "no"`, the `jobs` profile and the job's run settings
- * (parallelism, completions, success/failure exit codes, time limit) recorded under `x-paas-job` for the
- * playbook to honour.
+ * (parallelism, completions, success/failure exit codes, time limit) recorded under `x-paas-job`; the
+ * Accumulator expands them into the sequential runs (one per completion, with the time limit and the
+ * accepted exit codes) the playbook executes. `parallel` is not supported: runs are always sequential.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -96,6 +97,8 @@ class JobTranscriber implements DeploymentInterface
         string $namespace,
     ): TranscriberInterface {
         $networkName = $accumulator->getNetworkName();
+        $secrets = self::collectSecrets($compiledDeployment);
+        $maps = self::collectMaps($compiledDeployment);
 
         $compiledDeployment->foreachJob(
             /**
@@ -111,6 +114,8 @@ class JobTranscriber implements DeploymentInterface
                 $accumulator,
                 $promise,
                 $networkName,
+                $secrets,
+                $maps,
             ): void {
                 if (Planning::DuringDeployment !== $job->getPlanning()) {
                     return;
@@ -118,6 +123,7 @@ class JobTranscriber implements DeploymentInterface
 
                 $prefixer = self::createPrefixer($prefix);
                 $jobMeta = self::jobMeta($job);
+                $jobPrefix = (string) $prefixer($job->getName()) . '-';
 
                 try {
                     $emitted = [];
@@ -132,10 +138,13 @@ class JobTranscriber implements DeploymentInterface
                             networkName: $networkName,
                             accumulator: $accumulator,
                             deploymentVolumes: $volumes,
+                            secrets: $secrets,
+                            maps: $maps,
+                            envFilePrefix: $jobPrefix,
                         );
 
                         foreach ($services as $serviceName => $serviceSpec) {
-                            $jobServiceName = (string) $prefixer($job->getName()) . '-' . $serviceName;
+                            $jobServiceName = $jobPrefix . $serviceName;
 
                             $serviceSpec['profiles'] = [self::PROFILE];
                             $serviceSpec['restart'] = 'no';

@@ -62,6 +62,8 @@ class DeploymentTranscriber implements DeploymentInterface
         string $namespace,
     ): TranscriberInterface {
         $networkName = $accumulator->getNetworkName();
+        $secrets = self::collectSecrets($compiledDeployment);
+        $maps = self::collectMaps($compiledDeployment);
 
         $compiledDeployment->foreachPod(
             /**
@@ -77,6 +79,8 @@ class DeploymentTranscriber implements DeploymentInterface
                 $accumulator,
                 $promise,
                 $networkName,
+                $secrets,
+                $maps,
             ): void {
                 $prefixer = self::createPrefixer($prefix);
 
@@ -89,6 +93,8 @@ class DeploymentTranscriber implements DeploymentInterface
                         networkName: $networkName,
                         accumulator: $accumulator,
                         deploymentVolumes: $volumes,
+                        secrets: $secrets,
+                        maps: $maps,
                     );
 
                     foreach ($services as $serviceName => $serviceSpec) {

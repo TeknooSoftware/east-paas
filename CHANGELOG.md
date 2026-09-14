@@ -1,5 +1,51 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta13] - 2026-09-14
+### Beta Release
+Docker Compose driver: make a real `docker compose` / Traefik v3 / Ansible run work (the generation was only
+checked against golden files).
+
+- Compose file
+  - `deploy.resources` now uses the Compose keys and units (`cpus: 0.5`, `memory: 64M`), Compose refused the
+    Kubernetes ones (`cpu: 500m`, `memory: 64Mi`).
+  - Secrets and maps are emitted one Compose `secrets:` / `configs:` entry per key, and their volumes are
+    mounted as `<mount-path>/<key>` like Kubernetes (they were mounted as a single `key=value` file under
+    `/run/secrets/`).
+  - Variables read from secrets / maps (`from-secrets`, `import-secrets`, `from-maps`, `import-maps`) were
+    dropped: they are resolved into a per-container `env_file` (`secrets/<pod>-<container>.env`, mode 0600).
+    A non-`map` secret provider fails the deployment, a missing key gives an empty variable.
+  - Each PaaS service name is a DNS alias of its pod's Compose service. UDP services publish `/udp` ports. A
+    service on a replicated pod does not publish host ports (a warning is stored in the job History instead
+    of failing `docker compose up`). `deploy.replicas` is only set on the pod's anchor service.
+  - The dedicated network is named `<project>-private` and is no longer `internal: true` by default (pods had
+    no egress): new parameter `teknoo.east.paas.docker-compose.network.internal` (default `false`).
+  - Healthchecks get a `timeout: 5s`.
+- Traefik
+  - Backends target the pod's Compose service and container port through `<pod>.<project>-private` (they
+    targeted the PaaS service name and listen port, unresolvable under Compose).
+  - Router / service / serversTransport names are prefixed by the project name (Traefik rejects duplicated
+    names between the files of its watched directory).
+  - The `serversTransport` used for HTTPS backends with `insecure_skip_verify` is now generated.
+  - `tls.certificates` use the certificates directory as seen by Traefik: new parameter
+    `teknoo.east.paas.docker-compose.traefik.certs_mount_dir` (default `traefik.certs_dir`).
+- Ansible
+  - `resetOnDeployment` volumes: `docker compose down` before `docker volume rm` (a used volume cannot be
+    removed); the `community.docker` collection and the Python Docker SDK are no longer needed.
+  - Jobs honour `completions` (one sequential run each), `time-limit` (`timeout`) and the success exit codes.
+  - The parent directories of the pushed files are created (`copy` does not create them).
+  - The run is non-interactive: no colors, strict host key checking against a `known_hosts` built from
+    `ClusterCredentials::getCaCertificate()` when provided, disabled otherwise (Ansible prompted and hung).
+  - The per-run working directory (secrets, TLS keys, inventory) is removed from the worker after the run.
+- API: `Accumulator` gains `addNetworkAlias()`, `addTraefikServersTransport()`, `addWarning()` /
+  `getWarnings()`, `getJobsToRun()` returns structured runs; `RunnerFactory`'s runner builder receives the
+  `known_hosts` path as fifth argument; `SymfonyProcessRunner` accepts `knownHostsFile`; unused
+  `CommonTrait::cleanResult()` removed.
+- Documentation of the driver and of the Traefik ingress aligned with the implementation (no
+  `NetworkTranscriber`, host ports instead of Traefik TCP/UDP routers, registry login and certs bind-mount
+  prerequisites, unused credentials fields).
+- Tests: `compose.yaml` is validated with `docker compose config` when Docker is available, the golden files
+  can be regenerated with `DUMP_COMPOSE=1`, unit tests cover the whole `DockerCompose` infrastructure.
+
 ## [5.7.0-beta12] - 2026-09-14
 ### Beta Release
 - Fix "Nesting level too deep" when saving a `Job`: the mongodb extension 2.x refuses BSON documents nested deeper

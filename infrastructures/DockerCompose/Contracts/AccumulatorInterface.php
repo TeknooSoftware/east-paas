@@ -34,8 +34,8 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
  * full Compose Specification file, the Traefik dynamic configuration, the files to push to the host and
  * the per-ingress TLS certificates, before the driver serializes them and runs the Ansible playbooks.
  *
- * Services reach each other on a per-project, dedicated, internal Docker network whose full name
- * (`<project>_<network>`) is exposed by getNetworkName() and pinned in the Compose file with an explicit
+ * Services reach each other on a per-project, dedicated Docker network whose full name
+ * (`<project>-<network>`) is exposed by getNetworkName() and pinned in the Compose file with an explicit
  * `name:`. The deploy playbook connects Traefik to that same name returned by getNetworkName().
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -51,7 +51,7 @@ interface AccumulatorInterface
     public function getProjectName(): string;
 
     /**
-     * Full, project-qualified name of the dedicated network (`<project>_<network>`), used both as the
+     * Full, project-qualified name of the dedicated network (`<project>-<network>`), used both as the
      * Compose network key/`name:` and as the name every service attaches to.
      */
     public function getNetworkName(): string;
@@ -67,6 +67,13 @@ interface AccumulatorInterface
      * @param array<int, string> $ports
      */
     public function publishPorts(string $name, array $ports): AccumulatorInterface;
+
+    /**
+     * Declare an extra DNS alias, on the dedicated network, for an already declared service (the PaaS
+     * service names pointing to a pod). Ignored when the service is unknown or shares another service's
+     * network namespace.
+     */
+    public function addNetworkAlias(string $name, string $alias): AccumulatorInterface;
 
     /**
      * @param array<string, mixed> $spec
@@ -89,11 +96,34 @@ interface AccumulatorInterface
      */
     public function addTraefikService(string $kind, string $name, array $spec): AccumulatorInterface;
 
+    /**
+     * Declare a Traefik HTTP `serversTransport` (e.g. to skip the TLS verification of an HTTPS backend).
+     *
+     * @param array<string, mixed> $spec
+     */
+    public function addTraefikServersTransport(string $name, array $spec): AccumulatorInterface;
+
+    /**
+     * Register a TLS cert/key pair (paths relative to the working directory, as added with addFile()). The
+     * files are pushed under their base name into the Traefik certificates directory and referenced from
+     * the dynamic configuration by their path as seen by Traefik.
+     */
     public function addTlsCertificate(string $certFile, string $keyFile): AccumulatorInterface;
 
     public function setCertResolver(string $name): AccumulatorInterface;
 
     public function addFile(string $relativePath, string $content): AccumulatorInterface;
+
+    /**
+     * Record a non-fatal warning (a PaaS feature only partially supported on a Docker Compose host); the
+     * driver reports them in the stage result stored in the job History.
+     */
+    public function addWarning(string $message): AccumulatorInterface;
+
+    /**
+     * @return array<int, string>
+     */
+    public function getWarnings(): array;
 
     /**
      * @return array<string, mixed>
@@ -135,10 +165,11 @@ interface AccumulatorInterface
     public function getResetVolumes(): array;
 
     /**
-     * Names of the Compose services guarding during-deployment jobs (the `jobs` profile), to be run once by
-     * the deploy playbook with `docker compose --profile jobs run --rm <svc>`.
+     * Runs of the Compose services guarding during-deployment jobs (the `jobs` profile), to be executed
+     * sequentially by the deploy playbook with `docker compose --profile jobs run --rm <svc>`: one entry per
+     * completion, with the time limit (seconds, 0 = none) and the accepted exit codes.
      *
-     * @return array<int, string>
+     * @return array<int, array{service: string, run: int, completions: int, timeout: int, ok_codes: array<int, int>}>
      */
     public function getJobsToRun(): array;
 }

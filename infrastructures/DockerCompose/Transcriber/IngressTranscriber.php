@@ -27,7 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Ingress;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\IngressPath;
-use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Expose\Service;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
@@ -39,16 +39,7 @@ use Throwable;
 use function array_merge;
 use function array_unique;
 use function array_values;
-use function base64_decode;
 use function implode;
-use function is_array;
-use function is_scalar;
-use function is_string;
-use function str_starts_with;
-use function strlen;
-use function substr;
-
-use const PHP_EOL;
 
 /**
  * "Exposing transcriber" translating CompiledDeployment's ingresses to a Traefik v3 dynamic configuration
@@ -69,8 +60,7 @@ use const PHP_EOL;
 class IngressTranscriber implements ExposingInterface
 {
     use CommonTrait;
-
-    private const string BASE64_PREFIX = 'base64:';
+    use ValuesCollectorTrait;
 
     private const string TLS_CERT_KEY = 'tls.crt';
 
@@ -90,49 +80,44 @@ class IngressTranscriber implements ExposingInterface
     ) {
     }
 
-    private static function decode(mixed $value): string
-    {
-        if (is_string($value) && str_starts_with($value, self::BASE64_PREFIX)) {
-            return (string) base64_decode(substr($value, strlen(self::BASE64_PREFIX)), true);
-        }
-
-        if (is_scalar($value)) {
-            return (string) $value;
-        }
-
-        return '';
-    }
-
     /**
-     * Pre-scan the deployment's `map`-provider secrets so the per-ingress TLS lookup can materialise the
-     * cert/key files from the secret referenced by `tls.secret`.
+     * Pre-scan the deployment's services to resolve each PaaS service name to the Compose service (pod)
+     * backing it and its listen => target ports map.
      *
-     * @return array<string, array<string, string>> secret name => decoded option key => value
+     * @return array<string, array{pod: string, ports: array<int, int>}> raw service name => target
      */
-    private static function collectSecrets(CompiledDeploymentInterface $compiledDeployment): array
+    private static function collectServices(CompiledDeploymentInterface $compiledDeployment): array
     {
-        $secrets = [];
+        $services = [];
 
-        $compiledDeployment->foreachSecret(
-            static function (Secret $secret, string $prefix) use (&$secrets): void {
-                if ('map' !== $secret->getProvider()) {
-                    return;
-                }
-
-                $options = [];
-                foreach ($secret->getOptions() as $key => $value) {
-                    if (is_array($value)) {
-                        $value = implode(PHP_EOL, $value);
-                    }
-
-                    $options[(string) $key] = self::decode($value);
-                }
-
-                $secrets[$secret->getName()] = $options;
+        $compiledDeployment->foreachService(
+            static function (Service $service, string $prefix) use (&$services): void {
+                $services[$service->getName()] = [
+                    'pod' => $service->getPodName(),
+                    'ports' => $service->getPorts(),
+                ];
             }
         );
 
-        return $secrets;
+        return $services;
+    }
+
+    /**
+     * Resolve a PaaS service name/port to the Compose DNS host (`<pod>.<network>`) and container port. An
+     * unknown service (e.g. a platform-wide default service living outside the stack) is used as-is.
+     *
+     * @param array<string, array{pod: string, ports: array<int, int>}> $services
+     * @return array{0: string, 1: int}
+     */
+    private static function resolveTarget(array $services, string $serviceName, int $port, string $network): array
+    {
+        if (!isset($services[$serviceName])) {
+            return [$serviceName, $port];
+        }
+
+        $target = $services[$serviceName]['ports'][$port] ?? $port;
+
+        return [$services[$serviceName]['pod'] . '.' . $network, $target];
     }
 
     /**
@@ -168,6 +153,9 @@ class IngressTranscriber implements ExposingInterface
         string $namespace,
     ): TranscriberInterface {
         $secrets = self::collectSecrets($compiledDeployment);
+        $services = self::collectServices($compiledDeployment);
+        $projectName = $accumulator->getProjectName();
+        $network = $accumulator->getNetworkName();
 
         $webEntrypoint = $this->webEntrypoint;
         $secureEntrypoint = $this->secureEntrypoint;
@@ -185,6 +173,9 @@ class IngressTranscriber implements ExposingInterface
                 $accumulator,
                 $promise,
                 $secrets,
+                $services,
+                $projectName,
+                $network,
                 $webEntrypoint,
                 $secureEntrypoint,
                 $defaultCertResolver,
@@ -194,8 +185,8 @@ class IngressTranscriber implements ExposingInterface
                 $defaultMiddlewares,
             ): void {
                 try {
-                    $prefixer = self::createPrefixer($prefix);
-                    $baseName = self::sanitizeDns($prefixer($ingress->getName()));
+                    //Traefik names are project-scoped, the project name already carries the prefix.
+                    $baseName = self::sanitizeDns($projectName . '-' . $ingress->getName());
 
                     $hosts = self::collectHosts($ingress);
                     $hostRule = self::hostRule($hosts);
@@ -246,28 +237,42 @@ class IngressTranscriber implements ExposingInterface
                     $defaultServiceTraefikName = null;
                     if (!empty($ingress->getDefaultServiceName())) {
                         $defaultServiceTraefikName = $baseName . '-default';
+                        [$host, $port] = self::resolveTarget(
+                            $services,
+                            (string) $ingress->getDefaultServiceName(),
+                            (int) $ingress->getDefaultServicePort(),
+                            $network,
+                        );
 
                         $accumulator->addTraefikService(
                             'http',
                             $defaultServiceTraefikName,
                             self::buildService(
+                                accumulator: $accumulator,
                                 scheme: $scheme,
-                                host: $prefixer((string) $ingress->getDefaultServiceName()),
-                                port: (int) $ingress->getDefaultServicePort(),
+                                host: $host,
+                                port: $port,
                                 insecureSkipVerify: $ingress->isHttpsBackend()
                                     && $httpsBackendInsecureSkipVerify,
                             ),
                         );
                     } elseif (null !== $defaultServiceName && null !== $defaultServicePort) {
                         $defaultServiceTraefikName = $baseName . '-default';
+                        [$host, $port] = self::resolveTarget(
+                            $services,
+                            $defaultServiceName,
+                            $defaultServicePort,
+                            $network,
+                        );
 
                         $accumulator->addTraefikService(
                             'http',
                             $defaultServiceTraefikName,
                             self::buildService(
+                                accumulator: $accumulator,
                                 scheme: 'http',
-                                host: $prefixer($defaultServiceName),
-                                port: $defaultServicePort,
+                                host: $host,
+                                port: $port,
                                 insecureSkipVerify: false,
                             ),
                         );
@@ -300,14 +305,21 @@ class IngressTranscriber implements ExposingInterface
                             $baseName . '-' . $path->getServiceName() . '-' . $path->getServicePort(),
                         );
                         $pathServiceName = $pathRouterName;
+                        [$host, $port] = self::resolveTarget(
+                            $services,
+                            $path->getServiceName(),
+                            $path->getServicePort(),
+                            $network,
+                        );
 
                         $accumulator->addTraefikService(
                             'http',
                             $pathServiceName,
                             self::buildService(
+                                accumulator: $accumulator,
                                 scheme: $scheme,
-                                host: $prefixer($path->getServiceName()),
-                                port: $path->getServicePort(),
+                                host: $host,
+                                port: $port,
                                 insecureSkipVerify: $ingress->isHttpsBackend()
                                     && $httpsBackendInsecureSkipVerify,
                             ),
@@ -345,6 +357,7 @@ class IngressTranscriber implements ExposingInterface
      * @return array<string, mixed>
      */
     private static function buildService(
+        AccumulatorInterface $accumulator,
         string $scheme,
         string $host,
         int $port,
@@ -359,7 +372,9 @@ class IngressTranscriber implements ExposingInterface
         ];
 
         if ('https' === $scheme && $insecureSkipVerify) {
-            $service['loadBalancer']['serversTransport'] = $host . '-transport';
+            $transportName = self::sanitizeDns($host) . '-transport';
+            $accumulator->addTraefikServersTransport($transportName, ['insecureSkipVerify' => true]);
+            $service['loadBalancer']['serversTransport'] = $transportName;
         }
 
         return $service;
