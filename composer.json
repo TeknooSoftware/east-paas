@@ -34,7 +34,7 @@
         "php-di/php-di": "^7.1.1",
         "psr/http-client": "^1.0.3",
         "teknoo/immutable": "^3.0.22",
-        "teknoo/states": "^7.1.7",
+        "teknoo/states": "^7.1.10",
         "teknoo/recipe": "^7.2.2",
         "teknoo/east-foundation": "^9.2",
         "teknoo/east-common": "^4.5"
@@ -43,7 +43,7 @@
         "roave/security-advisories": "dev-latest",
         "phpunit/phpunit": "^13.0.1",
         "squizlabs/php_codesniffer": "^4.0.1",
-        "phpstan/phpstan": "^2.2.3",
+        "phpstan/phpstan": "^2.2.14",
         "phpstan/extension-installer": "^1.4.3",
         "symfony/property-access": "^6.4.24||^7.4||^8.1",
         "nikic/php-parser": "^5.7",

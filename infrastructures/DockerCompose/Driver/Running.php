@@ -371,6 +371,7 @@ class Running implements StateInterface
             $defaultsBag = $this->defaultsBag ?? new DefaultsBag();
 
             try {
+                /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>, mixed, mixed> $promise */
                 $promise = new Promise(
                     onSuccess: static function (): void {
                         //Per-resource success is accumulated in the Accumulator; nothing to do here.
@@ -388,9 +389,6 @@ class Running implements StateInterface
                         || ($runDeployment && $transcriber instanceof DeploymentInterface)
                         || ($runExposing && $transcriber instanceof ExposingInterface)
                     ) {
-                        /**
-                         * @var PromiseInterface<array<string, mixed>, mixed> $promise
-                         */
                         $transcriber->transcribe(
                             $compiledDeployment,
                             $accumulator,
