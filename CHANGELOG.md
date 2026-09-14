@@ -1,5 +1,12 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta12] - 2026-09-14
+### Beta Release
+- Fix "Nesting level too deep" when saving a `Job`: the mongodb extension 2.x refuses BSON documents nested deeper
+  than 100 levels, and the history chain (`History.previous`, one embedded level per entry) was kept at 150 entries.
+  The job history is now limited to `Job::HISTORY_LIMIT` (90) entries; existing longer histories are truncated on
+  their next update, no migration needed.
+
 ## [5.7.0-beta11] - 2026-09-12
 ### Beta Release
 - Add the PaaS configuration version `v1.2`, a superset of `v1.1`, with two shortcuts to expose pods:

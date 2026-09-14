@@ -108,6 +108,14 @@ class Job implements
     #[Normalize(['default', 'api'])]
     protected iterable $clusters = [];
 
+    /**
+     * The mongodb extension (2.x, BSON_MAX_NESTING_LEVEL) refuses to encode a BSON document nested deeper
+     * than 100 levels. Each History entry is one embedded document level ("previous" chain), on top of the
+     * update wrapper, the "history" field and the "extra" payload of the oldest entry, so the chain must
+     * stay well below that limit.
+     */
+    public const int HISTORY_LIMIT = 90;
+
     #[Normalize(['default', 'api'])]
     protected ?History $history = null;
 
@@ -240,7 +248,7 @@ class Job implements
 
     public function setHistory(?History $history): Job
     {
-        $this->history = $history->limit(150);
+        $this->history = $history?->limit(self::HISTORY_LIMIT);
 
         $this->updateStates();
 

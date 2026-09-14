@@ -118,6 +118,25 @@ class JobTest extends TestCase
         $this->assertEquals(new History(new History(null, 'foo', new DateTimeImmutable('2018-05-01'), false, ['bar' => 'foo']), 'foo2', new DateTimeImmutable('2018-05-01')), $rP->getValue($object));
     }
 
+    public function testSetHistoryLimitsTheChain(): void
+    {
+        $object = $this->buildObject();
+        $history = null;
+        for ($i = 0; $i < Job::HISTORY_LIMIT + 10; $i++) {
+            $history = new History($history, 'foo' . $i, new DateTimeImmutable('2018-05-01'), false, [], $i);
+        }
+
+        $this->assertInstanceOf($object::class, $object->setHistory($history));
+
+        $depth = 0;
+        for ($current = $object->getHistory(); null !== $current; $current = $current->getPrevious()) {
+            $depth++;
+        }
+
+        $this->assertEquals(Job::HISTORY_LIMIT, $depth);
+        $this->assertEquals('foo' . (Job::HISTORY_LIMIT + 9), $object->getHistory()->getMessage());
+    }
+
     public function testAddToHistoryExceptionOnBadArgument(): void
     {
         $this->expectException(Throwable::class);
