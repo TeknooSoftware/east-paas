@@ -46,6 +46,8 @@ interface RunJobInterface extends EditablePlanInterface
 
     final public const STEP_DESERIALIZE_JOB = 20;
 
+    final public const STEP_CHECK_TIMEOUTS = 25;
+
     //Prepare workspace
     final public const STEP_PREPARE_WORKSPACE = 30;
 
@@ -59,6 +61,8 @@ interface RunJobInterface extends EditablePlanInterface
     final public const STEP_READ_DEPLOYMENT_CONFIGURATION = 70;
 
     final public const STEP_COMPILE_DEPLOYMENT = 80;
+
+    final public const STEP_CHECK_HOOKS_TIMEOUTS = 85;
 
     //Configure Build Image
     final public const STEP_HOOK_PRE_BUILD_CONTAINER = 90;

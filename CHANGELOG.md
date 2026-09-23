@@ -1,5 +1,13 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta14] - 2026-09-23
+### Beta Release
+- `RunJob`: add a warning in the job's history when a timeout (git cloning, image building, Docker Compose,
+  Kubernetes or hooks) is bigger than `teknoo.east.paas.worker.time_limit`, the worker being stopped before.
+  - New steps `CheckTimeouts` and `CheckHooksTimeouts`.
+  - New `TimeoutAwareHookInterface::checkTimeLimit()`, implemented by `AbstractHook`.
+  - `CompiledDeploymentInterface::foreachHook()` passes now the hook's name to the callback.
+
 ## [5.7.0-beta13] - 2026-09-14
 ### Beta Release
 Docker Compose driver: make a real `docker compose` / Traefik v3 / Ansible run work (the generation was only

@@ -94,6 +94,9 @@ interface CompiledDeploymentInterface
      */
     public function addIngress(string $name, Ingress $ingress): CompiledDeploymentInterface;
 
+    /**
+     * The callback receives the hook instance and its name (`{build name}:{hook name}`)
+     */
     public function foreachHook(callable $callback): CompiledDeploymentInterface;
 
     public function foreachVolume(callable $callback): CompiledDeploymentInterface;

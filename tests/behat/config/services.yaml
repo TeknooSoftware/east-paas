@@ -21,6 +21,8 @@ parameters:
   teknoo.east.paas.symfony.history.prefer-real-date: false
   teknoo.east.paas.symfony.prepare-job.prefer-real-date: false
   teknoo.east.paas.worker.time_limit: 22
+  #Lower than the worker's time limit, to not add a timeout warning in all jobs' histories
+  teknoo.east.paas.img_builder.build.timeout: 20
 
 services:
   Doctrine\Persistence\ObjectRepository:

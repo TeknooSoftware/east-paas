@@ -254,8 +254,8 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
     public function foreachHook(callable $callback): CompiledDeploymentInterface
     {
-        foreach ($this->hooks as $hook) {
-            $callback($hook);
+        foreach ($this->hooks as $name => $hook) {
+            $callback($hook, (string) $name);
         }
 
         return $this;

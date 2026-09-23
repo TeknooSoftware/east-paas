@@ -28,8 +28,10 @@ namespace Teknoo\East\Paas\Infrastructures\ProjectBuilding;
 use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\InvalidArgumentException;
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\TimeoutTooBigException;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Hook\HookInterface;
+use Teknoo\East\Paas\Contracts\Hook\TimeoutAwareHookInterface;
 use Throwable;
 
 use function is_string;
@@ -49,7 +51,7 @@ use function trim;
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-abstract class AbstractHook implements HookInterface
+abstract class AbstractHook implements TimeoutAwareHookInterface
 {
     /**
      * @var string[]
@@ -84,6 +86,24 @@ abstract class AbstractHook implements HookInterface
         $this->command = $command;
         $this->timeout = $timeout;
         $this->factory = $factory;
+    }
+
+    public function checkTimeLimit(int $timeLimit, PromiseInterface $promise): TimeoutAwareHookInterface
+    {
+        if ($this->timeout > 0 && $timeLimit > 0 && $this->timeout > $timeLimit) {
+            $promise->fail(
+                new TimeoutTooBigException(
+                    "The timeout of this hook ({$this->timeout}s) is bigger than the worker time limit "
+                    . "({$timeLimit}s), the worker will be stopped before reaching this timeout",
+                ),
+            );
+
+            return $this;
+        }
+
+        $promise->success();
+
+        return $this;
     }
 
     public function setPath(string $path): HookInterface

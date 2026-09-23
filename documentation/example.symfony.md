@@ -118,6 +118,9 @@ Without Symfony Recipe
         'teknoo.east.paas.default_storage_provider' => ...,
     
         'teknoo.east.paas.worker.tmp_dir' => ...,
+        //Time limit of a worker, in seconds. A warning is added in the job's history when a process or a client
+        //timeout (git cloning, image building, Kubernetes, Docker Compose, hooks) is bigger than it
+        'teknoo.east.paas.worker.time_limit' => ...,
         'teknoo.east.paas.worker.global_variables' => [...],
     
         'teknoo.east.paas.composer.phar.path' => ...,

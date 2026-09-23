@@ -87,6 +87,7 @@ use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuilderInterface;
 use Teknoo\East\Paas\Contracts\Hook\HooksCollectionInterface;
+use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Recipe\Step\Worker\DispatchJobInterface;
 use Teknoo\East\Paas\Contracts\Serializing\DeserializerInterface;
 use Teknoo\East\Paas\Contracts\Serializing\NormalizerInterface;
@@ -105,6 +106,8 @@ use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
+use Teknoo\East\Paas\Recipe\Step\Worker\CheckHooksTimeouts;
+use Teknoo\East\Paas\Recipe\Step\Worker\CheckTimeouts;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
 use Teknoo\East\Paas\Recipe\Step\Worker\CompileDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent;
@@ -1284,5 +1287,101 @@ class ContainerTest extends TestCase
         $container->set(TimeoutServiceInterface::class, $this->createStub(TimeoutServiceInterface::class));
 
         $this->assertInstanceOf(UnsetTimeLimit::class, $container->get(UnsetTimeLimit::class));
+    }
+
+    public function testWorkerTimeLimit(): void
+    {
+        $container = $this->buildContainer();
+        $this->assertSame(300, ($container->get('teknoo.east.paas.di.worker.time_limit'))($container));
+
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.time_limit', '120');
+        $this->assertSame(120, ($container->get('teknoo.east.paas.di.worker.time_limit'))($container));
+    }
+
+    public function testCheckTimeoutsWithDefaultValues(): void
+    {
+        $container = $this->buildContainer();
+        $dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+        $dispatchHistory->expects($this->never())->method('__invoke');
+        $container->set(DispatchHistoryInterface::class, $dispatchHistory);
+
+        $step = $container->get(CheckTimeouts::class);
+        $this->assertInstanceOf(CheckTimeouts::class, $step);
+        $step('foo', 'bar', $this->createStub(JobUnitInterface::class));
+    }
+
+    public function testCheckTimeoutsWithDefaultImageBuilderTimeout(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.time_limit', 120);
+
+        $dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+        $dispatchHistory->expects($this->once())
+            ->method('__invoke')
+            ->with(
+                'foo',
+                'bar',
+                $this->anything(),
+                CheckTimeouts::class . ':Warning',
+                [
+                    'warnings' => [
+                        'The timeout `teknoo.east.paas.img_builder.build.timeout` (180s) is bigger than the worker '
+                        . 'time limit `teknoo.east.paas.worker.time_limit` (120s), the worker will be stopped '
+                        . 'before reaching this timeout',
+                    ],
+                ],
+            )
+            ->willReturnSelf();
+        $container->set(DispatchHistoryInterface::class, $dispatchHistory);
+
+        $step = $container->get(CheckTimeouts::class);
+        $this->assertInstanceOf(CheckTimeouts::class, $step);
+        $step('foo', 'bar', $this->createStub(JobUnitInterface::class));
+    }
+
+    public function testCheckTimeoutsWithConfiguredTimeouts(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.time_limit', 120);
+        $container->set('teknoo.east.paas.git.cloning.timeout', 150);
+        $container->set('teknoo.east.paas.img_builder.build.timeout', 60);
+        $container->set('teknoo.east.paas.docker-compose.timeout', 0);
+        $container->set('teknoo.east.paas.kubernetes.timeout', 130);
+
+        $dispatchHistory = $this->createMock(DispatchHistoryInterface::class);
+        $dispatchHistory->expects($this->once())
+            ->method('__invoke')
+            ->with(
+                'foo',
+                'bar',
+                $this->anything(),
+                CheckTimeouts::class . ':Warning',
+                [
+                    'warnings' => [
+                        'The timeout `teknoo.east.paas.git.cloning.timeout` (150s) is bigger than the worker '
+                        . 'time limit `teknoo.east.paas.worker.time_limit` (120s), the worker will be stopped '
+                        . 'before reaching this timeout',
+                        'The timeout `teknoo.east.paas.kubernetes.timeout` (130s) is bigger than the worker '
+                        . 'time limit `teknoo.east.paas.worker.time_limit` (120s), the worker will be stopped '
+                        . 'before reaching this timeout',
+                    ],
+                ],
+            )
+            ->willReturnSelf();
+        $container->set(DispatchHistoryInterface::class, $dispatchHistory);
+
+        $step = $container->get(CheckTimeouts::class);
+        $this->assertInstanceOf(CheckTimeouts::class, $step);
+        $step('foo', 'bar', $this->createStub(JobUnitInterface::class));
+    }
+
+    public function testCheckHooksTimeouts(): void
+    {
+        $container = $this->buildContainer();
+        $container->set(DispatchHistoryInterface::class, $this->createStub(DispatchHistoryInterface::class));
+        $container->set('teknoo.east.paas.worker.time_limit', 120);
+
+        $this->assertInstanceOf(CheckHooksTimeouts::class, $container->get(CheckHooksTimeouts::class));
     }
 }

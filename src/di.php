@@ -107,6 +107,8 @@ use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
+use Teknoo\East\Paas\Recipe\Step\Worker\CheckHooksTimeouts;
+use Teknoo\East\Paas\Recipe\Step\Worker\CheckTimeouts;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
 use Teknoo\East\Paas\Recipe\Step\Worker\CompileDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent;
@@ -185,6 +187,20 @@ return [
                 }
 
                 return $values;
+            }
+        };
+    },
+
+    'teknoo.east.paas.di.worker.time_limit' => static function (): object {
+        return new class () {
+            public function __invoke(ContainerInterface $container): int
+            {
+                $seconds = 5 * 60;
+                if ($container->has('teknoo.east.paas.worker.time_limit')) {
+                    $seconds = (int) $container->get('teknoo.east.paas.worker.time_limit');
+                }
+
+                return $seconds;
             }
         };
     },
@@ -498,14 +514,9 @@ return [
             DIGet(ErrorFactoryInterface::class),
         ),
     SetTimeLimit::class => static function (ContainerInterface $container): SetTimeLimit {
-        $seconds = 5 * 60;
-        if ($container->has('teknoo.east.paas.worker.time_limit')) {
-            $seconds = (int) $container->get('teknoo.east.paas.worker.time_limit');
-        }
-
         return new SetTimeLimit(
             $container->get(TimeoutServiceInterface::class),
-            $seconds,
+            ($container->get('teknoo.east.paas.di.worker.time_limit'))($container),
         );
     },
     UnsetTimeLimit::class => create()
@@ -545,6 +556,34 @@ return [
         ->constructor(
             DIGet(Directory::class),
         ),
+    CheckTimeouts::class => static function (ContainerInterface $container): CheckTimeouts {
+        //Timeouts of Symfony Process and clients used during a job, null or zero mean no timeout
+        $timeouts = [
+            'teknoo.east.paas.git.cloning.timeout' => null,
+            //Same default value as in the Image infrastructure
+            'teknoo.east.paas.img_builder.build.timeout' => (float) (3 * 60),
+            'teknoo.east.paas.docker-compose.timeout' => null,
+            'teknoo.east.paas.kubernetes.timeout' => null,
+        ];
+
+        foreach ($timeouts as $name => $timeout) {
+            if ($container->has($name)) {
+                $timeouts[$name] = (float) $container->get($name);
+            }
+        }
+
+        return new CheckTimeouts(
+            $container->get(DHI::class),
+            ($container->get('teknoo.east.paas.di.worker.time_limit'))($container),
+            $timeouts,
+        );
+    },
+    CheckHooksTimeouts::class => static function (ContainerInterface $container): CheckHooksTimeouts {
+        return new CheckHooksTimeouts(
+            $container->get(DHI::class),
+            ($container->get('teknoo.east.paas.di.worker.time_limit'))($container),
+        );
+    },
     Deploying::class => create()
         ->constructor(
             DIGet(DHI::class),
@@ -726,6 +765,8 @@ return [
             DIGet(DRI::class),
             DIGet(UnsetTimeLimit::class),
             DIGet(SendHistoryInterface::class),
+            DIGet(CheckTimeouts::class),
+            DIGet(CheckHooksTimeouts::class),
         ),
 
     RunJobInterface::class . ':proxy' => static function (ContainerInterface $container): RunJobInterface {

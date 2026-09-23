@@ -38,6 +38,8 @@ use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
+use Teknoo\East\Paas\Recipe\Step\Worker\CheckHooksTimeouts;
+use Teknoo\East\Paas\Recipe\Step\Worker\CheckTimeouts;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
 use Teknoo\East\Paas\Recipe\Step\Worker\CompileDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent;
@@ -49,6 +51,7 @@ use Teknoo\East\Paas\Recipe\Step\Worker\Exposing;
 use Teknoo\East\Paas\Recipe\Step\Worker\HookingDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\PrepareWorkspace;
 use Teknoo\East\Paas\Recipe\Step\Worker\ReadDeploymentConfiguration;
+use Teknoo\Recipe\ChefInterface;
 use Teknoo\Recipe\PlanInterface;
 use Teknoo\Recipe\RecipeInterface;
 use Teknoo\Tests\Recipe\Plan\BasePlanTestTrait;
@@ -62,10 +65,12 @@ class RunJobTest extends TestCase
 {
     use BasePlanTestTrait;
 
-    public function buildPlan(): PlanInterface
-    {
+    public function buildPlan(
+        ?RecipeInterface $recipe = null,
+        bool $withTimeoutsChecks = true,
+    ): PlanInterface {
         return new RunJob(
-            $this->createStub(RecipeInterface::class),
+            $recipe ?? $this->createStub(RecipeInterface::class),
             $this->createStub(DispatchHistoryInterface::class),
             $this->createStub(Ping::class),
             $this->createStub(SetTimeLimit::class),
@@ -87,6 +92,47 @@ class RunJobTest extends TestCase
             $this->createStub(DispatchResultInterface::class),
             $this->createStub(UnsetTimeLimit::class),
             $this->createStub(SendHistoryInterface::class),
+            $withTimeoutsChecks ? $this->createStub(CheckTimeouts::class) : null,
+            $withTimeoutsChecks ? $this->createStub(CheckHooksTimeouts::class) : null,
         );
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function listCookedSteps(bool $withTimeoutsChecks): array
+    {
+        $cooked = [];
+        $recipe = $this->createStub(RecipeInterface::class);
+        $recipe->method('require')->willReturnSelf();
+        $recipe->method('onError')->willReturnSelf();
+        $recipe->method('cook')->willReturnCallback(
+            function (mixed $action, string $name, array $with = [], ?int $position = null) use (&$cooked, $recipe) {
+                $cooked[(int) $position][] = $name;
+
+                return $recipe;
+            }
+        );
+
+        $this->buildPlan($recipe, $withTimeoutsChecks)->train($this->createStub(ChefInterface::class));
+
+        return $cooked;
+    }
+
+    public function testTimeoutsChecksAreCooked(): void
+    {
+        $cooked = $this->listCookedSteps(true);
+
+        $this->assertSame([CheckTimeouts::class], $cooked[RunJob::STEP_CHECK_TIMEOUTS] ?? []);
+        $this->assertSame([CheckHooksTimeouts::class], $cooked[RunJob::STEP_CHECK_HOOKS_TIMEOUTS] ?? []);
+    }
+
+    public function testTimeoutsChecksAreOptionals(): void
+    {
+        $cooked = $this->listCookedSteps(false);
+
+        $this->assertNotEmpty($cooked[RunJob::STEP_DESERIALIZE_JOB] ?? []);
+        $this->assertArrayNotHasKey(RunJob::STEP_CHECK_TIMEOUTS, $cooked);
+        $this->assertArrayNotHasKey(RunJob::STEP_CHECK_HOOKS_TIMEOUTS, $cooked);
     }
 }

@@ -37,6 +37,8 @@ use Teknoo\East\Paas\Recipe\Step\Misc\SetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Misc\UnsetTimeLimit;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildImages;
 use Teknoo\East\Paas\Recipe\Step\Worker\BuildVolumes;
+use Teknoo\East\Paas\Recipe\Step\Worker\CheckHooksTimeouts;
+use Teknoo\East\Paas\Recipe\Step\Worker\CheckTimeouts;
 use Teknoo\East\Paas\Recipe\Step\Worker\CloneRepository;
 use Teknoo\East\Paas\Recipe\Step\Worker\CompileDeployment;
 use Teknoo\East\Paas\Recipe\Step\Worker\ConfigureCloningAgent;
@@ -89,6 +91,8 @@ class RunJob implements RunJobInterface
         private readonly DispatchResultInterface $stepDispatchResult,
         private readonly UnsetTimeLimit $stepUnsetTimeLimit,
         private readonly SendHistoryInterface $stepSendHistoryInterface,
+        private readonly ?CheckTimeouts $stepCheckTimeouts = null,
+        private readonly ?CheckHooksTimeouts $stepCheckHooksTimeouts = null,
     ) {
         $this->fill($recipe);
     }
@@ -129,6 +133,15 @@ class RunJob implements RunJobInterface
             [],
             RunJobInterface::STEP_DESERIALIZE_JOB,
         );
+
+        if (null !== $this->stepCheckTimeouts) {
+            $recipe = $recipe->cook(
+                $this->stepCheckTimeouts,
+                CheckTimeouts::class,
+                [],
+                RunJobInterface::STEP_CHECK_TIMEOUTS,
+            );
+        }
 
         //Prepare workspace
         $recipe = $recipe->cook(
@@ -209,6 +222,15 @@ class RunJob implements RunJobInterface
             [],
             RunJobInterface::STEP_COMPILE_DEPLOYMENT,
         );
+
+        if (null !== $this->stepCheckHooksTimeouts) {
+            $recipe = $recipe->cook(
+                $this->stepCheckHooksTimeouts,
+                CheckHooksTimeouts::class,
+                [],
+                RunJobInterface::STEP_CHECK_HOOKS_TIMEOUTS,
+            );
+        }
 
         //Configure Build Image
         $recipe = $recipe->cook(

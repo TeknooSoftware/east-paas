@@ -437,14 +437,17 @@ class CompiledDeploymentTest extends TestCase
             $this->createStub(HookInterface::class)
         );
 
-        $count = 0;
-        $this->assertInstanceOf(CompiledDeployment::class, $cd->foreachHook(function ($hook) use (&$count): void {
-            $this->assertInstanceOf(HookInterface::class, $hook);
+        $names = [];
+        $this->assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachHook(function ($hook, $name) use (&$names): void {
+                $this->assertInstanceOf(HookInterface::class, $hook);
 
-            ++$count;
-        }));
+                $names[] = $name;
+            })
+        );
 
-        $this->assertEquals(2, $count);
+        $this->assertEquals(['foo1', 'foo2'], $names);
     }
 
     public function testForeachVolumeBadCallback(): void

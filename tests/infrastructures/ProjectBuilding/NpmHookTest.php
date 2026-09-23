@@ -33,6 +33,8 @@ use Teknoo\East\Paas\Infrastructures\ProjectBuilding\AbstractHook;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Contracts\ProcessFactoryInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Infrastructures\ProjectBuilding\NpmHook;
+use Teknoo\East\Paas\Contracts\Hook\TimeoutAwareHookInterface;
+use Teknoo\East\Paas\Infrastructures\ProjectBuilding\Exception\TimeoutTooBigException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 
@@ -81,6 +83,37 @@ class NpmHookTest extends TestCase
                     return $process;
                 }
             },
+        );
+    }
+
+    public function testCheckTimeLimitWithTimeoutLowerOrEqual(): void
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->exactly(3))->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $hook = $this->buildHook();
+        $this->assertInstanceOf(TimeoutAwareHookInterface::class, $hook->checkTimeLimit(10, $promise));
+        $this->assertInstanceOf(TimeoutAwareHookInterface::class, $hook->checkTimeLimit(60, $promise));
+        $this->assertInstanceOf(TimeoutAwareHookInterface::class, $hook->checkTimeLimit(0, $promise));
+    }
+
+    public function testCheckTimeLimitWithTimeoutBigger(): void
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())
+            ->method('fail')
+            ->with(
+                new TimeoutTooBigException(
+                    'The timeout of this hook (10s) is bigger than the worker time limit (5s), the worker will be '
+                    . 'stopped before reaching this timeout',
+                ),
+            );
+
+        $this->assertInstanceOf(
+            TimeoutAwareHookInterface::class,
+            $this->buildHook()->checkTimeLimit(5, $promise),
         );
     }
 
