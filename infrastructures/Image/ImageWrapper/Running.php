@@ -223,6 +223,8 @@ class Running implements StateInterface
             }
 
             if (null !== $error) {
+                //The promise may have already been called by a previous successful build
+                $promise->reset();
                 $promise->fail(new RuntimeException($error));
             }
         };

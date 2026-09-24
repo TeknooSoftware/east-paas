@@ -41,11 +41,13 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Generator;
 use Teknoo\East\Paas\Infrastructures\Image\ImageWrapper\Running;
+use Teknoo\Recipe\Promise\Promise;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Object\XRegistryAuth;
+use Throwable;
 use TypeError;
 
 use function set_time_limit;
@@ -260,6 +262,67 @@ class ImageWrapperTest extends TestCase
         ));
     }
 
+    public function testBuildImagesWithErrorAfterASuccess(): void
+    {
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachBuildable')
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
+                $image1 = new Image('foo', '/foo', true, '7.4', ['foo' => 'bar']);
+                $image2 = new Image('bar', '/bar', true, '7.4', []);
+
+                $callback($image1);
+                $callback($image2);
+                return $cd;
+            });
+
+        $cd->expects($this->exactly(2))
+            ->method('updateBuildable')
+            ->willReturnSelf();
+
+        $p1 = $this->createMock(Process::class);
+        $p1->expects($this->once())->method('isSuccessful')->willReturn(true);
+        $p1->expects($this->once())->method('getOutput')->willReturn('foo');
+
+        $p2 = $this->createMock(Process::class);
+        $p2->expects($this->once())->method('isSuccessful')->willReturn(false);
+        $p2->expects($this->once())->method('getErrorOutput')->willReturn('bar');
+
+        $this->getProcessFactoryMock()
+            ->expects($this->exactly(2))
+            ->method('__invoke')
+            ->willReturnOnConsecutiveCalls($p1, $p2);
+
+        $outputs = [];
+        $error = null;
+        $promise = new Promise(
+            onSuccess: function (string $output) use (&$outputs): void {
+                $outputs[] = $output;
+            },
+            onFail: function (Throwable $throwable) use (&$error): void {
+                $error = $throwable;
+            },
+        );
+
+        $builder = $this->buildWrapper();
+
+        $this->assertInstanceOf(ImageWrapper::class, $builder = $builder->configure(
+            'bar',
+            'repository.teknoo.run',
+            new XRegistryAuth('foo', 'bar', '', '', '')
+        ));
+
+        $this->assertInstanceOf(ImageWrapper::class, $builder->buildImages(
+            $cd,
+            'foo',
+            $promise
+        ));
+
+        $this->assertSame(['foo'], $outputs);
+        $this->assertInstanceOf(RuntimeException::class, $error);
+        $this->assertSame('bar', $error->getMessage());
+    }
+
     public function testBuildImages(): void
     {
         $cd = $this->createMock(CompiledDeploymentInterface::class);
@@ -461,6 +524,67 @@ class ImageWrapperTest extends TestCase
             'foo',
             $promise
         ));
+    }
+
+    public function testBuildVolumesWithErrorAfterASuccess(): void
+    {
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachVolume')
+            ->willReturnCallback(function (callable $callback) use ($cd): MockObject|Stub {
+                $volume1 = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+                $volume2 = new Volume('bar1', ['bar' => 'foo/bar'], '/bar', '/mount');
+
+                $callback('foo', $volume1);
+                $callback('bar', $volume2);
+                return $cd;
+            });
+
+        $cd->expects($this->exactly(2))
+            ->method('addVolume')
+            ->willReturnSelf();
+
+        $p1 = $this->createMock(Process::class);
+        $p1->expects($this->once())->method('isSuccessful')->willReturn(true);
+        $p1->expects($this->once())->method('getOutput')->willReturn('foo');
+
+        $p2 = $this->createMock(Process::class);
+        $p2->expects($this->once())->method('isSuccessful')->willReturn(false);
+        $p2->expects($this->once())->method('getErrorOutput')->willReturn('bar');
+
+        $this->getProcessFactoryMock()
+            ->expects($this->exactly(2))
+            ->method('__invoke')
+            ->willReturnOnConsecutiveCalls($p1, $p2);
+
+        $outputs = [];
+        $error = null;
+        $promise = new Promise(
+            onSuccess: function (string $output) use (&$outputs): void {
+                $outputs[] = $output;
+            },
+            onFail: function (Throwable $throwable) use (&$error): void {
+                $error = $throwable;
+            },
+        );
+
+        $builder = $this->buildWrapper();
+
+        $this->assertInstanceOf(ImageWrapper::class, $builder = $builder->configure(
+            'bar',
+            'repository.teknoo.run',
+            new XRegistryAuth('foo', 'bar', '', '', '')
+        ));
+
+        $this->assertInstanceOf(ImageWrapper::class, $builder->buildVolumes(
+            $cd,
+            'foo',
+            $promise
+        ));
+
+        $this->assertSame(['foo'], $outputs);
+        $this->assertInstanceOf(RuntimeException::class, $error);
+        $this->assertSame('bar', $error->getMessage());
     }
 
     public function testBuildVolumes(): void

@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0-beta15] - 2026-09-24
+### Beta Release
+- `ImageWrapper`: when an image or a volume failed to build after another one had succeeded, its error output was
+  lost and the job ended with an empty result (an `AlreadyCalledPromiseException` without message). The promise is
+  now reset before failing.
+
 ## [5.7.0-beta14] - 2026-09-23
 ### Beta Release
 - `RunJob`: add a warning in the job's history when a timeout (git cloning, image building, Docker Compose,
