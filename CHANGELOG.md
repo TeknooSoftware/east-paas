@@ -1,5 +1,76 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.0] - 2026-09-25
+### Stable Release
+- Add the PaaS configuration version `v1.2`, a superset of `v1.1`, and the new default version when `paas.version` is
+  not defined in the `.paas.yaml` file, with two shortcuts to expose pods:
+  - `services` in a container (`pods.<pod>.containers.<container>.services`), a list of services (only `internal`,
+    `protocol`, `ports`, `ingress` and `enhancements` are allowed). The `PodCompiler` completes the `listen` list of
+    the container with ports' targets and forwards the services to the `ServiceCompiler`, with a generated name
+    (`{pod}-{container}`, then `{pod}-{container}-2`, ...) and the `pod` option set.
+  - `ingress` in a service (in the top-level `services` map or in a container's `services` list), an ingress
+    definition without `service` (the enclosing service is used, on the optional `port` or its first listened port),
+    forwarded by the `ServiceCompiler` to the `IngressCompiler` with the service's name.
+  - A `v1.1` file with explicit `services` and `ingresses` produces the same compiled deployment than a `v1.2` file
+    using these shortcuts.
+  - `ingress` is now a reserved key in the `.paas.yaml` file (like `services` or `ingresses`), whatever the version.
+  - `CompiledDeployment::addService()` and `addIngress()` throw now an `AlreadyDefinedException` (HTTP 400) when a
+    service or an ingress with the same name is already defined, instead of silently overriding it.
+  - `PodCompiler` accepts a `ServiceCompiler` and `ServiceCompiler` accepts an `IngressCompiler` as optional
+    constructor argument, `PodCompiler::processSetOfPods()` requires now the `JobWorkspaceInterface` instance.
+- Add a `docker-compose` cluster driver to deploy a `CompiledDeployment` to a plain `Docker` host as a
+  `Compose Specification` stack, instead of `Kubernetes`.
+  - Registered under cluster `type: docker-compose`; SSH credentials taken from the cluster `identity`. The cluster's
+    address must begin by `https:` only for `Kubernetes` clusters.
+  - Connects to the remote host over `SSH` and applies the deployment via `Ansible` playbooks (one per stage). The
+    run is non-interactive, with a strict host key checking against a `known_hosts` built from
+    `ClusterCredentials::getCaCertificate()` when provided (disabled otherwise). The per-run working directory
+    (secrets, TLS keys, inventory) is removed from the worker after the run. Neither the `community.docker`
+    collection nor the Python Docker SDK are needed.
+  - Compose file:
+    - `deploy.resources` uses the Compose keys and units (`cpus: 0.5`, `memory: 64M`).
+    - Secrets and maps are emitted one Compose `secrets:` / `configs:` entry per key, their volumes are mounted as
+      `<mount-path>/<key>` like on Kubernetes.
+    - Variables read from secrets / maps (`from-secrets`, `import-secrets`, `from-maps`, `import-maps`) are resolved
+      into a per-container `env_file` (`secrets/<pod>-<container>.env`, mode 0600). A non-`map` secret provider
+      fails the deployment, a missing key gives an empty variable.
+    - Each PaaS service name is a DNS alias of its pod's Compose service. UDP services publish `/udp` ports. A
+      service on a replicated pod does not publish host ports (a warning is stored in the job's history).
+      `deploy.replicas` is only set on the pod's anchor service.
+    - Pods are attached to a dedicated network `<project>-private`, not `internal` by default.
+    - Healthchecks get a `timeout: 5s`.
+  - Jobs honour `completions` (one sequential run each), `time-limit` (`timeout`) and the success exit codes.
+  - `resetOnDeployment` volumes are removed after a `docker compose down`.
+  - Exposes HTTP(S) services through `Traefik v3` using a watched dynamic-configuration directory and a
+    connect-per-project network model (other services use host ports):
+    - Backends target the pod's Compose service and container port through `<pod>.<project>-private`.
+    - Router / service / serversTransport names are prefixed by the project name.
+    - A `serversTransport` is generated for HTTPS backends with `insecure_skip_verify`.
+  - New DI parameters under `teknoo.east.paas.docker-compose.*` (ansible binary, timeout, deploy root, network
+    driver, `network.internal` (default `false`), Traefik container/dirs/entrypoints/certresolver,
+    `traefik.certs_mount_dir` (default `traefik.certs_dir`), https backend verify), all optional with defaults.
+  - See `documentation/docker-compose.deployment.md` and `documentation/traefik.ingress.md` (with the registry
+    login and certificates bind-mount prerequisites).
+  - Tests: `compose.yaml` is validated with `docker compose config` when Docker is available, the golden files can
+    be regenerated with `DUMP_COMPOSE=1`.
+  *(This feature has been written assisted by Local AI and Claude)*
+- Add the `disable-user-isolation` key in `defaults` (default `0`) to disable the host users isolation
+  (`hostUsers: false`, on Kubernetes 1.36+).
+- `RunJob`: add a warning in the job's history when a timeout (git cloning, image building, Docker Compose,
+  Kubernetes or hooks) is bigger than `teknoo.east.paas.worker.time_limit`, the worker being stopped before.
+  - New steps `CheckTimeouts` and `CheckHooksTimeouts`.
+  - New `TimeoutAwareHookInterface::checkTimeLimit()`, implemented by `AbstractHook`.
+  - `CompiledDeploymentInterface::foreachHook()` passes now the hook's name to the callback.
+- Fix "Nesting level too deep" when saving a `Job`: the mongodb extension 2.x refuses BSON documents nested deeper
+  than 100 levels. The job history is now limited to `Job::HISTORY_LIMIT` (90) entries; existing longer histories
+  are truncated on their next update, no migration needed.
+- `ImageWrapper`: when an image or a volume failed to build after another one had succeeded, its error output was
+  lost and the job ended with an empty result. The promise is now reset before failing.
+- Fix documentation examples: `paas.resources` was never accepted by the validator, it is `paas.quotas` (with
+  `requires` instead of `require`).
+- Require `phpseclib/phpseclib` v4.
+- Improve logs.
+
 ## [5.7.0-beta15] - 2026-09-24
 ### Beta Release
 - `ImageWrapper`: when an image or a volume failed to build after another one had succeeded, its error output was
