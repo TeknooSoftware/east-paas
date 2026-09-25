@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Symfony\Form\Type;
 
+use Stringable;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -154,6 +155,12 @@ class ClusterType extends AbstractType
                         if (empty($value) && !is_bool($value)) {
                             $options['constraints'][] = new Blank();
                         } else {
+                            if ($value instanceof Stringable) {
+                                //An object loaded from the database is never `==` to the one rebuilt from the form
+                                //(id, state of its constructor): the lock compares their string representation
+                                $value = (string) $value;
+                            }
+
                             $options['constraints'][] = new EqualTo($value);
                         }
                     }

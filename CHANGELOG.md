@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.1] - 2026-09-25
+### Stable Release
+- Fix `ClusterType`: a locked cluster could not be saved, its environment and identity loaded from the database were
+  never `==` to the ones rebuilt from the form. The lock compares now their string representation.
+
 ## [5.7.0] - 2026-09-25
 ### Stable Release
 - Add the PaaS configuration version `v1.2`, a superset of `v1.1`, and the new default version when `paas.version` is

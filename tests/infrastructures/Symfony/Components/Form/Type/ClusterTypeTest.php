@@ -38,6 +38,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\ResolvedFormTypeInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\EqualTo;
 use Teknoo\East\Paas\Infrastructures\Symfony\Form\Type\ClusterType;
 use Teknoo\East\Paas\Object\Environment;
 use Teknoo\East\Paas\Object\Cluster;
@@ -226,6 +227,45 @@ class ClusterTypeTest extends TestCase
             'allowEditingOfLocked' => false,
         ]);
         $this->assertTrue(true);
+    }
+
+    public function testLockComparesAStringableValueByItsStringRepresentation(): void
+    {
+        $constraints = [];
+        $builder = $this->createStub(FormBuilderInterface::class);
+        $builder
+            ->method('addEventListener')
+            ->willReturnCallback(function (string $name, callable $callable) use ($builder, &$constraints) {
+                $config = $this->createStub(FormConfigInterface::class);
+                $config->method('getType')->willReturn($this->createStub(ResolvedFormTypeInterface::class));
+
+                $child = $this->createStub(Form::class);
+                $child->method('getConfig')->willReturn($config);
+                $child->method('getName')->willReturn('environment');
+                $child->method('getData')->willReturn(new Environment('prod'));
+
+                $form = $this->createStub(Form::class);
+                $form->method('getIterator')->willReturn(new ArrayIterator([$child]));
+                $form->method('add')->willReturnCallback(
+                    function (string $child, string $type, array $options) use ($form, &$constraints) {
+                        $constraints = $options['constraints'];
+
+                        return $form;
+                    }
+                );
+
+                $object = $this->getObject();
+                $object->setLocked(true);
+                $callable(new FormEvent($form, $object));
+
+                return $builder;
+            });
+
+        $this->buildForm()->buildForm($builder, ['allowEditingOfLocked' => false]);
+
+        $this->assertCount(1, $constraints);
+        $this->assertInstanceOf(EqualTo::class, $constraints[0]);
+        $this->assertSame('prod', $constraints[0]->value);
     }
 
     public function testNoSetAsReadOnlyForLockedWithAllowing(): void
