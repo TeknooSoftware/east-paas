@@ -25,21 +25,25 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
+use League\Flysystem\Config;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Visibility;
 use SensitiveParameter;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\BadTempFileException;
 use Teknoo\East\Paas\Object\ClusterCredentials;
+use Throwable;
 
+use function bin2hex;
 use function count;
 use function explode;
 use function implode;
 use function parse_url;
 use function preg_split;
+use function random_bytes;
 use function str_starts_with;
 use function trim;
-use function uniqid;
 
 use const PHP_EOL;
 use const PHP_URL_HOST;
@@ -56,8 +60,15 @@ use const PHP_URL_USER;
  * Ansible requires) and resolves the SSH login user from `ClusterCredentials::getUsername()`, falling back
  * to the user embedded in the `cluster.address` (`ssh://user@host:port`). When
  * `ClusterCredentials::getCaCertificate()` carries the host's SSH public key(s), a `known_hosts` file is
- * materialized too so the runner can enforce a strict host key checking. Materialized files are removed in
- * `__destruct()`.
+ * materialized too so the runner can enforce a strict host key checking.
+ *
+ * These files are written into a new private directory (mode `0700`), with an unpredictable name, dedicated to the
+ * runner: the LocalFilesystemAdapter applies the visibility of a file after having written it, the directory
+ * prevents others users of the worker to read it meanwhile.
+ *
+ * The factory is a shared service living as long as the worker: this directory is not kept by it but owned by the
+ * returned runner, an `EphemeralCredentialsRunner`, which removes it as soon as the playbook has run (or on its
+ * destruction if it is never run). The directory is removed when the runner can not be built.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -67,14 +78,9 @@ use const PHP_URL_USER;
 final class RunnerFactory implements RunnerFactoryInterface
 {
     /**
-     * @var string[]
-     */
-    private array $files = [];
-
-    /**
      * @var callable(): string
      */
-    private $keyFileNameFactory;
+    private $directoryNameFactory;
 
     /**
      * @var callable(string, ?float, ?string, ?string, ?string): RunnerInterface
@@ -89,21 +95,22 @@ final class RunnerFactory implements RunnerFactoryInterface
      * @param (callable(string, ?float, ?string, ?string, ?string): RunnerInterface)|null $runnerBuilder
      *        builder of the concrete `RunnerInterface` (defaults to `SymfonyProcessRunner`; DI may inject
      *        another builder instead)
-     * @param (callable(): string)|null $keyFileNameFactory overridable generator of the relative key file
-     *        name (defaults to a `uniqid`-suffixed name)
+     * @param (callable(): string)|null $directoryNameFactory overridable generator of the name of the private
+     *        directory, relative to the workspace filesystem, holding the credentials files of a runner (defaults to
+     *        a random name, it must be unpredictable)
      */
     public function __construct(
         private readonly FilesystemOperator $filesystem,
         private readonly string $tmpDir,
         private readonly string $playbookBinary = 'ansible-playbook',
         private readonly ?float $timeout = null,
-        ?callable $keyFileNameFactory = null,
+        ?callable $directoryNameFactory = null,
         ?callable $runnerBuilder = null,
     ) {
-        if (null !== $keyFileNameFactory) {
-            $this->keyFileNameFactory = $keyFileNameFactory;
+        if (null !== $directoryNameFactory) {
+            $this->directoryNameFactory = $directoryNameFactory;
         } else {
-            $this->keyFileNameFactory = static fn (): string => 'east-paas-ansible-' . uniqid('', true);
+            $this->directoryNameFactory = static fn (): string => 'east-paas-ansible-' . bin2hex(random_bytes(16));
         }
 
         if (null !== $runnerBuilder) {
@@ -132,31 +139,50 @@ final class RunnerFactory implements RunnerFactoryInterface
         $privateKeyFile = null;
         $knownHostsFile = null;
         $sshUser = null;
+        $directory = null;
 
-        if (null !== $credentials) {
-            if (!empty($content = $credentials->getUsername())) {
-                $sshUser = $content;
+        try {
+            if (null !== $credentials) {
+                if (!empty($content = $credentials->getUsername())) {
+                    $sshUser = $content;
+                }
+
+                if (!empty($content = $credentials->getClientKey())) {
+                    $privateKeyFile = $this->write($directory, 'id_key', $content);
+                }
+
+                if (!empty($content = $credentials->getCaCertificate())) {
+                    $knownHostsFile = $this->write($directory, 'known_hosts', $this->buildKnownHosts($url, $content));
+                }
             }
 
-            if (!empty($content = $credentials->getClientKey())) {
-                $privateKeyFile = $this->write($content);
+            if (null === $sshUser) {
+                $sshUser = $this->extractUserFromUrl($url);
             }
 
-            if (!empty($content = $credentials->getCaCertificate())) {
-                $knownHostsFile = $this->write($this->buildKnownHosts($url, $content));
+            $runner = ($this->runnerBuilder)(
+                $this->playbookBinary,
+                $this->timeout,
+                $sshUser,
+                $privateKeyFile,
+                $knownHostsFile,
+            );
+        } catch (Throwable $error) {
+            if (null !== $directory) {
+                $this->filesystem->deleteDirectory($directory);
             }
+
+            throw $error;
         }
 
-        if (null === $sshUser) {
-            $sshUser = $this->extractUserFromUrl($url);
+        if (null === $directory) {
+            return $runner;
         }
 
-        return ($this->runnerBuilder)(
-            $this->playbookBinary,
-            $this->timeout,
-            $sshUser,
-            $privateKeyFile,
-            $knownHostsFile,
+        return new EphemeralCredentialsRunner(
+            runner: $runner,
+            filesystem: $this->filesystem,
+            directory: $directory,
         );
     }
 
@@ -216,34 +242,41 @@ final class RunnerFactory implements RunnerFactoryInterface
         return null;
     }
 
-    private function write(#[SensitiveParameter] string $value): string
+    /**
+     * Create a new private directory to hold the credentials files of a runner. An existing directory is never
+     * reused: it could have been created by someone else.
+     */
+    private function createDirectory(): string
     {
-        $fileName = ($this->keyFileNameFactory)();
+        $directory = ($this->directoryNameFactory)();
 
-        $this->filesystem->write(
-            $fileName,
-            trim($value) . PHP_EOL,
-            ['visibility' => Visibility::PRIVATE],
-        );
-
-        $this->files[] = $fileName;
-
-        return $this->tmpDir . '/' . $fileName;
-    }
-
-    private function delete(): void
-    {
-        foreach ($this->files as $file) {
-            if ($this->filesystem->fileExists($file)) {
-                $this->filesystem->delete($file);
-            }
+        if ('' === $directory || $this->filesystem->directoryExists($directory)) {
+            throw new BadTempFileException('Unable to create a new private directory for the credentials files');
         }
 
-        $this->files = [];
+        $this->filesystem->createDirectory(
+            $directory,
+            [Config::OPTION_DIRECTORY_VISIBILITY => Visibility::PRIVATE],
+        );
+
+        return $directory;
     }
 
-    public function __destruct()
+    /**
+     * @param string|null $directory private directory of the runner, created at the first file written
+     * @param-out string $directory
+     */
+    private function write(?string &$directory, string $fileName, #[SensitiveParameter] string $value): string
     {
-        $this->delete();
+        $directory ??= $this->createDirectory();
+        $path = $directory . '/' . $fileName;
+
+        $this->filesystem->write(
+            $path,
+            trim($value) . PHP_EOL,
+            [Config::OPTION_VISIBILITY => Visibility::PRIVATE],
+        );
+
+        return $this->tmpDir . '/' . $path;
     }
 }

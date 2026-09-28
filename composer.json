@@ -34,8 +34,8 @@
         "php-di/php-di": "^7.1.1",
         "psr/http-client": "^1.0.3",
         "teknoo/immutable": "^3.0.22",
-        "teknoo/states": "^7.1.10",
-        "teknoo/recipe": "^7.2.2",
+        "teknoo/states": "^7.1.11",
+        "teknoo/recipe": "^7.3",
         "teknoo/east-foundation": "^9.2.3",
         "teknoo/east-common": "^4.5"
     },
@@ -97,7 +97,7 @@
         "symfony/var-exporter": "^6.4.24||^7.4||^8.1",
         "symfony/yaml": "^6.4.24||^7.4||^8.1",
         "teknoo/bridge-phpdi-symfony": "^7.1.2",
-        "teknoo/kubernetes-client": "^2.0.3",
+        "teknoo/kubernetes-client": "^2.1",
         "league/flysystem-memory": "^3.31"
     },
     "suggest": {

@@ -25,17 +25,16 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Exception;
 
-use RuntimeException;
-
 /**
- * Thrown by the Kubernetes `Factory` when it is unable to create a new private directory to materialize the cluster's
- * credentials (certificates and client key).
+ * Thrown by the Kubernetes `Factory` when the token of a cluster designates a file of the worker, while the DI
+ * parameter `teknoo.east.paas.kubernetes.token.allow_file` does not allow it: the Kubernetes client would read this
+ * file and send its content as bearer token to the cluster's address.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
-class BadTempFileException extends RuntimeException
+class TokenFileNotAllowedException extends InvalidArgumentException
 {
 }

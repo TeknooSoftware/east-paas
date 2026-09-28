@@ -241,6 +241,53 @@ class DriverTest extends TestCase
         $driver->deploy($cd, $promise);
     }
 
+    public function testDeployRemovesTheWorkingDirectoryWhenTheRunnerCanNotBeBuilt(): void
+    {
+        $transcribers = $this->createStub(TranscriberCollectionInterface::class);
+        $transcribers->method('getIterator')->willReturnCallback(
+            function (): Traversable {
+                yield from [];
+            }
+        );
+
+        $runnerFactory = $this->createStub(RunnerFactoryInterface::class);
+        $runnerFactory->method('__invoke')->willThrowException(new RuntimeException('boom'));
+
+        //The working directory (secrets, TLS keys, inventory) is already written when the runner is requested
+        $workspaceFilesystem = $this->createMock(FilesystemOperator::class);
+        $workspaceFilesystem->expects($this->atLeastOnce())->method('write');
+        $workspaceFilesystem->expects($this->once())
+            ->method('deleteDirectory')
+            ->with($this->matchesRegularExpression('#^run-#'));
+
+        $cd = $this->createStub(CompiledDeploymentInterface::class);
+        $cd->method('withJobSettings')->willReturnCallback(
+            function (callable $callback) use ($cd): CompiledDeploymentInterface {
+                $callback(1.0, 'prefix', 'my-project');
+
+                return $cd;
+            }
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail');
+
+        $driver = $this->buildDriver(
+            runnerFactory: $runnerFactory,
+            transcribers: $transcribers,
+            workspaceFilesystem: $workspaceFilesystem,
+        )->configure(
+            'ssh://host',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'default',
+            false,
+        );
+
+        $driver->deploy($cd, $promise);
+    }
+
     public function testExposeIteratesExposingTranscribersOnly(): void
     {
         $generic = $this->createMock(GenericTranscriberInterface::class);

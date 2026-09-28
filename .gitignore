@@ -24,3 +24,4 @@ composer.lock
 /tests/var/keys/rsa.private.pem
 /tests/var/keys/rsa.public.pem
 /.plan/
+/graphify-out/

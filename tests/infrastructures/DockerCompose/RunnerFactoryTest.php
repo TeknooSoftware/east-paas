@@ -29,11 +29,17 @@ use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Visibility;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\RunnerInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\EphemeralCredentialsRunner;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\BadTempFileException;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\RunnerFactory;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\SymfonyProcessRunner;
 use Teknoo\East\Paas\Object\ClusterCredentials;
+use Teknoo\Recipe\Promise\PromiseInterface;
 
+use function basename;
+use function dirname;
 use function str_starts_with;
 
 /**
@@ -47,7 +53,7 @@ class RunnerFactoryTest extends TestCase
 
     private function buildFactory(
         ?callable $runnerBuilder = null,
-        ?callable $keyFileNameFactory = null,
+        ?callable $directoryNameFactory = null,
         string $playbookBinary = 'ansible-playbook',
         ?float $timeout = null,
         ?FilesystemOperator $filesystem = null,
@@ -57,7 +63,7 @@ class RunnerFactoryTest extends TestCase
             tmpDir: $this->tmpDir,
             playbookBinary: $playbookBinary,
             timeout: $timeout,
-            keyFileNameFactory: $keyFileNameFactory,
+            directoryNameFactory: $directoryNameFactory,
             runnerBuilder: $runnerBuilder,
         );
     }
@@ -73,6 +79,33 @@ class RunnerFactoryTest extends TestCase
         unset($factory);
     }
 
+    public function testInvokeWithoutMaterializedFileReturnsTheBuiltRunner(): void
+    {
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->expects($this->never())->method('createDirectory');
+        $filesystem->expects($this->never())->method('write');
+
+        $built = $this->createStub(RunnerInterface::class);
+        $factory = $this->buildFactory(
+            runnerBuilder: static fn (): RunnerInterface => $built,
+            filesystem: $filesystem,
+        );
+
+        self::assertSame($built, $factory('ssh://host:22', new ClusterCredentials(username: 'deployer')));
+    }
+
+    public function testInvokeWithMaterializedFileReturnsAnEphemeralCredentialsRunner(): void
+    {
+        $factory = $this->buildFactory(
+            runnerBuilder: fn (): RunnerInterface => $this->createStub(RunnerInterface::class),
+        );
+
+        self::assertInstanceOf(
+            EphemeralCredentialsRunner::class,
+            $factory('ssh://host:22', new ClusterCredentials(clientKey: 'KEY')),
+        );
+    }
+
     public function testInvokeWritesPrivateKeyWithPrivateVisibilityAndResolvesUser(): void
     {
         $capturedUser = null;
@@ -80,13 +113,24 @@ class RunnerFactoryTest extends TestCase
         $capturedBinary = null;
         $capturedTimeout = null;
 
-        //The 0600 mode is the LocalFilesystemAdapter's mapping of PRIVATE visibility (out of unit scope);
-        //here we assert the documented contract: the key is written with PRIVATE visibility.
+        //The 0700 / 0600 modes are the LocalFilesystemAdapter's mapping of PRIVATE visibility (out of unit scope);
+        //here we assert the documented contract: the key is written with PRIVATE visibility into a new PRIVATE
+        //directory.
         $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->expects($this->once())
+            ->method('directoryExists')
+            ->with($this->matchesRegularExpression('#^east-paas-ansible-[0-9a-f]{32}$#'))
+            ->willReturn(false);
+        $filesystem->expects($this->once())
+            ->method('createDirectory')
+            ->with(
+                $this->matchesRegularExpression('#^east-paas-ansible-[0-9a-f]{32}$#'),
+                ['directory_visibility' => Visibility::PRIVATE],
+            );
         $filesystem->expects($this->once())
             ->method('write')
             ->with(
-                $this->anything(),
+                $this->matchesRegularExpression('#^east-paas-ansible-[0-9a-f]{32}/id_key$#'),
                 'PRIVATE-KEY-CONTENT' . \PHP_EOL,
                 ['visibility' => Visibility::PRIVATE],
             );
@@ -127,7 +171,10 @@ class RunnerFactoryTest extends TestCase
         self::assertSame(120.0, $capturedTimeout);
         self::assertSame('deployer', $capturedUser);
         self::assertNotNull($capturedKeyFile);
-        self::assertTrue(str_starts_with($capturedKeyFile, $this->tmpDir . '/'));
+        self::assertMatchesRegularExpression(
+            '#^' . $this->tmpDir . '/east-paas-ansible-[0-9a-f]{32}/id_key$#',
+            $capturedKeyFile,
+        );
 
         unset($factory);
     }
@@ -180,26 +227,46 @@ class RunnerFactoryTest extends TestCase
         unset($factory);
     }
 
-    public function testCustomKeyFileNameFactoryIsUsedAndCleanedUp(): void
+    public function testCustomDirectoryNameFactoryIsUsedAndRemovedOnceRun(): void
     {
         $capturedKeyFile = null;
+        $deleted = [];
 
-        //The key is written under the custom name, then removed on __destruct (fileExists + delete).
+        //The key is written in the custom directory, removed as soon as the runner has run, while the factory, a
+        //shared service, is still alive.
         $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->expects($this->once())
+            ->method('directoryExists')
+            ->with('my-dir')
+            ->willReturn(false);
+        $filesystem->expects($this->once())
+            ->method('createDirectory')
+            ->with('my-dir', ['directory_visibility' => Visibility::PRIVATE]);
         $filesystem->expects($this->once())
             ->method('write')
             ->with(
-                'my-key-file',
+                'my-dir/id_key',
                 'KEY' . \PHP_EOL,
                 ['visibility' => Visibility::PRIVATE],
             );
         $filesystem->expects($this->once())
-            ->method('fileExists')
-            ->with('my-key-file')
-            ->willReturn(true);
-        $filesystem->expects($this->once())
-            ->method('delete')
-            ->with('my-key-file');
+            ->method('deleteDirectory')
+            ->willReturnCallback(
+                function (string $path) use (&$deleted): void {
+                    $deleted[] = $path;
+                }
+            );
+
+        $inner = $this->createMock(RunnerInterface::class);
+        $inner->expects($this->once())
+            ->method('run')
+            ->willReturnCallback(
+                function () use (&$deleted, $inner): RunnerInterface {
+                    self::assertSame([], $deleted);
+
+                    return $inner;
+                }
+            );
 
         $factory = $this->buildFactory(
             runnerBuilder: function (
@@ -207,20 +274,130 @@ class RunnerFactoryTest extends TestCase
                 ?float $timeout,
                 ?string $sshUser,
                 ?string $privateKeyFile,
-            ) use (&$capturedKeyFile): RunnerInterface {
+            ) use (
+                &$capturedKeyFile,
+                $inner,
+            ): RunnerInterface {
                 $capturedKeyFile = $privateKeyFile;
 
-                return $this->createStub(RunnerInterface::class);
+                return $inner;
             },
-            keyFileNameFactory: static fn (): string => 'my-key-file',
+            directoryNameFactory: static fn (): string => 'my-dir',
             filesystem: $filesystem,
         );
 
+        $runner = $factory('ssh://host:22', new ClusterCredentials(clientKey: 'KEY'));
+
+        self::assertSame($this->tmpDir . '/my-dir/id_key', $capturedKeyFile);
+        self::assertSame([], $deleted);
+
+        $runner->run(
+            playbookPath: '/work/deploy.yml',
+            inventoryPath: '/work/inventory.ini',
+            extraVars: [],
+            credentials: null,
+            promise: $this->createStub(PromiseInterface::class),
+        );
+
+        self::assertSame(['my-dir'], $deleted);
+
+        //Nothing left to remove, neither by the runner nor by the factory
+        unset($runner, $factory);
+        self::assertSame(['my-dir'], $deleted);
+    }
+
+    public function testInvokeRefusesAnExistingDirectory(): void
+    {
+        //An existing directory could have been created by someone else: it is never reused, nor removed
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->expects($this->once())
+            ->method('directoryExists')
+            ->with('my-dir')
+            ->willReturn(true);
+        $filesystem->expects($this->never())->method('createDirectory');
+        $filesystem->expects($this->never())->method('write');
+        $filesystem->expects($this->never())->method('deleteDirectory');
+
+        $factory = $this->buildFactory(
+            runnerBuilder: fn (): RunnerInterface => $this->createStub(RunnerInterface::class),
+            directoryNameFactory: static fn (): string => 'my-dir',
+            filesystem: $filesystem,
+        );
+
+        $this->expectException(BadTempFileException::class);
+
         $factory('ssh://host:22', new ClusterCredentials(clientKey: 'KEY'));
+    }
 
-        self::assertSame($this->tmpDir . '/my-key-file', $capturedKeyFile);
+    public function testInvokeRefusesAnEmptyDirectoryName(): void
+    {
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->expects($this->never())->method('createDirectory');
+        $filesystem->expects($this->never())->method('write');
 
-        unset($factory);
+        $factory = $this->buildFactory(
+            runnerBuilder: fn (): RunnerInterface => $this->createStub(RunnerInterface::class),
+            directoryNameFactory: static fn (): string => '',
+            filesystem: $filesystem,
+        );
+
+        $this->expectException(BadTempFileException::class);
+
+        $factory('ssh://host:22', new ClusterCredentials(clientKey: 'KEY'));
+    }
+
+    public function testInvokeRemovesTheDirectoryWhenTheRunnerCanNotBeBuilt(): void
+    {
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->expects($this->once())->method('createDirectory');
+        $filesystem->expects($this->once())->method('write');
+        $filesystem->expects($this->once())
+            ->method('deleteDirectory')
+            ->with('my-dir');
+
+        $factory = $this->buildFactory(
+            runnerBuilder: static fn (): RunnerInterface => throw new RuntimeException('foo'),
+            directoryNameFactory: static fn (): string => 'my-dir',
+            filesystem: $filesystem,
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('foo');
+
+        $factory('ssh://host:22', new ClusterCredentials(clientKey: 'KEY'));
+    }
+
+    public function testInvokeRemovesTheDirectoryWhenAWriteFails(): void
+    {
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        //Both files share the same directory, created once
+        $filesystem->expects($this->once())->method('createDirectory')->with('my-dir');
+        $filesystem->expects($this->exactly(2))
+            ->method('write')
+            ->willReturnCallback(
+                function (string $path): void {
+                    if ('my-dir/known_hosts' === $path) {
+                        throw new RuntimeException('Unable to write');
+                    }
+                }
+            );
+        $filesystem->expects($this->once())
+            ->method('deleteDirectory')
+            ->with('my-dir');
+
+        $factory = $this->buildFactory(
+            runnerBuilder: fn (): RunnerInterface => $this->createStub(RunnerInterface::class),
+            directoryNameFactory: static fn (): string => 'my-dir',
+            filesystem: $filesystem,
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unable to write');
+
+        $factory(
+            'ssh://host:22',
+            new ClusterCredentials(caCertificate: 'ssh-rsa AAAAB3', clientKey: 'KEY'),
+        );
     }
 
     public function testInvokeMaterializesKnownHostsFromCaCertificate(): void
@@ -260,6 +437,10 @@ class RunnerFactoryTest extends TestCase
 
         self::assertNotNull($capturedKnownHosts);
         self::assertTrue(str_starts_with($capturedKnownHosts, $this->tmpDir . '/'));
+        //The key and the known_hosts file share the private directory of the runner
+        self::assertSame(dirname($writes[0][0]), dirname($writes[1][0]));
+        self::assertSame('known_hosts', basename($writes[1][0]));
+        self::assertSame($this->tmpDir . '/' . $writes[1][0], $capturedKnownHosts);
         //Second write is the known_hosts file: a bare public key is bound to the address host (non-default
         //port form), a full known_hosts line is kept as-is, blank/comment lines are dropped.
         self::assertSame(

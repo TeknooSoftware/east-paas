@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 
 use Closure;
 use SensitiveParameter;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ScopedClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DriverAwareInterface;
 use Teknoo\Kubernetes\Client as KubernetesClient;
 use Teknoo\Recipe\Promise\Promise;
@@ -74,6 +75,10 @@ class Running implements StateInterface
     }
 
     /**
+     * When the client factory is a `ScopedClientFactoryInterface`, a new client is lent for the stage and its
+     * credentials files are removed as soon as the stage is over. Otherwise, the client is built once and kept by
+     * the driver.
+     *
      * @param \Teknoo\Recipe\Promise\PromiseInterface<mixed, mixed> $mainPromise
      */
     private function runTranscriber(): Closure
@@ -84,8 +89,6 @@ class Running implements StateInterface
             bool $runDeployment,
             bool $runExposing
         ): void {
-            $client = $this->getClient();
-
             try {
                 $promise = new Promise(
                     onSuccess: $mainPromise->allowReuse()->success(...),
@@ -96,28 +99,45 @@ class Running implements StateInterface
                 );
                 $promise->allowReuse();
 
-                foreach ($this->transcribers as $transcriber) {
-                    if ($transcriber instanceof DriverAwareInterface) {
-                        $transcriber = $transcriber->setDriver($this);
-                    }
+                $transcribe = function (KubernetesClient $client) use (
+                    $compiledDeployment,
+                    $promise,
+                    $runDeployment,
+                    $runExposing,
+                ): void {
+                    foreach ($this->transcribers as $transcriber) {
+                        if ($transcriber instanceof DriverAwareInterface) {
+                            $transcriber = $transcriber->setDriver($this);
+                        }
 
-                    if (
-                        ($runDeployment && $transcriber instanceof GenericTranscriberInterface)
-                        || ($runDeployment && $transcriber instanceof DeploymentInterface)
-                        || ($runExposing && $transcriber instanceof ExposingInterface)
-                    ) {
-                        /**
-                         * @var PromiseInterface<array<string, mixed>, mixed> $promise
-                         */
-                        $transcriber->transcribe(
-                            $compiledDeployment,
-                            $client,
-                            $promise,
-                            $this->defaultsBag,
-                            (string) $this->namespace,
-                            !empty($this->useHierarchicalNamespaces),
-                        );
+                        if (
+                            ($runDeployment && $transcriber instanceof GenericTranscriberInterface)
+                            || ($runDeployment && $transcriber instanceof DeploymentInterface)
+                            || ($runExposing && $transcriber instanceof ExposingInterface)
+                        ) {
+                            /**
+                             * @var PromiseInterface<array<string, mixed>, mixed> $promise
+                             */
+                            $transcriber->transcribe(
+                                $compiledDeployment,
+                                $client,
+                                $promise,
+                                $this->defaultsBag,
+                                (string) $this->namespace,
+                                !empty($this->useHierarchicalNamespaces),
+                            );
+                        }
                     }
+                };
+
+                if ($this->clientFactory instanceof ScopedClientFactoryInterface) {
+                    $this->clientFactory->withClient(
+                        (string) $this->master,
+                        $this->credentials,
+                        $transcribe,
+                    );
+                } else {
+                    $transcribe($this->getClient());
                 }
             } catch (Throwable $error) {
                 $mainPromise->fail($error);

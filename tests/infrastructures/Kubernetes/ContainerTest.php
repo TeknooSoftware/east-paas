@@ -30,6 +30,8 @@ use DI\Container;
 use DI\ContainerBuilder;
 use DomainException;
 use Exception;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use ReflectionProperty;
 use stdClass;
 use Teknoo\East\Foundation\Time\SleepServiceInterface;
@@ -42,6 +44,7 @@ use Psr\Http\Client\ClientInterface;
 use Teknoo\East\Paas\Cluster\Directory;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Driver;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\TokenFileNotAllowedException;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
@@ -92,6 +95,45 @@ class ContainerTest extends TestCase
         ));
 
         unset($factory);
+    }
+
+    public function testClientFactoryInterfaceRefusesATokenDesignatingAFileByDefault(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', \sys_get_temp_dir());
+
+        $factory = $container->get(ClientFactoryInterface::class);
+        $tokenFile = 'east-paas-test-token-' . \bin2hex(\random_bytes(8));
+        $tempFilesystem = new Filesystem(new LocalFilesystemAdapter(\sys_get_temp_dir()));
+        $tempFilesystem->write($tokenFile, 'token');
+
+        try {
+            $this->expectException(TokenFileNotAllowedException::class);
+            $factory('foo', new ClusterCredentials(token: \sys_get_temp_dir() . '/' . $tokenFile));
+        } finally {
+            $tempFilesystem->delete($tokenFile);
+        }
+    }
+
+    public function testClientFactoryInterfaceAcceptsATokenDesignatingAFileWhenAllowed(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', \sys_get_temp_dir());
+        $container->set('teknoo.east.paas.kubernetes.token.allow_file', true);
+
+        $factory = $container->get(ClientFactoryInterface::class);
+        $tokenFile = 'east-paas-test-token-' . \bin2hex(\random_bytes(8));
+        $tempFilesystem = new Filesystem(new LocalFilesystemAdapter(\sys_get_temp_dir()));
+        $tempFilesystem->write($tokenFile, 'token');
+
+        try {
+            $this->assertInstanceOf(
+                KubClient::class,
+                $factory('foo', new ClusterCredentials(token: \sys_get_temp_dir() . '/' . $tokenFile)),
+            );
+        } finally {
+            $tempFilesystem->delete($tokenFile);
+        }
     }
 
     public function testClientFactoryInterfaceWithClient(): void

@@ -83,6 +83,10 @@ class Driver implements DriverInterface, AutomatedInterface
 
     private ?DefaultsBag $defaultsBag = null;
 
+    /**
+     * Client kept for the job only when the client factory is not a `ScopedClientFactoryInterface`, otherwise a new
+     * client is lent for each stage.
+     */
     private ?KubernetesClient $client = null;
 
     private ?string $namespace = null;

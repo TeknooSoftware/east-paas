@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Contracts\Object\IdentityInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ScopedClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\ExposingInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\Transcriber\TranscriberCollectionInterface;
@@ -372,5 +373,122 @@ class DriverTest extends TestCase
             $cd,
             $promise
         ));
+    }
+
+    public function testDeployAndExposeWithScopedFactoryLendANewClientForEachStage(): void
+    {
+        $lentClients = [];
+        $usedClients = [];
+
+        $factory = $this->createMock(ScopedClientFactoryInterface::class);
+        $factory->expects($this->never())->method('__invoke');
+        $factory->expects($this->exactly(2))
+            ->method('withClient')
+            ->willReturnCallback(
+                function (
+                    string $master,
+                    ?ClusterCredentials $credentials,
+                    callable $callback,
+                ) use (
+                    $factory,
+                    &$lentClients,
+                ): ScopedClientFactoryInterface {
+                    $this->assertSame('foo', $master);
+
+                    $callback($lentClients[] = $this->createStub(KubernetesClient::class));
+
+                    return $factory;
+                }
+            );
+        $this->clientFactory = $factory;
+
+        $c1 = $this->createMock(DeploymentInterface::class);
+        $c1->expects($this->once())->method('transcribe')->willReturnCallback(
+            function (CompiledDeploymentInterface $compiledDeployment, KubernetesClient $client) use (&$usedClients, $c1) {
+                $usedClients[] = $client;
+
+                return $c1;
+            }
+        );
+        $c2 = $this->createMock(ExposingInterface::class);
+        $c2->expects($this->once())->method('transcribe')->willReturnCallback(
+            function (CompiledDeploymentInterface $compiledDeployment, KubernetesClient $client) use (&$usedClients, $c2) {
+                $usedClients[] = $client;
+
+                return $c2;
+            }
+        );
+
+        $this->getTranscriberCollection(true)
+            ->method('getIterator')
+            ->willReturnCallback(function () use ($c1, $c2): \Traversable {
+                yield from [$c1, $c2];
+            });
+
+        $client = new Driver($factory, $this->getTranscriberCollection(true))->configure(
+            'foo',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'namespace',
+            false,
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('fail');
+
+        $cd = $this->createStub(CompiledDeploymentInterface::class);
+
+        $this->assertInstanceOf(Driver::class, $client->deploy($cd, $promise));
+        $this->assertInstanceOf(Driver::class, $client->expose($cd, $promise));
+
+        //Each stage uses the client lent for it, never the one of the previous stage
+        $this->assertCount(2, $lentClients);
+        $this->assertNotSame($lentClients[0], $lentClients[1]);
+        $this->assertSame($lentClients, $usedClients);
+    }
+
+    public function testDeployWithScopedFactoryFailingFailsThePromise(): void
+    {
+        $factory = $this->createStub(ScopedClientFactoryInterface::class);
+        $factory->method('withClient')->willThrowException(new RuntimeException('foo'));
+
+        $client = new Driver($factory, $this->getTranscriberCollection(true))->configure(
+            'foo',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'namespace',
+            false,
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('fail');
+
+        $this->assertInstanceOf(
+            Driver::class,
+            $client->deploy($this->createStub(CompiledDeploymentInterface::class), $promise),
+        );
+    }
+
+    public function testDeployWithFactoryFailingFailsThePromise(): void
+    {
+        $this->getClientFactory(true)
+            ->method('__invoke')
+            ->willThrowException(new RuntimeException('foo'));
+
+        $client = $this->buildClient()->configure(
+            'foo',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'namespace',
+            false,
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('fail');
+
+        $this->assertInstanceOf(
+            Driver::class,
+            $client->deploy($this->createStub(CompiledDeploymentInterface::class), $promise),
+        );
     }
 }

@@ -26,6 +26,8 @@ declare(strict_types=1);
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes;
 
 use DomainException;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Container\ContainerInterface;
 use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\Cluster\Directory;
@@ -78,7 +80,21 @@ return [
             $timeout = (int) $container->get('teknoo.east.paas.kubernetes.timeout');
         }
 
-        return new FactoryAlias($tempDir, $client, $sslVerify, $timeout);
+        //Only for a worker managing itself its clusters: a token designating a file lets the cluster's owner send any
+        //file of the worker as bearer token to the cluster's address
+        $allowTokenFile = false;
+        if ($container->has('teknoo.east.paas.kubernetes.token.allow_file')) {
+            $allowTokenFile = (bool) $container->get('teknoo.east.paas.kubernetes.token.allow_file');
+        }
+
+        return new FactoryAlias(
+            filesystem: new Filesystem(new LocalFilesystemAdapter((string) $tempDir, lazyRootCreation: true)),
+            tmpDir: (string) $tempDir,
+            httpClient: $client,
+            sslVerify: $sslVerify,
+            timeout: $timeout,
+            allowTokenFile: $allowTokenFile,
+        );
     },
 
     IngressTranscriber::class . ':class' => IngressTranscriber::class,
