@@ -32,6 +32,7 @@ use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\Visibility;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Teknoo\Kubernetes\Client as KubClient;
 use Teknoo\Kubernetes\RepositoryRegistry;
 use PHPUnit\Framework\TestCase;
@@ -47,6 +48,7 @@ use Teknoo\Kubernetes\Exception\MissingMasterOptionException;
 use function array_shift;
 use function bin2hex;
 use function random_bytes;
+use function str_replace;
 use function sys_get_temp_dir;
 
 /**
@@ -527,5 +529,93 @@ class FactoryTest extends TestCase
         } finally {
             $tempFilesystem->delete($tokenFile);
         }
+    }
+
+    /**
+     * `%file%` is replaced by the path of an existing file
+     *
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function streamWrapperUrlsProvider(): iterable
+    {
+        $urls = [
+            'file' => 'file://%file%',
+            'ftp' => 'ftp://example.invalid/token',
+            'ftp in uppercase' => 'FTP://example.invalid/token',
+            'ftps' => 'ftps://example.invalid/token',
+            'http' => 'http://example.invalid/token',
+            'https' => 'https://example.invalid/token',
+            'php filter' => 'php://filter/resource=%file%',
+            'data' => 'data:text/plain,token',
+            'phar' => 'phar://%file%/token',
+            'glob' => 'glob://%file%',
+            'compress.zlib' => 'compress.zlib://%file%',
+            'zip' => 'zip://%file%#token',
+        ];
+
+        foreach ([false, true] as $allowTokenFile) {
+            foreach ($urls as $name => $url) {
+                yield $name . ($allowTokenFile ? ' with token file allowed' : '') => [$url, $allowTokenFile];
+            }
+        }
+    }
+
+    #[DataProvider('streamWrapperUrlsProvider')]
+    public function testInvokeRefusesAStreamWrapperUrlAsToken(string $url, bool $allowTokenFile): void
+    {
+        $tokenFile = 'east-paas-test-token-' . bin2hex(random_bytes(8));
+        $tempFilesystem = $this->buildTempFilesystem();
+        $tempFilesystem->write($tokenFile, 'token');
+
+        $token = str_replace('%file%', sys_get_temp_dir() . '/' . $tokenFile, $url);
+
+        $filesystem = new Filesystem(new InMemoryFilesystemAdapter());
+        $factory = $this->buildFactory(filesystem: $filesystem, allowTokenFile: $allowTokenFile);
+
+        try {
+            $factory('foo', $this->buildFullCredentials($token));
+
+            $this->fail('A stream wrapper url as token must be refused');
+        } catch (TokenFileNotAllowedException $error) {
+            //The token value must never be leaked
+            $this->assertStringNotContainsString($token, $error->getMessage());
+            $this->assertStringNotContainsString($tokenFile, $error->getMessage());
+        } finally {
+            $tempFilesystem->delete($tokenFile);
+        }
+
+        //Refused before writing any credentials file
+        $this->assertSame([], $filesystem->listContents('', false)->toArray());
+    }
+
+    public function testWithClientRefusesAStreamWrapperUrlAsToken(): void
+    {
+        $filesystem = new Filesystem(new InMemoryFilesystemAdapter());
+        $factory = $this->buildFactory(filesystem: $filesystem, allowTokenFile: true);
+
+        $called = false;
+        try {
+            $factory->withClient(
+                'foo',
+                new ClusterCredentials(clientKey: 'privateKey', token: 'ftp://example.invalid/token'),
+                function (KubClient $client) use (&$called): void {
+                    $called = true;
+                },
+            );
+
+            $this->fail('A stream wrapper url as token must be refused');
+        } catch (TokenFileNotAllowedException) {
+        }
+
+        $this->assertFalse($called);
+        $this->assertSame([], $filesystem->listContents('', false)->toArray());
+    }
+
+    public function testInvokeAcceptsATokenWithASchemeWhichIsNotAStreamWrapper(): void
+    {
+        $this->assertInstanceOf(
+            KubClient::class,
+            $this->buildFactory()('foo', new ClusterCredentials(token: 'foo:bar')),
+        );
     }
 }

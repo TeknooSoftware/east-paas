@@ -41,7 +41,15 @@ use Throwable;
 use function array_diff_key;
 use function bin2hex;
 use function file_exists;
+use function in_array;
+use function is_string;
+use function parse_url;
 use function random_bytes;
+use function str_contains;
+use function stream_get_wrappers;
+use function strtolower;
+
+use const PHP_URL_SCHEME;
 
 /**
  * Factory in the DI to create, on demand, a new `Kubernetes Client` instance,
@@ -60,7 +68,8 @@ use function random_bytes;
  * The Kubernetes client reads the token from a file when its value is the path of an existing file. The token of a
  * cluster, set by its owner, would allow to send any file of the worker, as bearer token, to the cluster's address:
  * such token is refused unless `$allowTokenFile` is enabled (DI parameter
- * `teknoo.east.paas.kubernetes.token.allow_file`).
+ * `teknoo.east.paas.kubernetes.token.allow_file`). A token which is a stream wrapper url (`ftp://`, `phar://`,
+ * `data:`, ...) is always refused, before any access to it: a token file is a path on the worker.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -124,6 +133,12 @@ class Factory implements ScopedClientFactoryInterface
         //(absolute path or relative to the working directory), a filesystem abstraction could normalize the path
         //differently and let pass a path read by the client.
         $token = $credentials?->getToken();
+        if (!empty($token) && self::isStreamWrapperUrl($token)) {
+            throw new TokenFileNotAllowedException(
+                'The token of the cluster is a stream wrapper url, this is not allowed',
+            );
+        }
+
         if (!empty($token) && !$this->allowTokenFile && file_exists($token)) {
             throw new TokenFileNotAllowedException(
                 'The token of the cluster designates a file of the worker, this is not allowed',
@@ -192,6 +207,21 @@ class Factory implements ScopedClientFactoryInterface
         }
 
         return $this;
+    }
+
+    /**
+     * Same check as the Kubernetes client, which refuses these urls only at the first request. It must be done before
+     * `file_exists()`, which would reach the url (`ftp://` opens a connection to the host).
+     */
+    private static function isStreamWrapperUrl(#[SensitiveParameter] string $token): bool
+    {
+        if (str_contains($token, '://')) {
+            return true;
+        }
+
+        $scheme = parse_url($token, PHP_URL_SCHEME);
+
+        return is_string($scheme) && in_array(strtolower($scheme), stream_get_wrappers(), true);
     }
 
     /**

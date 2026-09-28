@@ -28,7 +28,8 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Exception;
 /**
  * Thrown by the Kubernetes `Factory` when the token of a cluster designates a file of the worker, while the DI
  * parameter `teknoo.east.paas.kubernetes.token.allow_file` does not allow it: the Kubernetes client would read this
- * file and send its content as bearer token to the cluster's address.
+ * file and send its content as bearer token to the cluster's address. Also thrown, whatever this parameter, when the
+ * token is a stream wrapper url (`ftp://`, `phar://`, `data:`, ...).
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)

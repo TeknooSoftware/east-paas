@@ -1,5 +1,14 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.3] - 2026-09-28
+### Stable Release
+
+**Security**
+- Kubernetes: a cluster's token which is an url (`ftp://`, `phar://`, `data:`, ...) is refused
+  (`TokenFileNotAllowedException`), even if `teknoo.east.paas.kubernetes.token.allow_file` is enabled. Until now, the
+  worker could connect to this url to check if it exists, and, depending on the version of `teknoo/kubernetes-client`,
+  read it and send its content as bearer token to the cluster's address.
+
 ## [5.7.2] - 2026-09-28
 ### Stable Release
 
