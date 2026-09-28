@@ -130,4 +130,8 @@ Without Symfony Recipe
         'teknoo.east.paas.img_builder.build.platforms' => ...,
     
         'teknoo.east.paas.kubernetes.ssl.verify' => ...,
+        //Allow a cluster's token to be the path of a file of the worker (read by the Kubernetes client). Disabled by
+        //default: never enable it when the clusters' credentials are set by users, they could send any file of the
+        //worker, as bearer token, to their cluster's address
+        'teknoo.east.paas.kubernetes.token.allow_file' => false,
     ];

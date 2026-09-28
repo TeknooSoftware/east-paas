@@ -70,7 +70,7 @@ return [
         }
 
         return new RunnerFactoryAlias(
-            filesystem: new Filesystem(new LocalFilesystemAdapter($tmpDir)),
+            filesystem: new Filesystem(new LocalFilesystemAdapter($tmpDir, lazyRootCreation: true)),
             tmpDir: $tmpDir,
             playbookBinary: $playbookBinary,
             timeout: $timeout,
@@ -275,7 +275,7 @@ return [
         return new DriverAlias(
             runnerFactory: $container->get(RunnerFactoryInterface::class),
             transcribers: $container->get(TranscriberCollectionInterface::class),
-            workspaceFilesystem: new Filesystem(new LocalFilesystemAdapter($tmpDir)),
+            workspaceFilesystem: new Filesystem(new LocalFilesystemAdapter($tmpDir, lazyRootCreation: true)),
             templatesFilesystem: new Filesystem(new LocalFilesystemAdapter(__DIR__ . '/templates')),
             workspaceRoot: $tmpDir,
             tmpDirFactory: static fn (): string => 'east-paas-compose-' . uniqid('', true),

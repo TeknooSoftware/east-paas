@@ -1,5 +1,46 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.2] - 2026-09-28
+### Stable Release
+
+**Fixes**
+- Docker Compose: the per-run working directory (secrets, TLS keys, inventory) is also removed when the run fails
+  before starting `ansible-playbook`.
+- Kubernetes: an error while building the client now fails the stage (deploy or expose) instead of being thrown out
+  of the driver.
+
+**Security**
+- Cluster credentials written on the worker are removed at the end of each stage, instead of at the end of the worker
+  process. Until now, every job left them in `teknoo.east.paas.worker.tmp_dir`, forever if the worker was killed:
+  - Kubernetes: CA certificate, client certificate and client key.
+  - Docker Compose: SSH private key and `known_hosts`.
+- Kubernetes: these files were readable by all users of the worker host (mode `0555`), they are now in mode `0600`.
+- Each Kubernetes client and each Docker Compose runner writes its credentials files in its own private directory
+  (mode `0700`, random name): they are never readable by other users, even before their mode is applied.
+- Kubernetes: a cluster's token which is the path of a file of the worker is refused (`TokenFileNotAllowedException`).
+  The Kubernetes client reads such a file and sends its content as bearer token to the cluster's address. The new DI
+  parameter `teknoo.east.paas.kubernetes.token.allow_file` (default `false`) allows it, for workers whose clusters
+  are not configured by users.
+
+**Evolutions**
+- Kubernetes: new `Contracts\ScopedClientFactoryInterface` (extends `ClientFactoryInterface`), whose `withClient()`
+  lends a client to a callback and then removes its credentials files. The driver uses it when available, with a new
+  client for each stage. Other `ClientFactoryInterface` implementations work as before.
+- Docker Compose: `RunnerFactory` returns an `EphemeralCredentialsRunner`, which owns the credentials files and removes
+  them after the run. A runner is single-use: a second `run()` fails with a `BadTempFileException`.
+- Constructors changed:
+  - `Kubernetes\Factory`: a `FilesystemOperator` is the first argument and `tmpDir` the second, `tmpNameFunction` is
+    replaced by `directoryNameFactory`.
+  - `DockerCompose\RunnerFactory`: `keyFileNameFactory` is replaced by `directoryNameFactory`.
+- The Kubernetes infrastructure requires `league/flysystem-local`, like the Docker Compose one.
+- Require `teknoo/states` 7.1.11+ and `teknoo/recipe` 7.3+, and `teknoo/kubernetes-client` 2.1+ for tests.
+
+**Documentation**
+- `docker-compose.deployment.md`: lifetime of the SSH key, the `known_hosts` file and the working directory.
+- `example.symfony.md`: new DI parameter `teknoo.east.paas.kubernetes.token.allow_file`.
+
+- Version developed with Claude's assistance (Fable 5.1).
+
 ## [5.7.1] - 2026-09-25
 ### Stable Release
 - Fix `ClusterType`: a locked cluster could not be saved, its environment and identity loaded from the database were

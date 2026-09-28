@@ -28,8 +28,9 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Exception;
 use RuntimeException;
 
 /**
- * Thrown when the `RunnerFactory` is unable to create a temporary file to materialize the SSH private key
- * (or any other artifact) required to run an Ansible playbook.
+ * Thrown when the `RunnerFactory` is unable to create a new private directory to materialize the SSH private key
+ * (or any other artifact) required to run an Ansible playbook, or when an `EphemeralCredentialsRunner` is run
+ * again after its credentials files were removed.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)

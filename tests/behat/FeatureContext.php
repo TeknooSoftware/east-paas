@@ -53,6 +53,7 @@ use PHPUnit\Framework\MockObject\Generator\Generator;
 use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount as AnyInvokedCountMatcher;
 use ReflectionObject;
 use RuntimeException;
+use SensitiveParameter;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
@@ -100,6 +101,7 @@ use Teknoo\East\Paas\Infrastructures\Doctrine\Object\ODM\Project;
 use Teknoo\East\Paas\Infrastructures\EastPaasBundle\TeknooEastPaasBundle;
 use Teknoo\East\Paas\Infrastructures\Image\Contracts\ProcessFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ClientFactoryInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Contracts\ScopedClientFactoryInterface;
 use Teknoo\East\Paas\Infrastructures\PhpSecLib\Configuration\Algorithm;
 use Teknoo\East\Paas\Job\History\SerialGenerator;
 use Teknoo\East\Paas\Object\AccountQuota;
@@ -170,10 +172,15 @@ class FeatureContext implements Context
     public const int STR_REPEAT_FOR_SIMULATION = 100000;
 
     /**
-     * Deterministic name of the SSH private key file the real RunnerFactory materializes in the in-memory
-     * workspace, so the "--private-key" argument passed to `ansible-playbook` is assertable.
+     * Deterministic name of the private directory where the real RunnerFactory materializes the SSH private key in
+     * the in-memory workspace, so the "--private-key" argument passed to `ansible-playbook` is assertable.
      */
-    private const string COMPOSE_KEY_FILE_NAME = 'east-paas-ansible-behat';
+    private const string COMPOSE_CREDENTIALS_DIR = 'east-paas-ansible-behat';
+
+    /**
+     * Path of the SSH private key materialized by the real RunnerFactory, relative to the in-memory workspace
+     */
+    private const string COMPOSE_KEY_FILE = self::COMPOSE_CREDENTIALS_DIR . '/id_key';
 
     /**
      * Timeout given to the real RunnerFactory; asserted to prove it reaches the Process factory.
@@ -305,10 +312,17 @@ class FeatureContext implements Context
     private array $ansibleInventories = [];
 
     /**
-     * @var string|null content of the SSH private key materialized by the real RunnerFactory, read back
-     *      before its __destruct() removes it
+     * @var array<string, string> content of the SSH private key materialized by the real RunnerFactory, keyed by
+     *      stage ("deploy", "expose"), read back while the playbook runs: the runner removes it as soon as the run
+     *      is over
      */
-    private ?string $ansibleKeyFileContent = null;
+    private array $ansibleKeyFileContents = [];
+
+    /**
+     * In-memory workspace filesystem of the real DockerCompose Driver, kept to assert that nothing sensitive
+     * (SSH private key, per-run working directories) survives the runs
+     */
+    private ?Filesystem $composeWorkspaceFilesystem = null;
 
     public bool $slowDb = false;
 
@@ -733,7 +747,8 @@ class FeatureContext implements Context
         $this->traefikArtifacts = [];
         $this->ansibleRuns = [];
         $this->ansibleInventories = [];
-        $this->ansibleKeyFileContent = null;
+        $this->ansibleKeyFileContents = [];
+        $this->composeWorkspaceFilesystem = null;
 
         $this->buildRepository(Account::class);
         $this->buildRepository(Cluster::class);
@@ -2063,7 +2078,8 @@ EOF,
 
         $this->sfContainer->set(
             ClientFactoryInterface::class,
-            new readonly class ($mock) implements ClientFactoryInterface {
+            //Scoped, like the real factory, so the scenarios run the same driver path as production
+            new readonly class ($mock) implements ScopedClientFactoryInterface {
                 public function __construct(
                     private Client $client,
                 ) {
@@ -2075,6 +2091,17 @@ EOF,
                     ?RepositoryRegistry $repositoryRegistry = null
                 ): Client {
                     return $this->client;
+                }
+
+                public function withClient(
+                    string $master,
+                    #[SensitiveParameter] ?ClusterCredentials $credentials,
+                    callable $callback,
+                    ?RepositoryRegistry $repositoryRegistry = null,
+                ): ScopedClientFactoryInterface {
+                    $callback($this->client);
+
+                    return $this;
                 }
             }
         );
@@ -2093,6 +2120,7 @@ EOF,
         //LocalFilesystemAdapter wired by di.php, so the scenario never alters the filesystem. The mocked
         //Ansible process reads the artifacts the Driver wrote back from this same in-memory filesystem.
         $workspaceFilesystem = new Filesystem(new InMemoryFilesystemAdapter());
+        $this->composeWorkspaceFilesystem = $workspaceFilesystem;
 
         $templatesDir = dirname(__DIR__, 2) . '/infrastructures/DockerCompose/templates';
         $templatesFilesystem = new Filesystem(new InMemoryFilesystemAdapter());
@@ -2174,10 +2202,10 @@ EOF,
                 $this->ansibleInventories[$stage] = $workspaceFilesystem->read($inventoryRelative);
             }
 
-            //The materialized SSH private key must be read here: RunnerFactory::__destruct() deletes it as
-            //soon as the factory goes out of scope.
-            if ($workspaceFilesystem->fileExists(self::COMPOSE_KEY_FILE_NAME)) {
-                $this->ansibleKeyFileContent = $workspaceFilesystem->read(self::COMPOSE_KEY_FILE_NAME);
+            //The materialized SSH private key must be read here: the runner returned by the RunnerFactory deletes
+            //it as soon as the playbook has run.
+            if ($workspaceFilesystem->fileExists(self::COMPOSE_KEY_FILE)) {
+                $this->ansibleKeyFileContents[$stage] = $workspaceFilesystem->read(self::COMPOSE_KEY_FILE);
             }
 
             ($capture)($command[1]);
@@ -2199,14 +2227,14 @@ EOF,
         };
 
         //The real factory, pointed at the same in-memory workspace so the private key never touches the disk,
-        //with a deterministic key file name making the "--private-key" argument assertable. The name cannot
-        //collide with the per-run "east-paas-compose-*" working directories $capture scans.
+        //with a deterministic credentials directory name making the "--private-key" argument assertable. The name
+        //cannot collide with the per-run "east-paas-compose-*" working directories $capture scans.
         $runnerFactory = new RunnerFactory(
             filesystem: $workspaceFilesystem,
             tmpDir: '',
             playbookBinary: 'ansible-playbook',
             timeout: self::COMPOSE_ANSIBLE_TIMEOUT,
-            keyFileNameFactory: static fn (): string => self::COMPOSE_KEY_FILE_NAME,
+            directoryNameFactory: static fn (): string => self::COMPOSE_CREDENTIALS_DIR,
             //Only overridden to inject the mocked $processFactory: the runner itself is the real one.
             runnerBuilder: static fn (
                 string $playbookBinary,
@@ -4025,7 +4053,7 @@ EOF;
                 '--user',
                 self::COMPOSE_SSH_USER,
                 '--private-key',
-                '/' . self::COMPOSE_KEY_FILE_NAME,
+                '/' . self::COMPOSE_KEY_FILE,
             ],
             array_map(
                 fn (string $argument): string => $this->normalizeComposePlaybook($argument),
@@ -4043,11 +4071,25 @@ EOF;
         );
 
         //The private key of the ClusterCredentials must have been materialized in the workspace, at the path
-        //passed to --private-key above.
+        //passed to --private-key above, for this stage.
         Assert::assertSame(
             self::COMPOSE_SSH_PRIVATE_KEY,
-            $this->ansibleKeyFileContent,
+            $this->ansibleKeyFileContents[$stage] ?? null,
             'The SSH private key has not been materialized from the cluster credentials',
+        );
+
+        //The worker is a long-lived process: the private key, and its directory, must not survive the run, even if
+        //the RunnerFactory, a shared service, is still alive.
+        Assert::assertFalse(
+            $this->composeWorkspaceFilesystem?->directoryExists(self::COMPOSE_CREDENTIALS_DIR) ?? true,
+            'The SSH private key must be removed once the playbook has run',
+        );
+
+        //Neither the per-run working directories (secrets, TLS keys, inventory) must survive the runs
+        Assert::assertSame(
+            [],
+            $this->composeWorkspaceFilesystem?->listContents('', false)->toArray(),
+            'Nothing must be left in the worker workspace once the playbooks have run',
         );
     }
 

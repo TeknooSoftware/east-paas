@@ -175,124 +175,127 @@ class Running implements StateInterface
             $workingDir = $this->createWorkingDir();
             $workingAbsoluteDir = $this->workspaceRoot . '/' . $workingDir;
 
-            $composeFile = $accumulator->getComposeFile();
-            $traefikConfig = $accumulator->getTraefikConfig();
-            $warnings = $accumulator->getWarnings();
-
-            $composeAbsolutePath = $workingAbsoluteDir . '/compose.yaml';
-            $this->workspaceFilesystem->write(
-                $workingDir . '/compose.yaml',
-                Yaml::dump($composeFile, 8, 4),
-            );
-
-            //On the expose stage the Traefik dynamic configuration is serialized to "<project>.yml" so the
-            //playbook can drop it into Traefik's watched directory.
-            $traefikConfigAbsolutePath = '';
-            if ($runExposing) {
-                $traefikConfigAbsolutePath = $workingAbsoluteDir . '/' . $accumulator->getProjectName() . '.yml';
-                $this->workspaceFilesystem->write(
-                    $workingDir . '/' . $accumulator->getProjectName() . '.yml',
-                    Yaml::dump($traefikConfig, 8, 4),
-                );
-            }
-
-            //Resolve each pushed file's `src` to its absolute working-dir path so the playbook `copy` tasks
-            //can read the local file; `dest`/`mode` are preserved. These derived lists are baked into the
-            //rendered playbook's `vars:` block so it is self-contained (no reliance on Ansible --extra-vars):
-            //the locally written secret/config files (paas_files), the volumes flagged resetOnDeployment
-            //(paas_reset_volumes), the during-deployment job services (paas_jobs) and, on the expose stage,
-            //the per-ingress TLS cert/key files (paas_certs).
-            $resolveCopySources = static fn (FileToCopy $entry): array =>
-                $entry->withResolvedSource($workingAbsoluteDir)->toArray();
-
-            if ($runExposing) {
-                $playbookVars = [
-                    '{% paasCerts %}' => json_encode(
-                        array_map($resolveCopySources, $accumulator->getCertificatesToCopy()),
-                        JSON_THROW_ON_ERROR,
-                    ),
-                ];
-            } else {
-                $playbookVars = [
-                    '{% paasFiles %}' => json_encode(
-                        array_map($resolveCopySources, $accumulator->getFilesToCopy()),
-                        JSON_THROW_ON_ERROR,
-                    ),
-                    '{% paasResetVolumes %}' => json_encode(
-                        $accumulator->getResetVolumes(),
-                        JSON_THROW_ON_ERROR,
-                    ),
-                    '{% paasJobs %}' => json_encode(
-                        $accumulator->getJobsToRun(),
-                        JSON_THROW_ON_ERROR,
-                    ),
-                ];
-            }
-
-            $playbookAbsolutePath = $workingAbsoluteDir . '/' . $stage . '.yml';
-            $this->workspaceFilesystem->write(
-                $workingDir . '/' . $stage . '.yml',
-                $this->renderPlaybook(
-                    $stage,
-                    $accumulator,
-                    $composeAbsolutePath,
-                    $traefikConfigAbsolutePath,
-                    $playbookVars,
-                ),
-            );
-
-            $inventoryAbsolutePath = $workingAbsoluteDir . '/inventory.ini';
-            $this->workspaceFilesystem->write(
-                $workingDir . '/inventory.ini',
-                $this->renderInventory((string) $this->master),
-            );
-
-            foreach ($accumulator->getFiles() as $relativePath => $content) {
-                $this->workspaceFilesystem->write($workingDir . '/' . $relativePath, $content);
-            }
-
-            $runner = ($this->runnerFactory)((string) $this->master, $this->credentials);
             $workspaceFilesystem = $this->workspaceFilesystem;
 
-            //The Compose/Traefik arrays hold only resource definitions and file references; the sensitive
-            //file contents (secrets, certs) live in the accumulator's files and are never serialized into
-            //the History result.
-            $onSuccess = static function (array|string $output) use (
-                $composeFile,
-                $traefikConfig,
-                $warnings,
-                $mainPromise,
-            ): void {
-                if (!is_string($output)) {
-                    $output = json_encode($output, JSON_THROW_ON_ERROR);
+            //The working directory holds the secret values, the TLS private keys and the SSH inventory: it must not
+            //survive the run on the worker, whatever the outcome, even when the run could not be started.
+            try {
+                $composeFile = $accumulator->getComposeFile();
+                $traefikConfig = $accumulator->getTraefikConfig();
+                $warnings = $accumulator->getWarnings();
+
+                $composeAbsolutePath = $workingAbsoluteDir . '/compose.yaml';
+                $this->workspaceFilesystem->write(
+                    $workingDir . '/compose.yaml',
+                    Yaml::dump($composeFile, 8, 4),
+                );
+
+                //On the expose stage the Traefik dynamic configuration is serialized to "<project>.yml" so the
+                //playbook can drop it into Traefik's watched directory.
+                $traefikConfigAbsolutePath = '';
+                if ($runExposing) {
+                    $traefikConfigAbsolutePath = $workingAbsoluteDir . '/' . $accumulator->getProjectName() . '.yml';
+                    $this->workspaceFilesystem->write(
+                        $workingDir . '/' . $accumulator->getProjectName() . '.yml',
+                        Yaml::dump($traefikConfig, 8, 4),
+                    );
                 }
 
-                $result = [
-                    'compose' => $composeFile,
-                    'traefik' => $traefikConfig,
-                    'output' => $output,
+                //Resolve each pushed file's `src` to its absolute working-dir path so the playbook `copy` tasks
+                //can read the local file; `dest`/`mode` are preserved. These derived lists are baked into the
+                //rendered playbook's `vars:` block so it is self-contained (no reliance on Ansible --extra-vars):
+                //the locally written secret/config files (paas_files), the volumes flagged resetOnDeployment
+                //(paas_reset_volumes), the during-deployment job services (paas_jobs) and, on the expose stage,
+                //the per-ingress TLS cert/key files (paas_certs).
+                $resolveCopySources = static fn (FileToCopy $entry): array =>
+                    $entry->withResolvedSource($workingAbsoluteDir)->toArray();
+
+                if ($runExposing) {
+                    $playbookVars = [
+                        '{% paasCerts %}' => json_encode(
+                            array_map($resolveCopySources, $accumulator->getCertificatesToCopy()),
+                            JSON_THROW_ON_ERROR,
+                        ),
+                    ];
+                } else {
+                    $playbookVars = [
+                        '{% paasFiles %}' => json_encode(
+                            array_map($resolveCopySources, $accumulator->getFilesToCopy()),
+                            JSON_THROW_ON_ERROR,
+                        ),
+                        '{% paasResetVolumes %}' => json_encode(
+                            $accumulator->getResetVolumes(),
+                            JSON_THROW_ON_ERROR,
+                        ),
+                        '{% paasJobs %}' => json_encode(
+                            $accumulator->getJobsToRun(),
+                            JSON_THROW_ON_ERROR,
+                        ),
+                    ];
+                }
+
+                $playbookAbsolutePath = $workingAbsoluteDir . '/' . $stage . '.yml';
+                $this->workspaceFilesystem->write(
+                    $workingDir . '/' . $stage . '.yml',
+                    $this->renderPlaybook(
+                        $stage,
+                        $accumulator,
+                        $composeAbsolutePath,
+                        $traefikConfigAbsolutePath,
+                        $playbookVars,
+                    ),
+                );
+
+                $inventoryAbsolutePath = $workingAbsoluteDir . '/inventory.ini';
+                $this->workspaceFilesystem->write(
+                    $workingDir . '/inventory.ini',
+                    $this->renderInventory((string) $this->master),
+                );
+
+                foreach ($accumulator->getFiles() as $relativePath => $content) {
+                    $this->workspaceFilesystem->write($workingDir . '/' . $relativePath, $content);
+                }
+
+                $runner = ($this->runnerFactory)((string) $this->master, $this->credentials);
+
+                //The Compose/Traefik arrays hold only resource definitions and file references; the sensitive
+                //file contents (secrets, certs) live in the accumulator's files and are never serialized into
+                //the History result.
+                $onSuccess = static function (array|string $output) use (
+                    $composeFile,
+                    $traefikConfig,
+                    $warnings,
+                    $mainPromise,
+                ): void {
+                    if (!is_string($output)) {
+                        $output = json_encode($output, JSON_THROW_ON_ERROR);
+                    }
+
+                    $result = [
+                        'compose' => $composeFile,
+                        'traefik' => $traefikConfig,
+                        'output' => $output,
+                    ];
+
+                    if (!empty($warnings)) {
+                        $result['warnings'] = $warnings;
+                    }
+
+                    $mainPromise->success($result);
+                };
+
+                /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>|string, mixed, mixed> $runnerPromise */
+                $runnerPromise = new Promise(
+                    onSuccess: $onSuccess,
+                    onFail: static fn (#[SensitiveParameter] Throwable $error): mixed => $mainPromise->fail($error),
+                );
+
+                //The playbook is self-contained (paas_files/paas_reset_volumes/paas_jobs/paas_certs are rendered
+                //into its vars: block above); only paas_project is still forwarded as an extra var.
+                $extraVars = [
+                    'paas_project' => $accumulator->getProjectName(),
                 ];
 
-                if (!empty($warnings)) {
-                    $result['warnings'] = $warnings;
-                }
-
-                $mainPromise->success($result);
-            };
-
-            /** @var \Teknoo\Recipe\Promise\Promise<array<string, mixed>|string, mixed, mixed> $runnerPromise */
-            $runnerPromise = new Promise(
-                onSuccess: $onSuccess,
-                onFail: static fn (#[SensitiveParameter] Throwable $error): mixed => $mainPromise->fail($error),
-            );
-
-            //The playbook is self-contained (paas_files/paas_reset_volumes/paas_jobs/paas_certs are rendered
-            //into its vars: block above); only paas_project is still forwarded as an extra var.
-            $extraVars = [
-                'paas_project' => $accumulator->getProjectName(),
-            ];
-
-            try {
                 $runner->run(
                     playbookPath: $playbookAbsolutePath,
                     inventoryPath: $inventoryAbsolutePath,
@@ -301,8 +304,6 @@ class Running implements StateInterface
                     promise: $runnerPromise,
                 );
             } finally {
-                //The working directory holds the secret values, the TLS private keys and the SSH inventory:
-                //it must not survive the run on the worker, whatever the outcome.
                 $workspaceFilesystem->deleteDirectory($workingDir);
             }
         };

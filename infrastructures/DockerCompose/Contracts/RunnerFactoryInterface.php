@@ -31,7 +31,9 @@ use Teknoo\East\Paas\Object\ClusterCredentials;
 /**
  * Contract for the factory building a `RunnerInterface` instance configured from the cluster address and
  * the `ClusterCredentials` (SSH mapping). The factory is responsible for materializing the SSH private key
- * into a temporary file (chmod 0600) and cleaning it up.
+ * (and the `known_hosts` file) into temporary files (chmod 0600), in a private directory (chmod 0700), and for
+ * ensuring they are removed as soon as the returned runner has run, whatever its outcome, not when the factory, a
+ * shared service, is destroyed. The returned runner is single-use.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
