@@ -1,5 +1,15 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.7.4] - 2026-10-08
+### Stable Release
+
+**Fixes**
+- Symfony 8.1 is supported alongside 6.4 and 7.4 (its YAML dumper writes empty mappings as `{}`: the test suite and
+  the static analysis now pass with it).
+
+**Evolutions**
+- Upgrade to Behat 4
+
 ## [5.7.3] - 2026-09-28
 ### Stable Release
 

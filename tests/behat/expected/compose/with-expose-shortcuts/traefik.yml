@@ -5,19 +5,19 @@ http:
             entryPoints:
                 - websecure
             service: behat-test-foobarproject-demo-nginx-default
-            tls: {  }
+            tls: {}
         behat-test-foobarproject-demo-nginx-php-pods-php-run-9876:
             rule: '(Host(`demo-paas.teknoo.software`) || Host(`alias1.demo-paas.teknoo.software`) || Host(`alias2.demo-paas.teknoo.software`)) && PathPrefix(`/php`)'
             entryPoints:
                 - websecure
             service: behat-test-foobarproject-demo-nginx-php-pods-php-run-9876
-            tls: {  }
+            tls: {}
         behat-test-foobarproject-demo-secure:
             rule: Host(`demo-secure.teknoo.software`)
             entryPoints:
                 - websecure
             service: behat-test-foobarproject-demo-secure-default
-            tls: {  }
+            tls: {}
     services:
         behat-test-foobarproject-demo-nginx-default:
             loadBalancer:

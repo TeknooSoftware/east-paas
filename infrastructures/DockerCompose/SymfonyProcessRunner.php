@@ -80,11 +80,21 @@ final class SymfonyProcessRunner implements RunnerInterface
         if (null !== $processFactory) {
             $this->processFactory = $processFactory;
         } else {
-            $this->processFactory = static fn (array $command, ?float $timeout): Process => new Process(
-                command: $command,
-                timeout: $timeout,
-            );
+            $this->processFactory = self::createProcess(...);
         }
+    }
+
+    /**
+     * Default factory: a Symfony `Process` running the command line with the configured timeout.
+     *
+     * @param array<int, string> $command
+     */
+    private static function createProcess(array $command, ?float $timeout): Process
+    {
+        return new Process(
+            command: $command,
+            timeout: $timeout,
+        );
     }
 
     /**

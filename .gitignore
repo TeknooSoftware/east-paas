@@ -12,6 +12,7 @@
 !var/SymfonyRequirements.php
 /vendor/
 /web/bundles/
+/behat.php
 composer.lock
 /.phpunit.result.cache
 /tests/var/cache/*

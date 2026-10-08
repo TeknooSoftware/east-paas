@@ -3772,6 +3772,15 @@ EOF;
     }
 
     /**
+     * Symfony YAML < 8 dumps an empty mapping as "{  }", 8.x as "{}": both are valid, the golden files keep the
+     * compact form so the suite passes whatever the installed Symfony version.
+     */
+    private function normalizeYamlEmptyMappings(string $yaml): string
+    {
+        return (string) preg_replace('/\{\s+\}/', '{}', $yaml);
+    }
+
+    /**
      * Load the expected Docker Compose artifacts for the current scenario's variant flags, mirroring
      * compareCD()'s use of expectedCD.php for Kubernetes.
      *
@@ -3823,7 +3832,7 @@ EOF;
         //match the reviewed expected file byte for byte.
         Assert::assertSame(
             $expected['compose.yaml'],
-            $this->composeArtifacts['compose.yaml'],
+            $this->normalizeYamlEmptyMappings($this->composeArtifacts['compose.yaml']),
             'The generated compose.yaml does not match the expected golden file',
         );
 
@@ -3857,7 +3866,10 @@ EOF;
     private function dumpComposeArtifacts(string $dir, string $stage): void
     {
         if ('deploy' === $stage) {
-            file_put_contents($dir . '/compose.yaml', $this->composeArtifacts['compose.yaml']);
+            file_put_contents(
+                $dir . '/compose.yaml',
+                $this->normalizeYamlEmptyMappings($this->composeArtifacts['compose.yaml']),
+            );
             file_put_contents(
                 $dir . '/deploy.yml',
                 $this->normalizeComposePlaybook($this->composeArtifacts['deploy.yml']),
@@ -3884,7 +3896,10 @@ EOF;
             $dir . '/expose.yml',
             $this->normalizeComposePlaybook($this->composeArtifacts['expose.yml']),
         );
-        file_put_contents($dir . '/traefik.yml', (string) reset($this->traefikArtifacts));
+        file_put_contents(
+            $dir . '/traefik.yml',
+            $this->normalizeYamlEmptyMappings((string) reset($this->traefikArtifacts)),
+        );
     }
 
     private function removeDirectory(string $dir): void
@@ -3993,7 +4008,7 @@ EOF;
         );
         Assert::assertSame(
             $expected['traefik'],
-            (string) reset($this->traefikArtifacts),
+            $this->normalizeYamlEmptyMappings((string) reset($this->traefikArtifacts)),
             'The generated Traefik dynamic configuration does not match the expected golden file',
         );
 
