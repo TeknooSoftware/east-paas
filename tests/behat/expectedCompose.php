@@ -44,10 +44,10 @@ return static function (
     bool $withCondition,
     string $provider,
     bool $withExposeShortcuts = false,
-    bool $withExternalImageVolumes = false,
+    bool $withSharedVolumes = false,
 ): array {
-    if ($withExternalImageVolumes) {
-        $variant = 'with-external-image-volumes';
+    if ($withSharedVolumes) {
+        $variant = 'with-shared-volumes';
     } elseif ($withExposeShortcuts) {
         $variant = 'with-expose-shortcuts';
     } elseif ('' !== $withQuota) {

@@ -174,11 +174,11 @@ Feature: Execute a job to deploy a project on a Docker Compose host through Ansi
     And some traefik configuration has been created
     And all messages must be not encrypted
 
-  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file using external images
-  with volumes and get a normalized job's history
+  Scenario: From the API, for a Docker Compose host, run a job on a project with a PaaS file with volumes
+  shared between containers and get a normalized job's history
     Given I have a configured platform
     And the platform is booted
-    And a project with a paas file with external images and volumes
+    And a project with a paas file with shared volumes
     And a job workspace agent
     And a git cloning agent
     And a composer hook as hook builder

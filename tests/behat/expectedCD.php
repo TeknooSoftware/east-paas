@@ -46,9 +46,9 @@ return static function (
     bool $withCondition,
     string $provider,
     bool $withExposeShortcuts = false,
-    bool $withExternalImageVolumes = false,
+    bool $withSharedVolumes = false,
 ): CompiledDeployment {
-    if ($withExternalImageVolumes) {
+    if ($withSharedVolumes) {
         $cd = new CompiledDeployment(
             version: 1.2,
             prefix: $prefix,

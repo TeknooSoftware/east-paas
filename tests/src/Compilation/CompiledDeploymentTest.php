@@ -872,7 +872,7 @@ class CompiledDeploymentTest extends TestCase
             $this->assertInstanceOf(BuildableInterface::class, current(current($buildables)));
 
             if ('foo1' === $pod->getName()) {
-                //The container `foo2` uses an external image, its volumes must be also passed
+                //The image of the container `foo2` is not built, its volumes must be also passed
                 $this->assertSame(['foo1_foo', 'foo2_foo'], array_keys($volumes));
             }
 
@@ -1016,7 +1016,7 @@ class CompiledDeploymentTest extends TestCase
             $this->assertInstanceOf(BuildableInterface::class, current(current($buildables)));
 
             if ('foo1' === $job->getName()) {
-                //The container `foo2` uses an external image, its volumes must be also passed
+                //The image of the container `foo2` is not built, its volumes must be also passed
                 $this->assertSame(['foo1_foo', 'foo2_foo'], array_keys($volumes));
             }
 
@@ -1037,7 +1037,7 @@ class CompiledDeploymentTest extends TestCase
     /**
      * @return array{0: CompiledDeployment, 1: Pod, 2: array<string, VolumeInterface>}
      */
-    private function buildWithExternalImageVolumes(): array
+    private function buildWithoutBuildable(): array
     {
         $cd = $this->buildObject();
 
@@ -1081,9 +1081,9 @@ class CompiledDeploymentTest extends TestCase
         return [$cd, $pod, $expected];
     }
 
-    public function testForeachPodWithExternalImageVolumes(): void
+    public function testForeachPodWithoutBuildablePassesVolumes(): void
     {
-        [$cd, $pod, $expected] = $this->buildWithExternalImageVolumes();
+        [$cd, $pod, $expected] = $this->buildWithoutBuildable();
         $cd->addPod('database', $pod);
 
         $count = 0;
@@ -1101,9 +1101,9 @@ class CompiledDeploymentTest extends TestCase
         $this->assertEquals(1, $count);
     }
 
-    public function testForeachJobWithExternalImageVolumes(): void
+    public function testForeachJobWithoutBuildablePassesVolumes(): void
     {
-        [$cd, $pod, $expected] = $this->buildWithExternalImageVolumes();
+        [$cd, $pod, $expected] = $this->buildWithoutBuildable();
         $cd->addJob(
             'backup',
             new Job(

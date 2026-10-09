@@ -244,7 +244,7 @@ class FeatureContext implements Context
 
     private static bool $jobsDefined = false;
 
-    private static bool $externalImageVolumesDefined = false;
+    private static bool $sharedVolumesDefined = false;
 
     private static bool $conditionsDefined = false;
 
@@ -539,7 +539,7 @@ class FeatureContext implements Context
         self::$versionLevel = '1.30';
         self::$clusterGitVersion = null;
         self::$jobsDefined = false;
-        self::$externalImageVolumesDefined = false;
+        self::$sharedVolumesDefined = false;
         self::$conditionsDefined = false;
         self::$exposeShortcutsDefined = false;
         self::$CDCompared = false;
@@ -1568,11 +1568,11 @@ EOF,
         self::$jobsDefined = true;
     }
 
-    #[Given('a project with a paas file with external images and volumes')]
-    public function aProjectWithAPaasFileWithExternalImagesAndVolumes(): void
+    #[Given('a project with a paas file with shared volumes')]
+    public function aProjectWithAPaasFileWithSharedVolumes(): void
     {
-        $this->paasFile = __DIR__ . '/paas.with-external-image-volumes.yaml';
-        self::$externalImageVolumesDefined = true;
+        $this->paasFile = __DIR__ . '/paas.with-shared-volumes.yaml';
+        self::$sharedVolumesDefined = true;
     }
 
     #[Given('a project with a complete paas file with jobs with wrong version')]
@@ -2334,7 +2334,7 @@ EOF,
             self::$conditionsDefined,
             self::$ingressProvider,
             self::$exposeShortcutsDefined,
-            self::$externalImageVolumesDefined,
+            self::$sharedVolumesDefined,
         );
         //TO avoid circural references in var_export
         $tcd = clone $cd;
@@ -2383,8 +2383,8 @@ EOF,
             $prefix .= '-';
         }
 
-        if (self::$externalImageVolumesDefined) {
-            $this->assertKubernetesManifests($this->expectedManifestsWithExternalImageVolumes($prefix));
+        if (self::$sharedVolumesDefined) {
+            $this->assertKubernetesManifests($this->expectedManifestsWithSharedVolumes($prefix));
 
             return;
         }
@@ -3780,10 +3780,10 @@ EOF;
     }
 
     /**
-     * Containers using external images (not built by the PaaS) with a persistent volume, shared by two containers of
-     * the same pod and by a scheduled job: each pod must declare the volume once in its `spec.volumes`.
+     * A persistent volume shared by two containers of the same pod and by a scheduled job: each pod must declare the
+     * volume once in its `spec.volumes`.
      */
-    private function expectedManifestsWithExternalImageVolumes(string $prefix): string
+    private function expectedManifestsWithSharedVolumes(string $prefix): string
     {
         return <<<"EOF"
 {
@@ -4003,7 +4003,7 @@ EOF;
             self::$conditionsDefined,
             self::$ingressProvider,
             self::$exposeShortcutsDefined,
-            self::$externalImageVolumesDefined,
+            self::$sharedVolumesDefined,
         );
     }
 

@@ -6,7 +6,7 @@ pods:
   database:
     replicas: 1
     containers:
-      mariadb: #External image, pulled as is, not built by the PaaS
+      mariadb:
         image: registry.hub.docker.com/library/mariadb
         version: '11'
         listen:
@@ -17,7 +17,7 @@ pods:
             mount-path: '/var/lib/mysql'
             persistent: true
             storage-size: 1Gi
-      exporter: #Sidecar with an external image, mounting the same volume
+      exporter: #Sidecar, mounting the same volume
         image: registry.hub.docker.com/library/exporter
         version: '1'
         volumes:
@@ -34,7 +34,7 @@ jobs:
     pods:
       dump:
         containers:
-          dump: #External image, pulled as is, not built by the PaaS
+          dump:
             image: registry.hub.docker.com/library/alpine
             version: '3.20'
             volumes:

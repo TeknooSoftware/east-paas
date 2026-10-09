@@ -353,7 +353,7 @@ class CompiledDeployment implements CompiledDeploymentInterface
                 $buildables[$imgName][$imgVersion ?? ''] = $this->getBuildable($imgName, $imgVersion);
             }
 
-            //Volumes are also needed by containers running an external image (not built by the PaaS)
+            //The volumes of all containers are needed, not only those of containers with a built image
             foreach ($container->getVolumes() as $name => $volume) {
                 if ($volume instanceof PopulatedVolumeInterface) {
                     $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
