@@ -199,6 +199,25 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="concurrency_policy" final="restriction" >
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="allow" />
+      <xs:enumeration value="forbid" />
+      <xs:enumeration value="replace" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="schedule_options">
+    <xs:all>
+      <xs:element name="time-zone" type="xs:string" minOccurs="0" />
+      <xs:element name="concurrency" type="epv:concurrency_policy" minOccurs="0" />
+      <xs:element name="starting-deadline" type="xs:nonNegativeInteger" minOccurs="0" />
+      <xs:element name="successful-history" type="xs:nonNegativeInteger" minOccurs="0" />
+      <xs:element name="failed-history" type="xs:nonNegativeInteger" minOccurs="0" />
+      <xs:element name="suspend" type="xs:boolean" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+
   <xs:simpleType name="job_completions_shelf_life">
     <xs:restriction base="xs:NMTOKEN">
       <xs:pattern value="([0-9]+)|null"/>
@@ -225,6 +244,7 @@
       <xs:element name="is-parallel" type="xs:boolean" default="false" minOccurs="0" />
       <xs:element name="planning" type="epv:planning" minOccurs="0" />
       <xs:element name="schedule" type="xs:string" minOccurs="0" />
+      <xs:element name="schedule-options" type="epv:schedule_options" minOccurs="0" />
       <xs:element name="enhancements" type="epv:third_party_enhancements" minOccurs="0" />
     </xs:all>
     <xs:attribute name="name" type="epv:paas_token" />

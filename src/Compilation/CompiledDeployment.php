@@ -351,12 +351,13 @@ class CompiledDeployment implements CompiledDeploymentInterface
 
             if ($this->hasBuildable($imgName, $imgVersion)) {
                 $buildables[$imgName][$imgVersion ?? ''] = $this->getBuildable($imgName, $imgVersion);
-                foreach ($container->getVolumes() as $name => $volume) {
-                    if ($volume instanceof PopulatedVolumeInterface) {
-                        $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
-                    } else {
-                        $volumes[$container->getName() . '_' . $name] = $volume;
-                    }
+            }
+
+            foreach ($container->getVolumes() as $name => $volume) {
+                if ($volume instanceof PopulatedVolumeInterface) {
+                    $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
+                } else {
+                    $volumes[$container->getName() . '_' . $name] = $volume;
                 }
             }
         }

@@ -42,6 +42,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Compilation\Compiler\DefaultsCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PopulatedVolumeInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\InvalidArgumentException;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\CronJob;
 use Teknoo\Kubernetes\Model\Deployment;
@@ -284,8 +285,44 @@ trait PodsTranscriberTrait
     }
 
     /**
+     * A volume mounted by several containers of a pod must be declared only once in the pod: Kubernetes refuses two
+     * volumes, or two init containers, with the same name. Two different volumes can not be mounted with the same
+     * name in a pod.
+     *
+     * @param array<string, string> $declaredVolumes
+     */
+    private static function isVolumeAlreadyDeclared(
+        array &$declaredVolumes,
+        Pod $pod,
+        PersistentVolumeInterface|SecretVolume|MapVolume|Volume $volume,
+    ): bool {
+        $source = match (true) {
+            $volume instanceof PersistentVolumeInterface => 'persistent',
+            $volume instanceof SecretVolume => 'secret:' . $volume->getSecretIdentifier(),
+            $volume instanceof MapVolume => 'map:' . $volume->getMapIdentifier(),
+            default => 'image:' . $volume->getUrl(),
+        };
+
+        $name = $volume->getName();
+        if (!isset($declaredVolumes[$name])) {
+            $declaredVolumes[$name] = $source;
+
+            return false;
+        }
+
+        if ($declaredVolumes[$name] !== $source) {
+            throw new InvalidArgumentException(
+                "The pod `{$pod->getName()}` mounts several different volumes with the same name `{$name}`, "
+                . "a volume shared between containers must be the same"
+            );
+        }
+
+        return true;
+    }
+
+    /**
      * @param array<string, mixed> $specs
-     * @param array<string, SecretVolume|MapVolume|Volume> $volumes
+     * @param array<string, PersistentVolumeInterface|SecretVolume|MapVolume|Volume> $volumes
      */
     private static function convertToVolumes(
         array &$specs,
@@ -296,7 +333,12 @@ trait PodsTranscriberTrait
     ): void {
         $useImageVolumes = self::supportsImageVolumes($versionLevel);
 
+        $declaredVolumes = [];
         foreach ($volumes as $volume) {
+            if (self::isVolumeAlreadyDeclared($declaredVolumes, $pod, $volume)) {
+                continue;
+            }
+
             if ($volume instanceof PersistentVolumeInterface) {
                 $specs['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,

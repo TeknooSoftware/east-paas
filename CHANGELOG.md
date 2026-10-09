@@ -1,5 +1,56 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.8.0] - 2026-10-09
+### Stable Release
+
+**Fixes**
+- Validation: a value containing a `&` (`test -f /tmp/ok && exit 0`, `mysql://db/app?charset=utf8&serverVersion=11`)
+  does not fail the validation of the PaaS file anymore. The value is passed unchanged to the compiler.
+- Kubernetes: the volumes (persistent, secret, map or imported) of a container whose image is not built by East PaaS
+  (its image is not declared in `images:` and it has no embedded volume) are declared in the pod's `spec.volumes`.
+  Until now, they were only mounted in the container and Kubernetes refused the pod
+  (`volumeMounts[0].name: Not found`).
+- Kubernetes: a volume mounted by several containers of a same pod is declared once in the pod's `spec.volumes`. Two
+  different volumes mounted with the same name in a same pod are refused with an explicit error, instead of a manifest
+  refused by Kubernetes or a volume silently mounted in place of another.
+- Docker Compose: an imported volume (`from:`) mounted in a container whose image is not built by East PaaS is
+  populated from the image pushed on the registry.
+- Docker Compose: a scheduled job (`planning: scheduled`) is not supported on a Docker Compose host. It is still not
+  deployed, but a warning is added to the deployment's result instead of being ignored silently. The documentation
+  and the `symfony/scheduler` suggestion, which claimed these jobs were run by the worker, are fixed.
+- Documentation: the cron expression of the examples is a valid Kubernetes schedule (`'0 */3 * * *'`).
+
+**Evolutions**
+- PaaS file `v1.2`: a scheduled job accepts the optional `schedule-options` (only on Kubernetes, they have no effect on
+  a Docker Compose host, where scheduled jobs are not supported). An option not defined keeps the Kubernetes's default
+  behavior, the CronJob of a job without options is unchanged:
+  ```yaml
+  jobs:
+    backup:
+      planning: scheduled
+      schedule: '17 3 * * *'
+      schedule-options:
+        time-zone: 'Europe/Paris'   # spec.timeZone, a time zone of the IANA database (Kubernetes 1.27 or later)
+        concurrency: forbid         # spec.concurrencyPolicy: allow, forbid or replace
+        starting-deadline: 300      # spec.startingDeadlineSeconds
+        successful-history: 3       # spec.successfulJobsHistoryLimit
+        failed-history: 1           # spec.failedJobsHistoryLimit
+        suspend: false              # spec.suspend
+  ```
+  These options are also validated by the compiler, for jobs defined in a library (`extends`).
+- Jobs: the `schedule` of a scheduled job is validated during the compilation, like Kubernetes does: 5 fields
+  (minute, hour, day of month, month, day of week, with `*`, `?`, values, names, ranges, steps and lists), or a
+  descriptor (`@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily`, `@midnight`, `@hourly`, `@every <duration>`).
+  An invalid schedule (6 fields, a time zone `CRON_TZ=`, a value out of range, ...) fails the compilation
+  (`teknoo.east.paas.error.recipe.job.invalid-schedule:<job>`) instead of failing when the CronJob is applied.
+- Kubernetes: the name of a CronJob is limited to 52 characters, like Kubernetes requires. A longer name is truncated
+  and suffixed by a short hash of the full name, stable between deployments. Names which fit are unchanged.
+
+**Notes**
+- `concurrency`, `failed-history`, `schedule-options`, `starting-deadline`, `successful-history`, `suspend` and
+  `time-zone` become keys of the PaaS file: like the other keys, they can not be used anymore as names of pods,
+  containers, volumes, jobs, services, ingresses, images, builds, maps or secrets.
+
 ## [5.7.4] - 2026-10-08
 ### Stable Release
 

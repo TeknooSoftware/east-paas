@@ -244,6 +244,8 @@ class FeatureContext implements Context
 
     private static bool $jobsDefined = false;
 
+    private static bool $sharedVolumesDefined = false;
+
     private static bool $conditionsDefined = false;
 
     private static bool $exposeShortcutsDefined = false;
@@ -537,6 +539,7 @@ class FeatureContext implements Context
         self::$versionLevel = '1.30';
         self::$clusterGitVersion = null;
         self::$jobsDefined = false;
+        self::$sharedVolumesDefined = false;
         self::$conditionsDefined = false;
         self::$exposeShortcutsDefined = false;
         self::$CDCompared = false;
@@ -1565,6 +1568,13 @@ EOF,
         self::$jobsDefined = true;
     }
 
+    #[Given('a project with a paas file with shared volumes')]
+    public function aProjectWithAPaasFileWithSharedVolumes(): void
+    {
+        $this->paasFile = __DIR__ . '/paas.with-shared-volumes.yaml';
+        self::$sharedVolumesDefined = true;
+    }
+
     #[Given('a project with a complete paas file with jobs with wrong version')]
     public function aProjectWithACompletePaasFileWithJobsWithWrongVersion(): void
     {
@@ -2324,6 +2334,7 @@ EOF,
             self::$conditionsDefined,
             self::$ingressProvider,
             self::$exposeShortcutsDefined,
+            self::$sharedVolumesDefined,
         );
         //TO avoid circural references in var_export
         $tcd = clone $cd;
@@ -2370,6 +2381,12 @@ EOF,
         $prefix = self::$projectPrefix;
         if (!empty($prefix)) {
             $prefix .= '-';
+        }
+
+        if (self::$sharedVolumesDefined) {
+            $this->assertKubernetesManifests($this->expectedManifestsWithSharedVolumes($prefix));
+
+            return;
         }
 
         $hncManifest = '';
@@ -3010,7 +3027,7 @@ JSON;
                 }
             },
             "spec": {
-                "schedule": "0 0 /3 * * *",
+                "schedule": "0 */3 * * *",
                 "jobTemplate": {
                     "spec": {
                         "completions": 1,
@@ -3746,6 +3763,11 @@ EOF;
 }
 EOF;
 
+        $this->assertKubernetesManifests($excepted);
+    }
+
+    private function assertKubernetesManifests(string $excepted): void
+    {
         $expectedArray = json_decode(str_replace('\\', '\\\\', $excepted), true);
         $expectedPretty = json_encode($expectedArray, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
 
@@ -3755,6 +3777,196 @@ EOF;
             $expectedPretty,
             $json,
         );
+    }
+
+    /**
+     * A persistent volume shared by two containers of the same pod and by a scheduled job: each pod must declare the
+     * volume once in its `spec.volumes`.
+     */
+    private function expectedManifestsWithSharedVolumes(string $prefix): string
+    {
+        return <<<"EOF"
+{
+    "Teknoo\\Kubernetes\\Model\\PersistentVolumeClaim": [
+        {
+            "metadata": {
+                "name": "{$prefix}database-data",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}database-data"
+                }
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "storageClassName": "nfs",
+                "resources": {
+                    "requests": {
+                        "storage": "1Gi"
+                    }
+                }
+            }
+        }
+    ],
+    "Teknoo\\Kubernetes\\Model\\StatefulSet": [
+        {
+            "metadata": {
+                "name": "{$prefix}database-sfset",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}database"
+                },
+                "annotations": {
+                    "teknoo.east.paas.version": "v1"
+                }
+            },
+            "spec": {
+                "replicas": 1,
+                "serviceName": "{$prefix}database",
+                "strategy": {
+                    "type": "RollingUpdate",
+                    "rollingUpdate": {
+                        "maxSurge": 1,
+                        "maxUnavailable": 0
+                    }
+                },
+                "selector": {
+                    "matchLabels": {
+                        "name": "{$prefix}database"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "name": "{$prefix}database-pod",
+                        "namespace": "behat-test",
+                        "labels": {
+                            "name": "{$prefix}database",
+                            "vname": "{$prefix}database-v1"
+                        }
+                    },
+                    "spec": {
+                        "hostAliases": [
+                            {
+                                "hostnames": [
+                                    "mariadb",
+                                    "exporter"
+                                ],
+                                "ip": "127.0.0.1"
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "mariadb",
+                                "image": "registry.hub.docker.com/library/mariadb:11",
+                                "imagePullPolicy": "Always",
+                                "ports": [
+                                    {
+                                        "containerPort": 3306
+                                    }
+                                ],
+                                "volumeMounts": [
+                                    {
+                                        "name": "database-data-volume",
+                                        "mountPath": "/var/lib/mysql",
+                                        "readOnly": false
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "exporter",
+                                "image": "registry.hub.docker.com/library/exporter:1",
+                                "imagePullPolicy": "Always",
+                                "volumeMounts": [
+                                    {
+                                        "name": "database-data-volume",
+                                        "mountPath": "/data",
+                                        "readOnly": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "database-data-volume",
+                                "persistentVolumeClaim": {
+                                    "claimName": "{$prefix}database-data"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ],
+    "Teknoo\\Kubernetes\\Model\\CronJob": [
+        {
+            "metadata": {
+                "name": "{$prefix}backup-dump-cronjob",
+                "namespace": "behat-test",
+                "labels": {
+                    "name": "{$prefix}backup"
+                },
+                "annotations": {
+                    "teknoo.east.paas.version": "v1"
+                }
+            },
+            "spec": {
+                "schedule": "17 3 * * *",
+                "timeZone": "Europe/Paris",
+                "concurrencyPolicy": "Forbid",
+                "startingDeadlineSeconds": 300,
+                "successfulJobsHistoryLimit": 3,
+                "failedJobsHistoryLimit": 1,
+                "suspend": false,
+                "jobTemplate": {
+                    "spec": {
+                        "completions": 1,
+                        "completionMode": "NonIndexed",
+                        "parallelism": 1,
+                        "template": {
+                            "spec": {
+                                "hostAliases": [
+                                    {
+                                        "hostnames": [
+                                            "dump"
+                                        ],
+                                        "ip": "127.0.0.1"
+                                    }
+                                ],
+                                "containers": [
+                                    {
+                                        "name": "dump",
+                                        "image": "registry.hub.docker.com/library/alpine:3.20",
+                                        "imagePullPolicy": "Always",
+                                        "volumeMounts": [
+                                            {
+                                                "name": "database-data-volume",
+                                                "mountPath": "/backup/data",
+                                                "readOnly": false
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "restartPolicy": "Never",
+                                "volumes": [
+                                    {
+                                        "name": "database-data-volume",
+                                        "persistentVolumeClaim": {
+                                            "claimName": "{$prefix}database-data"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "ttlSecondsAfterFinished": 3600
+                    }
+                }
+            }
+        }
+    ]
+}
+EOF;
     }
 
     /**
@@ -3797,6 +4009,7 @@ EOF;
             self::$conditionsDefined,
             self::$ingressProvider,
             self::$exposeShortcutsDefined,
+            self::$sharedVolumesDefined,
         );
     }
 

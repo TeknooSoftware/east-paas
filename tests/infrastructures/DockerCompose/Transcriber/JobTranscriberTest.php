@@ -119,7 +119,7 @@ class JobTranscriberTest extends TestCase
         );
     }
 
-    public function testTranscribeSkipsScheduled(): void
+    public function testTranscribeScheduledAddsWarning(): void
     {
         $job = $this->buildJob(Planning::Scheduled);
 
@@ -134,8 +134,10 @@ class JobTranscriberTest extends TestCase
 
         $generation = new Accumulator('default-prj', 'private');
 
+        $warning = 'The scheduled job `init` is not supported on a Docker Compose host, it is not deployed';
+
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('success')->with(['warning' => $warning]);
         $promise->expects($this->never())->method('fail');
 
         $this->buildTranscriber()->transcribe(
@@ -147,8 +149,40 @@ class JobTranscriberTest extends TestCase
         );
 
         self::assertSame([], $generation->getComposeFile());
+        self::assertSame([$warning], $generation->getWarnings());
     }
 
+    public function testTranscribeScheduledAddsWarningOnceForAJobWithSeveralPods(): void
+    {
+        $job = $this->buildJob(Planning::Scheduled);
+
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $job): CompiledDeploymentInterface {
+                $callback($job, [], [], 'prj');
+                $callback($job, [], [], 'prj');
+
+                return $cd;
+            });
+
+        $generation = new Accumulator('default-prj', 'private');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            accumulator: $generation,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default',
+        );
+
+        self::assertSame([], $generation->getComposeFile());
+        self::assertCount(1, $generation->getWarnings());
+    }
 
     public function testTranscribeFailure(): void
     {

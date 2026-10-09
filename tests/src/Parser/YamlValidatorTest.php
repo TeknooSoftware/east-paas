@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Parser;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Parser;
 use Teknoo\East\Paas\Parser\Exception\ValidationException;
@@ -118,6 +119,125 @@ class YamlValidatorTest extends TestCase
         $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
             $configuration,
             $this->getXsdFile(),
+            $promise
+        ));
+    }
+
+    public function testValidConfInV1dot2WithXmlSpecialCharsInValues(): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+        $container = &$configuration['pods']['php-pods']['containers']['php-run'];
+        $container['variables']['DATABASE_URL'] = 'mysql://u:p@db/app?charset=utf8&serverVersion=11';
+        $container['variables']['ESCAPED'] = 'a &amp; b';
+        $container['variables']['COMPARISON'] = 'a < b > c';
+        $container['variables']['PERCENT'] = '50% & co';
+        $container['healthcheck']['probe']['command'] = ['sh', '-c', 'test -f /tmp/ok && exit 0'];
+        $configuration['maps']['map1']['key3'] = 's3://bucket?x=1&y=2';
+        unset($container);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with($configuration);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
+            $promise
+        ));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function getScheduleOptions(): array
+    {
+        return [
+            'time-zone' => 'Europe/Paris',
+            'concurrency' => 'forbid',
+            'starting-deadline' => 300,
+            'successful-history' => 3,
+            'failed-history' => 0,
+            'suspend' => false,
+        ];
+    }
+
+    public function testValidConfInV1dot2WithScheduleOptions(): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+        $configuration['jobs']['job-backup']['schedule-options'] = self::getScheduleOptions();
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with($configuration);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
+            $promise
+        ));
+    }
+
+    public function testValidConfInV1dot2WithPartialScheduleOptions(): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+        $configuration['jobs']['job-backup']['schedule-options'] = ['suspend' => true];
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with($configuration);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
+            $promise
+        ));
+    }
+
+    public function testNotValidConfInV1dot1WithScheduleOptions(): void
+    {
+        $configuration = $this->getYamlArray();
+        $configuration['jobs']['job-backup']['schedule-options'] = self::getScheduleOptions();
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(ValidationException::class));
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFile(),
+            $promise
+        ));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: mixed}>
+     */
+    public static function invalidScheduleOptionsProvider(): array
+    {
+        return [
+            'unknown concurrency' => ['concurrency', 'foo'],
+            'negative starting deadline' => ['starting-deadline', -1],
+            'not integer starting deadline' => ['starting-deadline', 'foo'],
+            'negative successful history' => ['successful-history', -3],
+            'negative failed history' => ['failed-history', -3],
+            'not boolean suspend' => ['suspend', 'foo'],
+            'unknown option' => ['foo', 'bar'],
+        ];
+    }
+
+    #[DataProvider('invalidScheduleOptionsProvider')]
+    public function testNotValidConfInV1dot2WithInvalidScheduleOptions(string $option, mixed $value): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+        $configuration['jobs']['job-backup']['schedule-options'] = [$option => $value];
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+        $promise->expects($this->once())->method('fail')->with($this->isInstanceOf(ValidationException::class));
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
             $promise
         ));
     }

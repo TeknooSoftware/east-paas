@@ -245,10 +245,11 @@ During-deployment jobs vs scheduled jobs
   and fails the deployment when the exit code is not one of the configured success exit codes (`0` by
   default).
 
-* **Scheduled** jobs (`Planning::Scheduled`) are **not** written into the Compose file. The local Docker
-  host has no native cron equivalent of a Kubernetes `CronJob`, so scheduled jobs are handled **platform-side**: the
-  East PaaS worker re-dispatches them on time (via `symfony/scheduler`). Kubernetes
-  is unaffected and keeps using its native `CronJob`.
+* **Scheduled** jobs (`Planning::Scheduled`) are **not supported** on a Docker Compose host: the local Docker
+  host has no native cron equivalent of a Kubernetes `CronJob`. They are **not** written into the Compose file
+  and are not run, and a warning (``The scheduled job `<job>` is not supported on a Docker Compose host, it is
+  not deployed``) is added to the deployment's result, under `warnings`. Their `schedule-options` have no
+  effect. Kubernetes is unaffected and keeps using its native `CronJob`.
 
 Ansible playbooks
 -----------------

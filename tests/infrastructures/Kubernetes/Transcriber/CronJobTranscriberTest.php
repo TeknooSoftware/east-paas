@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job as CDJob;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ScheduleOptions;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
@@ -116,9 +117,9 @@ class CronJobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/map', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/map', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -247,8 +248,8 @@ class CronJobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                         'map' => new MapVolume('bar', '/bar', 'bar'),
                     ],
                     'a-prefix',
@@ -368,9 +369,9 @@ class CronJobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -440,8 +441,8 @@ class CronJobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                     ],
                     'a-prefix',
                 );
@@ -545,9 +546,9 @@ class CronJobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -617,8 +618,8 @@ class CronJobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                     ],
                     'a-prefix',
                 );
@@ -1000,6 +1001,288 @@ class CronJobTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    public function testRunWithVolumesSharedBetweenContainers(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $data = new PersistentVolume('data', '/var/lib/mysql', 'demo-data');
+        $tls = new SecretVolume('tls', '/etc/tls', 'demo-certs');
+
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $data, $tls): MockObject {
+                $c1 = new Container(
+                    'dump',
+                    'registry.hub.docker.com/library/mariadb',
+                    '11',
+                    [],
+                    ['data' => $data, 'tls' => $tls],
+                    [],
+                    null,
+                    new ResourceSet(),
+                );
+
+                $c2 = new Container(
+                    'upload',
+                    'registry.hub.docker.com/library/rclone',
+                    '1',
+                    [],
+                    ['data' => $data],
+                    [],
+                    null,
+                    new ResourceSet(),
+                );
+
+                $job = new CDJob(
+                    name: 'backup',
+                    pods: [new Pod('dump', 1, [$c1, $c2])],
+                    planning: CDJob\Planning::Scheduled,
+                    planningSchedule: '17 3 * * *',
+                );
+
+                $callback(
+                    $job,
+                    [],
+                    ['dump_data' => $data, 'dump_tls' => $tls, 'upload_data' => $data],
+                    'a-prefix',
+                );
+
+                return $cd;
+            });
+
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+        $repo->method('exists')->willReturn(false);
+
+        $capturedSpec = null;
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (CronJob $model) use (&$capturedSpec): array {
+                    $capturedSpec = $model->toArray()['spec']['jobTemplate']['spec']['template']['spec'];
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new CronJobTranscriber('paas.east.teknoo.net', '1.36');
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $this->assertInstanceOf(CronJobTranscriber::class, $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        $this->assertIsArray($capturedSpec);
+        $this->assertSame(
+            [
+                [
+                    'name' => 'data-volume',
+                    'persistentVolumeClaim' => [
+                        'claimName' => 'a-prefix-data',
+                    ],
+                ],
+                [
+                    'name' => 'tls-volume',
+                    'secret' => [
+                        'secretName' => 'a-prefix-demo-certs-secret',
+                    ],
+                ],
+            ],
+            $capturedSpec['volumes'],
+        );
+    }
+
+    /**
+     * @return array{0: list<string>, 1: array<string, mixed>} names passed to `exists()` and the applied CronJob
+     */
+    private function runJob(CDJob $job): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $job): MockObject {
+                $callback($job, [], [], 'a-prefix');
+
+                return $cd;
+            });
+
+        $existsNames = [];
+        $manifest = [];
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+        $repo->expects($this->once())
+            ->method('exists')
+            ->willReturnCallback(
+                function (string $name) use (&$existsNames): bool {
+                    $existsNames[] = $name;
+                    return false;
+                }
+            );
+
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (CronJob $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new CronJobTranscriber('paas.east.teknoo.net', '1.36');
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return [$existsNames, $manifest];
+    }
+
+    private function buildScheduledJob(
+        string $jobName = 'backup',
+        string $podName = 'dump',
+        ?ScheduleOptions $scheduleOptions = null,
+    ): CDJob {
+        return new CDJob(
+            name: $jobName,
+            pods: [
+                new Pod(
+                    $podName,
+                    1,
+                    [new Container('dump', 'registry.hub.docker.com/library/mariadb', '11')],
+                ),
+            ],
+            planning: CDJob\Planning::Scheduled,
+            planningSchedule: '17 3 * * *',
+            scheduleOptions: $scheduleOptions,
+        );
+    }
+
+    /**
+     * @return list<string> names passed to `exists()` and names of applied CronJobs
+     */
+    private function runWithNames(string $jobName, string $podName): array
+    {
+        [$existsNames, $manifest] = $this->runJob($this->buildScheduledJob($jobName, $podName));
+
+        return [...$existsNames, $manifest['metadata']['name']];
+    }
+
+    public function testRunWithoutScheduleOptions(): void
+    {
+        [, $manifest] = $this->runJob($this->buildScheduledJob());
+
+        $this->assertSame(['schedule', 'jobTemplate'], array_keys($manifest['spec']));
+    }
+
+    public function testRunWithScheduleOptions(): void
+    {
+        [, $manifest] = $this->runJob(
+            $this->buildScheduledJob(
+                scheduleOptions: new ScheduleOptions(
+                    timeZone: 'Europe/Paris',
+                    concurrency: CDJob\ConcurrencyPolicy::Forbid,
+                    startingDeadline: 300,
+                    successfulHistory: 3,
+                    failedHistory: 0,
+                    suspend: false,
+                ),
+            ),
+        );
+
+        $spec = $manifest['spec'];
+        unset($spec['jobTemplate']);
+        $this->assertSame(
+            [
+                'schedule' => '17 3 * * *',
+                'timeZone' => 'Europe/Paris',
+                'concurrencyPolicy' => 'Forbid',
+                'startingDeadlineSeconds' => 300,
+                'successfulJobsHistoryLimit' => 3,
+                'failedJobsHistoryLimit' => 0,
+                'suspend' => false,
+            ],
+            $spec,
+        );
+        $this->assertSame('jobTemplate', array_key_last($manifest['spec']));
+    }
+
+    public function testRunWithPartialScheduleOptions(): void
+    {
+        foreach (
+            [
+                [CDJob\ConcurrencyPolicy::Allow, 'Allow'],
+                [CDJob\ConcurrencyPolicy::Replace, 'Replace'],
+            ] as [$policy, $expected]
+        ) {
+            [, $manifest] = $this->runJob(
+                $this->buildScheduledJob(
+                    scheduleOptions: new ScheduleOptions(concurrency: $policy, suspend: true),
+                ),
+            );
+
+            $spec = $manifest['spec'];
+            unset($spec['jobTemplate']);
+            $this->assertSame(
+                [
+                    'schedule' => '17 3 * * *',
+                    'concurrencyPolicy' => $expected,
+                    'suspend' => true,
+                ],
+                $spec,
+            );
+        }
+    }
+
+    public function testRunWithShortNameKeepsTheName(): void
+    {
+        $this->assertSame(
+            ['a-prefix-backup-dump-cronjob', 'a-prefix-backup-dump-cronjob'],
+            $this->runWithNames('backup', 'dump'),
+        );
+    }
+
+    public function testRunWithLongNameBoundsTheName(): void
+    {
+        //71 characters before the `-cronjob` suffix, Kubernetes limits the name of a CronJob to 52 characters
+        $names = $this->runWithNames('nightly-database-backup-of-the-production-cluster', 'mariadb-dump');
+
+        $this->assertSame(
+            ['a-prefix-nightly-database-backup-of-th-dba77-cronjob', 'a-prefix-nightly-database-backup-of-th-dba77-cronjob'],
+            $names,
+        );
+        $this->assertSame(52, strlen($names[0]));
+
+        $this->assertSame(
+            $names,
+            $this->runWithNames('nightly-database-backup-of-the-production-cluster', 'mariadb-dump'),
+        );
     }
 
     private function buildCDForVersionLevel(CompiledDeploymentInterface $cd): void
