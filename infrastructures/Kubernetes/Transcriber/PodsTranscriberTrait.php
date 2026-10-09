@@ -285,11 +285,44 @@ trait PodsTranscriberTrait
     }
 
     /**
-     * A volume mounted by several containers of the pod is declared only once in the pod. Two different volumes
-     * with the same name (they are mounted with the same name) can not be declared together.
+     * A volume mounted by several containers of a pod must be declared only once in the pod: Kubernetes refuses two
+     * volumes, or two init containers, with the same name. Two different volumes can not be mounted with the same
+     * name in a pod.
      *
+     * @param array<string, string> $declaredVolumes
+     */
+    private static function isVolumeAlreadyDeclared(
+        array &$declaredVolumes,
+        Pod $pod,
+        PersistentVolumeInterface|SecretVolume|MapVolume|Volume $volume,
+    ): bool {
+        $source = match (true) {
+            $volume instanceof PersistentVolumeInterface => 'persistent',
+            $volume instanceof SecretVolume => 'secret:' . $volume->getSecretIdentifier(),
+            $volume instanceof MapVolume => 'map:' . $volume->getMapIdentifier(),
+            default => 'image:' . $volume->getUrl(),
+        };
+
+        $name = $volume->getName();
+        if (!isset($declaredVolumes[$name])) {
+            $declaredVolumes[$name] = $source;
+
+            return false;
+        }
+
+        if ($declaredVolumes[$name] !== $source) {
+            throw new InvalidArgumentException(
+                "The pod `{$pod->getName()}` mounts several different volumes with the same name `{$name}`, "
+                . "a volume shared between containers must be the same"
+            );
+        }
+
+        return true;
+    }
+
+    /**
      * @param array<string, mixed> $specs
-     * @param array<string, SecretVolume|MapVolume|Volume> $volumes
+     * @param array<string, PersistentVolumeInterface|SecretVolume|MapVolume|Volume> $volumes
      */
     private static function convertToVolumes(
         array &$specs,
@@ -302,98 +335,97 @@ trait PodsTranscriberTrait
 
         $declaredVolumes = [];
         foreach ($volumes as $volume) {
-            $initContainerSpec = null;
+            if (self::isVolumeAlreadyDeclared($declaredVolumes, $pod, $volume)) {
+                continue;
+            }
+
             if ($volume instanceof PersistentVolumeInterface) {
-                $volumeSpec = [
+                $specs['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'persistentVolumeClaim' => [
                         'claimName' => $prefixer($volume->getName()),
                     ],
                 ];
-            } elseif ($volume instanceof SecretVolume) {
-                $volumeSpec = [
+
+                continue;
+            }
+
+            if ($volume instanceof SecretVolume) {
+                $specs['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'secret' => [
                         'secretName' => $prefixer($volume->getSecretIdentifier() . self::SECRET_SUFFIX),
                     ],
                 ];
-            } elseif ($volume instanceof MapVolume) {
-                $volumeSpec = [
+
+                continue;
+            }
+
+            if ($volume instanceof MapVolume) {
+                $specs['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'configMap' => [
                         'name' => $prefixer($volume->getMapIdentifier() . self::MAP_SUFFIX),
                     ],
                 ];
-            } elseif ($useImageVolumes) {
-                $volumeSpec = [
+
+                continue;
+            }
+
+            if ($useImageVolumes) {
+                $specs['volumes'][] = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'image' => [
                         'reference' => $volume->getUrl(),
                         'pullPolicy' => 'Always',
                     ],
                 ];
-            } else {
-                $resourcesReqs = [];
-                foreach ($pod as $container) {
-                    /** @var Resource $resource */
-                    foreach ($container->getResources() as $resource) {
-                        $resourcesReqs['requests'][$resource->getType()] = $resource->getRequire();
-                        $resourcesReqs['limits'][$resource->getType()] = $resource->getLimit();
-                    }
-
-                    if (!empty($resourcesReqs)) {
-                        break;
-                    }
-                }
-
-                $initContainerSpec = [
-                    'name' => $volume->getName(),
-                    'image' => $volume->getUrl(),
-                    'imagePullPolicy' => 'Always',
-                    'volumeMounts' => [
-                        [
-                            'name' => $volume->getName() . self::VOLUME_SUFFIX,
-                            'mountPath' => $volume->getMountPath(),
-                            'readOnly' => false,
-                        ]
-                    ],
-                    'env' => [
-                        [
-                            'name' => 'MOUNT_PATH',
-                            'value' => $volume->getMountPath(),
-                        ]
-                    ]
-                ];
-
-                if (!empty($resourcesReqs)) {
-                    $initContainerSpec['resources'] = $resourcesReqs;
-                }
-
-                $volumeSpec = [
-                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
-                    'emptyDir' => []
-                ];
-            }
-
-            $volumeName = $volumeSpec['name'];
-            if (isset($declaredVolumes[$volumeName])) {
-                if ($declaredVolumes[$volumeName] !== [$volumeSpec, $initContainerSpec]) {
-                    throw new InvalidArgumentException(
-                        "The pod `{$pod->getName()}` mounts several different volumes with the same name "
-                        . "`{$volume->getName()}`, a volume shared between containers must be the same"
-                    );
-                }
 
                 continue;
             }
 
-            $declaredVolumes[$volumeName] = [$volumeSpec, $initContainerSpec];
+            $resourcesReqs = [];
+            foreach ($pod as $container) {
+                /** @var Resource $resource */
+                foreach ($container->getResources() as $resource) {
+                    $resourcesReqs['requests'][$resource->getType()] = $resource->getRequire();
+                    $resourcesReqs['limits'][$resource->getType()] = $resource->getLimit();
+                }
 
-            if (null !== $initContainerSpec) {
-                $specs['initContainers'][] = $initContainerSpec;
+                if (!empty($resourcesReqs)) {
+                    break;
+                }
             }
 
-            $specs['volumes'][] = $volumeSpec;
+            $initContainerSpec = [
+                'name' => $volume->getName(),
+                'image' => $volume->getUrl(),
+                'imagePullPolicy' => 'Always',
+                'volumeMounts' => [
+                    [
+                        'name' => $volume->getName() . self::VOLUME_SUFFIX,
+                        'mountPath' => $volume->getMountPath(),
+                        'readOnly' => false,
+                    ]
+                ],
+                'env' => [
+                    [
+                        'name' => 'MOUNT_PATH',
+                        'value' => $volume->getMountPath(),
+                    ]
+                ]
+            ];
+
+            if (!empty($resourcesReqs)) {
+                $initContainerSpec['resources'] = $resourcesReqs;
+            }
+
+            $specs['initContainers'][] = $initContainerSpec;
+
+            $specs['volumes'][] = [
+                'name' => $volume->getName() . self::VOLUME_SUFFIX,
+                'emptyDir' => []
+            ];
         }
     }
 

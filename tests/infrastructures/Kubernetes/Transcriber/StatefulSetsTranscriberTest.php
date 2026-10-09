@@ -27,6 +27,7 @@ namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
@@ -45,6 +46,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
+use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber;
@@ -942,9 +944,85 @@ class StatefulSetsTranscriberTest extends TestCase
             );
     }
 
-    public function testRunWithVolumesSharedBetweenContainers(): void
+    /**
+     * @return array<string, mixed>
+     */
+    private function transcribeAndCapturePodSpec(CompiledDeploymentInterface $cd, string $versionLevel): array
     {
         $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $repo = $this->createMock(StatefulSetRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['statefulsets', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+
+        $capturedSpec = null;
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (StatefulSet $model) use (&$capturedSpec): array {
+                    $capturedSpec = $model->toArray()['spec']['template']['spec'];
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new StatefulSetsTranscriber('paas.east.teknoo.net', $versionLevel);
+        $this->assertInstanceOf(StatefulSetsTranscriber::class, $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        $this->assertIsArray($capturedSpec);
+
+        return $capturedSpec;
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: array<string, mixed>, 2: list<string>}>
+     */
+    public static function versionsForSharedVolumesProvider(): array
+    {
+        return [
+            'embedded volume populated by an init container' => [
+                '1.30',
+                [
+                    'name' => 'foo1-volume',
+                    'emptyDir' => [],
+                ],
+                ['foo1'],
+            ],
+            'embedded volume mounted from its image' => [
+                '1.36',
+                [
+                    'name' => 'foo1-volume',
+                    'image' => [
+                        'reference' => 'repository.teknoo.run/foo1',
+                        'pullPolicy' => 'Always',
+                    ],
+                ],
+                [],
+            ],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $expectedEmbeddedVolume
+     * @param list<string> $expectedInitContainers
+     */
+    #[DataProvider('versionsForSharedVolumesProvider')]
+    public function testRunWithVolumesSharedBetweenContainers(
+        string $versionLevel,
+        array $expectedEmbeddedVolume,
+        array $expectedInitContainers,
+    ): void {
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $volume = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
@@ -966,43 +1044,11 @@ class StatefulSetsTranscriberTest extends TestCase
             ],
         );
 
-        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
-        $repo = $this->createMock(StatefulSetRepository::class);
-        $kubeClient->method('__call')->willReturnMap([['statefulsets', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
-        $repo->method('first')->willReturn(null);
+        $capturedSpec = $this->transcribeAndCapturePodSpec($cd, $versionLevel);
 
-        $capturedSpec = null;
-        $repo->expects($this->once())
-            ->method('apply')
-            ->willReturnCallback(
-                function (StatefulSet $model) use (&$capturedSpec): array {
-                    $capturedSpec = $model->toArray()['spec']['template']['spec'];
-                    return ['foo'];
-                }
-            );
-
-        $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success')->with(['foo']);
-        $promise->expects($this->never())->method('fail');
-
-        $transcriber = new StatefulSetsTranscriber('paas.east.teknoo.net', '1.30');
-        $this->assertInstanceOf(StatefulSetsTranscriber::class, $transcriber->transcribe(
-            compiledDeployment: $cd,
-            client: $kubeClient,
-            promise: $promise,
-            defaultsBag: $this->createStub(DefaultsBag::class),
-            namespace: 'default_namespace',
-            useHierarchicalNamespaces: false,
-        ));
-
-        $this->assertIsArray($capturedSpec);
         $this->assertSame(
             [
-                [
-                    'name' => 'foo1-volume',
-                    'emptyDir' => [],
-                ],
+                $expectedEmbeddedVolume,
                 [
                     'name' => 'data-volume',
                     'persistentVolumeClaim' => [
@@ -1018,19 +1064,75 @@ class StatefulSetsTranscriberTest extends TestCase
             ],
             $capturedSpec['volumes'],
         );
-        $this->assertCount(1, $capturedSpec['initContainers']);
-        $this->assertSame('foo1', $capturedSpec['initContainers'][0]['name']);
+        $this->assertSame(
+            $expectedInitContainers,
+            array_column($capturedSpec['initContainers'] ?? [], 'name'),
+        );
         $this->assertCount(3, $capturedSpec['containers'][0]['volumeMounts']);
         $this->assertCount(3, $capturedSpec['containers'][1]['volumeMounts']);
     }
 
-    public function testRunWithConflictingVolumesBetweenContainers(): void
+    public function testRunWithEmbeddedVolumeSharedOnDifferentMountPaths(): void
     {
-        $kubeClient = $this->createStub(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
 
-        $tlsA = new SecretVolume('tls', '/etc/tls', 'tls-a');
-        $tlsB = new SecretVolume('tls', '/etc/tls', 'tls-b');
+        $volume = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+        $volume = $volume->withRegistry('repository.teknoo.run');
+        $elsewhere = new Volume('foo1', ['foo' => 'bar'], '/foo', '/elsewhere');
+        $elsewhere = $elsewhere->withRegistry('repository.teknoo.run');
+
+        $this->buildCDWithVolumesSharedBetweenContainers(
+            cd: $cd,
+            c1Volumes: ['foo' => $volume->import('/mount')],
+            c2Volumes: ['foo' => $elsewhere->import('/elsewhere')],
+            volumes: [
+                'mariadb_foo' => $volume,
+                'exporter_foo' => $elsewhere,
+            ],
+        );
+
+        $capturedSpec = $this->transcribeAndCapturePodSpec($cd, '1.30');
+
+        $this->assertSame(
+            [
+                [
+                    'name' => 'foo1-volume',
+                    'emptyDir' => [],
+                ],
+            ],
+            $capturedSpec['volumes'],
+        );
+        $this->assertSame(['foo1'], array_column($capturedSpec['initContainers'], 'name'));
+    }
+
+    /**
+     * @return array<string, array{0: VolumeInterface, 1: VolumeInterface}>
+     */
+    public static function conflictingVolumesProvider(): array
+    {
+        return [
+            'two different secrets' => [
+                new SecretVolume('tls', '/etc/tls', 'tls-a'),
+                new SecretVolume('tls', '/etc/tls', 'tls-b'),
+            ],
+            'a secret and a map' => [
+                new SecretVolume('tls', '/etc/tls', 'tls-a'),
+                new MapVolume('tls', '/etc/tls', 'tls-a'),
+            ],
+            'a persistent volume and a secret' => [
+                new PersistentVolume('tls', '/etc/tls', 'tls-a'),
+                new SecretVolume('tls', '/etc/tls', 'tls-a'),
+            ],
+        ];
+    }
+
+    #[DataProvider('conflictingVolumesProvider')]
+    public function testRunWithConflictingVolumesBetweenContainers(
+        VolumeInterface $tlsA,
+        VolumeInterface $tlsB,
+    ): void {
+        $kubeClient = $this->createStub(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
 
         $this->buildCDWithVolumesSharedBetweenContainers(
             cd: $cd,
