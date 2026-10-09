@@ -361,7 +361,7 @@ secret.
                                       from-secret: 'volume-vault'
           job-backup:
               planning: scheduled #To create a cron job
-              schedule: '0 0 /3 * * *' #to schedule the cron job
+              schedule: '0 */3 * * *' #to schedule the cron job
               pods:
                   backup:
                       containers:

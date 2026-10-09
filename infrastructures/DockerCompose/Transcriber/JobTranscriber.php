@@ -43,12 +43,13 @@ use Throwable;
  * guarded by the `jobs` profile so a plain `docker compose up` does not start them; the deploy playbook runs
  * them once with `docker compose --profile jobs run --rm <svc>`.
  *
- * Scheduled jobs (`Planning::Scheduled`) are skipped: they are re-dispatched platform-side by the East PaaS
- * worker (`symfony/scheduler`) rather than emitted into the Compose file. Each job pod becomes one or more
- * services (anchor + sidecars) with `restart: "no"`, the `jobs` profile and the job's run settings
- * (parallelism, completions, success/failure exit codes, time limit) recorded under `x-paas-job`; the
- * Accumulator expands them into the sequential runs (one per completion, with the time limit and the
- * accepted exit codes) the playbook executes. `parallel` is not supported: runs are always sequential.
+ * Scheduled jobs (`Planning::Scheduled`) are not supported on a Docker Compose host (there is no equivalent of
+ * a Kubernetes `CronJob`): they are not deployed and a warning is added to the result.
+ *
+ * Each job pod becomes one or more services (anchor + sidecars) with `restart: "no"`, the `jobs` profile and the
+ * job's run settings (parallelism, completions, success/failure exit codes, time limit) recorded under
+ * `x-paas-job`; the Accumulator expands them into the sequential runs (one per completion, with the time limit
+ * and the accepted exit codes) the playbook executes. `parallel` is not supported: runs are always sequential.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -99,6 +100,7 @@ class JobTranscriber implements DeploymentInterface
         $networkName = $accumulator->getNetworkName();
         $secrets = self::collectSecrets($compiledDeployment);
         $maps = self::collectMaps($compiledDeployment);
+        $skippedJobs = [];
 
         $compiledDeployment->foreachJob(
             /**
@@ -116,8 +118,22 @@ class JobTranscriber implements DeploymentInterface
                 $networkName,
                 $secrets,
                 $maps,
+                &$skippedJobs,
             ): void {
-                if (Planning::DuringDeployment !== $job->getPlanning()) {
+                if (Planning::Scheduled === $job->getPlanning()) {
+                    //The callback is called once per pod of the job, the job is reported only once
+                    if (isset($skippedJobs[$job->getName()])) {
+                        return;
+                    }
+
+                    $skippedJobs[$job->getName()] = true;
+
+                    $warning = "The scheduled job `{$job->getName()}` is not supported on a Docker Compose host, "
+                        . 'it is not deployed';
+                    $accumulator->addWarning($warning);
+
+                    $promise->success(['warning' => $warning]);
+
                     return;
                 }
 
