@@ -1279,7 +1279,6 @@ class CronJobTranscriberTest extends TestCase
         );
         $this->assertSame(52, strlen($names[0]));
 
-        //The name is stable between deployments
         $this->assertSame(
             $names,
             $this->runWithNames('nightly-database-backup-of-the-production-cluster', 'mariadb-dump'),
