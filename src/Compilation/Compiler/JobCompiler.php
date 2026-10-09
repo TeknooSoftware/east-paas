@@ -50,20 +50,15 @@ use function array_flip;
 use function array_key_exists;
 use function array_key_first;
 use function array_map;
-use function count;
-use function explode;
 use function hash;
+use function implode;
 use function in_array;
 use function is_array;
 use function is_bool;
 use function is_int;
 use function is_string;
 use function preg_match;
-use function preg_split;
-use function str_starts_with;
-use function strtolower;
 use function substr;
-use function trim;
 
 /**
  * Compilation module able to convert `jobs` sections in paas.yaml file as Job instance.
@@ -121,58 +116,20 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
     private const string KEY_SCHEDULE_OPTIONS_SUSPEND = 'suspend';
 
     /**
-     * Descriptors accepted by Kubernetes (robfig/cron's standard parser) in place of the 5 fields
+     * Descriptors accepted by Kubernetes in place of the 5 fields, case sensitive, `@every` takes a Go duration
      */
-    private const array SCHEDULE_DESCRIPTORS = [
-        '@yearly',
-        '@annually',
-        '@monthly',
-        '@weekly',
-        '@daily',
-        '@midnight',
-        '@hourly',
-    ];
+    private const string SCHEDULE_DESCRIPTOR_PATTERN
+        = '/^@(yearly|annually|monthly|weekly|daily|midnight|hourly|every (\d+(\.\d+)?(ns|us|µs|ms|s|m|h))+)$/uD';
 
     /**
-     * Bounds and names of each field of a schedule: minute, hour, day of month, month and day of week
-     *
-     * @var array<int, array{min: int, max: int, names: array<string, int>}>
+     * Values of each field of a schedule: minute, hour, day of month, month and day of week
      */
-    private const array SCHEDULE_FIELDS = [
-        ['min' => 0, 'max' => 59, 'names' => []],
-        ['min' => 0, 'max' => 23, 'names' => []],
-        ['min' => 1, 'max' => 31, 'names' => []],
-        [
-            'min' => 1,
-            'max' => 12,
-            'names' => [
-                'jan' => 1,
-                'feb' => 2,
-                'mar' => 3,
-                'apr' => 4,
-                'may' => 5,
-                'jun' => 6,
-                'jul' => 7,
-                'aug' => 8,
-                'sep' => 9,
-                'oct' => 10,
-                'nov' => 11,
-                'dec' => 12,
-            ],
-        ],
-        [
-            'min' => 0,
-            'max' => 6,
-            'names' => [
-                'sun' => 0,
-                'mon' => 1,
-                'tue' => 2,
-                'wed' => 3,
-                'thu' => 4,
-                'fri' => 5,
-                'sat' => 6,
-            ],
-        ],
+    private const array SCHEDULE_FIELDS_VALUES = [
+        '[0-5]?\d',
+        '[01]?\d|2[0-3]',
+        '0?[1-9]|[12]\d|3[01]',
+        '0?[1-9]|1[0-2]|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec',
+        '0?[0-6]|sun|mon|tue|wed|thu|fri|sat',
     ];
 
     /**
@@ -389,9 +346,10 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
     }
 
     /**
-     * Checks the schedule as Kubernetes does (robfig/cron's standard parser): 5 fields (minute, hour, day of month,
-     * month, day of week), or a descriptor (`@daily`, ..., `@every <duration>`). A time zone in the schedule
-     * (`TZ=`, `CRON_TZ=`) is refused, like Kubernetes does.
+     * Checks the schedule like Kubernetes (robfig/cron's standard parser): a descriptor (`@daily`, ...,
+     * `@every <duration>`) or 5 fields (minute, hour, day of month, month, day of week), each one a list of `*`, `?`,
+     * values or ranges, with an optional step. A time zone in the schedule (`TZ=`, `CRON_TZ=`) is refused, like
+     * Kubernetes does. A reversed range (`5-1`) is not detected here, Kubernetes refuses it.
      */
     private static function isValidSchedule(mixed $schedule): bool
     {
@@ -399,86 +357,20 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
             return false;
         }
 
-        if (in_array($schedule, self::SCHEDULE_DESCRIPTORS, true)) {
+        if (1 === preg_match(self::SCHEDULE_DESCRIPTOR_PATTERN, $schedule)) {
             return true;
         }
 
-        if (str_starts_with($schedule, '@every ')) {
-            return 1 === preg_match('/^(\d+(\.\d+)?(ns|us|µs|ms|s|m|h))+$/u', substr($schedule, 7));
-        }
+        $fields = array_map(
+            static function (string $value): string {
+                $item = "(\*|\?|($value)(-($value))?)(\/0*[1-9]\d*)?";
 
-        $fields = preg_split('/\s+/', trim($schedule));
-        if (!is_array($fields) || count($fields) !== count(self::SCHEDULE_FIELDS)) {
-            return false;
-        }
+                return "$item(,$item)*";
+            },
+            self::SCHEDULE_FIELDS_VALUES,
+        );
 
-        foreach ($fields as $index => $field) {
-            foreach (explode(',', $field) as $item) {
-                if (!self::isValidScheduleItem($item, self::SCHEDULE_FIELDS[$index])) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * An item is `*`, `?`, a value or a range of values (`a-b`), optionally followed by a step (`/n`)
-     *
-     * @param array{min: int, max: int, names: array<string, int>} $bounds
-     */
-    private static function isValidScheduleItem(string $item, array $bounds): bool
-    {
-        $rangeAndStep = explode('/', $item);
-        if (count($rangeAndStep) > 2) {
-            return false;
-        }
-
-        if (isset($rangeAndStep[1])) {
-            $step = self::parseScheduleValue($rangeAndStep[1], []);
-            if (null === $step || $step < 1) {
-                return false;
-            }
-        }
-
-        if ('*' === $rangeAndStep[0] || '?' === $rangeAndStep[0]) {
-            return true;
-        }
-
-        $lowAndHigh = explode('-', $rangeAndStep[0]);
-        if (count($lowAndHigh) > 2) {
-            return false;
-        }
-
-        $start = self::parseScheduleValue($lowAndHigh[0], $bounds['names']);
-        $end = $start;
-        if (isset($lowAndHigh[1])) {
-            $end = self::parseScheduleValue($lowAndHigh[1], $bounds['names']);
-        }
-
-        return null !== $start
-            && null !== $end
-            && $start >= $bounds['min']
-            && $end <= $bounds['max']
-            && $start <= $end;
-    }
-
-    /**
-     * @param array<string, int> $names
-     */
-    private static function parseScheduleValue(string $value, array $names): ?int
-    {
-        $lowerValue = strtolower($value);
-        if (isset($names[$lowerValue])) {
-            return $names[$lowerValue];
-        }
-
-        if (1 !== preg_match('/^\d+$/', $value)) {
-            return null;
-        }
-
-        return (int) $value;
+        return 1 === preg_match('/^\s*' . implode('\s+', $fields) . '\s*$/iD', $schedule);
     }
 
     public function extends(array &$definitions): ExtenderInterface
