@@ -220,11 +220,10 @@ class YamlValidator
                     $converted = 'null';
                 }
 
-                $newNode = $document->createElementNS(
-                    $this->xsdUrl,
-                    $nodeName,
-                    str_replace('%', 'pc', $converted)
-                );
+                //The value is added as a text node: it is escaped (`&`, `<`, `>`), unlike the value argument of
+                //`createElementNS()`, where a `&` is read as the start of an entity reference.
+                $newNode = $document->createElementNS($this->xsdUrl, $nodeName);
+                $newNode->appendChild($document->createTextNode(str_replace('%', 'pc', $converted)));
             } elseif (is_array($mixedElement)) {
                 $newNode = $document->createElementNS($this->xsdUrl, $nodeName);
                 $this->parse(

@@ -122,6 +122,29 @@ class YamlValidatorTest extends TestCase
         ));
     }
 
+    public function testValidConfInV1dot2WithXmlSpecialCharsInValues(): void
+    {
+        $configuration = $this->getYamlArrayV1dot2();
+        $container = &$configuration['pods']['php-pods']['containers']['php-run'];
+        $container['variables']['DATABASE_URL'] = 'mysql://u:p@db/app?charset=utf8&serverVersion=11';
+        $container['variables']['ESCAPED'] = 'a &amp; b';
+        $container['variables']['COMPARISON'] = 'a < b > c';
+        $container['variables']['PERCENT'] = '50% & co';
+        $container['healthcheck']['probe']['command'] = ['sh', '-c', 'test -f /tmp/ok && exit 0'];
+        $configuration['maps']['map1']['key3'] = 's3://bucket?x=1&y=2';
+        unset($container);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with($configuration);
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(YamlValidator::class, $this->buildValidator()->validate(
+            $configuration,
+            $this->getXsdFileV1dot2(),
+            $promise
+        ));
+    }
+
     public function testNotValidConfInV1dot2WithServiceShortcutWithNotAllowedOption(): void
     {
         $configuration = $this->getYamlArrayV1dot2();
