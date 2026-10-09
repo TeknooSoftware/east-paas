@@ -1,5 +1,17 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.8.0] - 2026-10-09
+### Stable Release
+
+**Evolutions**
+- Jobs: the `schedule` of a scheduled job is validated during the compilation, like Kubernetes does: 5 fields
+  (minute, hour, day of month, month, day of week, with `*`, `?`, values, names, ranges, steps and lists), or a
+  descriptor (`@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily`, `@midnight`, `@hourly`, `@every <duration>`).
+  An invalid schedule (6 fields, a time zone `CRON_TZ=`, a value out of range, ...) fails the compilation
+  (`teknoo.east.paas.error.recipe.job.invalid-schedule:<job>`) instead of failing when the CronJob is applied.
+- Kubernetes: the name of a CronJob is limited to 52 characters, like Kubernetes requires. A longer name is truncated
+  and suffixed by a short hash of the full name, stable between deployments. Names which fit are unchanged.
+
 ## [5.7.5] - 2026-10-09
 ### Stable Release
 

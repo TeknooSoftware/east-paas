@@ -58,6 +58,12 @@ class CronJobTranscriber implements DeploymentInterface
 
     private const string POD_SUFFIX = '-pod-cronjob';
 
+    /**
+     * Kubernetes limits the name of a CronJob to 52 characters: the controller appends 11 characters to the name of
+     * each Job it creates.
+     */
+    private const int MAX_NAME_LENGTH = 52;
+
     private ?SleepServiceInterface $sleepService = null;
 
     public function setSleepService(SleepServiceInterface $sleepService): self
@@ -189,7 +195,11 @@ class CronJobTranscriber implements DeploymentInterface
                     }
 
                     foreach ($job->getPods() as $pod) {
-                        $name = $prefixer($job->getName() . '-' . $pod->getName());
+                        $name = self::boundName(
+                            $prefixer($job->getName() . '-' . $pod->getName()),
+                            self::NAME_SUFFIX,
+                            self::MAX_NAME_LENGTH,
+                        );
                         /** @var Repository<CronJob> $dRepository */
                         $dRepository = $client->cronJobs();
 

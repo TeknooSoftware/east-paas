@@ -888,7 +888,7 @@ return static function (
             new Job(
                 name: 'job-backup',
                 planning: Planning::Scheduled,
-                planningSchedule: '0 0 /3 * * *',
+                planningSchedule: '0 */3 * * *',
                 shelfLife: 60 * 60,
                 pods: [
                     'backup' => new Pod(

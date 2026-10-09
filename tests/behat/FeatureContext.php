@@ -3027,7 +3027,7 @@ JSON;
                 }
             },
             "spec": {
-                "schedule": "0 0 /3 * * *",
+                "schedule": "0 */3 * * *",
                 "jobTemplate": {
                     "spec": {
                         "completions": 1,

@@ -268,7 +268,7 @@ jobs:
                 from-secret: 'volume-vault'
   job-backup:
     planning: scheduled
-    schedule: '0 0 /3 * * *'
+    schedule: '0 */3 * * *'
     pods:
       backup:
         containers:
