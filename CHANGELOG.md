@@ -3,6 +3,23 @@
 ## [5.8.0] - 2026-10-09
 ### Stable Release
 
+**Fixes**
+- Validation: a value containing a `&` (`test -f /tmp/ok && exit 0`, `mysql://db/app?charset=utf8&serverVersion=11`)
+  does not fail the validation of the PaaS file anymore. The value is passed unchanged to the compiler.
+- Kubernetes: the volumes (persistent, secret, map or imported) of a container whose image is not built by East PaaS
+  (its image is not declared in `images:` and it has no embedded volume) are declared in the pod's `spec.volumes`.
+  Until now, they were only mounted in the container and Kubernetes refused the pod
+  (`volumeMounts[0].name: Not found`).
+- Kubernetes: a volume mounted by several containers of a same pod is declared once in the pod's `spec.volumes`. Two
+  different volumes mounted with the same name in a same pod are refused with an explicit error, instead of a manifest
+  refused by Kubernetes or a volume silently mounted in place of another.
+- Docker Compose: an imported volume (`from:`) mounted in a container whose image is not built by East PaaS is
+  populated from the image pushed on the registry.
+- Docker Compose: a scheduled job (`planning: scheduled`) is not supported on a Docker Compose host. It is still not
+  deployed, but a warning is added to the deployment's result instead of being ignored silently. The documentation
+  and the `symfony/scheduler` suggestion, which claimed these jobs were run by the worker, are fixed.
+- Documentation: the cron expression of the examples is a valid Kubernetes schedule (`'0 */3 * * *'`).
+
 **Evolutions**
 - PaaS file `v1.2`: a scheduled job accepts the optional `schedule-options` (only on Kubernetes, they have no effect on
   a Docker Compose host, where scheduled jobs are not supported). An option not defined keeps the Kubernetes's default
@@ -33,26 +50,6 @@
 - `concurrency`, `failed-history`, `schedule-options`, `starting-deadline`, `successful-history`, `suspend` and
   `time-zone` become keys of the PaaS file: like the other keys, they can not be used anymore as names of pods,
   containers, volumes, jobs, services, ingresses, images, builds, maps or secrets.
-
-## [5.7.5] - 2026-10-09
-### Stable Release
-
-**Fixes**
-- Validation: a value containing a `&` (`test -f /tmp/ok && exit 0`, `mysql://db/app?charset=utf8&serverVersion=11`)
-  does not fail the validation of the PaaS file anymore. The value is passed unchanged to the compiler.
-- Kubernetes: the volumes (persistent, secret, map or imported) of a container whose image is not built by East PaaS
-  (its image is not declared in `images:` and it has no embedded volume) are declared in the pod's `spec.volumes`.
-  Until now, they were only mounted in the container and Kubernetes refused the pod
-  (`volumeMounts[0].name: Not found`).
-- Kubernetes: a volume mounted by several containers of a same pod is declared once in the pod's `spec.volumes`. Two
-  different volumes mounted with the same name in a same pod are refused with an explicit error, instead of a manifest
-  refused by Kubernetes or a volume silently mounted in place of another.
-- Docker Compose: an imported volume (`from:`) mounted in a container whose image is not built by East PaaS is
-  populated from the image pushed on the registry.
-- Docker Compose: a scheduled job (`planning: scheduled`) is not supported on a Docker Compose host. It is still not
-  deployed, but a warning is added to the deployment's result instead of being ignored silently. The documentation
-  and the `symfony/scheduler` suggestion, which claimed these jobs were run by the worker, are fixed.
-- Documentation: the cron expression of the examples is a valid Kubernetes schedule (`'0 */3 * * *'`).
 
 ## [5.7.4] - 2026-10-08
 ### Stable Release
