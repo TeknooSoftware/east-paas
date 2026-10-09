@@ -25,12 +25,15 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\Compiler;
 
+use DateTimeZone;
 use DomainException;
 use InvalidArgumentException;
 use SensitiveParameter;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ConcurrencyPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ScheduleOptions;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
@@ -42,13 +45,18 @@ use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
 use Teknoo\Recipe\Promise\Promise;
 use Throwable;
 
+use function array_diff_key;
+use function array_flip;
 use function array_key_exists;
+use function array_key_first;
 use function array_map;
 use function count;
 use function explode;
 use function hash;
 use function in_array;
 use function is_array;
+use function is_bool;
+use function is_int;
 use function is_string;
 use function preg_match;
 use function preg_split;
@@ -97,6 +105,20 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
     private const string KEY_PLANNING = 'planning';
 
     private const string KEY_PLANNING_SCHEDULE = 'schedule';
+
+    private const string KEY_SCHEDULE_OPTIONS = 'schedule-options';
+
+    private const string KEY_SCHEDULE_OPTIONS_TIME_ZONE = 'time-zone';
+
+    private const string KEY_SCHEDULE_OPTIONS_CONCURRENCY = 'concurrency';
+
+    private const string KEY_SCHEDULE_OPTIONS_STARTING_DEADLINE = 'starting-deadline';
+
+    private const string KEY_SCHEDULE_OPTIONS_SUCCESSFUL_HISTORY = 'successful-history';
+
+    private const string KEY_SCHEDULE_OPTIONS_FAILED_HISTORY = 'failed-history';
+
+    private const string KEY_SCHEDULE_OPTIONS_SUSPEND = 'suspend';
 
     /**
      * Descriptors accepted by Kubernetes (robfig/cron's standard parser) in place of the 5 fields
@@ -240,6 +262,18 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
                 );
             }
 
+            $scheduleOptions = null;
+            if (isset($config[self::KEY_SCHEDULE_OPTIONS])) {
+                if ($planning !== Planning::Scheduled) {
+                    throw new DomainException(
+                        "teknoo.east.paas.error.recipe.job.schedule-options-without-scheduling:$name",
+                        400
+                    );
+                }
+
+                $scheduleOptions = self::buildScheduleOptions((string) $name, $config[self::KEY_SCHEDULE_OPTIONS]);
+            }
+
             $completion = $config[self::KEY_COMPLETIONS] ?? [];
 
             $shelfLife = $completion[self::KEY_COMPLETIONS_SHELF_LIFE] ?? 60 * 60;
@@ -268,11 +302,90 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
                     shelfLife: $shelfLife,
                     planning: $planning,
                     planningSchedule: $planningSchedule,
+                    scheduleOptions: $scheduleOptions,
                 ),
             );
         }
 
         return $this;
+    }
+
+    private static function buildScheduleOptions(string $name, mixed $options): ScheduleOptions
+    {
+        $invalidOption = static fn (string $option): DomainException => new DomainException(
+            "teknoo.east.paas.error.recipe.job.invalid-schedule-option:$name:$option",
+            400
+        );
+
+        if (!is_array($options)) {
+            throw $invalidOption(self::KEY_SCHEDULE_OPTIONS);
+        }
+
+        $unknownOptions = array_diff_key(
+            $options,
+            array_flip([
+                self::KEY_SCHEDULE_OPTIONS_TIME_ZONE,
+                self::KEY_SCHEDULE_OPTIONS_CONCURRENCY,
+                self::KEY_SCHEDULE_OPTIONS_STARTING_DEADLINE,
+                self::KEY_SCHEDULE_OPTIONS_SUCCESSFUL_HISTORY,
+                self::KEY_SCHEDULE_OPTIONS_FAILED_HISTORY,
+                self::KEY_SCHEDULE_OPTIONS_SUSPEND,
+            ]),
+        );
+
+        if (!empty($unknownOptions)) {
+            throw $invalidOption((string) array_key_first($unknownOptions));
+        }
+
+        //Only time zones of the IANA database are accepted by Kubernetes, not offsets or abbreviations
+        $timeZone = $options[self::KEY_SCHEDULE_OPTIONS_TIME_ZONE] ?? null;
+        if (
+            null !== $timeZone
+            && (
+                !is_string($timeZone)
+                || !in_array($timeZone, DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC), true)
+            )
+        ) {
+            throw $invalidOption(self::KEY_SCHEDULE_OPTIONS_TIME_ZONE);
+        }
+
+        $concurrency = null;
+        if (isset($options[self::KEY_SCHEDULE_OPTIONS_CONCURRENCY])) {
+            $concurrency = ConcurrencyPolicy::tryFrom((string) $options[self::KEY_SCHEDULE_OPTIONS_CONCURRENCY]);
+            if (null === $concurrency) {
+                throw $invalidOption(self::KEY_SCHEDULE_OPTIONS_CONCURRENCY);
+            }
+        }
+
+        $integers = [];
+        foreach (
+            [
+                self::KEY_SCHEDULE_OPTIONS_STARTING_DEADLINE,
+                self::KEY_SCHEDULE_OPTIONS_SUCCESSFUL_HISTORY,
+                self::KEY_SCHEDULE_OPTIONS_FAILED_HISTORY,
+            ] as $option
+        ) {
+            $value = $options[$option] ?? null;
+            if (null !== $value && (!is_int($value) || $value < 0)) {
+                throw $invalidOption($option);
+            }
+
+            $integers[$option] = $value;
+        }
+
+        $suspend = $options[self::KEY_SCHEDULE_OPTIONS_SUSPEND] ?? null;
+        if (null !== $suspend && !is_bool($suspend)) {
+            throw $invalidOption(self::KEY_SCHEDULE_OPTIONS_SUSPEND);
+        }
+
+        return new ScheduleOptions(
+            timeZone: $timeZone,
+            concurrency: $concurrency,
+            startingDeadline: $integers[self::KEY_SCHEDULE_OPTIONS_STARTING_DEADLINE],
+            successfulHistory: $integers[self::KEY_SCHEDULE_OPTIONS_SUCCESSFUL_HISTORY],
+            failedHistory: $integers[self::KEY_SCHEDULE_OPTIONS_FAILED_HISTORY],
+            suspend: $suspend,
+        );
     }
 
     /**

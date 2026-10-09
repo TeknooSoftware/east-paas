@@ -31,6 +31,13 @@ jobs:
   backup:
     planning: scheduled
     schedule: '17 3 * * *'
+    schedule-options: #Options of the Kubernetes CronJob
+      time-zone: 'Europe/Paris'
+      concurrency: forbid
+      starting-deadline: 300
+      successful-history: 3
+      failed-history: 1
+      suspend: false
     pods:
       dump:
         containers:

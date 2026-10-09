@@ -28,7 +28,9 @@ namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 use Teknoo\East\Foundation\Time\SleepServiceInterface;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ConcurrencyPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ScheduleOptions;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
@@ -74,6 +76,49 @@ class CronJobTranscriber implements DeploymentInterface
     }
 
     /**
+     * Only options defined in the job are written, the others keep the Kubernetes's default behavior
+     *
+     * @return array<string, string|int|bool>
+     */
+    private static function convertScheduleOptions(?ScheduleOptions $options): array
+    {
+        if (null === $options) {
+            return [];
+        }
+
+        $spec = [];
+        if (null !== $options->timeZone) {
+            $spec['timeZone'] = $options->timeZone;
+        }
+
+        if (null !== $options->concurrency) {
+            $spec['concurrencyPolicy'] = match ($options->concurrency) {
+                ConcurrencyPolicy::Allow => 'Allow',
+                ConcurrencyPolicy::Forbid => 'Forbid',
+                ConcurrencyPolicy::Replace => 'Replace',
+            };
+        }
+
+        if (null !== $options->startingDeadline) {
+            $spec['startingDeadlineSeconds'] = $options->startingDeadline;
+        }
+
+        if (null !== $options->successfulHistory) {
+            $spec['successfulJobsHistoryLimit'] = $options->successfulHistory;
+        }
+
+        if (null !== $options->failedHistory) {
+            $spec['failedJobsHistoryLimit'] = $options->failedHistory;
+        }
+
+        if (null !== $options->suspend) {
+            $spec['suspend'] = $options->suspend;
+        }
+
+        return $spec;
+    }
+
+    /**
      * @param array<string, array<string, Image>>|Image[][] $images
      * @param array<string, Volume> $volumes
      * @return array<string, mixed>
@@ -104,6 +149,7 @@ class CronJobTranscriber implements DeploymentInterface
             ],
             'spec' => [
                 'schedule' => $job->getPlanningSchedule(),
+                ...self::convertScheduleOptions($job->getScheduleOptions()),
                 'jobTemplate' => self::writeJobSpec(
                     job: $job,
                     pod: $pod,

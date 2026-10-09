@@ -35,7 +35,9 @@ use PHPUnit\Framework\TestCase;
 use stdClass;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ConcurrencyPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ScheduleOptions;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\Compiler\JobCompiler;
@@ -476,6 +478,181 @@ class JobCompilerTest extends TestCase
             $this->createStub(JobUnitInterface::class),
             $this->createStub(ResourceManager::class),
             $this->createStub(DefaultsBag::class),
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function compileOneJob(array $config, CompiledDeploymentInterface $compiledDeployment): JobCompiler
+    {
+        $definitions = [
+            'backup' => [
+                'pods' => [
+                    'foo' => []
+                ],
+                ...$config,
+            ]
+        ];
+
+        $this->prepareCompilationOfOneJob();
+
+        return $this->buildCompiler()->compile(
+            $definitions,
+            $compiledDeployment,
+            $this->createStub(JobWorkspaceInterface::class),
+            $this->createStub(JobUnitInterface::class),
+            $this->createStub(ResourceManager::class),
+            $this->createStub(DefaultsBag::class),
+        );
+    }
+
+    public function testCompileWithScheduleOptions(): void
+    {
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->once())
+            ->method('addJob')
+            ->with(
+                'backup',
+                $this->callback(
+                    fn (Job $job): bool => $job->getScheduleOptions() == new ScheduleOptions(
+                        timeZone: 'Europe/Paris',
+                        concurrency: ConcurrencyPolicy::Forbid,
+                        startingDeadline: 300,
+                        successfulHistory: 3,
+                        failedHistory: 0,
+                        suspend: false,
+                    )
+                ),
+            );
+
+        $this->assertInstanceOf(
+            JobCompiler::class,
+            $this->compileOneJob(
+                [
+                    'planning' => Planning::Scheduled->value,
+                    'schedule' => '17 3 * * *',
+                    'schedule-options' => [
+                        'time-zone' => 'Europe/Paris',
+                        'concurrency' => 'forbid',
+                        'starting-deadline' => 300,
+                        'successful-history' => 3,
+                        'failed-history' => 0,
+                        'suspend' => false,
+                    ],
+                ],
+                $compiledDeployment,
+            ),
+        );
+    }
+
+    public function testCompileWithPartialScheduleOptions(): void
+    {
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->once())
+            ->method('addJob')
+            ->with(
+                'backup',
+                $this->callback(
+                    fn (Job $job): bool => $job->getScheduleOptions() == new ScheduleOptions(
+                        concurrency: ConcurrencyPolicy::Replace,
+                    )
+                ),
+            );
+
+        $this->assertInstanceOf(
+            JobCompiler::class,
+            $this->compileOneJob(
+                [
+                    'schedule' => '17 3 * * *',
+                    'schedule-options' => [
+                        'concurrency' => 'replace',
+                    ],
+                ],
+                $compiledDeployment,
+            ),
+        );
+    }
+
+    public function testCompileWithoutScheduleOptions(): void
+    {
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->once())
+            ->method('addJob')
+            ->with(
+                'backup',
+                $this->callback(fn (Job $job): bool => null === $job->getScheduleOptions()),
+            );
+
+        $this->assertInstanceOf(
+            JobCompiler::class,
+            $this->compileOneJob(
+                [
+                    'planning' => Planning::Scheduled->value,
+                    'schedule' => '17 3 * * *',
+                ],
+                $compiledDeployment,
+            ),
+        );
+    }
+
+    public function testCompileWithScheduleOptionsOnAJobDuringDeployment(): void
+    {
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->never())->method('addJob');
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionCode(400);
+        $this->compileOneJob(
+            [
+                'planning' => Planning::DuringDeployment->value,
+                'schedule-options' => [
+                    'concurrency' => 'forbid',
+                ],
+            ],
+            $compiledDeployment,
+        );
+    }
+
+    /**
+     * @return array<string, array{0: mixed}>
+     */
+    public static function invalidScheduleOptionsProvider(): array
+    {
+        return [
+            'not an array' => ['forbid'],
+            'unknown option' => [['foo' => 'bar']],
+            'time zone as offset' => [['time-zone' => '+02:00']],
+            'time zone as abbreviation' => [['time-zone' => 'CEST']],
+            'unknown time zone' => [['time-zone' => 'Europe/Nowhere']],
+            'local time zone' => [['time-zone' => 'Local']],
+            'time zone not a string' => [['time-zone' => 2]],
+            'unknown concurrency' => [['concurrency' => 'foo']],
+            'concurrency not a string' => [['concurrency' => 1]],
+            'negative starting deadline' => [['starting-deadline' => -1]],
+            'starting deadline not an integer' => [['starting-deadline' => '300']],
+            'negative successful history' => [['successful-history' => -1]],
+            'successful history not an integer' => [['successful-history' => 1.5]],
+            'negative failed history' => [['failed-history' => -1]],
+            'suspend not a boolean' => [['suspend' => 'yes']],
+        ];
+    }
+
+    #[DataProvider('invalidScheduleOptionsProvider')]
+    public function testCompileWithInvalidScheduleOptions(mixed $options): void
+    {
+        $compiledDeployment = $this->createMock(CompiledDeploymentInterface::class);
+        $compiledDeployment->expects($this->never())->method('addJob');
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionCode(400);
+        $this->compileOneJob(
+            [
+                'planning' => Planning::Scheduled->value,
+                'schedule' => '17 3 * * *',
+                'schedule-options' => $options,
+            ],
+            $compiledDeployment,
         );
     }
 

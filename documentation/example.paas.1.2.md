@@ -361,7 +361,14 @@ secret.
                                       from-secret: 'volume-vault'
           job-backup:
               planning: scheduled #To create a cron job
-              schedule: '0 */3 * * *' #to schedule the cron job
+              schedule: '0 */3 * * *' #to schedule the cron job: 5 fields (minute hour day-of-month month day-of-week) or a descriptor (@daily, @every 1h, ...)
+              schedule-options: #Optional, only on Kubernetes. An option not defined keeps the Kubernetes's default behavior
+                  time-zone: 'Europe/Paris' #Time zone of the schedule (IANA name), requires Kubernetes 1.27 or later
+                  concurrency: forbid #allow (default), forbid (skip a run while the previous one is running), or replace
+                  starting-deadline: 300 #Seconds to start a run missed at its scheduled time
+                  successful-history: 3 #Number of successful runs to keep
+                  failed-history: 1 #Number of failed runs to keep
+                  suspend: false #To suspend the next runs
               pods:
                   backup:
                       containers:

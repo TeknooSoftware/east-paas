@@ -29,7 +29,9 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Container;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ConcurrencyPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ScheduleOptions;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
@@ -107,6 +109,14 @@ return static function (
                 name: 'backup',
                 planning: Planning::Scheduled,
                 planningSchedule: '17 3 * * *',
+                scheduleOptions: new ScheduleOptions(
+                    timeZone: 'Europe/Paris',
+                    concurrency: ConcurrencyPolicy::Forbid,
+                    startingDeadline: 300,
+                    successfulHistory: 3,
+                    failedHistory: 1,
+                    suspend: false,
+                ),
                 shelfLife: 60 * 60,
                 pods: [
                     'dump' => new Pod(

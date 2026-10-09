@@ -4,6 +4,23 @@
 ### Stable Release
 
 **Evolutions**
+- PaaS file `v1.2`: a scheduled job accepts the optional `schedule-options` (only on Kubernetes, they have no effect on
+  a Docker Compose host, where scheduled jobs are not supported). An option not defined keeps the Kubernetes's default
+  behavior, the CronJob of a job without options is unchanged:
+  ```yaml
+  jobs:
+    backup:
+      planning: scheduled
+      schedule: '17 3 * * *'
+      schedule-options:
+        time-zone: 'Europe/Paris'   # spec.timeZone, a time zone of the IANA database (Kubernetes 1.27 or later)
+        concurrency: forbid         # spec.concurrencyPolicy: allow, forbid or replace
+        starting-deadline: 300      # spec.startingDeadlineSeconds
+        successful-history: 3       # spec.successfulJobsHistoryLimit
+        failed-history: 1           # spec.failedJobsHistoryLimit
+        suspend: false              # spec.suspend
+  ```
+  These options are also validated by the compiler, for jobs defined in a library (`extends`).
 - Jobs: the `schedule` of a scheduled job is validated during the compilation, like Kubernetes does: 5 fields
   (minute, hour, day of month, month, day of week, with `*`, `?`, values, names, ranges, steps and lists), or a
   descriptor (`@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily`, `@midnight`, `@hourly`, `@every <duration>`).
@@ -11,6 +28,11 @@
   (`teknoo.east.paas.error.recipe.job.invalid-schedule:<job>`) instead of failing when the CronJob is applied.
 - Kubernetes: the name of a CronJob is limited to 52 characters, like Kubernetes requires. A longer name is truncated
   and suffixed by a short hash of the full name, stable between deployments. Names which fit are unchanged.
+
+**Notes**
+- `concurrency`, `failed-history`, `schedule-options`, `starting-deadline`, `successful-history`, `suspend` and
+  `time-zone` become keys of the PaaS file: like the other keys, they can not be used anymore as names of pods,
+  containers, volumes, jobs, services, ingresses, images, builds, maps or secrets.
 
 ## [5.7.5] - 2026-10-09
 ### Stable Release

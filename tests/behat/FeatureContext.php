@@ -3913,6 +3913,12 @@ EOF;
             },
             "spec": {
                 "schedule": "17 3 * * *",
+                "timeZone": "Europe/Paris",
+                "concurrencyPolicy": "Forbid",
+                "startingDeadlineSeconds": 300,
+                "successfulJobsHistoryLimit": 3,
+                "failedJobsHistoryLimit": 1,
+                "suspend": false,
                 "jobTemplate": {
                     "spec": {
                         "completions": 1,

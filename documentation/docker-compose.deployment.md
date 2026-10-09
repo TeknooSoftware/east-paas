@@ -248,8 +248,8 @@ During-deployment jobs vs scheduled jobs
 * **Scheduled** jobs (`Planning::Scheduled`) are **not supported** on a Docker Compose host: the local Docker
   host has no native cron equivalent of a Kubernetes `CronJob`. They are **not** written into the Compose file
   and are not run, and a warning (``The scheduled job `<job>` is not supported on a Docker Compose host, it is
-  not deployed``) is added to the deployment's result, under `warnings`. Kubernetes is unaffected and keeps using
-  its native `CronJob`.
+  not deployed``) is added to the deployment's result, under `warnings`. Their `schedule-options` have no
+  effect. Kubernetes is unaffected and keeps using its native `CronJob`.
 
 Ansible playbooks
 -----------------

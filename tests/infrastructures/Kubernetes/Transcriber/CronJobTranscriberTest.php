@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheck;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\HealthCheckType;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job as CDJob;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ScheduleOptions;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\MapReference;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
@@ -1166,6 +1167,7 @@ class CronJobTranscriberTest extends TestCase
     private function buildScheduledJob(
         string $jobName = 'backup',
         string $podName = 'dump',
+        ?ScheduleOptions $scheduleOptions = null,
     ): CDJob {
         return new CDJob(
             name: $jobName,
@@ -1178,6 +1180,7 @@ class CronJobTranscriberTest extends TestCase
             ],
             planning: CDJob\Planning::Scheduled,
             planningSchedule: '17 3 * * *',
+            scheduleOptions: $scheduleOptions,
         );
     }
 
@@ -1189,6 +1192,72 @@ class CronJobTranscriberTest extends TestCase
         [$existsNames, $manifest] = $this->runJob($this->buildScheduledJob($jobName, $podName));
 
         return [...$existsNames, $manifest['metadata']['name']];
+    }
+
+    public function testRunWithoutScheduleOptions(): void
+    {
+        [, $manifest] = $this->runJob($this->buildScheduledJob());
+
+        $this->assertSame(['schedule', 'jobTemplate'], array_keys($manifest['spec']));
+    }
+
+    public function testRunWithScheduleOptions(): void
+    {
+        [, $manifest] = $this->runJob(
+            $this->buildScheduledJob(
+                scheduleOptions: new ScheduleOptions(
+                    timeZone: 'Europe/Paris',
+                    concurrency: CDJob\ConcurrencyPolicy::Forbid,
+                    startingDeadline: 300,
+                    successfulHistory: 3,
+                    failedHistory: 0,
+                    suspend: false,
+                ),
+            ),
+        );
+
+        $spec = $manifest['spec'];
+        unset($spec['jobTemplate']);
+        $this->assertSame(
+            [
+                'schedule' => '17 3 * * *',
+                'timeZone' => 'Europe/Paris',
+                'concurrencyPolicy' => 'Forbid',
+                'startingDeadlineSeconds' => 300,
+                'successfulJobsHistoryLimit' => 3,
+                'failedJobsHistoryLimit' => 0,
+                'suspend' => false,
+            ],
+            $spec,
+        );
+        $this->assertSame('jobTemplate', array_key_last($manifest['spec']));
+    }
+
+    public function testRunWithPartialScheduleOptions(): void
+    {
+        foreach (
+            [
+                [CDJob\ConcurrencyPolicy::Allow, 'Allow'],
+                [CDJob\ConcurrencyPolicy::Replace, 'Replace'],
+            ] as [$policy, $expected]
+        ) {
+            [, $manifest] = $this->runJob(
+                $this->buildScheduledJob(
+                    scheduleOptions: new ScheduleOptions(concurrency: $policy, suspend: true),
+                ),
+            );
+
+            $spec = $manifest['spec'];
+            unset($spec['jobTemplate']);
+            $this->assertSame(
+                [
+                    'schedule' => '17 3 * * *',
+                    'concurrencyPolicy' => $expected,
+                    'suspend' => true,
+                ],
+                $spec,
+            );
+        }
     }
 
     public function testRunWithShortNameKeepsTheName(): void
