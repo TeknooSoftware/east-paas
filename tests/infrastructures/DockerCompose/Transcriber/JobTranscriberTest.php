@@ -160,7 +160,6 @@ class JobTranscriberTest extends TestCase
         $cd->expects($this->once())
             ->method('foreachJob')
             ->willReturnCallback(function (callable $callback) use ($cd, $job): CompiledDeploymentInterface {
-                //CompiledDeployment::foreachJob() calls the callback once per pod of the job
                 $callback($job, [], [], 'prj');
                 $callback($job, [], [], 'prj');
 

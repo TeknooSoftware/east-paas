@@ -353,7 +353,6 @@ class CompiledDeployment implements CompiledDeploymentInterface
                 $buildables[$imgName][$imgVersion ?? ''] = $this->getBuildable($imgName, $imgVersion);
             }
 
-            //The volumes of all containers are needed, not only those of containers with a built image
             foreach ($container->getVolumes() as $name => $volume) {
                 if ($volume instanceof PopulatedVolumeInterface) {
                     $volumes[$container->getName() . '_' . $name] = $this->volumes[$name];
