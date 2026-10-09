@@ -25,6 +25,11 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber;
 
+use function hash;
+use function rtrim;
+use function strlen;
+use function substr;
+
 /**
  * Trait to remove some information in kubernetes's result to prevent secret's leaks or massive data output
  *
@@ -44,6 +49,22 @@ trait CommonTrait
 
             return $prefix . '-' . $value;
         };
+    }
+
+    /**
+     * Bounds the name of a Kubernetes object, with its suffix, to the length accepted by Kubernetes. A too long name
+     * is truncated and suffixed by a short hash of the full name, to stay unique and stable between deployments.
+     * A name which fits is unchanged.
+     */
+    private static function boundName(string $name, string $suffix, int $maxLength): string
+    {
+        if (strlen($name . $suffix) <= $maxLength) {
+            return $name;
+        }
+
+        $hash = substr(hash('sha256', $name), 0, 5);
+
+        return rtrim(substr($name, 0, $maxLength - strlen($suffix) - strlen($hash) - 1), '-') . '-' . $hash;
     }
 
 

@@ -71,6 +71,7 @@ class YamlValidator
         'clusters',
         'command',
         'completions',
+        'concurrency',
         'containers',
         'count',
         'defaults',
@@ -78,6 +79,7 @@ class YamlValidator
         'enhancements',
         'extends',
         'fail-on',
+        'failed-history',
         'failure',
         'from',
         'from-map',
@@ -136,22 +138,27 @@ class YamlValidator
         'restart-policy',
         'row',
         'schedule',
+        'schedule-options',
         'secret',
         'secrets',
         'security',
         'service',
         'services',
         'shelf-life',
+        'starting-deadline',
         'storage-provider',
         'storage-size',
         'strategy',
         'success',
         'success-on',
+        'successful-history',
+        'suspend',
         'tag',
         'target',
         'tcp',
         'threshold',
         'time-limit',
+        'time-zone',
         'tls',
         'type',
         'upgrade',
@@ -220,11 +227,10 @@ class YamlValidator
                     $converted = 'null';
                 }
 
-                $newNode = $document->createElementNS(
-                    $this->xsdUrl,
-                    $nodeName,
-                    str_replace('%', 'pc', $converted)
-                );
+                //The value is added as a text node: it is escaped (`&`, `<`, `>`), unlike the value argument of
+                //`createElementNS()`, where a `&` is read as the start of an entity reference.
+                $newNode = $document->createElementNS($this->xsdUrl, $nodeName);
+                $newNode->appendChild($document->createTextNode(str_replace('%', 'pc', $converted)));
             } elseif (is_array($mixedElement)) {
                 $newNode = $document->createElementNS($this->xsdUrl, $nodeName);
                 $this->parse(

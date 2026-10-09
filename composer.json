@@ -102,8 +102,7 @@
         "league/flysystem-memory": "^3.31"
     },
     "suggest": {
-        "teknoo/kubernetes-client": "Kubernetes Client driver: run Kubernetes deployments",
-        "symfony/scheduler": "platform-side scheduling of scheduled jobs"
+        "teknoo/kubernetes-client": "Kubernetes Client driver: run Kubernetes deployments"
     },
     "autoload": {
         "psr-4": {

@@ -44,8 +44,11 @@ return static function (
     bool $withCondition,
     string $provider,
     bool $withExposeShortcuts = false,
+    bool $withSharedVolumes = false,
 ): array {
-    if ($withExposeShortcuts) {
+    if ($withSharedVolumes) {
+        $variant = 'with-shared-volumes';
+    } elseif ($withExposeShortcuts) {
         $variant = 'with-expose-shortcuts';
     } elseif ('' !== $withQuota) {
         //Quota variants only ever run without prefix/job in the suite; a prefixed/jobbed quota scenario would

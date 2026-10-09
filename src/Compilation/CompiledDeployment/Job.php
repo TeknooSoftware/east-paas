@@ -28,6 +28,7 @@ namespace Teknoo\East\Paas\Compilation\CompiledDeployment;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ScheduleOptions;
 use Teknoo\Immutable\ImmutableInterface;
 use Teknoo\Immutable\ImmutableTrait;
 
@@ -58,6 +59,7 @@ class Job implements ImmutableInterface
         private readonly ?int $shelfLife = (60 * 60),
         private readonly Planning $planning = Planning::DuringDeployment,
         private readonly ?string $planningSchedule = null,
+        private readonly ?ScheduleOptions $scheduleOptions = null,
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -90,6 +92,11 @@ class Job implements ImmutableInterface
     public function getPlanningSchedule(): ?string
     {
         return $this->planningSchedule;
+    }
+
+    public function getScheduleOptions(): ?ScheduleOptions
+    {
+        return $this->scheduleOptions;
     }
 
     /**

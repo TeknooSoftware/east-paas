@@ -30,7 +30,9 @@ use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\CompletionMode;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\SuccessCondition;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ConcurrencyPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ScheduleOptions;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 
 /**
@@ -54,7 +56,8 @@ class JobTest extends TestCase
             timeLimit: 100,
             shelfLife: 200,
             planning: Planning::Scheduled,
-            planningSchedule: '* * * *'
+            planningSchedule: '* * * *',
+            scheduleOptions: new ScheduleOptions(concurrency: ConcurrencyPolicy::Forbid),
         );
     }
 
@@ -106,5 +109,18 @@ class JobTest extends TestCase
     public function testGetPlanningSchedule(): void
     {
         $this->assertEquals('* * * *', $this->createJob()->getPlanningSchedule());
+    }
+
+    public function testGetScheduleOptions(): void
+    {
+        $this->assertEquals(
+            new ScheduleOptions(concurrency: ConcurrencyPolicy::Forbid),
+            $this->createJob()->getScheduleOptions(),
+        );
+    }
+
+    public function testGetScheduleOptionsNotDefined(): void
+    {
+        $this->assertNull(new Job(name: 'foo', pods: [])->getScheduleOptions());
     }
 }

@@ -1,0 +1,21 @@
+services:
+    database:
+        image: 'registry.hub.docker.com/library/mariadb:11'
+        networks:
+            - behat-test-foobarproject-private
+        expose:
+            - 3306
+        volumes:
+            - 'database-data:/var/lib/mysql'
+    database-exporter:
+        image: 'registry.hub.docker.com/library/exporter:1'
+        volumes:
+            - 'database-data:/data'
+        network_mode: 'service:database'
+networks:
+    behat-test-foobarproject-private:
+        name: behat-test-foobarproject-private
+        driver: bridge
+volumes:
+    database-data:
+        driver: local
