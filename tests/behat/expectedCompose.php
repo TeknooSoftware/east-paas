@@ -44,8 +44,11 @@ return static function (
     bool $withCondition,
     string $provider,
     bool $withExposeShortcuts = false,
+    bool $withExternalImageVolumes = false,
 ): array {
-    if ($withExposeShortcuts) {
+    if ($withExternalImageVolumes) {
+        $variant = 'with-external-image-volumes';
+    } elseif ($withExposeShortcuts) {
         $variant = 'with-expose-shortcuts';
     } elseif ('' !== $withQuota) {
         //Quota variants only ever run without prefix/job in the suite; a prefixed/jobbed quota scenario would

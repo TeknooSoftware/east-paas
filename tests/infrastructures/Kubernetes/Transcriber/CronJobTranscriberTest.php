@@ -116,9 +116,9 @@ class CronJobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/map', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/map', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -247,8 +247,8 @@ class CronJobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                         'map' => new MapVolume('bar', '/bar', 'bar'),
                     ],
                     'a-prefix',
@@ -368,9 +368,9 @@ class CronJobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -440,8 +440,8 @@ class CronJobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                     ],
                     'a-prefix',
                 );
@@ -545,9 +545,9 @@ class CronJobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -617,8 +617,8 @@ class CronJobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                     ],
                     'a-prefix',
                 );
@@ -1000,6 +1000,108 @@ class CronJobTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    public function testRunWithVolumesSharedBetweenContainers(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $data = new PersistentVolume('data', '/var/lib/mysql', 'demo-data');
+        $tls = new SecretVolume('tls', '/etc/tls', 'demo-certs');
+
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $data, $tls): MockObject {
+                $c1 = new Container(
+                    'dump',
+                    'registry.hub.docker.com/library/mariadb',
+                    '11',
+                    [],
+                    ['data' => $data, 'tls' => $tls],
+                    [],
+                    null,
+                    new ResourceSet(),
+                );
+
+                $c2 = new Container(
+                    'upload',
+                    'registry.hub.docker.com/library/rclone',
+                    '1',
+                    [],
+                    ['data' => $data],
+                    [],
+                    null,
+                    new ResourceSet(),
+                );
+
+                $job = new CDJob(
+                    name: 'backup',
+                    pods: [new Pod('dump', 1, [$c1, $c2])],
+                    planning: CDJob\Planning::Scheduled,
+                    planningSchedule: '17 3 * * *',
+                );
+
+                $callback(
+                    $job,
+                    [],
+                    ['dump_data' => $data, 'dump_tls' => $tls, 'upload_data' => $data],
+                    'a-prefix',
+                );
+
+                return $cd;
+            });
+
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+        $repo->method('exists')->willReturn(false);
+
+        $capturedSpec = null;
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (CronJob $model) use (&$capturedSpec): array {
+                    $capturedSpec = $model->toArray()['spec']['jobTemplate']['spec']['template']['spec'];
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new CronJobTranscriber('paas.east.teknoo.net', '1.36');
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $this->assertInstanceOf(CronJobTranscriber::class, $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        $this->assertIsArray($capturedSpec);
+        $this->assertSame(
+            [
+                [
+                    'name' => 'data-volume',
+                    'persistentVolumeClaim' => [
+                        'claimName' => 'a-prefix-data',
+                    ],
+                ],
+                [
+                    'name' => 'tls-volume',
+                    'secret' => [
+                        'secretName' => 'a-prefix-demo-certs-secret',
+                    ],
+                ],
+            ],
+            $capturedSpec['volumes'],
+        );
     }
 
     private function buildCDForVersionLevel(CompiledDeploymentInterface $cd): void

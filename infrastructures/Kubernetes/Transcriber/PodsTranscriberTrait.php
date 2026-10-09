@@ -42,6 +42,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Compilation\Compiler\DefaultsCompiler;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PersistentVolumeInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\PopulatedVolumeInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\InvalidArgumentException;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Model\CronJob;
 use Teknoo\Kubernetes\Model\Deployment;
@@ -284,6 +285,9 @@ trait PodsTranscriberTrait
     }
 
     /**
+     * A volume mounted by several containers of the pod is declared only once in the pod. Two different volumes
+     * with the same name (they are mounted with the same name) can not be declared together.
+     *
      * @param array<string, mixed> $specs
      * @param array<string, SecretVolume|MapVolume|Volume> $volumes
      */
@@ -296,94 +300,100 @@ trait PodsTranscriberTrait
     ): void {
         $useImageVolumes = self::supportsImageVolumes($versionLevel);
 
+        $declaredVolumes = [];
         foreach ($volumes as $volume) {
+            $initContainerSpec = null;
             if ($volume instanceof PersistentVolumeInterface) {
-                $specs['volumes'][] = [
+                $volumeSpec = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'persistentVolumeClaim' => [
                         'claimName' => $prefixer($volume->getName()),
                     ],
                 ];
-
-                continue;
-            }
-
-            if ($volume instanceof SecretVolume) {
-                $specs['volumes'][] = [
+            } elseif ($volume instanceof SecretVolume) {
+                $volumeSpec = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'secret' => [
                         'secretName' => $prefixer($volume->getSecretIdentifier() . self::SECRET_SUFFIX),
                     ],
                 ];
-
-                continue;
-            }
-
-            if ($volume instanceof MapVolume) {
-                $specs['volumes'][] = [
+            } elseif ($volume instanceof MapVolume) {
+                $volumeSpec = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'configMap' => [
                         'name' => $prefixer($volume->getMapIdentifier() . self::MAP_SUFFIX),
                     ],
                 ];
-
-                continue;
-            }
-
-            if ($useImageVolumes) {
-                $specs['volumes'][] = [
+            } elseif ($useImageVolumes) {
+                $volumeSpec = [
                     'name' => $volume->getName() . self::VOLUME_SUFFIX,
                     'image' => [
                         'reference' => $volume->getUrl(),
                         'pullPolicy' => 'Always',
                     ],
                 ];
+            } else {
+                $resourcesReqs = [];
+                foreach ($pod as $container) {
+                    /** @var Resource $resource */
+                    foreach ($container->getResources() as $resource) {
+                        $resourcesReqs['requests'][$resource->getType()] = $resource->getRequire();
+                        $resourcesReqs['limits'][$resource->getType()] = $resource->getLimit();
+                    }
+
+                    if (!empty($resourcesReqs)) {
+                        break;
+                    }
+                }
+
+                $initContainerSpec = [
+                    'name' => $volume->getName(),
+                    'image' => $volume->getUrl(),
+                    'imagePullPolicy' => 'Always',
+                    'volumeMounts' => [
+                        [
+                            'name' => $volume->getName() . self::VOLUME_SUFFIX,
+                            'mountPath' => $volume->getMountPath(),
+                            'readOnly' => false,
+                        ]
+                    ],
+                    'env' => [
+                        [
+                            'name' => 'MOUNT_PATH',
+                            'value' => $volume->getMountPath(),
+                        ]
+                    ]
+                ];
+
+                if (!empty($resourcesReqs)) {
+                    $initContainerSpec['resources'] = $resourcesReqs;
+                }
+
+                $volumeSpec = [
+                    'name' => $volume->getName() . self::VOLUME_SUFFIX,
+                    'emptyDir' => []
+                ];
+            }
+
+            $volumeName = $volumeSpec['name'];
+            if (isset($declaredVolumes[$volumeName])) {
+                if ($declaredVolumes[$volumeName] !== [$volumeSpec, $initContainerSpec]) {
+                    throw new InvalidArgumentException(
+                        "The pod `{$pod->getName()}` mounts several different volumes with the same name "
+                        . "`{$volume->getName()}`, a volume shared between containers must be the same"
+                    );
+                }
 
                 continue;
             }
 
-            $resourcesReqs = [];
-            foreach ($pod as $container) {
-                /** @var Resource $resource */
-                foreach ($container->getResources() as $resource) {
-                    $resourcesReqs['requests'][$resource->getType()] = $resource->getRequire();
-                    $resourcesReqs['limits'][$resource->getType()] = $resource->getLimit();
-                }
+            $declaredVolumes[$volumeName] = [$volumeSpec, $initContainerSpec];
 
-                if (!empty($resourcesReqs)) {
-                    break;
-                }
+            if (null !== $initContainerSpec) {
+                $specs['initContainers'][] = $initContainerSpec;
             }
 
-            $initContainerSpec = [
-                'name' => $volume->getName(),
-                'image' => $volume->getUrl(),
-                'imagePullPolicy' => 'Always',
-                'volumeMounts' => [
-                    [
-                        'name' => $volume->getName() . self::VOLUME_SUFFIX,
-                        'mountPath' => $volume->getMountPath(),
-                        'readOnly' => false,
-                    ]
-                ],
-                'env' => [
-                    [
-                        'name' => 'MOUNT_PATH',
-                        'value' => $volume->getMountPath(),
-                    ]
-                ]
-            ];
-
-            if (!empty($resourcesReqs)) {
-                $initContainerSpec['resources'] = $resourcesReqs;
-            }
-
-            $specs['initContainers'][] = $initContainerSpec;
-
-            $specs['volumes'][] = [
-                'name' => $volume->getName() . self::VOLUME_SUFFIX,
-                'emptyDir' => []
-            ];
+            $specs['volumes'][] = $volumeSpec;
         }
     }
 

@@ -1,0 +1,45 @@
+paas: #Dedicated to compiler
+  version: v1.2
+
+#Pods (set of container)
+pods:
+  database:
+    replicas: 1
+    containers:
+      mariadb: #External image, pulled as is, not built by the PaaS
+        image: registry.hub.docker.com/library/mariadb
+        version: '11'
+        listen:
+          - 3306
+        volumes:
+          data: #Persistent volume, shared with the sidecar and the job
+            name: database-data
+            mount-path: '/var/lib/mysql'
+            persistent: true
+            storage-size: 1Gi
+      exporter: #Sidecar with an external image, mounting the same volume
+        image: registry.hub.docker.com/library/exporter
+        version: '1'
+        volumes:
+          data:
+            name: database-data
+            mount-path: '/data'
+            persistent: true
+            storage-size: 1Gi
+
+jobs:
+  backup:
+    planning: scheduled
+    schedule: '17 3 * * *'
+    pods:
+      dump:
+        containers:
+          dump: #External image, pulled as is, not built by the PaaS
+            image: registry.hub.docker.com/library/alpine
+            version: '3.20'
+            volumes:
+              data:
+                name: database-data
+                mount-path: '/backup/data'
+                persistent: true
+                storage-size: 1Gi

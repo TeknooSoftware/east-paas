@@ -42,7 +42,9 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Secret;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\MapVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\BuildableInterface;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeployment\VolumeInterface;
@@ -50,6 +52,7 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use TypeError;
 
+use function array_keys;
 use function current;
 use function strpos;
 
@@ -868,6 +871,11 @@ class CompiledDeploymentTest extends TestCase
             $this->assertNotEmpty($buildables);
             $this->assertInstanceOf(BuildableInterface::class, current(current($buildables)));
 
+            if ('foo1' === $pod->getName()) {
+                //The container `foo2` uses an external image, its volumes must be also passed
+                $this->assertSame(['foo1_foo', 'foo2_foo'], array_keys($volumes));
+            }
+
             if ('bar1' === $pod->getName()) {
                 $this->assertEmpty($volumes);
             } else {
@@ -1007,6 +1015,11 @@ class CompiledDeploymentTest extends TestCase
             $this->assertNotEmpty($buildables);
             $this->assertInstanceOf(BuildableInterface::class, current(current($buildables)));
 
+            if ('foo1' === $job->getName()) {
+                //The container `foo2` uses an external image, its volumes must be also passed
+                $this->assertSame(['foo1_foo', 'foo2_foo'], array_keys($volumes));
+            }
+
             if ('foo2' === $job->getName()) {
                 $this->assertEmpty($volumes);
             } else {
@@ -1019,6 +1032,101 @@ class CompiledDeploymentTest extends TestCase
         }));
 
         $this->assertEquals(2, $count);
+    }
+
+    /**
+     * @return array{0: CompiledDeployment, 1: Pod, 2: array<string, VolumeInterface>}
+     */
+    private function buildWithExternalImageVolumes(): array
+    {
+        $cd = $this->buildObject();
+
+        $cd->addVolume(
+            'extra',
+            $extra = new Volume('extra1', [], '/extra', '/mount'),
+        );
+
+        $expected = [
+            'mariadb_data' => new PersistentVolume('data', '/var/lib/mysql', 'demo-data'),
+            'mariadb_tls' => new SecretVolume('tls', '/etc/tls', 'demo-certs'),
+            'mariadb_conf' => new MapVolume('conf', '/etc/mysql/conf.d', 'demo-conf'),
+            'mariadb_extra' => null,
+        ];
+
+        $pod = new Pod(
+            'database',
+            1,
+            [
+                new Container(
+                    'mariadb',
+                    'registry.hydrogen.teknoo.net/bigbang/mariadb',
+                    '11',
+                    [3306],
+                    [
+                        'data' => $expected['mariadb_data'],
+                        'tls' => $expected['mariadb_tls'],
+                        'conf' => $expected['mariadb_conf'],
+                        'extra' => $extra->import('/opt/extra'),
+                    ],
+                    [],
+                    $this->createStub(HealthCheck::class),
+                    $this->createStub(ResourceSet::class),
+                ),
+            ]
+        );
+
+        //The build of the volume updates the deployment's volume, the pod must use this one
+        $cd->addVolume('extra', $expected['mariadb_extra'] = $extra->withRegistry('registry.io'));
+
+        return [$cd, $pod, $expected];
+    }
+
+    public function testForeachPodWithExternalImageVolumes(): void
+    {
+        [$cd, $pod, $expected] = $this->buildWithExternalImageVolumes();
+        $cd->addPod('database', $pod);
+
+        $count = 0;
+        $this->assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachPod(function ($pod, $buildables, $volumes) use (&$count, $expected): void {
+                $this->assertSame('database', $pod->getName());
+                $this->assertEmpty($buildables);
+                $this->assertSame($expected, $volumes);
+
+                ++$count;
+            })
+        );
+
+        $this->assertEquals(1, $count);
+    }
+
+    public function testForeachJobWithExternalImageVolumes(): void
+    {
+        [$cd, $pod, $expected] = $this->buildWithExternalImageVolumes();
+        $cd->addJob(
+            'backup',
+            new Job(
+                name: 'backup',
+                pods: ['database' => $pod],
+                planning: Planning::Scheduled,
+                planningSchedule: '17 3 * * *',
+            )
+        );
+
+        $count = 0;
+        $this->assertInstanceOf(
+            CompiledDeployment::class,
+            $cd->foreachJob(function ($job, $buildables, $volumes) use (&$count, $expected): void {
+                $this->assertSame('backup', $job->getName());
+                $this->assertEmpty($buildables);
+                $this->assertSame($expected, $volumes);
+
+                ++$count;
+            })
+        );
+
+        $this->assertEquals(1, $count);
     }
 
     public function testForeachServiceBadCallback(): void

@@ -46,6 +46,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\SecretVolume;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
+use Teknoo\East\Paas\Infrastructures\Kubernetes\Exception\InvalidArgumentException;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\StatefulSetsTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Collection\PodCollection;
@@ -114,9 +115,9 @@ class StatefulSetsTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/map', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/map', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -200,8 +201,8 @@ class StatefulSetsTranscriberTest extends TestCase
                     ],
                     [
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                         'map' => new MapVolume('bar', '/bar', 'bar'),
                     ],
                     'a-prefix',
@@ -326,9 +327,9 @@ class StatefulSetsTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -400,8 +401,8 @@ class StatefulSetsTranscriberTest extends TestCase
                     ],
                     [
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                     ],
                     'a-prefix',
                 );
@@ -515,9 +516,9 @@ class StatefulSetsTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -589,8 +590,8 @@ class StatefulSetsTranscriberTest extends TestCase
                     ],
                     [
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                     ],
                     'a-prefix',
                 );
@@ -893,6 +894,173 @@ class StatefulSetsTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    /**
+     * @param array<string, mixed> $c1Volumes
+     * @param array<string, mixed> $c2Volumes
+     * @param array<string, mixed> $volumes
+     */
+    private function buildCDWithVolumesSharedBetweenContainers(
+        CompiledDeploymentInterface $cd,
+        array $c1Volumes,
+        array $c2Volumes,
+        array $volumes,
+    ): void {
+        $cd->expects($this->once())
+            ->method('foreachPod')
+            ->willReturnCallback(
+                function (callable $callback) use ($cd, $c1Volumes, $c2Volumes, $volumes): MockObject {
+                    $c1 = new Container(
+                        'mariadb',
+                        'registry.hub.docker.com/library/mariadb',
+                        '11',
+                        [3306],
+                        $c1Volumes,
+                        [],
+                        null,
+                        new ResourceSet(),
+                    );
+
+                    $c2 = new Container(
+                        'exporter',
+                        'registry.hub.docker.com/library/exporter',
+                        '1',
+                        [9104],
+                        $c2Volumes,
+                        [],
+                        null,
+                        new ResourceSet(),
+                    );
+
+                    $pod = new Pod('database', 1, [$c1, $c2], isStateless: false);
+
+                    $callback($pod, [], $volumes, 'a-prefix');
+
+                    return $cd;
+                }
+            );
+    }
+
+    public function testRunWithVolumesSharedBetweenContainers(): void
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $volume = new Volume('foo1', ['foo' => 'bar'], '/foo', '/mount');
+        $volume = $volume->withRegistry('repository.teknoo.run');
+        $data = new PersistentVolume('data', '/var/lib/mysql', 'demo-data');
+        $tls = new SecretVolume('tls', '/etc/tls', 'demo-certs');
+
+        $this->buildCDWithVolumesSharedBetweenContainers(
+            cd: $cd,
+            c1Volumes: ['foo' => $volume->import('/foo'), 'data' => $data, 'tls' => $tls],
+            c2Volumes: ['foo' => $volume->import('/bar'), 'data' => $data, 'tls' => $tls],
+            volumes: [
+                'mariadb_foo' => $volume,
+                'mariadb_data' => $data,
+                'mariadb_tls' => $tls,
+                'exporter_foo' => $volume,
+                'exporter_data' => $data,
+                'exporter_tls' => $tls,
+            ],
+        );
+
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $repo = $this->createMock(StatefulSetRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['statefulsets', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+
+        $capturedSpec = null;
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (StatefulSet $model) use (&$capturedSpec): array {
+                    $capturedSpec = $model->toArray()['spec']['template']['spec'];
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new StatefulSetsTranscriber('paas.east.teknoo.net', '1.30');
+        $this->assertInstanceOf(StatefulSetsTranscriber::class, $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        ));
+
+        $this->assertIsArray($capturedSpec);
+        $this->assertSame(
+            [
+                [
+                    'name' => 'foo1-volume',
+                    'emptyDir' => [],
+                ],
+                [
+                    'name' => 'data-volume',
+                    'persistentVolumeClaim' => [
+                        'claimName' => 'a-prefix-data',
+                    ],
+                ],
+                [
+                    'name' => 'tls-volume',
+                    'secret' => [
+                        'secretName' => 'a-prefix-demo-certs-secret',
+                    ],
+                ],
+            ],
+            $capturedSpec['volumes'],
+        );
+        $this->assertCount(1, $capturedSpec['initContainers']);
+        $this->assertSame('foo1', $capturedSpec['initContainers'][0]['name']);
+        $this->assertCount(3, $capturedSpec['containers'][0]['volumeMounts']);
+        $this->assertCount(3, $capturedSpec['containers'][1]['volumeMounts']);
+    }
+
+    public function testRunWithConflictingVolumesBetweenContainers(): void
+    {
+        $kubeClient = $this->createStub(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $tlsA = new SecretVolume('tls', '/etc/tls', 'tls-a');
+        $tlsB = new SecretVolume('tls', '/etc/tls', 'tls-b');
+
+        $this->buildCDWithVolumesSharedBetweenContainers(
+            cd: $cd,
+            c1Volumes: ['tls' => $tlsA],
+            c2Volumes: ['tls' => $tlsB],
+            volumes: [
+                'mariadb_tls' => $tlsA,
+                'exporter_tls' => $tlsB,
+            ],
+        );
+
+        $repo = $this->createMock(StatefulSetRepository::class);
+        $kubeClient->method('__call')->willReturnMap([['statefulsets', [], $repo]]);
+        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('first')->willReturn(null);
+        $repo->expects($this->never())->method('apply');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->never())->method('success');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        new StatefulSetsTranscriber('paas.east.teknoo.net', '1.30')->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
     }
 
     private function buildCDForVersionLevel(CompiledDeploymentInterface $cd): void

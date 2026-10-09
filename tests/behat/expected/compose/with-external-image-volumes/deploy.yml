@@ -1,0 +1,101 @@
+---
+# East PaaS - Docker Compose deploy playbook
+# Rendered by the DockerCompose driver; {% %} placeholders are substituted before execution.
+- name: Deploy behat-test-foobarproject on the Docker host
+  hosts: all
+  gather_facts: false
+  vars:
+    paas_project: "behat-test-foobarproject"
+    paas_deploy_root: "/opt/paas"
+    paas_project_dir: "/opt/paas/behat-test-foobarproject"
+    paas_network: "behat-test-foobarproject-private"
+    paas_traefik_container: "traefik"
+    paas_files: []
+    paas_reset_volumes: []
+    paas_jobs: []
+  tasks:
+    - name: Ensure the project directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}"
+        state: directory
+        mode: "0750"
+
+    - name: Ensure the secrets directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/secrets"
+        state: directory
+        mode: "0700"
+
+    - name: Ensure the configs directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/configs"
+        state: directory
+        mode: "0750"
+
+    - name: Push the Compose Specification file
+      ansible.builtin.copy:
+        src: "__WORKDIR__/compose.yaml"
+        dest: "{{ paas_project_dir }}/compose.yaml"
+        mode: "0640"
+
+    - name: Ensure the directories of the configuration and secret files exist on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/{{ item.dest | dirname }}"
+        state: directory
+        mode: "{{ '0700' if item.dest.startswith('secrets/') else '0750' }}"
+      loop: "{{ paas_files | default([]) }}"
+      loop_control:
+        label: "{{ item.dest | dirname }}"
+
+    - name: Push the configuration and secret files
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ paas_project_dir }}/{{ item.dest }}"
+        mode: "{{ item.mode }}"
+      loop: "{{ paas_files | default([]) }}"
+      no_log: true
+
+    - name: Stop the running stack when some volumes are flagged for reset (a used volume cannot be removed)
+      ansible.builtin.command:
+        cmd: docker compose -p {{ paas_project }} down --remove-orphans
+        chdir: "{{ paas_project_dir }}"
+      when: (paas_reset_volumes | default([])) | length > 0
+      changed_when: true
+
+    - name: Remove volumes flagged for reset before bringing the stack up
+      ansible.builtin.command:
+        cmd: docker volume rm {{ paas_project }}_{{ item }}
+      loop: "{{ paas_reset_volumes | default([]) }}"
+      register: paas_volume_rm
+      changed_when: paas_volume_rm.rc == 0
+      failed_when:
+        - paas_volume_rm.rc != 0
+        - "'no such volume' not in (paas_volume_rm.stderr | lower)"
+
+    - name: Bring the Compose stack up
+      ansible.builtin.command:
+        cmd: docker compose -p {{ paas_project }} up -d --remove-orphans
+        chdir: "{{ paas_project_dir }}"
+      register: paas_compose_up
+      changed_when: true
+
+    - name: Run during-deployment jobs (one sequential run per completion, honouring the time limit and the accepted exit codes)
+      ansible.builtin.command:
+        cmd: >-
+          {{ ('timeout ' ~ item.timeout ~ ' ') if item.timeout | int > 0 else '' }}docker compose -p {{ paas_project }} --profile jobs run --rm {{ item.service }}
+        chdir: "{{ paas_project_dir }}"
+      loop: "{{ paas_jobs | default([]) }}"
+      loop_control:
+        label: "{{ item.service }} ({{ item.run }}/{{ item.completions }})"
+      register: paas_jobs_result
+      changed_when: true
+      failed_when: paas_jobs_result.rc not in item.ok_codes
+
+    - name: Connect Traefik to the project's private network (idempotent)
+      ansible.builtin.command:
+        cmd: docker network connect {{ paas_network }} {{ paas_traefik_container }}
+      register: paas_network_connect
+      changed_when: "'endpoint' in paas_network_connect.stdout"
+      failed_when:
+        - paas_network_connect.rc != 0
+        - "'already exists in network' not in paas_network_connect.stderr"

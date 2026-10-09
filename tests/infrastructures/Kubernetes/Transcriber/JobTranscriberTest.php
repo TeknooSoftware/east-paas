@@ -118,9 +118,9 @@ class JobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/map', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/map', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -252,8 +252,8 @@ class JobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                         'map' => new MapVolume('bar', '/bar', 'bar'),
                     ],
                     'a-prefix',
@@ -372,9 +372,9 @@ class JobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -444,8 +444,8 @@ class JobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                     ],
                     'a-prefix',
                 );
@@ -549,9 +549,9 @@ class JobTranscriberTest extends TestCase
                     [80],
                     [
                         'bar' => $volume2->import('/bar'),
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
-                        'map' => new MapVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
+                        'map' => new MapVolume('map', '/secret', 'bar'),
                     ],
                     [
                         'foo' => 'bar',
@@ -621,8 +621,8 @@ class JobTranscriberTest extends TestCase
                     [
                         'foo' => $volume1,
                         'bar' => $volume2,
-                        'data' => new PersistentVolume('foo', 'bar'),
-                        'vault' => new SecretVolume('foo', '/secret', 'bar'),
+                        'data' => new PersistentVolume('data', 'bar'),
+                        'vault' => new SecretVolume('vault', '/secret', 'bar'),
                     ],
                     'a-prefix',
                 );

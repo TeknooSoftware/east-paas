@@ -35,6 +35,7 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod\RestartPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\Reference;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\PersistentVolume;
 
 return static function (
     string $prefix,
@@ -45,7 +46,92 @@ return static function (
     bool $withCondition,
     string $provider,
     bool $withExposeShortcuts = false,
+    bool $withExternalImageVolumes = false,
 ): CompiledDeployment {
+    if ($withExternalImageVolumes) {
+        $cd = new CompiledDeployment(
+            version: 1.2,
+            prefix: $prefix,
+            projectName: $projectName,
+        );
+
+        $dataVolume = static fn (string $mountPath): PersistentVolume => new PersistentVolume(
+            name: 'database-data',
+            mountPath: $mountPath,
+            storageIdentifier: new Reference('storage-provider'),
+            storageSize: '1Gi',
+        );
+
+        $cd->addPod(
+            'database',
+            new Pod(
+                name: 'database',
+                replicas: 1,
+                ociRegistryConfigName: new Reference('oci-registry-config-name'),
+                isStateless: false,
+                containers: [
+                    new Container(
+                        name: 'mariadb',
+                        image: 'registry.hub.docker.com/library/mariadb',
+                        version: '11',
+                        listen: [3306],
+                        volumes: [
+                            'data' => $dataVolume('/var/lib/mysql'),
+                        ],
+                    ),
+                    new Container(
+                        name: 'exporter',
+                        image: 'registry.hub.docker.com/library/exporter',
+                        version: '1',
+                        volumes: [
+                            'data' => $dataVolume('/data'),
+                        ],
+                    ),
+                ],
+            ),
+        );
+
+        $cd->setDefaultBags(
+            new DefaultsBag(
+                values: [
+                    'storage-provider' => 'nfs',
+                    'oci-registry-config-name' => null,
+                    'disable-user-isolation' => '0',
+                ]
+            ),
+        );
+
+        $cd->addJob(
+            'backup',
+            new Job(
+                name: 'backup',
+                planning: Planning::Scheduled,
+                planningSchedule: '17 3 * * *',
+                shelfLife: 60 * 60,
+                pods: [
+                    'dump' => new Pod(
+                        name: 'dump',
+                        replicas: 1,
+                        ociRegistryConfigName: new Reference('oci-registry-config-name'),
+                        isStateless: false,
+                        containers: [
+                            new Container(
+                                name: 'dump',
+                                image: 'registry.hub.docker.com/library/alpine',
+                                version: '3.20',
+                                volumes: [
+                                    'data' => $dataVolume('/backup/data'),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        );
+
+        return $cd;
+    }
+
     $version = 1;
     if ($withJob || $withCondition || 'traefik' === $provider || 'no-isolation' === $withDefaults) {
         $version = 1.1;
