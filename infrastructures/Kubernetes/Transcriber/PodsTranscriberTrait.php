@@ -548,7 +548,7 @@ trait PodsTranscriberTrait
                 'name' => $name . self::NAME_SUFFIX,
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $prefixer($pod->getName()),
+                    'name' => self::boundLabel($prefixer($pod->getName())),
                 ],
                 'annotations' => [
                     'teknoo.east.paas.version' => 'v' . $version,
@@ -560,7 +560,7 @@ trait PodsTranscriberTrait
                 'strategy' => [],
                 'selector' => [
                     'matchLabels' => [
-                        'name' => $name,
+                        'name' => self::boundLabel($name),
                     ],
                 ],
                 'template' => [
@@ -568,8 +568,8 @@ trait PodsTranscriberTrait
                         'name' => $prefixer($pod->getName() . self::POD_SUFFIX),
                         'namespace' => $namespace,
                         'labels' => [
-                            'name' => $prefixer($pod->getName()),
-                            'vname' => $name . '-v' . $version,
+                            'name' => self::boundLabel($prefixer($pod->getName())),
+                            'vname' => self::boundLabel($name . '-v' . $version),
                         ],
                     ],
                     'spec' => self::podTemplateSpecWriting(
@@ -603,7 +603,7 @@ trait PodsTranscriberTrait
         ?int &$oldVersion,
         ?Model &$previousManifest
     ): int {
-        $previousManifest = $repository->setLabelSelector(['name' => $name])->first();
+        $previousManifest = $repository->setLabelSelector(['name' => self::boundLabel($name)])->first();
 
         $version = 1;
         if (null !== $previousManifest) {

@@ -35,8 +35,16 @@ use Teknoo\East\Paas\Compilation\Compiler\Exception\ResourceWrongConfigurationEx
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
 
 use function ceil;
+use function intdiv;
+use function preg_match;
 use function sprintf;
 use function str_ends_with;
+use function str_pad;
+use function strlen;
+use function substr;
+use function trim;
+
+use const STR_PAD_LEFT;
 
 /**
  * Abstract class to factories all quotas features defined in `AvailabilityInterface`
@@ -56,6 +64,8 @@ abstract class AbstractAvailability implements AvailabilityInterface
     protected int $sharableNormalizedCapacity = 0;
 
     protected int $normalizedRequire = 0;
+
+    protected int $initialNormalizedRequire = 0;
 
     public function __construct(
         protected readonly string $type,
@@ -88,6 +98,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
         }
 
         $this->normalizedRequire = $this->stringCapacityToValue($this->requires);
+        $this->initialNormalizedRequire = $this->normalizedRequire;
 
         if (!$this->isRelative($this->capacity) && $this->normalizedCapacity < $this->normalizedRequire) {
             throw new QuotaWrongConfigurationException(
@@ -100,6 +111,55 @@ abstract class AbstractAvailability implements AvailabilityInterface
     abstract protected function stringCapacityToValue(string $capacity): int;
 
     abstract protected function valueToStringCapacity(int $value): string;
+
+    /**
+     * Read the number at the beginning of the quantity like Kubernetes, with its decimals and its exponent, multiply it
+     * `$power` times by `$base` and round up the result to the unit, like Kubernetes. Only integers and strings are
+     * used: a float truncates the result (`1.001 * 1000` is `1000.999...`).
+     */
+    protected function quantityToValue(string $quantity, int $base = 1, int $power = 0): int
+    {
+        preg_match('/^\s*([+-]?)(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d{1,3}))?/', $quantity, $matches);
+
+        $integer = $matches[2] ?? '';
+        $fraction = $matches[3] ?? '';
+        $exponent = (int) ($matches[4] ?? 0);
+
+        if (0 < $exponent) {
+            $fraction = str_pad($fraction, $exponent, '0');
+            $integer .= substr($fraction, 0, $exponent);
+            $fraction = substr($fraction, $exponent);
+        } elseif (0 > $exponent) {
+            $integer = str_pad($integer, -$exponent, '0', STR_PAD_LEFT);
+            $fraction = substr($integer, $exponent) . $fraction;
+            $integer = substr($integer, 0, $exponent);
+        }
+
+        $value = (int) $integer;
+        for ($step = 0; $step < $power; ++$step) {
+            //Multiply the decimals by the base, digit by digit: the carry is the integer part of the product
+            $carry = 0;
+            $product = '';
+            for ($index = strlen($fraction) - 1; 0 <= $index; --$index) {
+                $digit = ((int) $fraction[$index]) * $base + $carry;
+                $product = ($digit % 10) . $product;
+                $carry = intdiv($digit, 10);
+            }
+
+            $value = $value * $base + $carry;
+            $fraction = $product;
+        }
+
+        if ('' !== trim($fraction, '0')) {
+            ++$value;
+        }
+
+        if ('-' === ($matches[1] ?? '')) {
+            return -$value;
+        }
+
+        return $value;
+    }
 
     protected function getRelativeValueFromCapacity(int $value, ?int $fromValue = null): int
     {
@@ -226,7 +286,12 @@ abstract class AbstractAvailability implements AvailabilityInterface
         }
 
         if ($this->isValidRelative($availability->requires)) {
-            $availability->requires = $this->normalizedValue($availability->requires);
+            //A relative requires is resolved against the initial requires of this availability, not its capacity
+            $availability->initialNormalizedRequire = $this->getRelativeValueFromCapacity(
+                (int) $availability->requires,
+                $this->initialNormalizedRequire,
+            );
+            $availability->requires = $this->valueToStringCapacity($availability->initialNormalizedRequire);
             $availability->normalizedRequire = $this->stringCapacityToValue($availability->requires);
         }
 
@@ -269,7 +334,7 @@ abstract class AbstractAvailability implements AvailabilityInterface
             );
         }
 
-        if (!$this->checkIfLower($this->normalizedRequire, $limit, $numberOfReplicas)) {
+        if (!$this->checkIfLower($this->normalizedRequire, $require, $numberOfReplicas)) {
             $isSoftDefined = '';
             if ($this->isSoft) {
                 $isSoftDefined = ' (soft defined limit)';

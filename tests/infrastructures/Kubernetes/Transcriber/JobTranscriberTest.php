@@ -58,6 +58,8 @@ use Teknoo\Kubernetes\Repository\DeploymentRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
+use function strlen;
+
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
@@ -1284,5 +1286,101 @@ class JobTranscriberTest extends TestCase
 
         $this->assertFalse($capturedSpec['hostUsers']);
         $this->assertArrayNotHasKey('initContainers', $capturedSpec);
+    }
+
+    /**
+     * @return array{0: list<array<string, string>>, 1: array<string, mixed>} label selectors used to find the
+     *     previous Job and the applied Job
+     */
+    private function runWithJobName(string $jobName, string $podName, string $prefix): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $job = new CDJob(
+            name: $jobName,
+            pods: [
+                new Pod($podName, 1, [new Container('php', 'registry.hub.docker.com/library/php', '8.4')]),
+            ],
+        );
+
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $job, $prefix): MockObject {
+                $callback($job, [], [], $prefix);
+
+                return $cd;
+            });
+
+        $selectors = [];
+        $manifest = [];
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
+        $repo->expects($this->once())
+            ->method('setLabelSelector')
+            ->willReturnCallback(
+                function (array $selector) use (&$selectors, $repo): DeploymentRepository {
+                    $selectors[] = $selector;
+                    return $repo;
+                }
+            );
+        $repo->method('first')->willReturn(null);
+        $repo->method('exists')->willReturn(false);
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (Job $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new JobTranscriber();
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return [$selectors, $manifest];
+    }
+
+    public function testRunWithShortNameKeepsTheLabelAndTheSelector(): void
+    {
+        [$selectors, $manifest] = $this->runWithJobName('migrations', 'php-pods', 'a-prefix');
+
+        $this->assertSame([['name' => 'a-prefix-migrations-php-pods']], $selectors);
+        $this->assertSame('a-prefix-migrations-php-pods-job', $manifest['metadata']['name']);
+        $this->assertSame(['name' => 'a-prefix-migrations'], $manifest['metadata']['labels']);
+    }
+
+    public function testRunWithLongPrefixBoundsTheLabelAndTheSelector(): void
+    {
+        //67 and 76 characters, Kubernetes limits the value of a label, and of a selector, to 63 characters
+        [$selectors, $manifest] = $this->runWithJobName(
+            'database-migrations',
+            'php-pods',
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $this->assertSame(
+            [['name' => 'a-customer-project-deployed-on-a-shared-cluster-database-f8ec7']],
+            $selectors,
+        );
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-database-0fe2e'],
+            $manifest['metadata']['labels'],
+        );
+        $this->assertLessThanOrEqual(63, strlen($selectors[0]['name']));
+        $this->assertLessThanOrEqual(63, strlen($manifest['metadata']['labels']['name']));
     }
 }

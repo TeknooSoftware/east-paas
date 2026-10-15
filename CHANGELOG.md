@@ -1,5 +1,40 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.8.1] - Release pending
+### Stable Release
+
+**Fixes**
+- Quotas: the quantities with decimals are read like Kubernetes reads them, with integers only, the result being rounded
+  up to the byte or to the millicore. Until now, the number was truncated before applying its suffix (`1.5Gi`, and the
+  `1.500Gi` written by East PaaS, were read as `1Gi`, `0.5Gi` as `0`) and a cpu was truncated by a float (`1.001` was
+  read as `1000m`): an account plan or a `paas.quotas` entry with decimals, and every relative quota (`50%`), lost up
+  to a whole unit. A memory quantity is also written without loss: its notation with 3 decimals (`1.500Gi`, `2Gi`) is
+  kept only when it is exact, else the value is written in the largest unit where it is whole, or in bytes. A limit
+  of `1200Mi` was written `1.172Gi`, read by Kubernetes as `1200.128Mi`, more than reserved: a container reserving
+  exactly the remaining quota was refused by the namespace's ResourceQuota. It is now written `1200Mi`. Automatic
+  reservations whose bytes are not a whole number of the unit with 3 decimals are written in bytes (`171798691`
+  instead of `163.840Mi`).
+- Quotas: a relative `requires` of a quota defined in the PaaS file (`paas.quotas`) is computed from the `requires` of
+  the account's quota, and not from its `capacity` anymore. With an account's quota `cpu` of capacity `4` and requires
+  `2`, the entry `{capacity: '50%', requires: '50%'}` was given a requires of `2` (the requests of the deployment
+  could exceed the requests allowed by the account), it is now `1`. An entry without `requires` takes its relative
+  capacity as requires, also computed from the account's `requires`. When `paas.quotas` has several entries of the
+  same type, a relative `requires` of an entry is computed from the `requires` of the previous one. Nothing changes
+  when neither the account's quota nor a previous entry of the same type has a `requires` different from its capacity.
+- Quotas: the remaining requires of a quota are compared with the `require` of a container, multiplied by its replicas,
+  and not anymore with its `limit`. A container whose require fits in the remaining requires but whose limit does not
+  (remaining requires `500m`, `require: 100m` and `limit: 1`) was refused with an error contradicting the values
+  (`remaining available capacity to require [...] is 500m, but current requires 100m`). It is now accepted and the
+  remaining requires are decreased by its require. The remaining capacity is still compared with the limit, and a
+  require above the remaining requires is still refused with the same error. A relative require above `100%`, never
+  validated by the old check, is now refused with the existing `not a valid percentage` error, like a relative limit.
+- Kubernetes: the labels `name` and `vname` of the generated objects, and the selectors on them (`matchLabels`,
+  `selector` of a Service, label selectors to find the previous manifest or the pods to recreate), are limited to 63
+  characters, like Kubernetes requires. Until now, with a long prefix or long names, they were written unbounded and
+  Kubernetes refused the objects when they were applied, after the first objects were applied. A longer value is
+  truncated and suffixed by a short hash of the full value, stable between deployments and identical in the label and
+  in its selectors. Values which fit are unchanged.
+
 ## [5.8.0] - 2026-10-09
 ### Stable Release
 

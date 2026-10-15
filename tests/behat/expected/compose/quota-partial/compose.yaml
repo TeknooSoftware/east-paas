@@ -52,7 +52,7 @@ services:
             resources:
                 reservations:
                     cpus: '0.068'
-                    memory: 9.600M
+                    memory: '10066329'
                 limits:
                     cpus: '0.561'
                     memory: 80M
@@ -65,7 +65,7 @@ services:
             resources:
                 reservations:
                     cpus: '0.1'
-                    memory: 9.600M
+                    memory: '10066329'
                 limits:
                     cpus: '0.1'
                     memory: 80M
@@ -88,7 +88,7 @@ services:
             resources:
                 reservations:
                     cpus: '0.068'
-                    memory: 9.600M
+                    memory: '10066329'
                 limits:
                     cpus: '0.561'
                     memory: 80M

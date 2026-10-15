@@ -94,7 +94,7 @@ class SecretTranscriber implements DeploymentInterface
                 'name' => $prefixer($secret->getName() . self::NAME_SUFFIX),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $prefixer($secret->getName()),
+                    'name' => self::boundLabel($prefixer($secret->getName())),
                 ],
             ],
             'type' => match ($secret->getType()) {

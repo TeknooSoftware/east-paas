@@ -52,6 +52,8 @@ use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\Kubernetes\Repository\DeploymentRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+use function strlen;
+
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
@@ -1067,5 +1069,108 @@ class DeploymentTranscriberTest extends TestCase
 
         $this->assertFalse($capturedSpec['hostUsers']);
         $this->assertArrayNotHasKey('initContainers', $capturedSpec);
+    }
+
+    /**
+     * @return array{0: list<array<string, string>>, 1: array<string, mixed>} label selectors used to find the
+     *     previous Deployment and the applied Deployment
+     */
+    private function runWithPodName(string $podName, string $prefix): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachPod')
+            ->willReturnCallback(function (callable $callback) use ($cd, $podName, $prefix): MockObject {
+                $callback(
+                    new Pod($podName, 1, [new Container('php', 'registry.hub.docker.com/library/php', '8.4')]),
+                    [],
+                    [],
+                    $prefix,
+                );
+
+                return $cd;
+            });
+
+        $selectors = [];
+        $manifest = [];
+        $dRepo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['deployments', [], $dRepo]]);
+        $dRepo->expects($this->once())
+            ->method('setLabelSelector')
+            ->willReturnCallback(
+                function (array $selector) use (&$selectors, $dRepo): DeploymentRepository {
+                    $selectors[] = $selector;
+                    return $dRepo;
+                }
+            );
+        $dRepo->method('first')->willReturn(null);
+        $dRepo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (Deployment $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return [$selectors, $manifest];
+    }
+
+    public function testRunWithShortNameKeepsTheLabelsAndTheSelectors(): void
+    {
+        [$selectors, $manifest] = $this->runWithPodName('php-pods', 'a-prefix');
+
+        $this->assertSame([['name' => 'a-prefix-php-pods']], $selectors);
+        $this->assertSame('a-prefix-php-pods-dplmt', $manifest['metadata']['name']);
+        $this->assertSame(['name' => 'a-prefix-php-pods'], $manifest['metadata']['labels']);
+        $this->assertSame(['name' => 'a-prefix-php-pods'], $manifest['spec']['selector']['matchLabels']);
+        $this->assertSame(
+            ['name' => 'a-prefix-php-pods', 'vname' => 'a-prefix-php-pods-v1'],
+            $manifest['spec']['template']['metadata']['labels'],
+        );
+    }
+
+    public function testRunWithLongPrefixBoundsTheLabelsAndTheSelectors(): void
+    {
+        //65 characters, Kubernetes limits the value of a label to 63 characters. The label, its selectors and the
+        //selector of the Service in front of these pods must stay equal
+        [$selectors, $manifest] = $this->runWithPodName(
+            'php-pods-frontend',
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $bounded = 'a-customer-project-deployed-on-a-shared-cluster-php-pods-2e3a9';
+        $this->assertLessThanOrEqual(63, strlen($bounded));
+
+        $this->assertSame([['name' => $bounded]], $selectors);
+        $this->assertSame(
+            'a-customer-project-deployed-on-a-shared-cluster-php-pods-frontend-dplmt',
+            $manifest['metadata']['name'],
+        );
+        $this->assertSame(['name' => $bounded], $manifest['metadata']['labels']);
+        $this->assertSame(['name' => $bounded], $manifest['spec']['selector']['matchLabels']);
+        $this->assertSame(
+            [
+                'name' => $bounded,
+                'vname' => 'a-customer-project-deployed-on-a-shared-cluster-php-pods-d209c',
+            ],
+            $manifest['spec']['template']['metadata']['labels'],
+        );
     }
 }

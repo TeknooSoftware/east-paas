@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Compilation\Compiler\Quota;
 
+use function intdiv;
 use function number_format;
 use function pow;
 use function ceil;
@@ -41,6 +42,18 @@ use function str_replace;
  */
 class MemoryAvailability extends AbstractAvailability
 {
+    /**
+     * Binary units, from the largest, to write a value in the largest unit where it is whole
+     */
+    private const array WHOLE_UNITS = [
+        'Ei' => 1024 ** 6,
+        'Pi' => 1024 ** 5,
+        'Ti' => 1024 ** 4,
+        'Gi' => 1024 ** 3,
+        'Mi' => 1024 ** 2,
+        'Ki' => 1024,
+    ];
+
     protected function stringCapacityToValue(string $capacity): int
     {
         if ($this->isRelative($capacity)) {
@@ -48,19 +61,19 @@ class MemoryAvailability extends AbstractAvailability
         }
 
         return match (true) {
-            str_ends_with($capacity, 'K') => ((int) $capacity) * 1000,
-            str_ends_with($capacity, 'M') => ((int) $capacity) * 1000 ** 2,
-            str_ends_with($capacity, 'G') => ((int) $capacity) * 1000 ** 3,
-            str_ends_with($capacity, 'T') => ((int) $capacity) * 1000 ** 4,
-            str_ends_with($capacity, 'P') => ((int) $capacity) * 1000 ** 5,
-            str_ends_with($capacity, 'E') => ((int) $capacity) * 1000 ** 6,
-            str_ends_with($capacity, 'Ki') => ((int) $capacity) * 1024,
-            str_ends_with($capacity, 'Mi') => ((int) $capacity) * 1024 ** 2,
-            str_ends_with($capacity, 'Gi') => ((int) $capacity) * 1024 ** 3,
-            str_ends_with($capacity, 'Ti') => ((int) $capacity) * 1024 ** 4,
-            str_ends_with($capacity, 'Pi') => ((int) $capacity) * 1024 ** 5,
-            str_ends_with($capacity, 'Ei') => ((int) $capacity) * 1024 ** 6,
-            default => (int) $capacity,
+            str_ends_with($capacity, 'K') => $this->quantityToValue($capacity, base: 1000, power: 1),
+            str_ends_with($capacity, 'M') => $this->quantityToValue($capacity, base: 1000, power: 2),
+            str_ends_with($capacity, 'G') => $this->quantityToValue($capacity, base: 1000, power: 3),
+            str_ends_with($capacity, 'T') => $this->quantityToValue($capacity, base: 1000, power: 4),
+            str_ends_with($capacity, 'P') => $this->quantityToValue($capacity, base: 1000, power: 5),
+            str_ends_with($capacity, 'E') => $this->quantityToValue($capacity, base: 1000, power: 6),
+            str_ends_with($capacity, 'Ki') => $this->quantityToValue($capacity, base: 1024, power: 1),
+            str_ends_with($capacity, 'Mi') => $this->quantityToValue($capacity, base: 1024, power: 2),
+            str_ends_with($capacity, 'Gi') => $this->quantityToValue($capacity, base: 1024, power: 3),
+            str_ends_with($capacity, 'Ti') => $this->quantityToValue($capacity, base: 1024, power: 4),
+            str_ends_with($capacity, 'Pi') => $this->quantityToValue($capacity, base: 1024, power: 5),
+            str_ends_with($capacity, 'Ei') => $this->quantityToValue($capacity, base: 1024, power: 6),
+            default => $this->quantityToValue($capacity),
         };
     }
 
@@ -68,14 +81,33 @@ class MemoryAvailability extends AbstractAvailability
     {
         $format = fn (float $value): string => str_replace('.000', '', number_format($value, 3, '.', ''));
 
-        return match (true) {
+        //Kubernetes must read exactly the value: a notation with 3 decimals is exact only for a whole number of
+        //thousandths of the unit, so a multiple of an eighth of the unit (1000 = 8 * 125), a rounded up notation only
+        //for a whole number of the unit. Otherwise, the value is written in the largest unit where it is whole, or in
+        //bytes
+        $isExact = fn (int $divisor): bool => 0 === $value % $divisor;
+
+        $capacity = match (true) {
             $value < 1024 => (string) $value,
-            1024 <= $value && $value < 1024 ** 2 => ceil($value / 1024) . 'Ki',
-            1024 ** 2 <= $value && $value < 1024 ** 3 => $format($value / 1024 ** 2) . 'Mi',
-            1024 ** 3 <= $value && $value < 1024 ** 4 => $format($value / 1024 ** 3) . 'Gi',
-            1024 ** 4 <= $value && $value < 1024 ** 5 => $format($value / 1024 ** 4) . 'Ti',
-            1024 ** 5 <= $value && $value < 1024 ** 6 => $format($value / 1024 ** 5) . 'Pi',
-            1024 ** 6 <= $value => ceil($value / 1024 ** 6) . 'Ei',
+            1024 <= $value && $value < 1024 ** 2 && $isExact(1024) => ceil($value / 1024) . 'Ki',
+            1024 ** 2 <= $value && $value < 1024 ** 3 && $isExact(1024 ** 2 / 8) => $format($value / 1024 ** 2) . 'Mi',
+            1024 ** 3 <= $value && $value < 1024 ** 4 && $isExact(1024 ** 3 / 8) => $format($value / 1024 ** 3) . 'Gi',
+            1024 ** 4 <= $value && $value < 1024 ** 5 && $isExact(1024 ** 4 / 8) => $format($value / 1024 ** 4) . 'Ti',
+            1024 ** 5 <= $value && $value < 1024 ** 6 && $isExact(1024 ** 5 / 8) => $format($value / 1024 ** 5) . 'Pi',
+            1024 ** 6 <= $value && $isExact(1024 ** 6) => ceil($value / 1024 ** 6) . 'Ei',
+            default => null,
         };
+
+        if (null !== $capacity) {
+            return $capacity;
+        }
+
+        foreach (self::WHOLE_UNITS as $suffix => $unit) {
+            if (0 === $value % $unit) {
+                return intdiv($value, $unit) . $suffix;
+            }
+        }
+
+        return (string) $value;
     }
 }

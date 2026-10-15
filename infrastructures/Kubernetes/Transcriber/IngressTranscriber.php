@@ -166,7 +166,7 @@ class IngressTranscriber implements ExposingInterface
                 'name' => $prefixer($ingress->getName() . self::NAME_SUFFIX),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $prefixer($ingress->getName()),
+                    'name' => self::boundLabel($prefixer($ingress->getName())),
                 ],
                 'annotations' => $defaultIngressAnnotations,
             ],

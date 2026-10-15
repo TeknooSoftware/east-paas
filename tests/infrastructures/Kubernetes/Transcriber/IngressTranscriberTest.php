@@ -35,8 +35,11 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\IngressTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Model\Ingress as KubeIngress;
 use Teknoo\Kubernetes\Repository\IngressRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
+
+use function strlen;
 
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
@@ -310,5 +313,77 @@ class IngressTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    /**
+     * @return array<string, mixed> the applied Ingress
+     */
+    private function runWithIngressName(string $name, string $prefix): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachIngress')
+            ->willReturnCallback(function (callable $callback) use ($cd, $name, $prefix): MockObject {
+                $callback(new Ingress($name, 'foo.com', null, 'sr1', 80, [], null, false), $prefix);
+
+                return $cd;
+            });
+
+        $manifest = [];
+        $repo = $this->createMock(IngressRepository::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['ingresses', [], $repo]]);
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (KubeIngress $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return $manifest;
+    }
+
+    public function testRunWithShortNameKeepsTheLabel(): void
+    {
+        $manifest = $this->runWithIngressName('foo1', 'a-prefix');
+
+        $this->assertSame('a-prefix-foo1-ingress', $manifest['metadata']['name']);
+        $this->assertSame(['name' => 'a-prefix-foo1'], $manifest['metadata']['labels']);
+    }
+
+    public function testRunWithLongPrefixBoundsTheLabel(): void
+    {
+        //71 characters, Kubernetes limits the value of a label to 63 characters
+        $manifest = $this->runWithIngressName(
+            'public-website-frontend',
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $this->assertSame(
+            'a-customer-project-deployed-on-a-shared-cluster-public-website-frontend-ingress',
+            $manifest['metadata']['name'],
+        );
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-public-we-4c468'],
+            $manifest['metadata']['labels'],
+        );
+        $this->assertSame(63, strlen($manifest['metadata']['labels']['name']));
     }
 }

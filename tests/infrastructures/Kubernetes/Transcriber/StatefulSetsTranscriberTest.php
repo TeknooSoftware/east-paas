@@ -59,6 +59,8 @@ use Teknoo\Kubernetes\Repository\PodRepository;
 use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+use function strlen;
+
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
@@ -1422,5 +1424,143 @@ class StatefulSetsTranscriberTest extends TestCase
 
         $this->assertFalse($capturedSpec['hostUsers']);
         $this->assertArrayNotHasKey('initContainers', $capturedSpec);
+    }
+
+    /**
+     * The previous StatefulSet is in version 2, with the `Recreate` strategy, its pods are deleted with a selector on
+     * their label `vname`.
+     *
+     * @return array{0: list<array<string, string>>, 1: list<array<string, string>>, 2: array<string, mixed>} label
+     *     selectors used to find the previous StatefulSet, label selectors used to find its pods, and the applied
+     *     StatefulSet
+     */
+    private function runWithPodName(string $podName, string $prefix): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachPod')
+            ->willReturnCallback(function (callable $callback) use ($cd, $podName, $prefix): MockObject {
+                $callback(
+                    new Pod(
+                        name: $podName,
+                        replicas: 1,
+                        containers: [new Container('mariadb', 'registry.hub.docker.com/library/mariadb', '11')],
+                        upgradeStrategy: UpgradeStrategy::Recreate,
+                        isStateless: false,
+                    ),
+                    [],
+                    [],
+                    $prefix,
+                );
+
+                return $cd;
+            });
+
+        $sfsSelectors = [];
+        $podsSelectors = [];
+        $manifest = [];
+        $sfsRepo = $this->createMock(StatefulSetRepository::class);
+        $pRepo = $this->createMock(PodRepository::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([
+            ['statefulsets', [], $sfsRepo],
+            ['pods', [], $pRepo],
+        ]);
+
+        $sfsRepo->expects($this->once())
+            ->method('setLabelSelector')
+            ->willReturnCallback(
+                function (array $selector) use (&$sfsSelectors, $sfsRepo): StatefulSetRepository {
+                    $sfsSelectors[] = $selector;
+                    return $sfsRepo;
+                }
+            );
+        $sfsRepo->method('first')->willReturn(
+            new StatefulSet(['metadata' => ['name' => 'foo', 'annotations' => ['teknoo.east.paas.version' => 'v2']]]),
+        );
+        $sfsRepo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (StatefulSet $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $pRepo->expects($this->once())
+            ->method('setLabelSelector')
+            ->willReturnCallback(
+                function (array $selector) use (&$podsSelectors, $pRepo): PodRepository {
+                    $podsSelectors[] = $selector;
+                    return $pRepo;
+                }
+            );
+        $pRepo->method('find')->willReturn(new PodCollection([new PodModel(['metadata' => ['name' => 'foo']])]));
+        $pRepo->expects($this->once())->method('delete');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return [$sfsSelectors, $podsSelectors, $manifest];
+    }
+
+    public function testRunWithShortNameKeepsTheLabelsAndTheSelectors(): void
+    {
+        [$sfsSelectors, $podsSelectors, $manifest] = $this->runWithPodName('mariadb-pods', 'a-prefix');
+
+        $this->assertSame([['name' => 'a-prefix-mariadb-pods']], $sfsSelectors);
+        $this->assertSame([['vname' => 'a-prefix-mariadb-pods-v2']], $podsSelectors);
+        $this->assertSame('a-prefix-mariadb-pods-sfset', $manifest['metadata']['name']);
+        $this->assertSame(['name' => 'a-prefix-mariadb-pods'], $manifest['metadata']['labels']);
+        $this->assertSame(['name' => 'a-prefix-mariadb-pods'], $manifest['spec']['selector']['matchLabels']);
+        $this->assertSame(
+            ['name' => 'a-prefix-mariadb-pods', 'vname' => 'a-prefix-mariadb-pods-v3'],
+            $manifest['spec']['template']['metadata']['labels'],
+        );
+    }
+
+    public function testRunWithLongPrefixBoundsTheLabelsAndTheSelectors(): void
+    {
+        //65 characters, Kubernetes limits the value of a label to 63 characters. The label, its selectors and the
+        //selector of the Service in front of these pods must stay equal
+        [$sfsSelectors, $podsSelectors, $manifest] = $this->runWithPodName(
+            'php-pods-frontend',
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $bounded = 'a-customer-project-deployed-on-a-shared-cluster-php-pods-2e3a9';
+        $this->assertLessThanOrEqual(63, strlen($bounded));
+
+        $this->assertSame([['name' => $bounded]], $sfsSelectors);
+        //label `vname` of the pods of the version 2, deleted
+        $this->assertSame(
+            [['vname' => 'a-customer-project-deployed-on-a-shared-cluster-php-pods-6c545']],
+            $podsSelectors,
+        );
+        $this->assertSame(
+            'a-customer-project-deployed-on-a-shared-cluster-php-pods-frontend-sfset',
+            $manifest['metadata']['name'],
+        );
+        $this->assertSame(['name' => $bounded], $manifest['metadata']['labels']);
+        $this->assertSame(['name' => $bounded], $manifest['spec']['selector']['matchLabels']);
+        $this->assertSame(
+            [
+                'name' => $bounded,
+                'vname' => 'a-customer-project-deployed-on-a-shared-cluster-php-pods-09dbf',
+            ],
+            $manifest['spec']['template']['metadata']['labels'],
+        );
     }
 }

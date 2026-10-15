@@ -84,12 +84,12 @@ class ServiceTranscriber implements ExposingInterface
                 'name' => $prefixer($service->getName()),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $prefixer($service->getName()),
+                    'name' => self::boundLabel($prefixer($service->getName())),
                 ],
             ],
             'spec' => [
                 'selector' => [
-                    'name' => $prefixer($service->getPodName()),
+                    'name' => self::boundLabel($prefixer($service->getPodName())),
                 ],
                 'type' => $type,
                 'ports' => $ports,

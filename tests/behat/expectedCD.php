@@ -367,14 +367,14 @@ return static function (
 
     $automaticResources = [
         new CompiledDeployment\AutomaticResource('cpu')->setLimit('200m', '1.600'),
-        new CompiledDeployment\AutomaticResource('memory')->setLimit('20.480Mi', '163.840Mi'),
+        new CompiledDeployment\AutomaticResource('memory')->setLimit('21474836', '171798691'),
     ];
 
     $phpRunResources = match ($withQuota) {
         'automatic' => $automaticResources,
         'partial' => [
             new CompiledDeployment\AutomaticResource('cpu')->setLimit('68m', '561m'),
-            new CompiledDeployment\AutomaticResource('memory')->setLimit('9.600Mi', '80Mi'),
+            new CompiledDeployment\AutomaticResource('memory')->setLimit('10066329', '80Mi'),
         ],
         'full' => [
             new CompiledDeployment\Resource('cpu', '200m', '500m'),
@@ -387,7 +387,7 @@ return static function (
         'automatic' => $automaticResources,
         'partial' => [
             new CompiledDeployment\Resource('cpu', '100m', '100m'),
-            new CompiledDeployment\AutomaticResource('memory')->setLimit('9.600Mi', '80Mi'),
+            new CompiledDeployment\AutomaticResource('memory')->setLimit('10066329', '80Mi'),
         ],
         'full' => [
             new CompiledDeployment\Resource('cpu', '100m', '100m'),
@@ -400,7 +400,7 @@ return static function (
         'automatic' => $automaticResources,
         'partial' => [
             new CompiledDeployment\AutomaticResource('cpu')->setLimit('68m', '561m'),
-            new CompiledDeployment\AutomaticResource('memory')->setLimit('9.600Mi', '80Mi'),
+            new CompiledDeployment\AutomaticResource('memory')->setLimit('10066329', '80Mi'),
         ],
         'full' => [
             new CompiledDeployment\Resource('cpu', '200m', '200m'),

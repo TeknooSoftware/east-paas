@@ -36,8 +36,11 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Volume\Volume;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\VolumeTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Model\PersistentVolumeClaim;
 use Teknoo\Kubernetes\Repository\PersistentVolumeClaimRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
+
+use function strlen;
 
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
@@ -148,5 +151,78 @@ class VolumeTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    /**
+     * @return array<string, mixed> the applied PersistentVolumeClaim
+     */
+    private function runWithVolumeName(string $name, string $prefix): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachVolume')
+            ->willReturnCallback(function (callable $callback) use ($cd, $name, $prefix): MockObject {
+                $callback($name, new PersistentVolume($name, '/data', 'id', 'bar'), $prefix);
+
+                return $cd;
+            });
+
+        $manifest = [];
+        $repo = $this->createMock(PersistentVolumeClaimRepository::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['persistentVolumeClaims', [], $repo]]);
+        $repo->method('exists')->willReturn(false);
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (PersistentVolumeClaim $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return $manifest;
+    }
+
+    public function testRunWithShortNameKeepsTheLabel(): void
+    {
+        $manifest = $this->runWithVolumeName('foo', 'a-prefix');
+
+        $this->assertSame('a-prefix-foo', $manifest['metadata']['name']);
+        $this->assertSame(['name' => 'a-prefix-foo'], $manifest['metadata']['labels']);
+    }
+
+    public function testRunWithLongPrefixBoundsTheLabel(): void
+    {
+        //70 characters, Kubernetes limits the value of a label to 63 characters
+        $manifest = $this->runWithVolumeName(
+            'uploaded-files-storage',
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $this->assertSame(
+            'a-customer-project-deployed-on-a-shared-cluster-uploaded-files-storage',
+            $manifest['metadata']['name'],
+        );
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-uploaded-0173b'],
+            $manifest['metadata']['labels'],
+        );
+        $this->assertLessThanOrEqual(63, strlen($manifest['metadata']['labels']['name']));
     }
 }

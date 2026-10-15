@@ -219,7 +219,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
                         //pods
                         /** @var Repository<StatefulSet> $pods */
                         $pods = $client->pods();
-                        $labelSelector = ['vname' => $name . '-v' . $oldVersion];
+                        $labelSelector = ['vname' => self::boundLabel($name . '-v' . $oldVersion)];
                         foreach ($pods->setLabelSelector($labelSelector)->find() as $podModel) {
                             $pods->delete($podModel);
                         }

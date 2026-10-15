@@ -59,7 +59,7 @@ class ConfigMapTranscriber implements DeploymentInterface
                 'name' => $prefixer($configMap->getName() . self::NAME_SUFFIX),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $prefixer($configMap->getName()),
+                    'name' => self::boundLabel($prefixer($configMap->getName())),
                 ],
             ],
             'data' => $configMap->getOptions(),
