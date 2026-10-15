@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Contracts\Compilation\Quota;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\AutomaticResource;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
+use Teknoo\East\Paas\Compilation\Compiler\Exception\QuotaWrongConfigurationException;
 use Teknoo\East\Paas\Compilation\Compiler\Exception\ResourceCapacityExceededException;
 use Teknoo\East\Paas\Compilation\Compiler\Exception\QuotasNotCompliantException;
 
@@ -57,6 +58,7 @@ interface AvailabilityInterface
      * To update the quota from the deployment file to decrease it.
      * @throws ResourceCapacityExceededException
      * @throws QuotasNotCompliantException
+     * @throws QuotaWrongConfigurationException
      */
     public function update(AvailabilityInterface $availability): AvailabilityInterface;
 

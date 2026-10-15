@@ -58,6 +58,12 @@ class JobTranscriber implements DeploymentInterface
 
     private const string POD_SUFFIX = '-pod-job';
 
+    /**
+     * Kubernetes limits the name of a Job to 63 characters: it is copied in the labels `job-name` and
+     * `batch.kubernetes.io/job-name` of its pods.
+     */
+    private const int MAX_NAME_LENGTH = 63;
+
     private ?SleepServiceInterface $sleepService = null;
 
     public function setSleepService(SleepServiceInterface $sleepService): self
@@ -148,13 +154,23 @@ class JobTranscriber implements DeploymentInterface
                     }
 
                     foreach ($job->getPods() as $pod) {
-                        $name = $prefixer($job->getName() . '-' . $pod->getName());
+                        $name = self::boundName(
+                            $prefixer($job->getName() . '-' . $pod->getName()),
+                            self::NAME_SUFFIX,
+                            self::MAX_NAME_LENGTH,
+                        );
                         /** @var Repository<JobModel> $dRepository */
                         $dRepository = $client->jobs();
 
                         $previousJob = null;
                         $oldVersion = 0;
-                        $version = self::getVersion($name, $dRepository, $oldVersion, $previousJob);
+                        $version = self::getVersion(
+                            name: $name,
+                            repository: $dRepository,
+                            oldVersion: $oldVersion,
+                            previousManifest: $previousJob,
+                            objectName: $name . self::NAME_SUFFIX,
+                        );
 
                         /** @var array<array<Image>> $images */
                         /** @var array<string, Volume> $volumes */

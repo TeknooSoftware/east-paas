@@ -53,6 +53,7 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\CronJobTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Model\CronJob;
+use Teknoo\Kubernetes\Repository\CronJobRepository;
 use Teknoo\Kubernetes\Repository\DeploymentRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
@@ -272,7 +273,7 @@ class CronJobTranscriberTest extends TestCase
             ]);
 
         $dRepo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
 
@@ -463,7 +464,7 @@ class CronJobTranscriberTest extends TestCase
             ]);
 
         $dRepo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $dRepo->expects($this->exactly(2))
@@ -640,7 +641,7 @@ class CronJobTranscriberTest extends TestCase
             ]);
 
         $dRepo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $dRepo->expects($this->exactly(2))
@@ -804,7 +805,7 @@ class CronJobTranscriberTest extends TestCase
             ->willReturn($repo);
 
         $repo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $call = 0;
@@ -956,7 +957,7 @@ class CronJobTranscriberTest extends TestCase
             ->willReturn($repo);
 
         $repo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $repo->expects($this->exactly(3))
@@ -1056,7 +1057,7 @@ class CronJobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 
@@ -1126,7 +1127,7 @@ class CronJobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->expects($this->once())
             ->method('exists')
@@ -1286,7 +1287,7 @@ class CronJobTranscriberTest extends TestCase
     }
 
     /**
-     * @return array{0: list<array<string, string>>, 1: array<string, mixed>} label selectors used to find the
+     * @return array{0: list<array<string, string>>, 1: array<string, mixed>} field selectors used to find the
      *     previous CronJob and the applied CronJob
      */
     private function runWithPrefix(CDJob $job, string $prefix): array
@@ -1308,7 +1309,7 @@ class CronJobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
         $repo->expects($this->once())
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnCallback(
                 function (array $selector) use (&$selectors, $repo): DeploymentRepository {
                     $selectors[] = $selector;
@@ -1344,11 +1345,11 @@ class CronJobTranscriberTest extends TestCase
         return [$selectors, $manifest];
     }
 
-    public function testRunWithShortNameKeepsTheLabelAndTheSelector(): void
+    public function testRunWithShortNameKeepsTheLabelAndFindsThePreviousCronJobByItsName(): void
     {
         [$selectors, $manifest] = $this->runWithPrefix($this->buildScheduledJob('backup', 'dump'), 'a-prefix');
 
-        $this->assertSame([['name' => 'a-prefix-backup-dump']], $selectors);
+        $this->assertSame([['metadata.name' => 'a-prefix-backup-dump-cronjob']], $selectors);
         $this->assertSame(['name' => 'a-prefix-backup'], $manifest['metadata']['labels']);
     }
 
@@ -1360,14 +1361,148 @@ class CronJobTranscriberTest extends TestCase
             'a-customer-project-deployed-on-a-shared-cluster',
         );
 
-        //The name of the CronJob is already bounded to 52 characters, the selector is unchanged
-        $this->assertSame([['name' => 'a-customer-project-deployed-on-a-share-20a36']], $selectors);
+        //The previous CronJob is selected on its name, already bounded to 52 characters
+        $this->assertSame([['metadata.name' => 'a-customer-project-deployed-on-a-share-20a36-cronjob']], $selectors);
         $this->assertSame('a-customer-project-deployed-on-a-share-20a36-cronjob', $manifest['metadata']['name']);
         $this->assertSame(
             ['name' => 'a-customer-project-deployed-on-a-shared-cluster-nightly-d-10b01'],
             $manifest['metadata']['labels'],
         );
         $this->assertSame(63, strlen($manifest['metadata']['labels']['name']));
+    }
+
+    private function buildScheduledJobWithPods(string $jobName, string ...$podNames): CDJob
+    {
+        return new CDJob(
+            name: $jobName,
+            pods: array_map(
+                static fn (string $podName): Pod => new Pod(
+                    $podName,
+                    1,
+                    [new Container('dump', 'registry.hub.docker.com/library/mariadb', '11')],
+                ),
+                $podNames,
+            ),
+            planning: CDJob\Planning::Scheduled,
+            planningSchedule: '17 3 * * *',
+        );
+    }
+
+    /**
+     * Deploys the job with the real repository of the client, on a Kubernetes API keeping its objects between
+     * deployments
+     *
+     * @return array<string, string> versions of the applied CronJobs, by names
+     */
+    private function deployOn(InMemoryKubernetesApi $api, CDJob $job, string $prefix = 'a-prefix'): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['cronJobs', [], new CronJobRepository($kubeClient)]]);
+        $kubeClient->method('sendRequest')->willReturnCallback($api);
+
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $job, $prefix): MockObject {
+                $callback($job, [], [], $prefix);
+
+                return $cd;
+            });
+
+        $versions = [];
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())
+            ->method('success')
+            ->willReturnCallback(
+                function (array $results) use (&$versions, $promise): PromiseInterface {
+                    foreach ($results as $result) {
+                        $versions[$result['metadata']['name']] =
+                            $result['metadata']['annotations']['teknoo.east.paas.version'];
+                    }
+
+                    return $promise;
+                }
+            );
+        $promise->method('fail')->willReturnCallback(fn (Throwable $e): PromiseInterface => throw $e);
+
+        $transcriber = new CronJobTranscriber();
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return $versions;
+    }
+
+    public function testFirstDeploymentOfACronJobIsTheVersionOne(): void
+    {
+        $this->assertSame(
+            ['a-prefix-backup-dump-cronjob' => 'v1'],
+            $this->deployOn(new InMemoryKubernetesApi(), $this->buildScheduledJobWithPods('backup', 'dump')),
+        );
+    }
+
+    public function testNextDeploymentsOfACronJobFindThePreviousCronJob(): void
+    {
+        $api = new InMemoryKubernetesApi();
+        $job = $this->buildScheduledJobWithPods('backup', 'dump');
+
+        $this->assertSame(['a-prefix-backup-dump-cronjob' => 'v1'], $this->deployOn($api, $job));
+        $this->assertSame(['a-prefix-backup-dump-cronjob' => 'v2'], $this->deployOn($api, $job));
+        $this->assertSame(['a-prefix-backup-dump-cronjob' => 'v3'], $this->deployOn($api, $job));
+
+        //The labels of the CronJob are unchanged
+        $this->assertSame(
+            ['name' => 'a-prefix-backup'],
+            $api->get('a-prefix-backup-dump-cronjob')['metadata']['labels'],
+        );
+    }
+
+    public function testPodsOfACronJobDoNotSeeTheVersionOfEachOther(): void
+    {
+        //CronJobs of previous deployments, all the pods of a same job have the same label `name`
+        $api = new InMemoryKubernetesApi();
+        foreach (['files' => 'v5', 'dump' => 'v2'] as $podName => $version) {
+            $api->add([
+                'metadata' => [
+                    'name' => "a-prefix-backup-{$podName}-cronjob",
+                    'labels' => ['name' => 'a-prefix-backup'],
+                    'annotations' => ['teknoo.east.paas.version' => $version],
+                ],
+            ]);
+        }
+
+        $this->assertSame(
+            [
+                'a-prefix-backup-dump-cronjob' => 'v3',
+                'a-prefix-backup-files-cronjob' => 'v6',
+            ],
+            $this->deployOn($api, $this->buildScheduledJobWithPods('backup', 'dump', 'files')),
+        );
+    }
+
+    public function testNextDeploymentsOfACronJobWithALongNameFindThePreviousCronJob(): void
+    {
+        $api = new InMemoryKubernetesApi();
+        $job = $this->buildScheduledJobWithPods('nightly-database-backup', 'dump');
+        $prefix = 'a-customer-project-deployed-on-a-shared-cluster';
+        //The name of the CronJob is bounded to 52 characters
+        $name = 'a-customer-project-deployed-on-a-share-20a36-cronjob';
+
+        $this->assertSame([$name => 'v1'], $this->deployOn($api, $job, $prefix));
+        $this->assertSame([$name => 'v2'], $this->deployOn($api, $job, $prefix));
+
+        //The label of the CronJob is still bounded
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-nightly-d-10b01'],
+            $api->get($name)['metadata']['labels'],
+        );
     }
 
     private function buildCDForVersionLevel(CompiledDeploymentInterface $cd): void
@@ -1421,7 +1556,7 @@ class CronJobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 
@@ -1474,7 +1609,7 @@ class CronJobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 
@@ -1527,7 +1662,7 @@ class CronJobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 
@@ -1585,7 +1720,7 @@ class CronJobTranscriberTest extends TestCase
 
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 

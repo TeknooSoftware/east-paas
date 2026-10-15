@@ -595,15 +595,25 @@ trait PodsTranscriberTrait
     }
 
     /**
+     * The previous manifest is selected on its label `name`, or on its name when `$objectName` is given: the label
+     * `name` of a Job or of a CronJob is the name of its job, shared by the objects of all the pods of this job.
+     *
      * @param Repository<Deployment|StatefulSet|Job|CronJob> $repository
      */
     private static function getVersion(
         string $name,
         Repository $repository,
         ?int &$oldVersion,
-        ?Model &$previousManifest
+        ?Model &$previousManifest,
+        ?string $objectName = null,
     ): int {
-        $previousManifest = $repository->setLabelSelector(['name' => self::boundLabel($name)])->first();
+        if (null === $objectName) {
+            $repository = $repository->setLabelSelector(['name' => self::boundLabel($name)]);
+        } else {
+            $repository = $repository->setFieldSelector(['metadata.name' => $objectName]);
+        }
+
+        $previousManifest = $repository->first();
 
         $version = 1;
         if (null !== $previousManifest) {

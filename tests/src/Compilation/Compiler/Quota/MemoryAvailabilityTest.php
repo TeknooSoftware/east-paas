@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\AutomaticResource;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
+use Teknoo\East\Paas\Compilation\Compiler\Exception\QuotaWrongConfigurationException;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\AbstractAvailability;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\MemoryAvailability;
 use Teknoo\East\Paas\Contracts\Compilation\Quota\AvailabilityInterface;
@@ -396,6 +397,25 @@ class MemoryAvailabilityTest extends AbstractTestAvailability
             'parent without requires' => ['4Gi', '', '50%', '50%', '2Gi', '2Gi'],
             'requires defaulted to the relative capacity' => ['4Gi', '2Gi', '50%', '', '2Gi', '1Gi'],
             'absolute capacity' => ['4Gi', '2Gi', '2Gi', '50%', '2Gi', '1Gi'],
+            'absolute capacity equal to the relative requires' => ['4Gi', '', '2Gi', '50%', '2Gi', '2Gi'],
+            'relative capacity equal to the absolute requires' => ['4Gi', '', '50%', '2Gi', '2Gi', '2Gi'],
+            'relative capacity not a whole unit' => ['3Gi', '', '50%', '1200Mi', '1.500Gi', '1200Mi'],
+            'relative capacity not a whole unit equal to the absolute requires' => [
+                '3Gi',
+                '',
+                '50%',
+                '1536Mi',
+                '1.500Gi',
+                '1536Mi',
+            ],
+            'absolute capacity equal to the relative requires not a whole unit' => [
+                '3Ki',
+                '',
+                '1536',
+                '50%',
+                '1536',
+                '1536',
+            ],
         ];
     }
 
@@ -498,5 +518,31 @@ class MemoryAvailabilityTest extends AbstractTestAvailability
         $this->assertCount(1, $set);
         $this->assertEquals('8Mi', $availability->getRequires());
         $this->assertEquals('0', $availability->getCapacity());
+    }
+
+    public static function requiresAboveCapacityProvider(): array
+    {
+        return [
+            'absolute capacity, relative requires' => ['4Gi', '', '1Gi', '50%'],
+            'relative capacity, absolute requires' => ['4Gi', '', '25%', '2Gi'],
+            'relative capacity, relative requires' => ['4Gi', '', '25%', '50%'],
+            'absolute capacity, relative requires not a whole unit' => ['3Gi', '', '1200Mi', '50%'],
+        ];
+    }
+
+    #[DataProvider('requiresAboveCapacityProvider')]
+    public function testUpdateWithRequiresAboveCapacity(
+        string $parentCapacity,
+        string $parentRequires,
+        string $capacity,
+        string $requires,
+    ): void {
+        $this->expectException(QuotaWrongConfigurationException::class);
+        $this->expectExceptionMessage('Error, the capacity of the quota `test` must be bigger of require');
+        $this->expectExceptionCode(400);
+
+        $this->createAvailability($parentCapacity, $parentRequires, false)->update(
+            $this->createAvailability($capacity, $requires, true),
+        );
     }
 }
