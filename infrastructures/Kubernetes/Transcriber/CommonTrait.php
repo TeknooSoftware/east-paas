@@ -40,6 +40,11 @@ use function substr;
  */
 trait CommonTrait
 {
+    /**
+     * Kubernetes limits the value of a label, and of a selector on a label, to 63 characters.
+     */
+    private const int MAX_LABEL_LENGTH = 63;
+
     private static function createPrefixer(?string $prefix): callable
     {
         return static function (string $value) use ($prefix): string {
@@ -65,6 +70,16 @@ trait CommonTrait
         $hash = substr(hash('sha256', $name), 0, 5);
 
         return rtrim(substr($name, 0, $maxLength - strlen($suffix) - strlen($hash) - 1), '-') . '-' . $hash;
+    }
+
+    /**
+     * Bounds the value of a label, or of a selector on this label, to the length accepted by Kubernetes, like
+     * `boundName()`: a label and the selectors on it, bounded from the same full value, are always equal.
+     * A value which fits is unchanged.
+     */
+    private static function boundLabel(string $value): string
+    {
+        return self::boundName($value, '', self::MAX_LABEL_LENGTH);
     }
 
 

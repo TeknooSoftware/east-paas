@@ -39,6 +39,8 @@ use Teknoo\Kubernetes\Model\Service as KubeService;
 use Teknoo\Kubernetes\Repository\ServiceRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
+use function strlen;
+
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
@@ -230,5 +232,98 @@ class ServiceTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    /**
+     * @return array<string, mixed> the applied Service
+     */
+    private function runWithService(Service $service, string $prefix): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachService')
+            ->willReturnCallback(function (callable $callback) use ($cd, $service, $prefix): MockObject {
+                $callback($service, $prefix);
+
+                return $cd;
+            });
+
+        $manifest = [];
+        $repo = $this->createMock(ServiceRepository::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['services', [], $repo]]);
+        $repo->method('exists')->willReturn(false);
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (KubeService $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return $manifest;
+    }
+
+    public function testRunWithShortNameKeepsTheLabelAndTheSelector(): void
+    {
+        $manifest = $this->runWithService(
+            new Service('foo', 'foo-pod', [80 => 8080], Transport::Tcp, true),
+            'a-prefix',
+        );
+
+        $this->assertSame('a-prefix-foo', $manifest['metadata']['name']);
+        $this->assertSame(['name' => 'a-prefix-foo'], $manifest['metadata']['labels']);
+        $this->assertSame(['name' => 'a-prefix-foo-pod'], $manifest['spec']['selector']);
+    }
+
+    public function testRunWithLongPrefixBoundsTheSelectorLikeThePodLabel(): void
+    {
+        //65 characters, Kubernetes limits the value of a label to 63 characters. The selector must be equal to the
+        //label `name` written on the pods by DeploymentTranscriber and StatefulSetsTranscriber
+        $manifest = $this->runWithService(
+            new Service('php-service', 'php-pods-frontend', [80 => 8080], Transport::Tcp, true),
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-php-service'],
+            $manifest['metadata']['labels'],
+        );
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-php-pods-2e3a9'],
+            $manifest['spec']['selector'],
+        );
+        $this->assertLessThanOrEqual(63, strlen($manifest['spec']['selector']['name']));
+    }
+
+    public function testRunWithLongPrefixBoundsTheLabel(): void
+    {
+        //68 characters, Kubernetes limits the value of a label to 63 characters
+        $manifest = $this->runWithService(
+            new Service('php-frontend-service', 'php-pods-frontend', [80 => 8080], Transport::Tcp, true),
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-php-front-97cd3'],
+            $manifest['metadata']['labels'],
+        );
+        $this->assertSame(63, strlen($manifest['metadata']['labels']['name']));
     }
 }

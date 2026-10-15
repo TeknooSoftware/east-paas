@@ -34,10 +34,12 @@ use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
 use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\ConfigMapTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
+use Teknoo\Kubernetes\Model\ConfigMap as KubeConfigMap;
 use Teknoo\Kubernetes\Repository\ConfigMapRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 
 use function base64_encode;
+use function strlen;
 
 /**
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
@@ -130,5 +132,77 @@ class ConfigMapTranscriberTest extends TestCase
             namespace: 'default_namespace',
             useHierarchicalNamespaces: false,
         ));
+    }
+
+    /**
+     * @return array<string, mixed> the applied ConfigMap
+     */
+    private function runWithMap(Map $map, string $prefix): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachMap')
+            ->willReturnCallback(function (callable $callback) use ($cd, $map, $prefix): MockObject {
+                $callback($map, $prefix);
+
+                return $cd;
+            });
+
+        $manifest = [];
+        $repo = $this->createMock(ConfigMapRepository::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['configMaps', [], $repo]]);
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (KubeConfigMap $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success')->with(['foo']);
+        $promise->expects($this->never())->method('fail');
+
+        $this->buildTranscriber()->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return $manifest;
+    }
+
+    public function testRunWithShortNameKeepsTheLabel(): void
+    {
+        $manifest = $this->runWithMap(new Map('foo', ['foo' => 'bar']), 'a-prefix');
+
+        $this->assertSame('a-prefix-foo-map', $manifest['metadata']['name']);
+        $this->assertSame(['name' => 'a-prefix-foo'], $manifest['metadata']['labels']);
+    }
+
+    public function testRunWithLongPrefixBoundsTheLabel(): void
+    {
+        //68 characters, Kubernetes limits the value of a label to 63 characters
+        $manifest = $this->runWithMap(
+            new Map('application-settings', ['foo' => 'bar']),
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $this->assertSame(
+            'a-customer-project-deployed-on-a-shared-cluster-application-settings-map',
+            $manifest['metadata']['name'],
+        );
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-applicati-2cd5b'],
+            $manifest['metadata']['labels'],
+        );
+        $this->assertSame(63, strlen($manifest['metadata']['labels']['name']));
     }
 }

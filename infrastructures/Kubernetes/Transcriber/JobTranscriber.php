@@ -99,7 +99,7 @@ class JobTranscriber implements DeploymentInterface
             'name' => $name . self::NAME_SUFFIX,
             'namespace' => $namespace,
             'labels' => [
-                'name' => $prefixer($job->getName()),
+                'name' => self::boundLabel($prefixer($job->getName())),
             ],
             'annotations' => [
                 'teknoo.east.paas.version' => 'v' . $version,

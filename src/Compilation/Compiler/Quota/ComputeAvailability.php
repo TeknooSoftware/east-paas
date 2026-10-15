@@ -47,10 +47,10 @@ class ComputeAvailability extends AbstractAvailability
         }
 
         if (str_ends_with($capacity, 'm')) {
-            return (int) $capacity;
+            return $this->quantityToValue($capacity);
         }
 
-        return (int) (((float) $capacity) * self::MILLI_COEF);
+        return $this->quantityToValue($capacity, base: self::MILLI_COEF, power: 1);
     }
 
     protected function valueToStringCapacity(int $value): string

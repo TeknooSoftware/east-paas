@@ -1285,6 +1285,91 @@ class CronJobTranscriberTest extends TestCase
         );
     }
 
+    /**
+     * @return array{0: list<array<string, string>>, 1: array<string, mixed>} label selectors used to find the
+     *     previous CronJob and the applied CronJob
+     */
+    private function runWithPrefix(CDJob $job, string $prefix): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $job, $prefix): MockObject {
+                $callback($job, [], [], $prefix);
+
+                return $cd;
+            });
+
+        $selectors = [];
+        $manifest = [];
+        $repo = $this->createMock(DeploymentRepository::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['cronJobs', [], $repo]]);
+        $repo->expects($this->once())
+            ->method('setLabelSelector')
+            ->willReturnCallback(
+                function (array $selector) use (&$selectors, $repo): DeploymentRepository {
+                    $selectors[] = $selector;
+                    return $repo;
+                }
+            );
+        $repo->method('first')->willReturn(null);
+        $repo->method('exists')->willReturn(false);
+        $repo->expects($this->once())
+            ->method('apply')
+            ->willReturnCallback(
+                function (CronJob $model) use (&$manifest): array {
+                    $manifest = $model->toArray();
+                    return ['foo'];
+                }
+            );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $transcriber = new CronJobTranscriber('paas.east.teknoo.net', '1.36');
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return [$selectors, $manifest];
+    }
+
+    public function testRunWithShortNameKeepsTheLabelAndTheSelector(): void
+    {
+        [$selectors, $manifest] = $this->runWithPrefix($this->buildScheduledJob('backup', 'dump'), 'a-prefix');
+
+        $this->assertSame([['name' => 'a-prefix-backup-dump']], $selectors);
+        $this->assertSame(['name' => 'a-prefix-backup'], $manifest['metadata']['labels']);
+    }
+
+    public function testRunWithLongPrefixBoundsTheLabel(): void
+    {
+        //71 characters, Kubernetes limits the value of a label to 63 characters
+        [$selectors, $manifest] = $this->runWithPrefix(
+            $this->buildScheduledJob('nightly-database-backup', 'dump'),
+            'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        //The name of the CronJob is already bounded to 52 characters, the selector is unchanged
+        $this->assertSame([['name' => 'a-customer-project-deployed-on-a-share-20a36']], $selectors);
+        $this->assertSame('a-customer-project-deployed-on-a-share-20a36-cronjob', $manifest['metadata']['name']);
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-nightly-d-10b01'],
+            $manifest['metadata']['labels'],
+        );
+        $this->assertSame(63, strlen($manifest['metadata']['labels']['name']));
+    }
+
     private function buildCDForVersionLevel(CompiledDeploymentInterface $cd): void
     {
         $cd->expects($this->once())

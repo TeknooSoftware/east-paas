@@ -68,7 +68,7 @@ class NamespaceTranscriber implements GenericTranscriberInterface, DriverAwareIn
                 'name' => $projectName,
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $finalNs,
+                    'name' => self::boundLabel($finalNs),
                 ],
             ],
         ];

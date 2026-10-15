@@ -52,10 +52,10 @@ services:
             resources:
                 reservations:
                     cpus: '0.2'
-                    memory: 20.480M
+                    memory: '21474836'
                 limits:
                     cpus: '1.600'
-                    memory: 163.840M
+                    memory: '171798691'
             replicas: 2
     shell:
         image: 'registry.hub.docker.com/bash:alpine'
@@ -65,10 +65,10 @@ services:
             resources:
                 reservations:
                     cpus: '0.2'
-                    memory: 20.480M
+                    memory: '21474836'
                 limits:
                     cpus: '1.600'
-                    memory: 163.840M
+                    memory: '171798691'
     demo:
         image: 'foo.bar/nginx:alpine-2a975-5be1e-prod'
         networks:
@@ -88,10 +88,10 @@ services:
             resources:
                 reservations:
                     cpus: '0.2'
-                    memory: 20.480M
+                    memory: '21474836'
                 limits:
                     cpus: '1.600'
-                    memory: 163.840M
+                    memory: '171798691'
         group_add:
             - '1000'
     demo-waf:
@@ -108,10 +108,10 @@ services:
             resources:
                 reservations:
                     cpus: '0.2'
-                    memory: 20.480M
+                    memory: '21474836'
                 limits:
                     cpus: '1.600'
-                    memory: 163.840M
+                    memory: '171798691'
         group_add:
             - '1000'
         network_mode: 'service:demo'
@@ -124,10 +124,10 @@ services:
             resources:
                 reservations:
                     cpus: '0.2'
-                    memory: 20.480M
+                    memory: '21474836'
                 limits:
                     cpus: '1.600'
-                    memory: 163.840M
+                    memory: '171798691'
         group_add:
             - '1000'
         network_mode: 'service:demo'

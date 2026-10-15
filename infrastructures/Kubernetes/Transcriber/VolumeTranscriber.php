@@ -74,7 +74,7 @@ class VolumeTranscriber implements DeploymentInterface
                 'name' => $prefixer($volume->getName()),
                 'namespace' => $namespace,
                 'labels' => [
-                    'name' => $prefixer($volume->getName()),
+                    'name' => self::boundLabel($prefixer($volume->getName())),
                 ],
             ],
             'spec' => [

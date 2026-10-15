@@ -50,7 +50,7 @@ abstract class AbstractTestAvailability extends TestCase
 
     abstract protected function getMiddleCapacity(): string;
 
-    abstract protected function getQuarterCapacity(): string;
+    abstract protected function getQuarterRequires(): string;
 
     abstract protected function getLargerCapacity(): string;
 
@@ -134,7 +134,7 @@ abstract class AbstractTestAvailability extends TestCase
 
         $this->assertEquals($this->getMiddleCapacity(), $final->getCapacity());
 
-        $this->assertEquals($this->getQuarterCapacity(), $final->getRequires());
+        $this->assertEquals($this->getQuarterRequires(), $final->getRequires());
     }
 
     public function testReserveLimitSmallerThanRequire(): void
