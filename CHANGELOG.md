@@ -21,6 +21,12 @@
   capacity as requires, also computed from the account's `requires`. When `paas.quotas` has several entries of the
   same type, a relative `requires` of an entry is computed from the `requires` of the previous one. Nothing changes
   when neither the account's quota nor a previous entry of the same type has a `requires` different from its capacity.
+- Quotas: a quota defined in the PaaS file (`paas.quotas`) with a relative `capacity` and/or a relative `requires` is
+  refused when its `requires`, once computed, is above its `capacity`, like a quota with absolute values. With an
+  account's quota `cpu` of capacity `4`, the entry `{capacity: '1', requires: '50%'}` was accepted with a requires of
+  `2` above its capacity `1`, and a next entry of the same type was computed from this inconsistent quota. The
+  compilation fails now with the error already returned for absolute values ("the capacity of the quota `cpu` must be
+  bigger of require", code 400). A `requires` equal to the `capacity` is still accepted.
 - Quotas: the remaining requires of a quota are compared with the `require` of a container, multiplied by its replicas,
   and not anymore with its `limit`. A container whose require fits in the remaining requires but whose limit does not
   (remaining requires `500m`, `require: 100m` and `limit: 1`) was refused with an error contradicting the values
@@ -29,11 +35,31 @@
   require above the remaining requires is still refused with the same error. A relative require above `100%`, never
   validated by the old check, is now refused with the existing `not a valid percentage` error, like a relative limit.
 - Kubernetes: the labels `name` and `vname` of the generated objects, and the selectors on them (`matchLabels`,
-  `selector` of a Service, label selectors to find the previous manifest or the pods to recreate), are limited to 63
-  characters, like Kubernetes requires. Until now, with a long prefix or long names, they were written unbounded and
-  Kubernetes refused the objects when they were applied, after the first objects were applied. A longer value is
-  truncated and suffixed by a short hash of the full value, stable between deployments and identical in the label and
-  in its selectors. Values which fit are unchanged.
+  `selector` of a Service, label selectors to find the previous Deployment or StatefulSet, or the pods to recreate),
+  are limited to 63 characters, like Kubernetes requires. Until now, with a long prefix or long names, they were
+  written unbounded and Kubernetes refused the objects when they were applied, after the first objects were applied.
+  A longer value is truncated and suffixed by a short hash of the full value, stable between deployments and
+  identical in the label and in its selectors. Values which fit are unchanged.
+- Kubernetes: the name of a Job is limited to 63 characters and the name of a StatefulSet to 52 characters, suffixes
+  `-job` and `-sfset` included, like Kubernetes requires: the name of a Job is copied in the labels `job-name` and
+  `batch.kubernetes.io/job-name` of its pods, and the StatefulSet controller writes on its pods the label
+  `controller-revision-hash`, the name of the StatefulSet followed by a dash and a hash of up to 10 characters, and a
+  label is limited to 63 characters. Until now, with a long prefix or long names, the Job was refused when it was
+  applied and the pods of the StatefulSet could not be created. A longer name is truncated and suffixed by a short hash
+  of the full name, stable between deployments, like the name of a CronJob. Names which fit are unchanged. The previous
+  Job is found, and deleted, by this bounded name. The labels, the selectors and the `serviceName` of a StatefulSet are
+  not changed: the previous StatefulSet and its pods are still found, and it stays governed by the same Service.
+- Kubernetes: the annotation `teknoo.east.paas.version` of the Jobs and of the CronJobs is incremented at each
+  deployment, like for the Deployments and the StatefulSets. Until now, the previous Job or CronJob was searched with a
+  label value never written on it (its label `name` is the name of the job, shared by the objects of all its pods), it
+  was never found and the version stayed `v1`. The previous object of each pod of a job is now found by its name. The
+  manifests and their labels are not changed by this fix, the previous Job or CronJob is still deleted before being
+  recreated.
+- Tests: the tests of the retry, on destruction, of a failed removal of a credentials directory
+  (`EphemeralCredentialsRunnerTest`, Kubernetes `FactoryTest`) did not pass with `xdebug.mode=develop`: Xdebug keeps a
+  copy of the variables of the frames of the last thrown exceptions, the tested object was not destroyed by its
+  `unset()`. It is now held by an `ArrayObject` of the test and removed from it, which releases its last reference in
+  every Xdebug mode (`develop`, `coverage`, `debug`, `off`).
 
 ## [5.8.0] - 2026-10-09
 ### Stable Release

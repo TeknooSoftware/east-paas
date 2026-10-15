@@ -55,9 +55,11 @@ use Teknoo\East\Paas\Infrastructures\Kubernetes\Transcriber\JobTranscriber;
 use Teknoo\Kubernetes\Client as KubeClient;
 use Teknoo\Kubernetes\Model\Job;
 use Teknoo\Kubernetes\Repository\DeploymentRepository;
+use Teknoo\Kubernetes\Repository\JobRepository;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
+use function array_map;
 use function strlen;
 
 /**
@@ -278,7 +280,7 @@ class JobTranscriberTest extends TestCase
             ]);
 
         $dRepo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $dRepo->expects($this->exactly(3))
@@ -468,7 +470,7 @@ class JobTranscriberTest extends TestCase
             ]);
 
         $dRepo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $dRepo->expects($this->exactly(2))
@@ -645,7 +647,7 @@ class JobTranscriberTest extends TestCase
             ]);
 
         $dRepo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $dRepo->expects($this->exactly(2))
@@ -809,7 +811,7 @@ class JobTranscriberTest extends TestCase
             ->willReturn($repo);
 
         $repo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $call = 0;
@@ -961,7 +963,7 @@ class JobTranscriberTest extends TestCase
             ->willReturn($repo);
 
         $repo
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnSelf();
 
         $repo->expects($this->exactly(3))
@@ -1059,7 +1061,7 @@ class JobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 
@@ -1112,7 +1114,7 @@ class JobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 
@@ -1165,7 +1167,7 @@ class JobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 
@@ -1223,7 +1225,7 @@ class JobTranscriberTest extends TestCase
 
         $repo = $this->createMock(DeploymentRepository::class);
         $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
-        $repo->method('setLabelSelector')->willReturnSelf();
+        $repo->method('setFieldSelector')->willReturnSelf();
         $repo->method('first')->willReturn(null);
         $repo->method('exists')->willReturn(false);
 
@@ -1289,10 +1291,11 @@ class JobTranscriberTest extends TestCase
     }
 
     /**
-     * @return array{0: list<array<string, string>>, 1: array<string, mixed>} label selectors used to find the
-     *     previous Job and the applied Job
+     * @return array{0: list<array<string, string>>, 1: array<string, mixed>, 2: list<string>, 3: list<string>} field
+     *     selectors used to find the previous Job, the applied Job, names passed to `exists()` and names of the
+     *     deleted Jobs
      */
-    private function runWithJobName(string $jobName, string $podName, string $prefix): array
+    private function runWithJobName(string $jobName, string $podName, string $prefix, bool $exists = false): array
     {
         $kubeClient = $this->createMock(KubeClient::class);
         $cd = $this->createMock(CompiledDeploymentInterface::class);
@@ -1318,7 +1321,7 @@ class JobTranscriberTest extends TestCase
         $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
         $kubeClient->method('__call')->willReturnMap([['jobs', [], $repo]]);
         $repo->expects($this->once())
-            ->method('setLabelSelector')
+            ->method('setFieldSelector')
             ->willReturnCallback(
                 function (array $selector) use (&$selectors, $repo): DeploymentRepository {
                     $selectors[] = $selector;
@@ -1326,7 +1329,24 @@ class JobTranscriberTest extends TestCase
                 }
             );
         $repo->method('first')->willReturn(null);
-        $repo->method('exists')->willReturn(false);
+        $existsNames = [];
+        $repo->expects($this->once())
+            ->method('exists')
+            ->willReturnCallback(
+                function (string $name) use (&$existsNames, $exists): bool {
+                    $existsNames[] = $name;
+                    return $exists;
+                }
+            );
+        $deletedNames = [];
+        $repo->expects($exists ? $this->once() : $this->never())
+            ->method('delete')
+            ->willReturnCallback(
+                function (Job $model) use (&$deletedNames): array {
+                    $deletedNames[] = $model->getMetadata('name');
+                    return [];
+                }
+            );
         $repo->expects($this->once())
             ->method('apply')
             ->willReturnCallback(
@@ -1351,36 +1371,243 @@ class JobTranscriberTest extends TestCase
             useHierarchicalNamespaces: false,
         );
 
-        return [$selectors, $manifest];
+        return [$selectors, $manifest, $existsNames, $deletedNames];
     }
 
-    public function testRunWithShortNameKeepsTheLabelAndTheSelector(): void
+    public function testRunWithShortNameKeepsTheLabelAndFindsThePreviousJobByItsName(): void
     {
         [$selectors, $manifest] = $this->runWithJobName('migrations', 'php-pods', 'a-prefix');
 
-        $this->assertSame([['name' => 'a-prefix-migrations-php-pods']], $selectors);
+        $this->assertSame([['metadata.name' => 'a-prefix-migrations-php-pods-job']], $selectors);
         $this->assertSame('a-prefix-migrations-php-pods-job', $manifest['metadata']['name']);
         $this->assertSame(['name' => 'a-prefix-migrations'], $manifest['metadata']['labels']);
     }
 
-    public function testRunWithLongPrefixBoundsTheLabelAndTheSelector(): void
+    public function testRunWithLongPrefixBoundsTheLabelAndFindsThePreviousJobByItsName(): void
     {
-        //67 and 76 characters, Kubernetes limits the value of a label, and of a selector, to 63 characters
+        //67 characters, Kubernetes limits the value of a label to 63 characters
         [$selectors, $manifest] = $this->runWithJobName(
             'database-migrations',
             'php-pods',
             'a-customer-project-deployed-on-a-shared-cluster',
         );
 
+        //The previous Job is selected on its name, not on a label, this name being bounded to 63 characters, with its
+        //suffix, like the name of the applied Job
         $this->assertSame(
-            [['name' => 'a-customer-project-deployed-on-a-shared-cluster-database-f8ec7']],
+            [['metadata.name' => 'a-customer-project-deployed-on-a-shared-cluster-datab-f8ec7-job']],
             $selectors,
         );
+        $this->assertSame($selectors[0]['metadata.name'], $manifest['metadata']['name']);
         $this->assertSame(
             ['name' => 'a-customer-project-deployed-on-a-shared-cluster-database-0fe2e'],
             $manifest['metadata']['labels'],
         );
-        $this->assertLessThanOrEqual(63, strlen($selectors[0]['name']));
         $this->assertLessThanOrEqual(63, strlen($manifest['metadata']['labels']['name']));
+    }
+
+    private function buildJobWithPods(string $jobName, string ...$podNames): CDJob
+    {
+        return new CDJob(
+            name: $jobName,
+            pods: array_map(
+                static fn (string $podName): Pod => new Pod(
+                    $podName,
+                    1,
+                    [new Container('php', 'registry.hub.docker.com/library/php', '8.4')],
+                ),
+                $podNames,
+            ),
+        );
+    }
+
+    /**
+     * Deploys the job with the real repository of the client, on a Kubernetes API keeping its objects between
+     * deployments
+     *
+     * @return array<string, string> versions of the applied Jobs, by names
+     */
+    private function deployOn(InMemoryKubernetesApi $api, CDJob $job, string $prefix = 'a-prefix'): array
+    {
+        $kubeClient = $this->createMock(KubeClient::class);
+        $kubeClient->expects($this->atLeastOnce())->method('setNamespace')->with('default_namespace');
+        $kubeClient->method('__call')->willReturnMap([['jobs', [], new JobRepository($kubeClient)]]);
+        $kubeClient->method('sendRequest')->willReturnCallback($api);
+
+        $cd = $this->createMock(CompiledDeploymentInterface::class);
+        $cd->expects($this->once())
+            ->method('foreachJob')
+            ->willReturnCallback(function (callable $callback) use ($cd, $job, $prefix): MockObject {
+                $callback($job, [], [], $prefix);
+
+                return $cd;
+            });
+
+        $versions = [];
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())
+            ->method('success')
+            ->willReturnCallback(
+                function (array $results) use (&$versions, $promise): PromiseInterface {
+                    foreach ($results as $result) {
+                        $versions[$result['metadata']['name']] =
+                            $result['metadata']['annotations']['teknoo.east.paas.version'];
+                    }
+
+                    return $promise;
+                }
+            );
+        $promise->method('fail')->willReturnCallback(fn (Throwable $e): PromiseInterface => throw $e);
+
+        $transcriber = new JobTranscriber();
+        $transcriber->setSleepService($this->createStub(SleepServiceInterface::class));
+        $transcriber->transcribe(
+            compiledDeployment: $cd,
+            client: $kubeClient,
+            promise: $promise,
+            defaultsBag: $this->createStub(DefaultsBag::class),
+            namespace: 'default_namespace',
+            useHierarchicalNamespaces: false,
+        );
+
+        return $versions;
+    }
+
+    public function testFirstDeploymentOfAJobIsTheVersionOne(): void
+    {
+        $this->assertSame(
+            ['a-prefix-migrations-php-pods-job' => 'v1'],
+            $this->deployOn(new InMemoryKubernetesApi(), $this->buildJobWithPods('migrations', 'php-pods')),
+        );
+    }
+
+    public function testNextDeploymentsOfAJobFindThePreviousJob(): void
+    {
+        $api = new InMemoryKubernetesApi();
+        $job = $this->buildJobWithPods('migrations', 'php-pods');
+
+        $this->assertSame(['a-prefix-migrations-php-pods-job' => 'v1'], $this->deployOn($api, $job));
+        $this->assertSame(['a-prefix-migrations-php-pods-job' => 'v2'], $this->deployOn($api, $job));
+        $this->assertSame(['a-prefix-migrations-php-pods-job' => 'v3'], $this->deployOn($api, $job));
+
+        //The labels of the Job are unchanged
+        $this->assertSame(
+            ['name' => 'a-prefix-migrations'],
+            $api->get('a-prefix-migrations-php-pods-job')['metadata']['labels'],
+        );
+    }
+
+    public function testPodsOfAJobDoNotSeeTheVersionOfEachOther(): void
+    {
+        //Jobs of previous deployments, all the pods of a same job have the same label `name`
+        $api = new InMemoryKubernetesApi();
+        foreach (['node-pods' => 'v5', 'php-pods' => 'v2'] as $podName => $version) {
+            $api->add([
+                'metadata' => [
+                    'name' => "a-prefix-migrations-{$podName}-job",
+                    'labels' => ['name' => 'a-prefix-migrations'],
+                    'annotations' => ['teknoo.east.paas.version' => $version],
+                ],
+            ]);
+        }
+
+        $this->assertSame(
+            [
+                'a-prefix-migrations-php-pods-job' => 'v3',
+                'a-prefix-migrations-node-pods-job' => 'v6',
+            ],
+            $this->deployOn($api, $this->buildJobWithPods('migrations', 'php-pods', 'node-pods')),
+        );
+    }
+
+    public function testNextDeploymentsOfAJobWithALongNameFindThePreviousJob(): void
+    {
+        $api = new InMemoryKubernetesApi();
+        $job = $this->buildJobWithPods('database-migrations', 'php-pods');
+        $prefix = 'a-customer-project-deployed-on-a-shared-cluster';
+        //80 characters with the `-job` suffix, the Job is applied, and found at the next deployment, with its name
+        //bounded to 63 characters
+        $name = 'a-customer-project-deployed-on-a-shared-cluster-datab-f8ec7-job';
+
+        $this->assertSame([$name => 'v1'], $this->deployOn($api, $job, $prefix));
+        $this->assertSame([$name => 'v2'], $this->deployOn($api, $job, $prefix));
+        $this->assertNull(
+            $api->get('a-customer-project-deployed-on-a-shared-cluster-database-migrations-php-pods-job'),
+        );
+
+        //The label of the Job is still bounded
+        $this->assertSame(
+            ['name' => 'a-customer-project-deployed-on-a-shared-cluster-database-0fe2e'],
+            $api->get($name)['metadata']['labels'],
+        );
+    }
+
+    public function testRunWithShortNameKeepsTheName(): void
+    {
+        [, $manifest, $existsNames, $deletedNames] = $this->runWithJobName(
+            jobName: 'migrations',
+            podName: 'php-pods',
+            prefix: 'a-prefix',
+            exists: true,
+        );
+
+        $this->assertSame('a-prefix-migrations-php-pods-job', $manifest['metadata']['name']);
+        $this->assertSame(['a-prefix-migrations-php-pods-job'], $existsNames);
+        $this->assertSame(['a-prefix-migrations-php-pods-job'], $deletedNames);
+    }
+
+    public function testRunWithNameOf63CharactersKeepsTheName(): void
+    {
+        //59 characters before the `-job` suffix, the 63 characters accepted by Kubernetes
+        [$selectors, $manifest, $existsNames] = $this->runWithJobName(
+            jobName: 'init',
+            podName: 'phppod',
+            prefix: 'a-customer-project-deployed-on-a-shared-cluster',
+        );
+
+        $name = 'a-customer-project-deployed-on-a-shared-cluster-init-phppod-job';
+        $this->assertSame(63, strlen($name));
+        $this->assertSame($name, $manifest['metadata']['name']);
+        $this->assertSame([$name], $existsNames);
+        $this->assertSame([['metadata.name' => $name]], $selectors);
+    }
+
+    public function testRunWithLongNameBoundsTheName(): void
+    {
+        //80 characters with the `-job` suffix. Kubernetes copies the name of a Job in the labels `job-name` and
+        //`batch.kubernetes.io/job-name` of its pods, limited to 63 characters
+        [$selectors, $manifest, $existsNames, $deletedNames] = $this->runWithJobName(
+            jobName: 'database-migrations',
+            podName: 'php-pods',
+            prefix: 'a-customer-project-deployed-on-a-shared-cluster',
+            exists: true,
+        );
+
+        $name = 'a-customer-project-deployed-on-a-shared-cluster-datab-f8ec7-job';
+        $this->assertSame(63, strlen($name));
+        $this->assertSame($name, $manifest['metadata']['name']);
+        //The previous Job is found, for its version and before its deletion, and deleted, with the same bounded name
+        $this->assertSame([['metadata.name' => $name]], $selectors);
+        $this->assertSame([$name], $existsNames);
+        $this->assertSame([$name], $deletedNames);
+
+        //A name of 64 characters is bounded too
+        [, $manifest] = $this->runWithJobName(
+            jobName: 'init',
+            podName: 'phppods',
+            prefix: 'a-customer-project-deployed-on-a-shared-cluster',
+        );
+        $this->assertSame(
+            'a-customer-project-deployed-on-a-shared-cluster-init-312cc-job',
+            $manifest['metadata']['name'],
+        );
+
+        //Stable between deployments
+        [, $manifest] = $this->runWithJobName(
+            jobName: 'database-migrations',
+            podName: 'php-pods',
+            prefix: 'a-customer-project-deployed-on-a-shared-cluster',
+        );
+        $this->assertSame($name, $manifest['metadata']['name']);
     }
 }

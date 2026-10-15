@@ -28,6 +28,7 @@ namespace Teknoo\Tests\East\Paas\Compilation\Compiler\Quota;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\ResourceSet;
+use Teknoo\East\Paas\Compilation\Compiler\Exception\QuotaWrongConfigurationException;
 use Teknoo\East\Paas\Compilation\Compiler\Exception\ResourceCapacityExceededException;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\AbstractAvailability;
 use Teknoo\East\Paas\Compilation\Compiler\Quota\ComputeAvailability;
@@ -205,6 +206,16 @@ class ComputeAvailabilityTest extends AbstractTestAvailability
             'parent without requires' => ['4', '', '50%', '50%', '2.000', '2.000'],
             'requires defaulted to the relative capacity' => ['4', '2', '50%', '', '2.000', '1.000'],
             'absolute capacity' => ['4', '2', '2', '50%', '2', '1.000'],
+            'absolute capacity equal to the relative requires' => ['4', '', '2', '50%', '2', '2.000'],
+            'relative capacity equal to the absolute requires' => ['4', '', '50%', '2', '2.000', '2'],
+            'relative capacity not a whole unit equal to the absolute requires' => [
+                '2002m',
+                '',
+                '50%',
+                '1001m',
+                '1.001',
+                '1001m',
+            ],
         ];
     }
 
@@ -335,5 +346,31 @@ class ComputeAvailabilityTest extends AbstractTestAvailability
         } finally {
             $this->assertCount(0, $set);
         }
+    }
+
+    public static function requiresAboveCapacityProvider(): array
+    {
+        return [
+            'absolute capacity, relative requires' => ['4', '', '1', '50%'],
+            'relative capacity, absolute requires' => ['4', '', '25%', '2'],
+            'relative capacity, relative requires' => ['4', '', '25%', '50%'],
+            'absolute capacity, relative requires not a whole unit' => ['2002m', '', '1000m', '50%'],
+        ];
+    }
+
+    #[DataProvider('requiresAboveCapacityProvider')]
+    public function testUpdateWithRequiresAboveCapacity(
+        string $parentCapacity,
+        string $parentRequires,
+        string $capacity,
+        string $requires,
+    ): void {
+        $this->expectException(QuotaWrongConfigurationException::class);
+        $this->expectExceptionMessage('Error, the capacity of the quota `test` must be bigger of require');
+        $this->expectExceptionCode(400);
+
+        $this->createAvailability($parentCapacity, $parentRequires, false)->update(
+            $this->createAvailability($capacity, $requires, true),
+        );
     }
 }

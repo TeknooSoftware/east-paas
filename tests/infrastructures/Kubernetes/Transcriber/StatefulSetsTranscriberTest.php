@@ -1523,12 +1523,65 @@ class StatefulSetsTranscriberTest extends TestCase
         $this->assertSame([['name' => 'a-prefix-mariadb-pods']], $sfsSelectors);
         $this->assertSame([['vname' => 'a-prefix-mariadb-pods-v2']], $podsSelectors);
         $this->assertSame('a-prefix-mariadb-pods-sfset', $manifest['metadata']['name']);
+        $this->assertSame('a-prefix-mariadb-pods', $manifest['spec']['serviceName']);
         $this->assertSame(['name' => 'a-prefix-mariadb-pods'], $manifest['metadata']['labels']);
         $this->assertSame(['name' => 'a-prefix-mariadb-pods'], $manifest['spec']['selector']['matchLabels']);
         $this->assertSame(
             ['name' => 'a-prefix-mariadb-pods', 'vname' => 'a-prefix-mariadb-pods-v3'],
             $manifest['spec']['template']['metadata']['labels'],
         );
+    }
+
+    public function testRunWithNameOf52CharactersKeepsTheName(): void
+    {
+        //46 characters before the `-sfset` suffix, the 52 characters accepted by Kubernetes
+        [$sfsSelectors, $podsSelectors, $manifest] = $this->runWithPodName(
+            'mariadb-primary-database-for-the-shop',
+            'a-prefix',
+        );
+
+        $name = 'a-prefix-mariadb-primary-database-for-the-shop';
+        $this->assertSame(52, strlen($name . '-sfset'));
+        $this->assertSame($name . '-sfset', $manifest['metadata']['name']);
+        $this->assertSame($name, $manifest['spec']['serviceName']);
+        $this->assertSame([['name' => $name]], $sfsSelectors);
+        $this->assertSame([['vname' => $name . '-v2']], $podsSelectors);
+        $this->assertSame(['name' => $name], $manifest['spec']['selector']['matchLabels']);
+        $this->assertSame(
+            ['name' => $name, 'vname' => $name . '-v3'],
+            $manifest['spec']['template']['metadata']['labels'],
+        );
+    }
+
+    public function testRunWithNameOf53CharactersBoundsOnlyTheNameOfTheStatefulSet(): void
+    {
+        //47 characters before the `-sfset` suffix. The StatefulSet controller writes on its pods the label
+        //`controller-revision-hash`, its name followed by a dash and a hash of up to 10 characters, limited to 63
+        //characters
+        [$sfsSelectors, $podsSelectors, $manifest] = $this->runWithPodName(
+            'mariadb-primary-database-for-the-shops',
+            'a-prefix',
+        );
+
+        $this->assertSame('a-prefix-mariadb-primary-database-for-th-258d9-sfset', $manifest['metadata']['name']);
+        $this->assertSame(52, strlen($manifest['metadata']['name']));
+
+        //The labels fit in 63 characters: the previous StatefulSet and its pods are still found with them, the
+        //selector still matches the pods and the StatefulSet is still governed by the Service of the pod
+        $name = 'a-prefix-mariadb-primary-database-for-the-shops';
+        $this->assertSame($name, $manifest['spec']['serviceName']);
+        $this->assertSame([['name' => $name]], $sfsSelectors);
+        $this->assertSame([['vname' => $name . '-v2']], $podsSelectors);
+        $this->assertSame(['name' => $name], $manifest['metadata']['labels']);
+        $this->assertSame(['name' => $name], $manifest['spec']['selector']['matchLabels']);
+        $this->assertSame(
+            ['name' => $name, 'vname' => $name . '-v3'],
+            $manifest['spec']['template']['metadata']['labels'],
+        );
+
+        //Stable between deployments
+        [, , $manifest] = $this->runWithPodName('mariadb-primary-database-for-the-shops', 'a-prefix');
+        $this->assertSame('a-prefix-mariadb-primary-database-for-th-258d9-sfset', $manifest['metadata']['name']);
     }
 
     public function testRunWithLongPrefixBoundsTheLabelsAndTheSelectors(): void
@@ -1549,9 +1602,12 @@ class StatefulSetsTranscriberTest extends TestCase
             [['vname' => 'a-customer-project-deployed-on-a-shared-cluster-php-pods-6c545']],
             $podsSelectors,
         );
+        //Kubernetes limits the name of a StatefulSet to 52 characters, the Service governing it is unchanged
+        $this->assertSame('a-customer-project-deployed-on-a-shared-2e3a9-sfset', $manifest['metadata']['name']);
+        $this->assertLessThanOrEqual(52, strlen($manifest['metadata']['name']));
         $this->assertSame(
-            'a-customer-project-deployed-on-a-shared-cluster-php-pods-frontend-sfset',
-            $manifest['metadata']['name'],
+            'a-customer-project-deployed-on-a-shared-cluster-php-pods-frontend',
+            $manifest['spec']['serviceName'],
         );
         $this->assertSame(['name' => $bounded], $manifest['metadata']['labels']);
         $this->assertSame(['name' => $bounded], $manifest['spec']['selector']['matchLabels']);

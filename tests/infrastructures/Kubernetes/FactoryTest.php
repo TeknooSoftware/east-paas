@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\Kubernetes;
 
+use ArrayObject;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
@@ -387,13 +388,18 @@ class FactoryTest extends TestCase
             }
         );
 
-        $factory = $this->buildFactory(
-            filesystem: $filesystem,
-            directoryNameFactory: static fn (): string => 'kube-dir',
-        );
+        //With `xdebug.mode=develop`, Xdebug keeps a copy of the variables of the frames of the last thrown exceptions:
+        //a factory held by a variable of this method would not be destroyed by its unset(). It is held by an object,
+        //shared with this copy, and removed from it to release its last reference.
+        $holder = new ArrayObject([
+            'factory' => $this->buildFactory(
+                filesystem: $filesystem,
+                directoryNameFactory: static fn (): string => 'kube-dir',
+            ),
+        ]);
 
         try {
-            $factory->withClient(
+            $holder['factory']->withClient(
                 'foo',
                 $this->buildFullCredentials(),
                 static function (KubClient $client): void {
@@ -407,7 +413,7 @@ class FactoryTest extends TestCase
 
         $this->assertSame([], $deleted);
 
-        unset($factory);
+        unset($holder['factory']);
 
         $this->assertSame(['kube-dir'], $deleted);
     }

@@ -65,6 +65,13 @@ class StatefulSetsTranscriber implements DeploymentInterface
 
     private const string MAP_SUFFIX = '-map';
 
+    /**
+     * Kubernetes limits the name of a StatefulSet to 52 characters: the controller writes on each of its pods the
+     * label `controller-revision-hash`, limited to 63 characters, with the name followed by a dash and a hash of up
+     * to 10 characters.
+     */
+    private const int MAX_NAME_LENGTH = 52;
+
 
     /**
      * @param array<string, array<string, Image>>|Image[][] $images
@@ -83,7 +90,7 @@ class StatefulSetsTranscriber implements DeploymentInterface
         DefaultsBag $defaultsBag,
         string $versionLevel,
     ): array {
-        return static::commonSpecWriting(
+        $specs = static::commonSpecWriting(
             name: $name,
             pod: $pod,
             images: $images,
@@ -111,6 +118,13 @@ class StatefulSetsTranscriber implements DeploymentInterface
             defaultsBag: $defaultsBag,
             versionLevel: $versionLevel,
         );
+
+        //Only the name of the StatefulSet is bounded: its labels, its selectors and its `serviceName` are computed
+        //from the full name, to find the previous StatefulSet and its pods, and to stay governed by its Service
+        $specs['metadata']['name'] = self::boundName($name, self::NAME_SUFFIX, self::MAX_NAME_LENGTH)
+            . self::NAME_SUFFIX;
+
+        return $specs;
     }
 
     /**

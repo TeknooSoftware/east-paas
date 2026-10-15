@@ -295,6 +295,15 @@ abstract class AbstractAvailability implements AvailabilityInterface
             $availability->normalizedRequire = $this->stringCapacityToValue($availability->requires);
         }
 
+        //Relative values are resolved only here, the constructor can not check them. The exact resolved values are
+        //compared, the normalized values are read back from the string notation, which is lossy
+        if ($availability->initialNormalizedCapacity < $availability->initialNormalizedRequire) {
+            throw new QuotaWrongConfigurationException(
+                message: "Error, the capacity of the quota `{$availability->type}` must be bigger of require",
+                code: 400,
+            );
+        }
+
         return $availability;
     }
 

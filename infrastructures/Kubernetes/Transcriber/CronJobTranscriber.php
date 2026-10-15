@@ -251,7 +251,13 @@ class CronJobTranscriber implements DeploymentInterface
 
                         $previousJob = null;
                         $oldVersion = 0;
-                        $version = self::getVersion($name, $dRepository, $oldVersion, $previousJob);
+                        $version = self::getVersion(
+                            name: $name,
+                            repository: $dRepository,
+                            oldVersion: $oldVersion,
+                            previousManifest: $previousJob,
+                            objectName: $name . self::NAME_SUFFIX,
+                        );
 
                         /** @var array<array<Image>> $images */
                         /** @var array<string, Volume> $volumes */

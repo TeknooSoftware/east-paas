@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose;
 
+use ArrayObject;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -217,14 +218,19 @@ class EphemeralCredentialsRunnerTest extends TestCase
             }
         );
 
-        $runner = new EphemeralCredentialsRunner(
-            runner: $this->createStub(RunnerInterface::class),
-            filesystem: $filesystem,
-            directory: 'credentials-dir',
-        );
+        //With `xdebug.mode=develop`, Xdebug keeps a copy of the variables of the frames of the last thrown exceptions:
+        //a runner held by a variable of this method would not be destroyed by its unset(). It is held by an object,
+        //shared with this copy, and removed from it to release its last reference.
+        $holder = new ArrayObject([
+            'runner' => new EphemeralCredentialsRunner(
+                runner: $this->createStub(RunnerInterface::class),
+                filesystem: $filesystem,
+                directory: 'credentials-dir',
+            ),
+        ]);
 
         try {
-            $runner->run(
+            $holder['runner']->run(
                 playbookPath: '/work/deploy.yml',
                 inventoryPath: '/work/inventory.ini',
                 extraVars: [],
@@ -239,7 +245,7 @@ class EphemeralCredentialsRunnerTest extends TestCase
 
         self::assertSame([], $deleted);
 
-        unset($runner);
+        unset($holder['runner']);
 
         self::assertSame(['credentials-dir'], $deleted);
     }
