@@ -30,8 +30,10 @@ use Traversable;
 
 /**
  * To define a collection of `CompilerInstance` to pass to Conductor to compile and to normalize a PaaS Yaml.
+ * Several compilers can be registered on a same pattern of a version: they are called in their order of registration,
+ * each one with the section of the PaaS Yaml matching the pattern.
  *
- * @extends IteratorAggregate<int, CompilerInterface>
+ * @extends IteratorAggregate<string, array<string, CompilerInterface[]>>
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -39,8 +41,15 @@ use Traversable;
  * @author      Richard Déloge <richard@teknoo.software>
  * @template TKey
  * @template-covariant TValue
- * @template-extends IteratorAggregate<string, array<string, CompilerInterface>>
+ * @template-extends IteratorAggregate<string, array<string, CompilerInterface[]>>
  */
 interface CompilerCollectionInterface extends IteratorAggregate
 {
+    /**
+     * To register a compiler on a pattern for each version. With `$reset`, the compiler replaces the compilers already
+     * registered on this pattern, else it is added after them.
+     *
+     * @param string[] $versions
+     */
+    public function add(array $versions, string $pattern, CompilerInterface $compiler, bool $reset = true): void;
 }

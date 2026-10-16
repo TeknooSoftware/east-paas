@@ -1,5 +1,34 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.9.0] - 2026-10-16
+### Stable Release
+
+**Evolutions**
+- Compilation: several compilers can be registered on a same pattern of a version of the PaaS file. The method `add()`
+  of the compilers collection is now declared by `CompilerCollectionInterface`:
+  `add(array $versions, string $pattern, CompilerInterface $compiler, bool $reset = true): void`. With `$reset`, the
+  default, the compiler replaces the compilers registered on this pattern, at the same position, as before. Without,
+  it is added after them, or in a new pattern after all the others. The compilers of a pattern are called in their
+  order of registration, each one with the section of the PaaS file matching the pattern: the changes made by a
+  compiler to its definitions are not seen by the next one. The extenders of a pattern are called in the same order,
+  each one on the section extended by the previous ones. An extension can so add a compiler on `[pods]`, called after
+  the stock `PodCompiler`, by decorating the collection:
+  ```php
+  CompilerCollectionInterface::class => decorate(
+      static function (CompilerCollectionInterface $previous, ContainerInterface $container): CompilerCollectionInterface {
+          $previous->add(['v1.2'], '[pods]', $container->get(MyCompiler::class), false);
+
+          return $previous;
+      }
+  ),
+  ```
+- The collection yields now, for each version and each pattern, a list of compilers, and the `Conductor` expects this
+  shape (`array<string, array<string, CompilerInterface[]>>`). A custom implementation of `CompilerCollectionInterface`
+  must implement `add()` and yield lists of compilers.
+- Jobs: `JobCompiler::isValidSchedule()` and `JobCompiler::buildScheduleOptions()` are public, to let an extension
+  building its own `Job` objects validate their `schedule` and their `schedule-options` like the compiler does, with
+  the same errors (`teknoo.east.paas.error.recipe.job.invalid-schedule-option:<job>:<option>`, code 400).
+
 ## [5.8.1] - 2026-10-15
 ### Stable Release
 

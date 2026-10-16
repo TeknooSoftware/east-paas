@@ -108,7 +108,7 @@ class Conductor implements ConductorInterface, AutomatedInterface
     private array $configuration = [];
 
     /**
-     * @param array<string, array<string, CompilerInterface>|null> $compilers
+     * @param array<string, array<string, CompilerInterface[]>|null> $compilers
      */
     public function __construct(
         private readonly CompiledDeploymentFactoryInterface $factory,
@@ -173,27 +173,29 @@ class Conductor implements ConductorInterface, AutomatedInterface
 
                     $compilers = $this->compilers[$version];
 
-                    foreach ($compilers as $pattern => $compiler) {
-                        if (!$compiler instanceof ExtenderInterface) {
-                            continue;
-                        }
-
-                        $this->extract(
-                            $result,
-                            $pattern,
-                            [],
-                            function (
-                                $configuration
-                            ) use (
-                                $compiler,
-                                &$result,
-                                $pattern,
-                            ): void {
-                                $compiler->extends($configuration);
-
-                                $this->replace($result, $pattern, $configuration);
+                    foreach ($compilers as $pattern => $patternCompilers) {
+                        foreach ($patternCompilers as $compiler) {
+                            if (!$compiler instanceof ExtenderInterface) {
+                                continue;
                             }
-                        );
+
+                            $this->extract(
+                                $result,
+                                $pattern,
+                                [],
+                                function (
+                                    $configuration
+                                ) use (
+                                    $compiler,
+                                    &$result,
+                                    $pattern,
+                                ): void {
+                                    $compiler->extends($configuration);
+
+                                    $this->replace($result, $pattern, $configuration);
+                                }
+                            );
+                        }
                     }
 
                     return $result;

@@ -1158,7 +1158,7 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(CompiledDeploymentFactory::class, $container->get(CompiledDeploymentFactory::class));
     }
 
-    public function testCompilerCollectionInterface(): void
+    private function getCompilerCollection(): CompilerCollectionInterface
     {
         $container = $this->buildContainer();
 
@@ -1183,20 +1183,63 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf(CompilerCollectionInterface::class, $collection = $container->get(CompilerCollectionInterface::class));
 
+        return $collection;
+    }
+
+    public function testCompilerCollectionInterface(): void
+    {
+        $collection = $this->getCompilerCollection();
+
         $versions = [];
         foreach ($collection as $version => $compilers) {
             $this->assertIsString($version);
             $versions[] = $version;
 
             $this->assertIsArray($compilers);
-            foreach ($compilers as $pattern => $compiler) {
+            foreach ($compilers as $pattern => $patternCompilers) {
                 $this->assertIsString($pattern);
 
-                $this->assertInstanceOf(CompilerInterface::class, $compiler);
+                $this->assertIsArray($patternCompilers);
+                $this->assertCount(1, $patternCompilers);
+                foreach ($patternCompilers as $compiler) {
+                    $this->assertInstanceOf(CompilerInterface::class, $compiler);
+                }
             }
         }
 
         $this->assertEquals(['v1', 'v1.1', 'v1.2'], $versions);
+    }
+
+    public function testCompilerCollectionInterfaceAcceptsSeveralCompilersOnAPattern(): void
+    {
+        $collection = $this->getCompilerCollection();
+        $podCompiler = iterator_to_array($collection)['v1.2']['[pods]'][0];
+        $this->assertInstanceOf(PodCompiler::class, $podCompiler);
+
+        // Added after the compilers of the pattern, or in a new pattern, without reset
+        $first = $this->createStub(CompilerInterface::class);
+        $second = $this->createStub(CompilerInterface::class);
+        $collection->add(['v1.2'], '[pods]', $first, false);
+        $collection->add(['v1.2'], '[pods]', $second, false);
+        $collection->add(['v1.2'], '[foo]', $first, false);
+
+        $compilers = iterator_to_array($collection);
+        $this->assertSame([$podCompiler, $first, $second], $compilers['v1.2']['[pods]']);
+        $this->assertSame([$first], $compilers['v1.2']['[foo]']);
+        $this->assertSame([$podCompiler], $compilers['v1.1']['[pods]']);
+        $this->assertSame('[foo]', array_key_last($compilers['v1.2']));
+
+        // Replaces the compilers of the pattern, at the same position, by default
+        $collection->add(['v1.1', 'v1.2'], '[pods]', $second);
+
+        $compilers = iterator_to_array($collection);
+        $this->assertSame([$second], $compilers['v1.2']['[pods]']);
+        $this->assertSame([$second], $compilers['v1.1']['[pods]']);
+        $this->assertSame([$podCompiler], $compilers['v1']['[pods]']);
+        $this->assertSame(
+            ['[jobs]', '[pods]', '[services]'],
+            array_slice(array_keys($compilers['v1.2']), 8, 3),
+        );
     }
 
     public function testConductor(): void

@@ -656,6 +656,53 @@ class JobCompilerTest extends TestCase
         );
     }
 
+    #[DataProvider('validSchedulesProvider')]
+    public function testIsValidScheduleAcceptsAValidSchedule(string $schedule): void
+    {
+        $this->assertTrue(JobCompiler::isValidSchedule($schedule));
+    }
+
+    #[DataProvider('invalidSchedulesProvider')]
+    public function testIsValidScheduleRefusesAnInvalidSchedule(mixed $schedule): void
+    {
+        $this->assertFalse(JobCompiler::isValidSchedule($schedule));
+    }
+
+    public function testBuildScheduleOptions(): void
+    {
+        $this->assertEquals(
+            new ScheduleOptions(
+                timeZone: 'Europe/Paris',
+                concurrency: ConcurrencyPolicy::Forbid,
+                startingDeadline: 300,
+                successfulHistory: 3,
+                failedHistory: 0,
+                suspend: false,
+            ),
+            JobCompiler::buildScheduleOptions(
+                'backup',
+                [
+                    'time-zone' => 'Europe/Paris',
+                    'concurrency' => 'forbid',
+                    'starting-deadline' => 300,
+                    'successful-history' => 3,
+                    'failed-history' => 0,
+                    'suspend' => false,
+                ],
+            ),
+        );
+    }
+
+    #[DataProvider('invalidScheduleOptionsProvider')]
+    public function testBuildScheduleOptionsRefusesInvalidOptions(mixed $options): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionCode(400);
+        $this->expectExceptionMessageMatches('/^teknoo\.east\.paas\.error\.recipe\.job\.invalid-schedule-option:backup:/');
+
+        JobCompiler::buildScheduleOptions('backup', $options);
+    }
+
     public function testCompileWithWrongExtends(): void
     {
         $definitions = [

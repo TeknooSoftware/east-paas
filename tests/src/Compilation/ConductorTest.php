@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\East\Paas\Compilation;
 
+use ArrayObject;
 use DomainException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -50,6 +51,7 @@ use Teknoo\East\Paas\Contracts\Configuration\PropertyAccessorInterface;
 use Teknoo\East\Paas\Contracts\Configuration\YamlParserInterface;
 use Teknoo\East\Paas\Contracts\Job\JobUnitInterface;
 use Teknoo\East\Paas\Contracts\Workspace\JobWorkspaceInterface;
+use Teknoo\East\Paas\Infrastructures\Symfony\Configuration\PropertyAccessor;
 use Teknoo\East\Paas\Parser\YamlValidator;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use TypeError;
@@ -156,8 +158,8 @@ class ConductorTest extends TestCase
     ): Conductor {
         if (empty($compilers)) {
             $compilers = [
-                '[secrets]' => $this->createStub(CompilerInterface::class),
-                '[services]' => new class () implements CompilerInterface, ExtenderInterface {
+                '[secrets]' => [$this->createStub(CompilerInterface::class)],
+                '[services]' => [new class () implements CompilerInterface, ExtenderInterface {
                     public function compile(
                         array &$definitions,
                         CompiledDeploymentInterface $compiledDeployment,
@@ -175,8 +177,8 @@ class ConductorTest extends TestCase
                         $definitions['foo'] = 'bar';
                         return $this;
                     }
-                },
-                '[volumes]' => $this->createStub(CompilerInterface::class),
+                }],
+                '[volumes]' => [$this->createStub(CompilerInterface::class)],
             ];
         }
 
@@ -637,6 +639,106 @@ EOF;
         ));
     }
 
+    public function testPrepareWithSeveralExtendersOnAPattern(): void
+    {
+        $yaml = <<<'EOF'
+paas:
+  version: v1
+/*...*/
+EOF;
+
+        $result = $this->getResultArray();
+
+        $extender = static fn (string $key): CompilerInterface => new class ($key) implements
+            CompilerInterface,
+            ExtenderInterface
+        {
+            public function __construct(
+                private readonly string $key,
+            ) {
+            }
+
+            public function compile(
+                array &$definitions,
+                CompiledDeploymentInterface $compiledDeployment,
+                JobWorkspaceInterface $workspace,
+                JobUnitInterface $job,
+                ResourceManager $resourceManager,
+                DefaultsBag $defaultsBag,
+            ): CompilerInterface {
+                return $this;
+            }
+
+            public function extends(
+                array &$definitions,
+            ): ExtenderInterface {
+                $definitions[$this->key] = implode(',', array_keys($definitions));
+
+                return $this;
+            }
+        };
+
+        $conductor = new Conductor(
+            $this->getCompiledDeploymentFactory(true),
+            new PropertyAccessor(new SymfonyPropertyAccessor()),
+            $this->getYamlParser(true),
+            $this->getYamlValidator(true),
+            $this->getResourceFactory(true),
+            [
+                'v1' => [
+                    '[secrets]' => [
+                        $extender('first'),
+                        $this->createStub(CompilerInterface::class),
+                        $extender('second'),
+                    ],
+                ],
+            ],
+        );
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $jobUnit = $this->createMock(JobUnitInterface::class);
+        $conductor = $conductor->configure($jobUnit, $this->createStub(JobWorkspaceInterface::class));
+
+        $this->getYamlParser(true)
+            ->method('parse')
+            ->willReturnCallback(
+                function (string $configuration, PromiseInterface $promise) use ($result): YamlParserInterface {
+                    $promise->success($result);
+
+                    return $this->getYamlParser(true);
+                }
+            );
+
+        $this->getYamlValidator(true)
+            ->method('validate')
+            ->willReturnCallback(
+                function (array $configuration, string $xsd, PromiseInterface $promise): YamlValidator {
+                    $promise->success($configuration);
+
+                    return $this->getYamlValidator(true);
+                }
+            );
+
+        // The extenders of a pattern are called in their order of registration, each one on the section extended by
+        // the previous ones
+        $jobUnit->expects($this->once())
+            ->method('updateVariablesIn')
+            ->willReturnCallback(
+                function (array $configuration, PromiseInterface $promise) use ($jobUnit): MockObject|Stub {
+                    $this->assertSame('demo_vault,map_vault', $configuration['secrets']['first']);
+                    $this->assertSame('demo_vault,map_vault,first', $configuration['secrets']['second']);
+                    $promise->success($configuration);
+
+                    return $jobUnit;
+                }
+            );
+
+        $this->assertInstanceOf(ConductorInterface::class, $conductor->prepare($yaml, $promise));
+    }
+
     public function testPrepareWithoutVersionUseV1dot2ByDefault(): void
     {
         $yaml = <<<'EOF'
@@ -661,7 +763,7 @@ EOF;
             $this->getResourceFactory(true),
             [
                 'v1.2' => [
-                    '[secrets]' => $this->createStub(CompilerInterface::class),
+                    '[secrets]' => [$this->createStub(CompilerInterface::class)],
                 ],
             ],
         );
@@ -1167,8 +1269,8 @@ EOF;
             $this->getResourceFactory(true),
             [
                 'v1' => [
-                    '[secrets]' => $compiler,
-                    '[volumes]' => $compiler,
+                    '[secrets]' => [$compiler],
+                    '[volumes]' => [$compiler],
                 ],
             ],
         );
@@ -1179,5 +1281,67 @@ EOF;
         $promise->expects($this->once())->method('fail');
 
         $this->assertInstanceOf(ConductorInterface::class, $conductor->compileDeployment($promise));
+    }
+
+    public function testCompileDeploymentWithSeveralCompilersOnAPattern(): void
+    {
+        $result = $this->getResultArray();
+
+        $calls = new ArrayObject();
+        $compiler = static fn (string $name): CompilerInterface => new class ($name, $calls) implements
+            CompilerInterface
+        {
+            public function __construct(
+                private readonly string $name,
+                private readonly ArrayObject $calls,
+            ) {
+            }
+
+            public function compile(
+                array &$definitions,
+                CompiledDeploymentInterface $compiledDeployment,
+                JobWorkspaceInterface $workspace,
+                JobUnitInterface $job,
+                ResourceManager $resourceManager,
+                DefaultsBag $defaultsBag,
+            ): CompilerInterface {
+                $this->calls[] = [$this->name, $definitions];
+                $definitions['changed-by'] = $this->name;
+
+                return $this;
+            }
+        };
+
+        $conductor = new Conductor(
+            $this->getCompiledDeploymentFactory(true),
+            $this->getPropertyAccessorMock(true),
+            $this->getYamlParser(true),
+            $this->getYamlValidator(true),
+            $this->getResourceFactory(true),
+            [
+                'v1' => [
+                    '[secrets]' => [$compiler('first'), $compiler('second')],
+                    '[volumes]' => [$compiler('third')],
+                ],
+            ],
+        );
+        $conductor = $this->prepareTestForCompile($result, $conductor);
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+        $promise->expects($this->never())->method('fail');
+
+        $this->assertInstanceOf(ConductorInterface::class, $conductor->compileDeployment($promise));
+
+        // The compilers of a pattern are called in their order of registration, each one with the section of the
+        // pattern, and not with the changes made by the previous ones
+        $this->assertSame(
+            [
+                ['first', $result['secrets']],
+                ['second', $result['secrets']],
+                ['third', $result['volumes']],
+            ],
+            $calls->getArrayCopy(),
+        );
     }
 }
