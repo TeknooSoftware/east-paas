@@ -267,7 +267,13 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
         return $this;
     }
 
-    private static function buildScheduleOptions(string $name, mixed $options): ScheduleOptions
+    /**
+     * Builds the `ScheduleOptions` of the job `$name` from its `schedule-options`, validated like Kubernetes does.
+     * Public to let an extension, building its own `Job` objects, validate their options like this compiler.
+     *
+     * @throws DomainException `teknoo.east.paas.error.recipe.job.invalid-schedule-option:<job>:<option>`, code 400
+     */
+    public static function buildScheduleOptions(string $name, mixed $options): ScheduleOptions
     {
         $invalidOption = static fn (string $option): DomainException => new DomainException(
             "teknoo.east.paas.error.recipe.job.invalid-schedule-option:$name:$option",
@@ -350,8 +356,9 @@ class JobCompiler implements CompilerInterface, ExtenderInterface
      * `@every <duration>`) or 5 fields (minute, hour, day of month, month, day of week), each one a list of `*`, `?`,
      * values or ranges, with an optional step. A time zone in the schedule (`TZ=`, `CRON_TZ=`) is refused, like
      * Kubernetes does. A reversed range (`5-1`) is not detected here, Kubernetes refuses it.
+     * Public to let an extension, building its own `Job` objects, validate their schedule like this compiler.
      */
-    private static function isValidSchedule(mixed $schedule): bool
+    public static function isValidSchedule(mixed $schedule): bool
     {
         if (!is_string($schedule)) {
             return false;

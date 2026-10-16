@@ -94,32 +94,34 @@ class Running implements StateInterface
             $version = 'v' . $compiledDeployment->getVersion();
             $compilers = $this->compilers[$version] ?? [];
 
-            /** @var CompilerInterface $compiler */
-            foreach ($compilers as $pattern => $compiler) {
-                $this->extract(
-                    $this->configuration,
-                    $pattern,
-                    [],
-                    static function (
-                        $configuration
-                    ) use (
-                        $compiledDeployment,
-                        $compiler,
-                        $workspace,
-                        $job,
-                        $resourceManager,
-                        $defaultsBags,
-                    ): void {
-                        $compiler->compile(
-                            definitions: $configuration,
-                            compiledDeployment: $compiledDeployment,
-                            workspace: $workspace,
-                            job: $job,
-                            resourceManager: $resourceManager,
-                            defaultsBag: $defaultsBags,
-                        );
-                    }
-                );
+            /** @var CompilerInterface[] $patternCompilers */
+            foreach ($compilers as $pattern => $patternCompilers) {
+                foreach ($patternCompilers as $compiler) {
+                    $this->extract(
+                        $this->configuration,
+                        $pattern,
+                        [],
+                        static function (
+                            $configuration
+                        ) use (
+                            $compiledDeployment,
+                            $compiler,
+                            $workspace,
+                            $job,
+                            $resourceManager,
+                            $defaultsBags,
+                        ): void {
+                            $compiler->compile(
+                                definitions: $configuration,
+                                compiledDeployment: $compiledDeployment,
+                                workspace: $workspace,
+                                job: $job,
+                                resourceManager: $resourceManager,
+                                defaultsBag: $defaultsBags,
+                            );
+                        }
+                    );
+                }
             }
 
             $resourceManager->computeAutomaticReservations();

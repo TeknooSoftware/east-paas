@@ -369,17 +369,25 @@ return [
     CompilerCollectionInterface::class => static function (ContainerInterface $container): CompilerCollectionInterface {
         $collection = new class () implements CompilerCollectionInterface {
             /**
-             * @var array<string, array<string, CompilerInterface>>
+             * @var array<string, array<string, CompilerInterface[]>>
              */
             private array $collection = [];
 
             /**
              * @param string[] $versions
              */
-            public function add(array $versions, string $pattern, CompilerInterface $compiler): void
-            {
+            public function add(
+                array $versions,
+                string $pattern,
+                CompilerInterface $compiler,
+                bool $reset = true,
+            ): void {
                 foreach ($versions as $version) {
-                    $this->collection[$version][$pattern] = $compiler;
+                    if ($reset) {
+                        $this->collection[$version][$pattern] = [$compiler];
+                    } else {
+                        $this->collection[$version][$pattern][] = $compiler;
+                    }
                 }
             }
 
@@ -441,7 +449,7 @@ return [
     ConductorInterface::class => DIGet(Conductor::class),
     Conductor::class => static function (ContainerInterface $container): Conductor {
         $collections = $container->get(CompilerCollectionInterface::class);
-        /** @var iterable<string, array<string, CompilerInterface>> $collections */
+        /** @var iterable<string, array<string, CompilerInterface[]>> $collections */
         $collections = iterator_to_array($collections);
 
         return new Conductor(
