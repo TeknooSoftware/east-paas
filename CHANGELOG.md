@@ -1,6 +1,6 @@
 # Teknoo Software - PaaS - Change Log
 
-## [5.10.0] - Release pending
+## [5.10.0] - 2026-10-17
 ### Stable Release
 
 **Evolutions**
