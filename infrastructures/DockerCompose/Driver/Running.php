@@ -205,8 +205,9 @@ class Running implements StateInterface
                 //can read the local file; `dest`/`mode` are preserved. These derived lists are baked into the
                 //rendered playbook's `vars:` block so it is self-contained (no reliance on Ansible --extra-vars):
                 //the locally written secret/config files (paas_files), the volumes flagged resetOnDeployment
-                //(paas_reset_volumes), the during-deployment job services (paas_jobs) and, on the expose stage,
-                //the per-ingress TLS cert/key files (paas_certs).
+                //(paas_reset_volumes), the during-deployment job services (paas_jobs), the crontab entries of the
+                //scheduled jobs (paas_scheduled_jobs) and, on the expose stage, the per-ingress TLS cert/key files
+                //(paas_certs).
                 $resolveCopySources = static fn (FileToCopy $entry): array =>
                     $entry->withResolvedSource($workingAbsoluteDir)->toArray();
 
@@ -229,6 +230,10 @@ class Running implements StateInterface
                         ),
                         '{% paasJobs %}' => json_encode(
                             $accumulator->getJobsToRun(),
+                            JSON_THROW_ON_ERROR,
+                        ),
+                        '{% paasScheduledJobs %}' => json_encode(
+                            $accumulator->getScheduledJobs(),
                             JSON_THROW_ON_ERROR,
                         ),
                     ];
@@ -290,8 +295,9 @@ class Running implements StateInterface
                     onFail: static fn (#[SensitiveParameter] Throwable $error): mixed => $mainPromise->fail($error),
                 );
 
-                //The playbook is self-contained (paas_files/paas_reset_volumes/paas_jobs/paas_certs are rendered
-                //into its vars: block above); only paas_project is still forwarded as an extra var.
+                //The playbook is self-contained (paas_files/paas_reset_volumes/paas_jobs/paas_scheduled_jobs/
+                //paas_certs are rendered into its vars: block above); only paas_project is still forwarded as an
+                //extra var.
                 $extraVars = [
                     'paas_project' => $accumulator->getProjectName(),
                 ];

@@ -1,5 +1,24 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.10.0] - Release pending
+### Stable Release
+
+**Evolutions**
+- Docker Compose: the scheduled jobs are deployed, with a crontab entry per job pod for the SSH user. They behave like
+  a Kubernetes CronJob, `schedule-options` included. A schedule `@every <duration>` is still not supported: the job
+  is not deployed, with a warning.
+- Docker Compose: new prerequisites on a host with scheduled jobs: `crontab` (`cron` or `cronie`), `flock`
+  (util-linux), a `date` accepting `-d @<seconds>` (GNU coreutils or busybox), `timeout` for a time limit and `tzdata`
+  for a time zone.
+- Docker Compose: new method `AccumulatorInterface::getScheduledJobs()` and new placeholder `{% paasScheduledJobs %}`,
+  to implement in a custom accumulator and to use in a custom deploy playbook template.
+
+**Fixes**
+- Docker Compose: the time limit of a during-deployment job stops its container, not only the client of
+  `docker compose run`.
+- Docker Compose: a during-deployment job with a pod of several containers can run.
+  `AccumulatorInterface::getJobsToRun()` no longer lists the sidecars as runs and gains the key `services`.
+
 ## [5.9.0] - 2026-10-16
 ### Stable Release
 

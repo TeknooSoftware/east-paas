@@ -26,9 +26,11 @@ declare(strict_types=1);
 namespace Teknoo\Tests\East\Paas\Infrastructures\DockerCompose;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Accumulator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\InvalidConfigurationException;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\InlineContent;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
@@ -444,6 +446,29 @@ class AccumulatorTest extends TestCase
         self::assertSame(['cache'], $accumulator->getResetVolumes());
     }
 
+    /**
+     * @param list<string> $services
+     * @param array<int, int> $okCodes
+     * @return array<string, mixed>
+     */
+    private static function jobRun(
+        string $service,
+        array $services,
+        int $run,
+        int $completions,
+        int $timeout,
+        array $okCodes,
+    ): array {
+        return [
+            'service' => $service,
+            'services' => $services,
+            'run' => $run,
+            'completions' => $completions,
+            'timeout' => $timeout,
+            'ok_codes' => $okCodes,
+        ];
+    }
+
     public function testGetJobsToRun(): void
     {
         $accumulator = $this->buildAccumulator();
@@ -463,14 +488,64 @@ class AccumulatorTest extends TestCase
 
         self::assertSame(
             [
-                ['service' => 'migrate', 'run' => 1, 'completions' => 1, 'timeout' => 0, 'ok_codes' => [0]],
-                ['service' => 'seed', 'run' => 1, 'completions' => 2, 'timeout' => 30, 'ok_codes' => [0, 3]],
-                ['service' => 'seed', 'run' => 2, 'completions' => 2, 'timeout' => 30, 'ok_codes' => [0, 3]],
+                self::jobRun('migrate', ['migrate'], 1, 1, 0, [0]),
+                self::jobRun('seed', ['seed'], 1, 2, 30, [0, 3]),
+                self::jobRun('seed', ['seed'], 2, 2, 30, [0, 3]),
             ],
             $accumulator->getJobsToRun(),
         );
     }
 
+    public function testGetJobsToRunGroupsTheSidecarsOfAPodWithItsAnchor(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator
+            ->addService('php', ['image' => 'php'])
+            //Declared before its anchor, listed after it
+            ->addService('job-dump-proxy', [
+                'image' => 'proxy',
+                'profiles' => ['jobs'],
+                'network_mode' => 'service:job-dump',
+                'x-paas-job' => ['completions' => 5],
+            ])
+            ->addService('job-dump', [
+                'image' => 'alpine',
+                'profiles' => ['jobs'],
+                'x-paas-job' => ['completions' => 2, 'time_limit' => 30],
+            ])
+            ->addService('job-dump-agent', [
+                'image' => 'agent',
+                'profiles' => ['jobs'],
+                'network_mode' => 'service:job-dump',
+            ])
+            //Outside the profile or itself: a run of its own
+            ->addService('job-orphan', ['image' => 'alpine', 'profiles' => ['jobs'], 'network_mode' => 'service:php'])
+            ->addService('job-loop', [
+                'image' => 'alpine',
+                'profiles' => ['jobs'],
+                'network_mode' => 'service:job-loop',
+            ])
+            ->addService('job-host', ['image' => 'alpine', 'profiles' => ['jobs'], 'network_mode' => 'host'])
+            ->addService('job-backup', ['image' => 'alpine', 'profiles' => ['scheduled']])
+            ->addService('job-other', [
+                'image' => 'alpine',
+                'profiles' => ['jobs'],
+                'network_mode' => 'service:job-backup',
+            ]);
+
+        $pod = ['job-dump', 'job-dump-proxy', 'job-dump-agent'];
+        self::assertSame(
+            [
+                self::jobRun('job-dump', $pod, 1, 2, 30, [0]),
+                self::jobRun('job-dump', $pod, 2, 2, 30, [0]),
+                self::jobRun('job-orphan', ['job-orphan'], 1, 1, 0, [0]),
+                self::jobRun('job-loop', ['job-loop'], 1, 1, 0, [0]),
+                self::jobRun('job-host', ['job-host'], 1, 1, 0, [0]),
+                self::jobRun('job-other', ['job-other'], 1, 1, 0, [0]),
+            ],
+            $accumulator->getJobsToRun(),
+        );
+    }
 
     public function testAddNetworkAliasIgnoresANonArrayNetworksKey(): void
     {
@@ -488,8 +563,225 @@ class AccumulatorTest extends TestCase
         $accumulator->addService('job', ['image' => 'php', 'profiles' => ['jobs'], 'x-paas-job' => 'nope']);
 
         self::assertSame(
-            [['service' => 'job', 'run' => 1, 'completions' => 1, 'timeout' => 0, 'ok_codes' => [0]]],
+            [self::jobRun('job', ['job'], 1, 1, 0, [0])],
             $accumulator->getJobsToRun(),
         );
+    }
+
+    public function testGetScheduledJobs(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator
+            ->addService('php', ['image' => 'php'])
+            ->addService('migrate', [
+                'image' => 'php',
+                'profiles' => ['jobs'],
+                'x-paas-schedule' => ['schedule' => '0 * * * *'],
+            ])
+            ->addService('job-backup-dump', [
+                'image' => 'alpine',
+                'profiles' => ['scheduled'],
+                'restart' => 'no',
+                'x-paas-job' => ['parallel' => false, 'completions' => 2, 'time_limit' => 600],
+                'x-paas-schedule' => [
+                    'schedule' => '17 3 * * *',
+                    'time_zone' => 'Europe/Paris',
+                    'concurrency' => 'forbid',
+                    'suspend' => true,
+                    'starting_deadline' => 300,
+                ],
+            ])
+            ->addService('job-report-report', [
+                'image' => 'alpine',
+                'profiles' => ['scheduled'],
+                'x-paas-schedule' => [
+                    'schedule' => '0 */3 * * *',
+                    'concurrency' => 'replace',
+                    'suspend' => false,
+                ],
+            ]);
+
+        self::assertSame(
+            [
+                [
+                    'name' => 'east-paas:foo-bar:job-backup-dump',
+                    'service' => 'job-backup-dump',
+                    'services' => ['job-backup-dump'],
+                    'disabled' => true,
+                    'job' => "PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh 'job-backup-dump' "
+                        . "'17 3 * * *' >>'jobs/job-backup-dump/events.log' 2>&1",
+                ],
+                [
+                    'name' => 'east-paas:foo-bar:job-report-report',
+                    'service' => 'job-report-report',
+                    'services' => ['job-report-report'],
+                    'disabled' => false,
+                    'job' => "PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh 'job-report-report' "
+                        . "'0 */3 * * *' >>'jobs/job-report-report/events.log' 2>&1",
+                ],
+            ],
+            $accumulator->getScheduledJobs(),
+        );
+
+        //The scheduled services are not run during the deployment
+        self::assertSame(
+            [self::jobRun('migrate', ['migrate'], 1, 1, 0, [0])],
+            $accumulator->getJobsToRun(),
+        );
+    }
+
+    public function testGetScheduledJobsGroupsTheSidecarsOfAPodWithItsAnchor(): void
+    {
+        $schedule = [
+            'schedule' => '0 3 * * *',
+            'concurrency' => 'forbid',
+        ];
+
+        $accumulator = $this->buildAccumulator();
+        $accumulator
+            ->addService('job-backup-dump', [
+                'image' => 'alpine',
+                'profiles' => ['scheduled'],
+                'x-paas-job' => ['completions' => 2, 'time_limit' => 600],
+                'x-paas-schedule' => $schedule,
+            ])
+            //Its own meta is ignored, the pod runs with the entry of its anchor
+            ->addService('job-backup-dump-proxy', [
+                'image' => 'proxy',
+                'profiles' => ['scheduled'],
+                'network_mode' => 'service:job-backup-dump',
+                'x-paas-schedule' => ['schedule' => '0 4 * * *', 'suspend' => true] + $schedule,
+            ])
+            ->addService('job-migrate', ['image' => 'php', 'profiles' => ['jobs']])
+            //Outside the profile: an entry of its own
+            ->addService('job-orphan', [
+                'image' => 'alpine',
+                'profiles' => ['scheduled'],
+                'network_mode' => 'service:job-migrate',
+                'x-paas-schedule' => $schedule,
+            ]);
+
+        $entries = $accumulator->getScheduledJobs();
+
+        self::assertSame(
+            ['east-paas:foo-bar:job-backup-dump', 'east-paas:foo-bar:job-orphan'],
+            array_column($entries, 'name'),
+        );
+        self::assertSame('job-backup-dump', $entries[0]['service']);
+        self::assertSame(['job-backup-dump', 'job-backup-dump-proxy'], $entries[0]['services']);
+        self::assertFalse($entries[0]['disabled']);
+        self::assertSame(
+            "PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh 'job-backup-dump' '0 3 * * *' "
+            . ">>'jobs/job-backup-dump/events.log' 2>&1",
+            $entries[0]['job'],
+        );
+        self::assertSame(['job-orphan'], $entries[1]['services']);
+
+        //The sidecar of a pod of the profile `jobs` is not a run either
+        self::assertSame([self::jobRun('job-migrate', ['job-migrate'], 1, 1, 0, [0])], $accumulator->getJobsToRun());
+    }
+
+    public function testGetScheduledJobsQuotesEachArgumentOnASingleLine(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator->addService("it's", [
+            'image' => 'php',
+            'profiles' => ['other', 'scheduled'],
+            'x-paas-schedule' => [
+                'schedule' => " 0  3\n* * *\t",
+                'suspend' => 'yes',
+            ],
+        ]);
+
+        $entries = $accumulator->getScheduledJobs();
+
+        self::assertCount(1, $entries);
+        self::assertFalse($entries[0]['disabled']);
+        self::assertSame(
+            "PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh 'it'\\''s' '0 3 * * *' "
+            . ">>'jobs/it'\\''s/events.log' 2>&1",
+            $entries[0]['job'],
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideCrontabBreakers(): iterable
+    {
+        yield 'percent in the schedule' => ['job', '0 3 * * * %'];
+        yield 'percent in the anchor' => ['job-%x', '0 3 * * *'];
+        yield 'newline in the anchor' => ["job\n* * * * * id", '0 3 * * *'];
+        yield 'carriage return in the anchor' => ["job\r", '0 3 * * *'];
+    }
+
+    #[DataProvider('provideCrontabBreakers')]
+    public function testGetScheduledJobsRefusesAnEntryWithAPercentOrALineBreak(string $name, string $schedule): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator->addService(
+            $name,
+            [
+                'image' => 'php',
+                'profiles' => ['scheduled'],
+                'x-paas-schedule' => ['schedule' => $schedule, 'time_zone' => 'Europe/%x'],
+            ],
+        );
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage(
+            "The scheduled job service `$name` can not be installed in a crontab: its entry would contain a `%` or a "
+            . 'line break',
+        );
+
+        $accumulator->getScheduledJobs();
+    }
+
+    public function testGetScheduledJobsAcceptsAPercentOutsideTheEntry(): void
+    {
+        //The time zone is read by the runner from the configuration of the job, not from the entry
+        $accumulator = $this->buildAccumulator();
+        $accumulator->addService(
+            'job',
+            [
+                'image' => 'php',
+                'profiles' => ['scheduled'],
+                'x-paas-schedule' => ['schedule' => '0 3 * * *', 'time_zone' => "Europe/%x\n"],
+            ],
+        );
+
+        self::assertCount(1, $accumulator->getScheduledJobs());
+    }
+
+    public function testGetScheduledJobsIgnoresANonStringSchedule(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator->addService('job', [
+            'image' => 'php',
+            'profiles' => ['scheduled'],
+            'x-paas-schedule' => [
+                'schedule' => ['0 3 * * *'],
+            ],
+        ]);
+
+        self::assertSame(
+            "PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh 'job' '' >>'jobs/job/events.log' 2>&1",
+            $accumulator->getScheduledJobs()[0]['job'],
+        );
+    }
+
+    public function testGetScheduledJobsIgnoresServicesWithoutAValidScheduleMeta(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator
+            ->addService('without-meta', ['image' => 'php', 'profiles' => ['scheduled']])
+            ->addService('non-array-meta', ['image' => 'php', 'profiles' => ['scheduled'], 'x-paas-schedule' => 'nope'])
+            ->addService('non-array-profiles', [
+                'image' => 'php',
+                'profiles' => 'scheduled',
+                'x-paas-schedule' => ['schedule' => '0 3 * * *'],
+            ]);
+
+        self::assertSame([], $accumulator->getScheduledJobs());
     }
 }

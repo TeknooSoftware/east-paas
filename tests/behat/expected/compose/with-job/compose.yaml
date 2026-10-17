@@ -154,6 +154,20 @@ services:
                 - 5
             failure_exit_codes:
                 - 1
+    job-backup-backup:
+        image: 'registry.hub.docker.com/backup:alpine'
+        networks:
+            - behat-test-foobarproject-private
+        restart: 'no'
+        profiles:
+            - scheduled
+        x-paas-job:
+            parallel: false
+            completions: 1
+        x-paas-schedule:
+            schedule: '0 */3 * * *'
+            concurrency: allow
+            suspend: false
 networks:
     behat-test-foobarproject-private:
         name: behat-test-foobarproject-private

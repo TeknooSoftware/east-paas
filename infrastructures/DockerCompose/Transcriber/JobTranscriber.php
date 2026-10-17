@@ -27,6 +27,7 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Transcriber;
 
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Image\Image;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job;
+use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\ConcurrencyPolicy;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Job\Planning;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Pod;
 use Teknoo\East\Paas\Compilation\CompiledDeployment\Value\DefaultsBag;
@@ -35,21 +36,31 @@ use Teknoo\East\Paas\Contracts\Compilation\CompiledDeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\DeploymentInterface;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\Transcriber\TranscriberInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\CronSchedule;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\JobRunSettings;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\ScheduledJobConfiguration;
 use Teknoo\Recipe\Promise\PromiseInterface;
 use Throwable;
 
+use function is_array;
+use function is_string;
+use function str_starts_with;
+use function strlen;
+use function substr;
+
 /**
- * "Deployment transcriber" translating CompiledDeployment's during-deployment jobs into Compose services
- * guarded by the `jobs` profile so a plain `docker compose up` does not start them; the deploy playbook runs
- * them once with `docker compose --profile jobs run --rm <svc>`.
+ * "Deployment transcriber" translating CompiledDeployment's jobs into Compose services.
  *
- * Scheduled jobs (`Planning::Scheduled`) are not supported on a Docker Compose host (there is no equivalent of
- * a Kubernetes `CronJob`): they are not deployed and a warning is added to the result.
+ * During-deployment jobs are guarded by the `jobs` profile so a plain `docker compose up` does not start them; the
+ * deploy playbook runs each completion of a pod with `jobs/east-paas-pod.sh`.
  *
- * Each job pod becomes one or more services (anchor + sidecars) with `restart: "no"`, the `jobs` profile and the
+ * Scheduled jobs (`Planning::Scheduled`) are guarded by the `scheduled` profile; the configuration of each pod is
+ * pushed in `jobs/<anchor>.conf`, read by the runner called every minute by its crontab entry. A schedule
+ * `@every <duration>` is not supported: the job is not deployed, with a warning.
+ *
+ * Each job pod becomes one or more services (anchor + sidecars) with `restart: "no"`, the job's profile and the
  * job's run settings (parallelism, completions, success/failure exit codes, time limit) recorded under
- * `x-paas-job`; the Accumulator expands them into the sequential runs (one per completion, with the time limit
- * and the accepted exit codes) the playbook executes. `parallel` is not supported: runs are always sequential.
+ * `x-paas-job`. `parallel` is not supported: runs are always sequential.
  *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
@@ -62,6 +73,8 @@ class JobTranscriber implements DeploymentInterface
     use PodsTranscriberTrait;
 
     private const string PROFILE = 'jobs';
+
+    private const string NETWORK_SERVICE_PREFIX = 'service:';
 
     /**
      * @return array<string, mixed>
@@ -88,6 +101,50 @@ class JobTranscriber implements DeploymentInterface
         }
 
         return $meta;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function scheduleMeta(Job $job, CronSchedule $cron): array
+    {
+        $meta = [
+            'schedule' => $job->getPlanningSchedule(),
+        ];
+
+        if (null !== $cron->timeZone) {
+            $meta['time_zone'] = $cron->timeZone;
+        }
+
+        $options = $job->getScheduleOptions();
+        $meta['concurrency'] = ($options->concurrency ?? ConcurrencyPolicy::Allow)->value;
+        $meta['suspend'] = true === $options?->suspend;
+
+        $optional = [
+            'starting_deadline' => $options?->startingDeadline,
+            'successful_history' => $options?->successfulHistory,
+            'failed_history' => $options?->failedHistory,
+        ];
+        foreach ($optional as $key => $value) {
+            if (null !== $value) {
+                $meta[$key] = $value;
+            }
+        }
+
+        return $meta;
+    }
+
+    /**
+     * @param PromiseInterface<array<string, mixed>, mixed> $promise
+     */
+    private static function warnNotDeployed(
+        AccumulatorInterface $accumulator,
+        PromiseInterface $promise,
+        string $warning,
+    ): void {
+        $accumulator->addWarning($warning);
+
+        $promise->success(['warning' => $warning]);
     }
 
     public function transcribe(
@@ -120,20 +177,8 @@ class JobTranscriber implements DeploymentInterface
                 $maps,
                 &$skippedJobs,
             ): void {
-                if (Planning::Scheduled === $job->getPlanning()) {
-                    //The callback is called once per pod of the job, the job is reported only once
-                    if (isset($skippedJobs[$job->getName()])) {
-                        return;
-                    }
-
-                    $skippedJobs[$job->getName()] = true;
-
-                    $warning = "The scheduled job `{$job->getName()}` is not supported on a Docker Compose host, "
-                        . 'it is not deployed';
-                    $accumulator->addWarning($warning);
-
-                    $promise->success(['warning' => $warning]);
-
+                //The callback is called once per pod of the job, an unsupported job is reported only once
+                if (isset($skippedJobs[$job->getName()])) {
                     return;
                 }
 
@@ -142,10 +187,36 @@ class JobTranscriber implements DeploymentInterface
                 $jobPrefix = (string) $prefixer($job->getName()) . '-';
 
                 try {
+                    $profile = self::PROFILE;
+                    $cron = null;
+                    $scheduleMeta = [];
+                    if (Planning::Scheduled === $job->getPlanning()) {
+                        $schedule = (string) $job->getPlanningSchedule();
+                        $cron = CronSchedule::fromSchedule($schedule, $job->getScheduleOptions()?->timeZone);
+
+                        if (null === $cron) {
+                            $skippedJobs[$job->getName()] = true;
+
+                            self::warnNotDeployed(
+                                $accumulator,
+                                $promise,
+                                "The scheduled job `{$job->getName()}` uses the schedule `$schedule`, not supported "
+                                . 'on a Docker Compose host, it is not deployed',
+                            );
+
+                            return;
+                        }
+
+                        $profile = AccumulatorInterface::SCHEDULED_PROFILE;
+                        $scheduleMeta = self::scheduleMeta($job, $cron);
+                    }
+
                     $emitted = [];
 
                     /** @var Pod $pod */
                     foreach ($job->getPods() as $pod) {
+                        $podServices = [];
+
                         /** @var array<string, array<string, Image>> $images */
                         $services = self::podToServices(
                             pod: $pod,
@@ -162,13 +233,48 @@ class JobTranscriber implements DeploymentInterface
                         foreach ($services as $serviceName => $serviceSpec) {
                             $jobServiceName = $jobPrefix . $serviceName;
 
-                            $serviceSpec['profiles'] = [self::PROFILE];
+                            $networkMode = $serviceSpec['network_mode'] ?? null;
+                            if (
+                                is_string($networkMode)
+                                && str_starts_with($networkMode, self::NETWORK_SERVICE_PREFIX)
+                            ) {
+                                $serviceSpec['network_mode'] = self::NETWORK_SERVICE_PREFIX . $jobPrefix
+                                    . substr($networkMode, strlen(self::NETWORK_SERVICE_PREFIX));
+                            }
+
+                            //Like Kubernetes, a job ignores the replicas of its pod: `up` would start several anchors,
+                            //outside the network namespace of the sidecars
+                            if (is_array($serviceSpec['deploy'] ?? null)) {
+                                unset($serviceSpec['deploy']['replicas']);
+                                if (empty($serviceSpec['deploy'])) {
+                                    unset($serviceSpec['deploy']);
+                                }
+                            }
+
+                            $serviceSpec['profiles'] = [$profile];
                             $serviceSpec['restart'] = 'no';
                             $serviceSpec['x-paas-job'] = $jobMeta;
+
+                            if (null !== $cron) {
+                                $serviceSpec['x-paas-schedule'] = $scheduleMeta;
+                            }
 
                             $accumulator->addService($jobServiceName, $serviceSpec);
 
                             $emitted[$jobServiceName] = $serviceSpec;
+                            $podServices[] = $jobServiceName;
+                        }
+
+                        if (null !== $cron && !empty($podServices)) {
+                            $configuration = new ScheduledJobConfiguration(
+                                project: $accumulator->getProjectName(),
+                                services: $podServices,
+                                run: JobRunSettings::fromMeta($jobMeta),
+                                pattern: $cron->pattern,
+                                options: $job->getScheduleOptions(),
+                            );
+
+                            $accumulator->addFile('jobs/' . $podServices[0] . '.conf', $configuration->toShell());
                         }
                     }
 

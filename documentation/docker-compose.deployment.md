@@ -56,7 +56,8 @@ CompiledDeployment ─► DockerCompose\Driver (Generator → Running)
                         ▼
                      RunnerInterface (SymfonyProcessRunner) ── SSH ─► Docker host
                         deploy.yml : create dirs, push files, `docker compose -p <project> up -d`,
-                                     run during-deployment jobs, `docker network connect <net> traefik`
+                                     run during-deployment jobs, install the crontab entries of the
+                                     scheduled jobs, `docker network connect <net> traefik`
                         expose.yml : push TLS files + `<project>.yml` into Traefik's watched directory
                         ▼
                      promise->success(['compose' => …, 'traefik' => …, 'output' => …])
@@ -168,7 +169,7 @@ transcribers:
 | 10       | `ConfigMapTranscriber`  | deploy | PaaS `Map` → one Compose `configs` entry (and file) per key            |
 | 10       | `VolumeTranscriber`     | deploy | persistent volumes → named `local` volumes                             |
 | 30       | `DeploymentTranscriber` | deploy | pods → Compose services (one anchor + sidecars sharing the network)    |
-| 32       | `JobTranscriber`        | deploy | during-deployment jobs only (Compose `jobs` profile)                   |
+| 32       | `JobTranscriber`        | deploy | during-deployment (`jobs` profile) and scheduled jobs (`scheduled`)    |
 | 35       | `ServiceTranscriber`    | deploy | PaaS services → DNS aliases of the pod; public services → host `ports` |
 | 50       | `IngressTranscriber`    | expose | HTTP(S) ingresses → Traefik routers/services + TLS                     |
 
@@ -239,17 +240,51 @@ During-deployment jobs vs scheduled jobs
 
 * **During-deployment** jobs (`Planning::DuringDeployment`) are emitted into the Compose file as services
   under a Compose **profile** named `jobs` with `restart: "no"`, so a plain `docker compose up` does **not**
-  start them. The deploy playbook runs each with
-  `docker compose -p <project> --profile jobs run --rm <svc>`, once per **completion** (sequentially,
+  start them. The deploy playbook runs each pod with
+  `sh jobs/east-paas-pod.sh <project> jobs <time limit> <services>`, once per **completion** (sequentially,
   `parallel` is not supported on a single host), wrapped in `timeout <timeLimit>` when a time limit is set,
   and fails the deployment when the exit code is not one of the configured success exit codes (`0` by
   default).
 
-* **Scheduled** jobs (`Planning::Scheduled`) are **not supported** on a Docker Compose host: the local Docker
-  host has no native cron equivalent of a Kubernetes `CronJob`. They are **not** written into the Compose file
-  and are not run, and a warning (``The scheduled job `<job>` is not supported on a Docker Compose host, it is
-  not deployed``) is added to the deployment's result, under `warnings`. Their `schedule-options` have no
-  effect. Kubernetes is unaffected and keeps using its native `CronJob`.
+  `jobs/east-paas-pod.sh` starts the pod detached, `run -d --no-deps` for a single container, `up -d
+  --force-recreate --no-deps` with sidecars, which can not join a one-off container. It waits for the containers,
+  stops them at the time limit (exit code `124`), prints their logs, removes them and exits with the first non-zero
+  exit code. `docker compose run --rm` is not used: the `SIGTERM` of `timeout` to its client leaves the container
+  running. A sidecar which never exits keeps its pod running until the time limit, like a classic sidecar of a
+  Kubernetes Job. The `replicas` of a job pod are ignored.
+
+* **Scheduled** jobs (`Planning::Scheduled`) are emitted under the profile `scheduled` and run by the crontab of
+  the SSH user, like a Kubernetes `CronJob`. Each pod gets an entry `east-paas:<project>:<anchor>`, run every
+  minute, disabled when the job is suspended (listed by `AccumulatorInterface::getScheduledJobs()`, placeholder
+  `{% paasScheduledJobs %}`):
+
+  ```
+  * * * * * cd <project dir> && PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh '<anchor>' \
+      '<schedule>' >>'jobs/<anchor>/events.log' 2>&1
+  ```
+
+  Every minute and not on the schedule: the cron of Debian ignores `CRON_TZ`, and an entry on the schedule could
+  not catch up a missed time, keep a `forbid` time pending nor honour a starting deadline. At each tick, the runner
+  `jobs/east-paas-cron.sh` reads `jobs/<anchor>.conf` and the state in `jobs/<anchor>/`, and starts the most recent
+  scheduled time not started yet. The runs are logged in `jobs/<anchor>/<time>.succeeded.log` or `.failed.log`,
+  the events in `jobs/<anchor>/events.log`.
+
+  The `schedule-options` behave like on Kubernetes:
+  * `time-zone`: the schedule is matched in the local time of the zone;
+  * `concurrency`: `allow` by default, `forbid` keeps the time pending until the previous run ends, `replace`
+    stops the previous run, which is not kept in the history;
+  * `starting-deadline`: a time not started within these seconds is missed;
+  * `successful-history` and `failed-history`: the logs of the runs kept, `3` and `1` by default;
+  * `suspend`: the entry is disabled; once resumed, the most recent time missed is started, within the deadline.
+
+  Differences with Kubernetes: a pending `forbid` time starts up to 60 seconds after the end of the previous run;
+  the runs of a pod of several containers never overlap, even with `allow`; a schedule `@every <duration>` is not
+  deployed, with a warning in the deployment's result. Like for the during-deployment jobs, the time limit applies
+  to each completion, a failed completion is not retried, and the success exit codes replace `0`.
+
+  The playbook pulls the images of the scheduled jobs and removes the entries of the jobs no longer deployed, with
+  their state. The entries of a **deleted environment** stay in the crontab of the SSH user: remove them by hand.
+  Kubernetes is unaffected and keeps using its native `CronJob`.
 
 Ansible playbooks
 -----------------
@@ -259,14 +294,19 @@ substituted before execution (project name, host paths, Traefik container, etc.)
 
 **`deploy.yml.template`:**
 
+Before any change, the playbook fails with an explicit message when the project has scheduled jobs and the host has
+no `crontab` command.
+
 1. ensure the per-project directory (and `secrets/`, `configs/` subdirs) exists on the host;
 2. push `compose.yaml`, secret / env files (mode `0600`, directories `0700`) and config files;
 3. when some volumes are flagged `resetOnDeployment`: `docker compose -p <project> down --remove-orphans`
    (a volume in use cannot be removed) then `docker volume rm <project>_<volume>` for each of them;
 4. `docker compose -p <project> up -d --remove-orphans`;
-5. run during-deployment jobs (`docker compose -p <project> --profile jobs run --rm <svc>`, one run per
+5. run during-deployment jobs (`sh jobs/east-paas-pod.sh <project> jobs <time limit> <services>`, one run per
    completion, with the time limit and the accepted exit codes);
-6. `docker network connect <project>-private <traefik-container>` — idempotent.
+6. scheduled jobs: push `jobs/east-paas-cron.sh`, pull their images, install their crontab entries and remove those
+   of the jobs no longer deployed, with their state;
+7. `docker network connect <project>-private <traefik-container>` — idempotent.
 
 **`expose.yml.template`:**
 
@@ -328,6 +368,9 @@ On the **Docker host** (the `cluster.address` target):
 * the registry credentials: unlike Kubernetes (`imagePullSecrets`), nothing is pushed for the image pull.
   The SSH user must already be logged in on the OCI registry (`docker login`, i.e. a valid
   `~/.docker/config.json`) so `docker compose up` can pull the built images;
+* for the **scheduled jobs**: a cron daemon with the `crontab` command for the SSH user (`cron` on Debian / Ubuntu,
+  `cronie` on RedHat), `flock` (util-linux), a `date` accepting `-d @<seconds>` (GNU coreutils or busybox),
+  `tzdata` for a time zone, and the `docker` CLI in `/usr/local/bin`, `/usr/bin` or `/bin`;
 * a running **Traefik v3** instance using the file provider and watching
   `teknoo.east.paas.docker-compose.traefik.dynamic_dir`, with the certs directory bind-mounted at the path
   given by `teknoo.east.paas.docker-compose.traefik.certs_mount_dir` — the driver only drops files and

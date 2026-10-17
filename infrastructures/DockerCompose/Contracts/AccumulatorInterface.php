@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts;
 
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\InvalidConfigurationException;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\InlineContent;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
@@ -45,6 +46,11 @@ use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
  */
 interface AccumulatorInterface
 {
+    /**
+     * Compose profile of the services of the scheduled jobs, never started by `docker compose up`.
+     */
+    public const string SCHEDULED_PROFILE = 'scheduled';
+
     /**
      * Compose project name (the "namespace"), used by `docker compose -p <project>`.
      */
@@ -165,11 +171,36 @@ interface AccumulatorInterface
     public function getResetVolumes(): array;
 
     /**
-     * Runs of the Compose services guarding during-deployment jobs (the `jobs` profile), to be executed
-     * sequentially by the deploy playbook with `docker compose --profile jobs run --rm <svc>`: one entry per
-     * completion, with the time limit (seconds, 0 = none) and the accepted exit codes.
+     * Runs of the pods of the during-deployment jobs (the `jobs` profile), executed sequentially by the deploy playbook
+     * with `jobs/east-paas-pod.sh`: one entry per completion, `services` lists the anchor first, then its sidecars, the
+     * time limit is in seconds (0 = none).
      *
-     * @return array<int, array{service: string, run: int, completions: int, timeout: int, ok_codes: array<int, int>}>
+     * @return array<int, array{
+     *     service: string,
+     *     services: list<string>,
+     *     run: int,
+     *     completions: int,
+     *     timeout: int,
+     *     ok_codes: array<int, int>
+     * }>
      */
     public function getJobsToRun(): array;
+
+    /**
+     * Crontab entries of the pods of the scheduled jobs (the `scheduled` profile), one per pod, named
+     * `east-paas:<project>:<anchor>`, installed in the crontab of the SSH user and run every minute from the project
+     * directory; `services` lists the anchor first.
+     *
+     * @throws InvalidConfigurationException when an entry contains a `%` (a newline for cron, even between quotes) or a
+     *     line break
+     *
+     * @return list<array{
+     *     name: string,
+     *     service: string,
+     *     services: list<string>,
+     *     disabled: bool,
+     *     job: string
+     * }>
+     */
+    public function getScheduledJobs(): array;
 }
