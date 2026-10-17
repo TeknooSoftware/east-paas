@@ -13,7 +13,26 @@
     paas_files: [{"src":"__WORKDIR__\/secrets\/map-vault-secret\/key1","dest":"secrets\/map-vault-secret\/key1","mode":"0600"},{"src":"__WORKDIR__\/secrets\/map-vault-secret\/key2","dest":"secrets\/map-vault-secret\/key2","mode":"0600"},{"src":"__WORKDIR__\/secrets\/map-vault2-secret\/hello","dest":"secrets\/map-vault2-secret\/hello","mode":"0600"},{"src":"__WORKDIR__\/secrets\/volume-vault-secret\/foo","dest":"secrets\/volume-vault-secret\/foo","mode":"0600"},{"src":"__WORKDIR__\/secrets\/volume-vault-secret\/bar","dest":"secrets\/volume-vault-secret\/bar","mode":"0600"},{"src":"__WORKDIR__\/configs\/map1-map\/key1","dest":"configs\/map1-map\/key1","mode":"0640"},{"src":"__WORKDIR__\/configs\/map1-map\/key2","dest":"configs\/map1-map\/key2","mode":"0640"},{"src":"__WORKDIR__\/configs\/map2-map\/foo","dest":"configs\/map2-map\/foo","mode":"0640"},{"src":"__WORKDIR__\/configs\/map2-map\/bar","dest":"configs\/map2-map\/bar","mode":"0640"},{"src":"__WORKDIR__\/secrets\/php-pods-php-run.env","dest":"secrets\/php-pods-php-run.env","mode":"0600"}]
     paas_reset_volumes: []
     paas_jobs: []
+    paas_scheduled_jobs: []
   tasks:
+    #First: a host without cron fails before any change
+    - name: Check the crontab command
+      ansible.builtin.shell:
+        cmd: command -v crontab
+      register: paas_crontab_command
+      changed_when: false
+      failed_when: false
+
+    - name: Fail without crontab for the scheduled jobs
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has scheduled jobs, they are installed in the crontab of the SSH user, but the
+          crontab command is missing on the Docker host: install and enable a cron daemon (cron on Debian and Ubuntu,
+          cronie on RedHat).
+      when:
+        - (paas_scheduled_jobs | default([])) | length > 0
+        - paas_crontab_command.rc != 0
+
     - name: Ensure the project directory exists on the host
       ansible.builtin.file:
         path: "{{ paas_project_dir }}"
@@ -79,10 +98,177 @@
       register: paas_compose_up
       changed_when: true
 
+    - name: Ensure the jobs directory exists on the host
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/jobs"
+        state: directory
+        mode: "0750"
+      when: (paas_jobs | default([])) | length > 0 or (paas_scheduled_jobs | default([])) | length > 0
+
+    - name: Push the runner of the job pods
+      ansible.builtin.copy:
+        dest: "{{ paas_project_dir }}/jobs/east-paas-pod.sh"
+        mode: "0750"
+        content: |
+          #!/bin/sh
+          # East PaaS - runner of a completion of a job pod, pushed by the deploy playbook, do not edit. Called from
+          # the project directory, with the time limit in seconds (0 for none) and the anchor before its sidecars:
+          #   east-paas-pod.sh <project> <profile> <time limit> <service>...
+          # Exits with the first non-zero exit code of the containers in the order of the services, 124 when they are
+          # stopped (time limit reached or failed wait), 1 when the pod can not be started.
+          set -u
+
+          if [ "$#" -lt 4 ]; then
+              echo "usage: $0 project profile time-limit service..." >&2
+              exit 2
+          fi
+
+          project=$1
+          profile=$2
+          limit=$3
+          shift 3
+
+          if [ "$limit" -gt 0 ] && ! command -v timeout >/dev/null 2>&1; then
+              echo "east-paas: timeout (coreutils) is missing, required by the time limit" >&2
+              exit 2
+          fi
+
+          # Detached, then waited for, not `docker compose run --rm`: the SIGTERM of timeout to this client leaves the
+          # container running
+          wait_containers() {
+              if [ "$limit" -gt 0 ]; then
+                  timeout "$limit" docker wait "$@"
+              else
+                  docker wait "$@"
+              fi
+          }
+
+          failed=0
+          # The dependencies (the init services of the populated volumes) were completed by the `up` of the stack,
+          # without --no-deps they would run again
+          if [ "$#" -eq 1 ]; then
+              ids=$(docker compose -p "$project" --profile "$profile" run -d --no-deps "$1") || exit 1
+              if [ -z "$ids" ]; then
+                  exit 1
+              fi
+
+              containers="$1:$ids"
+              wait_ids=$ids
+          else
+              # A sidecar can not join the network namespace of a one-off container of `run`: the pod is started with
+              # `up`, as regular containers, recreated to never reuse a container left by a previous run
+              docker compose -p "$project" --profile "$profile" up -d --force-recreate --no-deps "$@" >&2 || failed=1
+
+              ids=
+              containers=
+              missing=0
+              for service in "$@"; do
+                  # Not `docker compose ps -a`, which also lists the one-off containers of the service, like the
+                  # `docker compose run` of an operator
+                  found=$(docker ps -aq --filter "label=com.docker.compose.project=$project" \
+                      --filter "label=com.docker.compose.service=$service" \
+                      --filter label=com.docker.compose.oneoff=False)
+                  if [ -z "$found" ]; then
+                      missing=1
+                  fi
+
+                  for id in $found; do
+                      ids="$ids $id"
+                      containers="$containers $service:$id"
+                  done
+              done
+
+              if [ -z "$ids" ]; then
+                  exit 1
+              fi
+
+              wait_ids=$ids
+              if [ "$missing" -eq 1 ]; then
+                  failed=1
+              elif [ "$failed" -eq 1 ]; then
+                  # Compose starts the containers one after the other: a sidecar can not join the network namespace
+                  # of an anchor already ended, `up` fails and leaves it created, never started. The pod has ended with
+                  # its anchor, waited for without these sidecars: `docker wait` would return 128 at once
+                  wait_ids=
+                  unstarted=0
+                  for id in $ids; do
+                      if [ -n "$(docker ps -aq --filter "id=$id" --filter status=created)" ]; then
+                          unstarted=1
+                      else
+                          wait_ids="$wait_ids $id"
+                      fi
+                  done
+
+                  anchor=${ids# }
+                  if [ "$unstarted" -eq 1 ] \
+                      && [ -n "$(docker ps -aq --filter "id=${anchor%% *}" --filter status=exited)" ]; then
+                      failed=0
+                  fi
+              fi
+          fi
+
+          stopped=0
+          if [ "$failed" -eq 0 ] && ! codes=$(wait_containers $wait_ids); then
+              docker stop $wait_ids >/dev/null
+              stopped=1
+          fi
+
+          for container in $containers; do
+              if [ "$#" -gt 1 ]; then
+                  echo "east-paas: ${container%%:*}"
+              fi
+
+              docker logs "${container#*:}" 2>&1
+          done
+          docker rm -f $ids >/dev/null 2>&1
+
+          if [ "$failed" -eq 1 ]; then
+              exit 1
+          fi
+
+          if [ "$stopped" -eq 1 ]; then
+              if [ "$limit" -gt 0 ]; then
+                  echo "east-paas: the container is stopped, the time limit of $limit seconds is reached"
+              else
+                  echo "east-paas: the container is stopped, the wait failed"
+              fi
+
+              exit 124
+          fi
+
+          started=0
+          for id in $wait_ids; do
+              started=$((started + 1))
+          done
+
+          code=0
+          waited=0
+          for value in $codes; do
+              waited=$((waited + 1))
+              case $value in
+                  *[!0-9]*)
+                      value=1
+                      ;;
+              esac
+
+              if [ "$code" -eq 0 ]; then
+                  code=$value
+              fi
+          done
+
+          # A container without exit code is a failure
+          if [ "$code" -eq 0 ] && [ "$waited" -lt "$started" ]; then
+              code=1
+          fi
+
+          exit "$code"
+      when: (paas_jobs | default([])) | length > 0 or (paas_scheduled_jobs | default([])) | length > 0
+
     - name: Run during-deployment jobs (one sequential run per completion, honouring the time limit and the accepted exit codes)
       ansible.builtin.command:
         cmd: >-
-          {{ ('timeout ' ~ item.timeout ~ ' ') if item.timeout | int > 0 else '' }}docker compose -p {{ paas_project }} --profile jobs run --rm {{ item.service }}
+          sh jobs/east-paas-pod.sh {{ paas_project | quote }} jobs {{ item.timeout | quote }}
+          {{ item.services | map('quote') | join(' ') }}
         chdir: "{{ paas_project_dir }}"
       loop: "{{ paas_jobs | default([]) }}"
       loop_control:
@@ -90,6 +276,320 @@
       register: paas_jobs_result
       changed_when: true
       failed_when: paas_jobs_result.rc not in item.ok_codes
+
+    - name: Ensure the state directories of the scheduled jobs exist
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/jobs/{{ item.service }}"
+        state: directory
+        mode: "0750"
+      loop: "{{ paas_scheduled_jobs | default([]) }}"
+      loop_control:
+        label: "{{ item.service }}"
+
+    - name: Push the runner of the scheduled jobs
+      ansible.builtin.copy:
+        dest: "{{ paas_project_dir }}/jobs/east-paas-cron.sh"
+        mode: "0750"
+        content: |
+          #!/bin/sh
+          # East PaaS - runner of a scheduled job, pushed by the deploy playbook, do not edit. Called every minute by
+          # the crontab entry of the job, from the project directory: like the CronJob controller, it starts the most
+          # recent scheduled time not started yet. The job is configured by jobs/<anchor>.conf, the schedule is
+          # informative:
+          #   east-paas-cron.sh <anchor> <schedule>
+          # Exits with the code of the last completion, 143 when the run is replaced, 2 when a required tool is missing.
+          set -u
+
+          if [ "$#" -ne 2 ]; then
+              echo "usage: $0 anchor schedule" >&2
+              exit 2
+          fi
+
+          anchor=$1
+          dir="jobs/$anchor"
+          events="$dir/events.log"
+
+          event() {
+              echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') $*"
+          }
+
+          if [ ! -r "jobs/$anchor.conf" ]; then
+              event "jobs/$anchor.conf is missing"
+              exit 2
+          fi
+
+          . "./jobs/$anchor.conf"
+
+          missing=
+          if ! command -v flock >/dev/null 2>&1; then
+              missing="flock (util-linux) is missing"
+          elif [ "$(date -d @0 +%s 2>/dev/null)" != 0 ]; then
+              missing="date -d @<seconds> (GNU coreutils or busybox) is missing"
+          elif [ "$time_limit" -gt 0 ] && ! command -v timeout >/dev/null 2>&1; then
+              missing="timeout (coreutils) is missing, required by the time limit"
+          fi
+
+          if [ -n "$missing" ]; then
+              event "$missing"
+              exit 2
+          fi
+
+          exec 8>"$dir/state.lock"
+          flock 8 || exit 1
+
+          # Rewritten in place, not replaced: the crontab entry appends to this file
+          if [ -f "$events" ] && [ "$(wc -l <"$events")" -gt 100 ]; then
+              tail -n 100 "$events" >"$dir/events.tmp" && cat "$dir/events.tmp" >"$events"
+              rm -f "$dir/events.tmp"
+          fi
+
+          now=$(date +%s)
+          minute=$((now - now % 60))
+
+          seen=$(cat "$dir/seen" 2>/dev/null)
+          case $seen in
+              ''|*[!0-9]*|0?*)
+                  seen=$((minute - 60))
+                  ;;
+          esac
+
+          if [ "$seen" -gt "$minute" ]; then
+              seen=$((minute - 60))
+          fi
+
+          pending=$(cat "$dir/pending" 2>/dev/null)
+          case $pending in
+              ''|*[!0-9]*|0?*)
+                  pending=
+                  ;;
+          esac
+
+          lower=$((seen + 60))
+          if [ -n "$deadline" ] && [ "$((now - deadline))" -gt "$lower" ]; then
+              lower=$((now - deadline))
+          fi
+
+          scheduled=
+          t=$minute
+          while [ "$t" -ge "$lower" ]; do
+              # Without time zone, TZ stays unset: an empty TZ is UTC, not the zone of the host
+              if [ -n "$time_zone" ]; then
+                  at=$(TZ=$time_zone date -d "@$t" '+%M %H %d %m %w')
+              else
+                  at=$(date -d "@$t" '+%M %H %d %m %w')
+              fi
+
+              if echo "$at" | grep -Eq -e "$pattern"; then
+                  scheduled=$t
+                  break
+              fi
+
+              t=$((t - 60))
+          done
+
+          if [ -z "$scheduled" ] && [ -n "$pending" ] && [ "$pending" -le "$minute" ]; then
+              scheduled=$pending
+          fi
+
+          echo "$minute" >"$dir/seen"
+
+          if [ -z "$scheduled" ]; then
+              exit 0
+          fi
+
+          stamp=$(date -u -d "@$scheduled" +%Y%m%dT%H%M%SZ)
+
+          if [ -n "$deadline" ] && [ "$now" -gt "$((scheduled + deadline))" ]; then
+              rm -f "$dir/pending"
+              event "$stamp: missed, not started within the starting deadline of $deadline seconds"
+              exit 0
+          fi
+
+          if [ "$concurrency" = forbid ]; then
+              exec 9>"$dir/run.lock"
+              if ! flock -n 9; then
+                  if [ "$scheduled" != "$pending" ]; then
+                      echo "$scheduled" >"$dir/pending"
+                      event "$stamp: pending, the previous run is still running (concurrency forbid)"
+                  fi
+
+                  exit 0
+              fi
+          fi
+
+          echo "$scheduled" >"$dir/last"
+          rm -f "$dir/pending"
+
+          # Created once `last` is written: a run waiting for the lock reads `last` after removing the marker
+          if [ "$concurrency" = replace ]; then
+              : >"$dir/cancel"
+          fi
+
+          flock -u 8
+          exec 8>&-
+
+          case $concurrency in
+              forbid)
+                  ;;
+              replace)
+                  # Without the filter on the one-off containers: a pod of several services runs regular containers
+                  ids=
+                  for service in $services; do
+                      found=$(docker ps -q --filter "label=com.docker.compose.project=$project" \
+                          --filter "label=com.docker.compose.service=$service")
+                      if [ -n "$found" ]; then
+                          ids="$ids $found"
+                      fi
+                  done
+
+                  if [ -n "$ids" ]; then
+                      docker stop $ids >/dev/null 2>&1
+                  fi
+
+                  exec 9>"$dir/run.lock"
+                  flock 9 || exit 1
+                  rm -f "$dir/cancel"
+
+                  # The runs waiting for the lock wake in any order: an older one is replaced before its start
+                  if [ "$(cat "$dir/last" 2>/dev/null)" != "$scheduled" ]; then
+                      event "$stamp: replaced by a newer run before its start"
+                      exit 143
+                  fi
+                  ;;
+              *)
+                  # `up --force-recreate` of a pod of several services would kill its running instance
+                  if [ "$anchor" != "$services" ]; then
+                      exec 9>"$dir/run.lock"
+                      flock 9 || exit 1
+                  fi
+                  ;;
+          esac
+
+          log="$dir/$stamp.running.log"
+          : >"$log"
+          event "$stamp: started"
+
+          exit_when_replaced() {
+              if [ "$concurrency" = replace ] && [ -e "$dir/cancel" ]; then
+                  rm -f "$log"
+                  event "$stamp: replaced by a newer run"
+                  exit 143
+              fi
+          }
+
+          code=0
+          status=succeeded
+          run=1
+          while [ "$run" -le "$completions" ]; do
+              exit_when_replaced
+              sh jobs/east-paas-pod.sh "$project" scheduled "$time_limit" $services >>"$log" 2>&1
+              code=$?
+              exit_when_replaced
+
+              accepted=0
+              for ok in $ok_codes; do
+                  if [ "$ok" = "$code" ]; then
+                      accepted=1
+                  fi
+              done
+
+              if [ "$accepted" -eq 0 ]; then
+                  status=failed
+                  break
+              fi
+
+              run=$((run + 1))
+          done
+
+          mv "$log" "$dir/$stamp.$status.log"
+          event "$stamp: $status, exit code $code"
+
+          prune() {
+              count=0
+              for file in "$dir"/*."$1".log; do
+                  if [ -e "$file" ]; then
+                      count=$((count + 1))
+                  fi
+              done
+
+              for file in "$dir"/*."$1".log; do
+                  if [ "$count" -le "$2" ]; then
+                      break
+                  fi
+
+                  rm -f "$file"
+                  count=$((count - 1))
+              done
+          }
+
+          prune succeeded "$successful_history"
+          prune failed "$failed_history"
+
+          exit "$code"
+      when: (paas_scheduled_jobs | default([])) | length > 0
+
+    #A missing image fails the deployment, not a run
+    - name: Pull the images of the scheduled jobs
+      ansible.builtin.command:
+        cmd: >-
+          docker compose -p {{ paas_project }} --profile scheduled pull
+          {{ paas_scheduled_jobs | map(attribute='services') | flatten | unique | map('quote') | join(' ') }}
+        chdir: "{{ paas_project_dir }}"
+      when: (paas_scheduled_jobs | default([])) | length > 0
+      changed_when: true
+
+    #Every minute, not on the schedule: like the CronJob controller of Kubernetes, the runner catches up a missed time,
+    #keeps a time not started by forbid pending, honours the starting deadline and the time zone
+    - name: Install the crontab entries of the scheduled jobs
+      ansible.builtin.cron:
+        name: "{{ item.name }}"
+        job: "cd {{ paas_project_dir | quote }} && {{ item.job }}"
+        disabled: "{{ item.disabled }}"
+      loop: "{{ paas_scheduled_jobs | default([]) }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Read the crontab of the SSH user
+      ansible.builtin.shell:
+        cmd: crontab -l
+      register: paas_crontab
+      changed_when: false
+      failed_when: false
+      when: paas_crontab_command.rc == 0
+
+    - name: List the removed scheduled jobs
+      ansible.builtin.set_fact:
+        paas_scheduled_jobs_removed: >-
+          {{ (paas_crontab.stdout_lines | default([]))
+            | select('match', '^#Ansible: east-paas:' ~ paas_project ~ ':')
+            | map('regex_replace', '^#Ansible: ', '')
+            | map('trim')
+            | difference((paas_scheduled_jobs | default([])) | map(attribute='name'))
+            | list }}
+      when: paas_crontab_command.rc == 0
+
+    #Without its state, a job deployed again starts like a new CronJob, it does not catch up the times since its
+    #removal. Before the entries: the entry left by an interrupted deployment still leads the next one to its state.
+    #The crontab can be edited by hand: only a name of a Compose service is a path under jobs/
+    - name: Remove the state of the removed scheduled jobs
+      ansible.builtin.file:
+        path: "{{ paas_project_dir }}/jobs/{{ item }}"
+        state: absent
+      loop: >-
+        {{ (paas_scheduled_jobs_removed | default([]))
+          | map('regex_replace', '^east-paas:' ~ paas_project ~ ':', '')
+          | select('match', '^[A-Za-z0-9][A-Za-z0-9_.-]*$')
+          | product(['', '.conf'])
+          | map('join')
+          | list }}
+      when: paas_crontab_command.rc == 0
+
+    - name: Remove the crontab entries of the removed scheduled jobs
+      ansible.builtin.cron:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ paas_scheduled_jobs_removed | default([]) }}"
+      when: paas_crontab_command.rc == 0
 
     - name: Connect Traefik to the project's private network (idempotent)
       ansible.builtin.command:

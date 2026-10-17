@@ -593,6 +593,15 @@ class DriverTest extends TestCase
             ->willReturnCallback(function (...$args) use ($deployment): DeploymentInterface {
                 $args[1]
                     ->addService('php', ['image' => 'php', 'profiles' => ['jobs']])
+                    ->addService('backup', [
+                        'image' => 'alpine',
+                        'profiles' => ['scheduled'],
+                        'x-paas-schedule' => [
+                            'schedule' => '@daily',
+                            'concurrency' => 'allow',
+                            'suspend' => false,
+                        ],
+                    ])
                     ->addVolume('cache', ['driver' => 'local', 'x-paas-reset' => true])
                     ->addFile('secrets/php.env', 'KEY="value"')
                     ->addWarning('something partial');
@@ -618,7 +627,8 @@ class DriverTest extends TestCase
 
         $templatesFilesystem = $this->createStub(FilesystemOperator::class);
         $templatesFilesystem->method('read')->willReturn(
-            "project: {% project %}\nfiles: {% paasFiles %}\nvolumes: {% paasResetVolumes %}\njobs: {% paasJobs %}",
+            "project: {% project %}\nfiles: {% paasFiles %}\nvolumes: {% paasResetVolumes %}\njobs: {% paasJobs %}"
+            . "\nscheduled: {% paasScheduledJobs %}",
         );
 
         $captured = null;
@@ -668,7 +678,10 @@ class DriverTest extends TestCase
                 'mode' => '0600',
             ]]) . "\n"
             . 'volumes: ["cache"]' . "\n"
-            . 'jobs: [{"service":"php","run":1,"completions":1,"timeout":0,"ok_codes":[0]}]',
+            . 'jobs: [{"service":"php","services":["php"],"run":1,"completions":1,"timeout":0,"ok_codes":[0]}]' . "\n"
+            . 'scheduled: [{"name":"east-paas:default-prefix-my-project:backup","service":"backup",'
+            . '"services":["backup"],"disabled":false,"job":"PATH=\\/usr\\/local\\/bin:\\/usr\\/bin:\\/bin sh '
+            . 'jobs\\/east-paas-cron.sh \'backup\' \'@daily\' >>\'jobs\\/backup\\/events.log\' 2>&1"}]',
             $writes[$workingDir . '/deploy.yml'],
         );
 

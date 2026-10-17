@@ -27,8 +27,10 @@ namespace Teknoo\East\Paas\Infrastructures\DockerCompose;
 
 use Generator;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Contracts\AccumulatorInterface;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Exception\InvalidConfigurationException;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\FileToCopy;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\InlineContent;
+use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\JobRunSettings;
 use Teknoo\East\Paas\Infrastructures\DockerCompose\Value\MountedFile;
 
 use function array_map;
@@ -36,13 +38,18 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 use function basename;
+use function escapeshellarg;
+use function implode;
 use function in_array;
 use function is_array;
 use function is_int;
-use function is_numeric;
 use function is_string;
-use function max;
+use function preg_replace;
 use function str_starts_with;
+use function strlen;
+use function strpbrk;
+use function substr;
+use function trim;
 
 /**
  * Mutable accumulator (builder) used by the Docker Compose driver's transcribers to collect the full Compose
@@ -60,6 +67,15 @@ use function str_starts_with;
  */
 final class Accumulator implements AccumulatorInterface
 {
+    private const string CRON_ENTRY_PREFIX = 'east-paas:';
+
+    /**
+     * Command of a crontab entry, with a PATH: the one of cron is minimal
+     */
+    private const string CRON_COMMAND = 'PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh';
+
+    private const string NETWORK_SERVICE_PREFIX = 'service:';
+
     /**
      * @var array<string, array<string, mixed>>
      */
@@ -447,49 +463,143 @@ final class Accumulator implements AccumulatorInterface
         return $names;
     }
 
+    /**
+     * @param array<string, mixed> $spec
+     */
+    private static function hasProfile(array $spec, string $profile): bool
+    {
+        $profiles = $spec['profiles'] ?? [];
+
+        return is_array($profiles) && in_array($profile, $profiles, true);
+    }
+
+    /**
+     * @param array<string, mixed> $spec
+     * @return array<mixed>
+     */
+    private static function jobMeta(array $spec): array
+    {
+        $meta = $spec['x-paas-job'] ?? [];
+        if (!is_array($meta)) {
+            return [];
+        }
+
+        return $meta;
+    }
+
+    /**
+     * @param array<mixed> $meta
+     */
+    private static function stringMeta(array $meta, string $key): string
+    {
+        $value = $meta[$key] ?? '';
+        if (!is_string($value)) {
+            return '';
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<string, mixed> $spec
+     */
+    private static function networkService(array $spec): string
+    {
+        $mode = $spec['network_mode'] ?? null;
+        if (!is_string($mode) || !str_starts_with($mode, self::NETWORK_SERVICE_PREFIX)) {
+            return '';
+        }
+
+        return substr($mode, strlen(self::NETWORK_SERVICE_PREFIX));
+    }
+
+    /**
+     * Pods of a profile, keyed by their anchor: the anchor first, then its sidecars in their order of declaration
+     *
+     * @return array<string, list<string>>
+     */
+    private function podsOfProfile(string $profile): array
+    {
+        $targets = [];
+        foreach ($this->services as $name => $spec) {
+            if (self::hasProfile($spec, $profile)) {
+                $targets[$name] = self::networkService($spec);
+            }
+        }
+
+        $pods = [];
+        foreach ($targets as $name => $target) {
+            if ($name === $target || !isset($targets[$target])) {
+                $pods[$name] = [$name];
+            }
+        }
+
+        foreach ($targets as $name => $target) {
+            if (!isset($pods[$name]) && isset($pods[$target])) {
+                $pods[$target][] = $name;
+            }
+        }
+
+        return $pods;
+    }
+
     public function getJobsToRun(): array
     {
         $runs = [];
-        foreach ($this->services as $name => $spec) {
-            $profiles = $spec['profiles'] ?? [];
-            if (!is_array($profiles) || !in_array('jobs', $profiles, true)) {
-                continue;
-            }
+        foreach ($this->podsOfProfile('jobs') as $name => $services) {
+            $settings = JobRunSettings::fromMeta(self::jobMeta($this->services[$name]));
 
-            $meta = $spec['x-paas-job'] ?? [];
-            if (!is_array($meta)) {
-                $meta = [];
-            }
-
-            $completions = 1;
-            if (is_numeric($meta['completions'] ?? null)) {
-                $completions = max(1, (int) $meta['completions']);
-            }
-
-            $timeout = 0;
-            if (is_numeric($meta['time_limit'] ?? null)) {
-                $timeout = (int) $meta['time_limit'];
-            }
-
-            /** @var array<int, int> $okCodes */
-            $okCodes = $meta['success_exit_codes'] ?? [];
-            if (!is_array($okCodes) || empty($okCodes)) {
-                $okCodes = [0];
-            }
-
-            //Each completion is a separate, sequential `docker compose run` in the playbook (Compose has no
-            //native Job object; `parallel` is not supported and runs are sequential).
-            for ($run = 1; $run <= $completions; $run++) {
+            //Each completion is a separate, sequential run of the pod in the playbook (Compose has no native Job
+            //object; `parallel` is not supported and runs are sequential).
+            for ($run = 1; $run <= $settings->completions; $run++) {
                 $runs[] = [
                     'service' => $name,
+                    'services' => $services,
                     'run' => $run,
-                    'completions' => $completions,
-                    'timeout' => $timeout,
-                    'ok_codes' => array_values(array_unique(array_map('intval', $okCodes))),
+                    'completions' => $settings->completions,
+                    'timeout' => $settings->timeLimit,
+                    'ok_codes' => $settings->okCodes,
                 ];
             }
         }
 
         return $runs;
+    }
+
+    public function getScheduledJobs(): array
+    {
+        $entries = [];
+        foreach ($this->podsOfProfile(self::SCHEDULED_PROFILE) as $name => $services) {
+            $schedule = $this->services[$name]['x-paas-schedule'] ?? null;
+            if (!is_array($schedule)) {
+                continue;
+            }
+
+            $arguments = [
+                $name,
+                //Informative, for an operator reading the crontab
+                (string) preg_replace('#\s+#', ' ', trim(self::stringMeta($schedule, 'schedule'))),
+            ];
+            $job = self::CRON_COMMAND . ' ' . implode(' ', array_map(escapeshellarg(...), $arguments))
+                . ' >>' . escapeshellarg('jobs/' . $name . '/events.log') . ' 2>&1';
+
+            //A `%` is a newline for cron (the quotes do not protect it) and a line break ends the entry
+            if (false !== strpbrk($job, "%\r\n")) {
+                throw new InvalidConfigurationException(
+                    "The scheduled job service `$name` can not be installed in a crontab: its entry would contain a "
+                    . '`%` or a line break',
+                );
+            }
+
+            $entries[] = [
+                'name' => self::CRON_ENTRY_PREFIX . $this->projectName . ':' . $name,
+                'service' => $name,
+                'services' => $services,
+                'disabled' => true === ($schedule['suspend'] ?? false),
+                'job' => $job,
+            ];
+        }
+
+        return $entries;
     }
 }
