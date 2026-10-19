@@ -131,10 +131,15 @@ class CloningAgent implements CloningAgentInterface, AutomatedInterface
         if (
             !$isHttp && !$identity instanceof SshIdentity
         ) {
+            $identityType = 'null';
+            if (null !== $identity) {
+                $identityType = $identity::class;
+            }
+
             throw new LogicException(
                 sprintf(
                     "Identity of type %s is not managed by this agent",
-                    is_object($identity) ? $identity::class : 'null'
+                    $identityType
                 )
             );
         }

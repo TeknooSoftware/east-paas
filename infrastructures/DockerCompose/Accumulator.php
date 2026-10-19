@@ -193,7 +193,13 @@ final class Accumulator implements AccumulatorInterface
                 continue;
             }
 
-            $normalized[(string) $key] = is_array($value) ? $value : [];
+            if (!is_array($value)) {
+                $normalized[(string) $key] = [];
+
+                continue;
+            }
+
+            $normalized[(string) $key] = $value;
         }
 
         $networkName = $this->getNetworkName();

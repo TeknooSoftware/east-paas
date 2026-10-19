@@ -120,15 +120,16 @@ class JobTranscriber implements DeploymentInterface
         $meta['concurrency'] = ($options->concurrency ?? ConcurrencyPolicy::Allow)->value;
         $meta['suspend'] = true === $options?->suspend;
 
-        $optional = [
-            'starting_deadline' => $options?->startingDeadline,
-            'successful_history' => $options?->successfulHistory,
-            'failed_history' => $options?->failedHistory,
-        ];
-        foreach ($optional as $key => $value) {
-            if (null !== $value) {
-                $meta[$key] = $value;
-            }
+        if (null !== $options?->startingDeadline) {
+            $meta['starting_deadline'] = $options->startingDeadline;
+        }
+
+        if (null !== $options?->successfulHistory) {
+            $meta['successful_history'] = $options->successfulHistory;
+        }
+
+        if (null !== $options?->failedHistory) {
+            $meta['failed_history'] = $options->failedHistory;
         }
 
         return $meta;

@@ -560,8 +560,13 @@ class FactoryTest extends TestCase
         ];
 
         foreach ([false, true] as $allowTokenFile) {
+            $suffix = match ($allowTokenFile) {
+                true => ' with token file allowed',
+                false => '',
+            };
+
             foreach ($urls as $name => $url) {
-                yield $name . ($allowTokenFile ? ' with token file allowed' : '') => [$url, $allowTokenFile];
+                yield $name . $suffix => [$url, $allowTokenFile];
             }
         }
     }

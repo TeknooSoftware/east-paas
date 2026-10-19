@@ -62,7 +62,7 @@ class HookCompiler implements CompilerInterface
      */
     public function __construct(iterable $hooksLibrary)
     {
-        $this->hooksLibrary = is_array($hooksLibrary) ? $hooksLibrary : iterator_to_array($hooksLibrary);
+        $this->hooksLibrary = iterator_to_array($hooksLibrary);
     }
 
     public function compile(

@@ -69,6 +69,13 @@ class RunJobTest extends TestCase
         ?RecipeInterface $recipe = null,
         bool $withTimeoutsChecks = true,
     ): PlanInterface {
+        $checkTimeouts = null;
+        $checkHooksTimeouts = null;
+        if ($withTimeoutsChecks) {
+            $checkTimeouts = $this->createStub(CheckTimeouts::class);
+            $checkHooksTimeouts = $this->createStub(CheckHooksTimeouts::class);
+        }
+
         return new RunJob(
             $recipe ?? $this->createStub(RecipeInterface::class),
             $this->createStub(DispatchHistoryInterface::class),
@@ -92,8 +99,8 @@ class RunJobTest extends TestCase
             $this->createStub(DispatchResultInterface::class),
             $this->createStub(UnsetTimeLimit::class),
             $this->createStub(SendHistoryInterface::class),
-            $withTimeoutsChecks ? $this->createStub(CheckTimeouts::class) : null,
-            $withTimeoutsChecks ? $this->createStub(CheckHooksTimeouts::class) : null,
+            $checkTimeouts,
+            $checkHooksTimeouts,
         );
     }
 

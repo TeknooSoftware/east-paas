@@ -62,7 +62,10 @@ class SaveJob
             onFail: static fn (#[SensitiveParameter] Throwable $error): ChefInterface => $manager->error(
                 new RuntimeException(
                     message: 'teknoo.east.paas.job.save_error',
-                    code: str_contains($error->getMessage(), 'time limit exceeded') ? 504 : 500,
+                    code: match (str_contains($error->getMessage(), 'time limit exceeded')) {
+                        true => 504,
+                        false => 500,
+                    },
                     previous: $error,
                 )
             ),

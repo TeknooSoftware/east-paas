@@ -196,7 +196,11 @@ final class RunnerFactory implements RunnerFactoryInterface
         $host = parse_url($url, PHP_URL_HOST);
         if (empty($host)) {
             //No scheme: parse_url returns the whole string as path for "host:port" / "host"
-            $path = (string) (parse_url($url, PHP_URL_PATH) ?: $url);
+            $path = parse_url($url, PHP_URL_PATH);
+            if (empty($path)) {
+                $path = $url;
+            }
+
             $parts = explode(':', $path, 2);
             $host = $parts[0];
             $port = $parts[1] ?? null;

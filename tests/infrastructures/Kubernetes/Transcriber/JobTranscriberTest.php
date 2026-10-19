@@ -1339,7 +1339,12 @@ class JobTranscriberTest extends TestCase
                 }
             );
         $deletedNames = [];
-        $repo->expects($exists ? $this->once() : $this->never())
+        $repo->expects(
+            match ($exists) {
+                true => $this->once(),
+                false => $this->never(),
+            }
+        )
             ->method('delete')
             ->willReturnCallback(
                 function (Job $model) use (&$deletedNames): array {

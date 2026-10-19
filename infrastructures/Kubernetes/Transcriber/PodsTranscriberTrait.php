@@ -261,7 +261,10 @@ trait PodsTranscriberTrait
                         'httpGet' => [
                             'path' => $hc->getPath(),
                             'port' => $hc->getPort(),
-                            'scheme' => $hc->isSecure() ? 'HTTPS' : 'HTTP',
+                            'scheme' => match ($hc->isSecure()) {
+                                true => 'HTTPS',
+                                default => 'HTTP',
+                            },
                         ],
                         'successThreshold' => $hc->getSuccessThreshold(),
                         'failureThreshold' => $hc->getFailureThreshold(),

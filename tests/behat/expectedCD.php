@@ -147,12 +147,13 @@ return static function (
         $version = 1.1;
     }
 
+    $phpServiceName = 'php-service';
+    $demoServiceName = 'demo';
     if ($withExposeShortcuts) {
         $version = 1.2;
+        $phpServiceName = 'php-pods-php-run';
+        $demoServiceName = 'demo-nginx';
     }
-
-    $phpServiceName = $withExposeShortcuts ? 'php-pods-php-run' : 'php-service';
-    $demoServiceName = $withExposeShortcuts ? 'demo-nginx' : 'demo';
 
     $cd = new CompiledDeployment(
         version: $version,
