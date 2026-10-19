@@ -56,7 +56,7 @@ flowchart TD
     G --> P
     subgraph P ["deploy.yml playbook"]
         direction TB
-        P1["Fail when the crontab command is missing, before any change"]
+        P1["Fail when crontab, flock, date -d, docker in the PATH of cron or timeout is missing, before any change"]
         P2["Push compose.yaml and the files, including the jobs/#lt;anchor#gt;.conf"]
         P3["docker compose up -d: the services of the profile scheduled are not started"]
         P4["Push jobs/east-paas-pod.sh"]
@@ -341,15 +341,17 @@ Host prerequisites
 In addition to the prerequisites of the driver (see `documentation/docker-compose.deployment.md`), on the Docker
 host:
 
-* a cron daemon with the `crontab` command for the SSH user (`cron` on Debian / Ubuntu, `cronie` on RedHat). Without
-  it, a deployment with scheduled jobs fails before any change;
+* a cron daemon with the `crontab` command for the SSH user (`cron` on Debian / Ubuntu, `cronie` on RedHat);
 * `flock` (util-linux);
 * a `date` accepting `-d @<seconds>` (GNU coreutils or busybox);
 * `timeout` (coreutils) for a job with a time limit;
 * `tzdata` for a job with a time zone;
-* the `docker` CLI in `/usr/local/bin`, `/usr/bin` or `/bin` (the `PATH` of the entry).
+* the `docker` CLI in `/usr/local/bin`, `/usr/bin` or `/bin` (the `PATH` of the entry, not the one of the SSH
+  session: a `docker` in `/snap/bin` is not found by cron).
 
-A missing tool is reported in `events.log`, the run is not started.
+The deploy playbook checks these tools, except `tzdata`, before any change: a missing tool fails the deployment with an
+explicit message. The runner checks again `flock`, `date` and `timeout` at each tick, for a tool removed after the
+deployment: a missing tool is then reported in `events.log` and the run is not started.
 
 Operating the scheduled jobs
 ----------------------------

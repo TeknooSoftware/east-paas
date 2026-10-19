@@ -597,10 +597,14 @@ final class Accumulator implements AccumulatorInterface
                 );
             }
 
+            $settings = JobRunSettings::fromMeta(self::jobMeta($this->services[$name]));
+
             $entries[] = [
                 'name' => self::CRON_ENTRY_PREFIX . $this->projectName . ':' . $name,
                 'service' => $name,
                 'services' => $services,
+                //The deploy playbook checks `timeout` on the host when a job has a time limit
+                'timeout' => $settings->timeLimit,
                 'disabled' => true === ($schedule['suspend'] ?? false),
                 'job' => $job,
             ];

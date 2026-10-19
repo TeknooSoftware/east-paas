@@ -33,6 +33,81 @@
         - (paas_scheduled_jobs | default([])) | length > 0
         - paas_crontab_command.rc != 0
 
+    #The tools of the runners of the jobs, also checked by the runners: a missing tool fails here before any change,
+    #not at each run
+    - name: Check the flock command
+      ansible.builtin.shell:
+        cmd: command -v flock
+      register: paas_flock_command
+      changed_when: false
+      failed_when: false
+      when: (paas_scheduled_jobs | default([])) | length > 0
+
+    - name: Fail without flock for the scheduled jobs
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has scheduled jobs, their runner requires the flock command, missing on the
+          Docker host: install util-linux.
+      when:
+        - (paas_scheduled_jobs | default([])) | length > 0
+        - paas_flock_command.rc != 0
+
+    - name: Check the date command
+      ansible.builtin.shell:
+        cmd: '[ "$(date -d @0 +%s 2>/dev/null)" = 0 ]'
+      register: paas_date_command
+      changed_when: false
+      failed_when: false
+      when: (paas_scheduled_jobs | default([])) | length > 0
+
+    - name: Fail without a date accepting -d @<seconds> for the scheduled jobs
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has scheduled jobs, their runner requires a date command accepting
+          -d @<seconds>, missing on the Docker host: install GNU coreutils or busybox.
+      when:
+        - (paas_scheduled_jobs | default([])) | length > 0
+        - paas_date_command.rc != 0
+
+    #The PATH of the crontab entries (Accumulator::CRON_COMMAND), not the one of the SSH session
+    - name: Check the docker command in the PATH of the crontab entries
+      ansible.builtin.shell:
+        cmd: PATH=/usr/local/bin:/usr/bin:/bin; command -v docker
+      register: paas_cron_docker_command
+      changed_when: false
+      failed_when: false
+      when: (paas_scheduled_jobs | default([])) | length > 0
+
+    - name: Fail without docker in the PATH of the crontab entries for the scheduled jobs
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has scheduled jobs, run by cron with the PATH /usr/local/bin:/usr/bin:/bin,
+          but the docker command is not in this PATH on the Docker host.
+      when:
+        - (paas_scheduled_jobs | default([])) | length > 0
+        - paas_cron_docker_command.rc != 0
+
+    - name: Check the timeout command
+      ansible.builtin.shell:
+        cmd: command -v timeout
+      register: paas_timeout_command
+      changed_when: false
+      failed_when: false
+      when: >-
+        ((paas_jobs | default([])) + (paas_scheduled_jobs | default([])))
+        | selectattr('timeout', 'gt', 0) | list | length > 0
+
+    - name: Fail without timeout for the jobs with a time limit
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has jobs with a time limit, their runner requires the timeout command,
+          missing on the Docker host: install coreutils.
+      when:
+        - >-
+          ((paas_jobs | default([])) + (paas_scheduled_jobs | default([])))
+          | selectattr('timeout', 'gt', 0) | list | length > 0
+        - paas_timeout_command.rc != 0
+
     - name: Ensure the project directory exists on the host
       ansible.builtin.file:
         path: "{{ paas_project_dir }}"

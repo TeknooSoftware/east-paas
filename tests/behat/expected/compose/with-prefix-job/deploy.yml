@@ -13,7 +13,7 @@
     paas_files: [{"src":"__WORKDIR__\/secrets\/a-prefix-map-vault-secret\/key1","dest":"secrets\/a-prefix-map-vault-secret\/key1","mode":"0600"},{"src":"__WORKDIR__\/secrets\/a-prefix-map-vault-secret\/key2","dest":"secrets\/a-prefix-map-vault-secret\/key2","mode":"0600"},{"src":"__WORKDIR__\/secrets\/a-prefix-map-vault2-secret\/hello","dest":"secrets\/a-prefix-map-vault2-secret\/hello","mode":"0600"},{"src":"__WORKDIR__\/secrets\/a-prefix-volume-vault-secret\/foo","dest":"secrets\/a-prefix-volume-vault-secret\/foo","mode":"0600"},{"src":"__WORKDIR__\/secrets\/a-prefix-volume-vault-secret\/bar","dest":"secrets\/a-prefix-volume-vault-secret\/bar","mode":"0600"},{"src":"__WORKDIR__\/configs\/a-prefix-map1-map\/key1","dest":"configs\/a-prefix-map1-map\/key1","mode":"0640"},{"src":"__WORKDIR__\/configs\/a-prefix-map1-map\/key2","dest":"configs\/a-prefix-map1-map\/key2","mode":"0640"},{"src":"__WORKDIR__\/configs\/a-prefix-map2-map\/foo","dest":"configs\/a-prefix-map2-map\/foo","mode":"0640"},{"src":"__WORKDIR__\/configs\/a-prefix-map2-map\/bar","dest":"configs\/a-prefix-map2-map\/bar","mode":"0640"},{"src":"__WORKDIR__\/secrets\/php-pods-php-run.env","dest":"secrets\/php-pods-php-run.env","mode":"0600"},{"src":"__WORKDIR__\/secrets\/a-prefix-job-translation-php-translation-php-translation.env","dest":"secrets\/a-prefix-job-translation-php-translation-php-translation.env","mode":"0600"},{"src":"__WORKDIR__\/jobs\/a-prefix-job-backup-backup.conf","dest":"jobs\/a-prefix-job-backup-backup.conf","mode":"0640"}]
     paas_reset_volumes: []
     paas_jobs: [{"service":"a-prefix-job-init-init-var","services":["a-prefix-job-init-init-var"],"run":1,"completions":3,"timeout":10,"ok_codes":[0]},{"service":"a-prefix-job-init-init-var","services":["a-prefix-job-init-init-var"],"run":2,"completions":3,"timeout":10,"ok_codes":[0]},{"service":"a-prefix-job-init-init-var","services":["a-prefix-job-init-init-var"],"run":3,"completions":3,"timeout":10,"ok_codes":[0]},{"service":"a-prefix-job-init-update","services":["a-prefix-job-init-update"],"run":1,"completions":3,"timeout":10,"ok_codes":[0]},{"service":"a-prefix-job-init-update","services":["a-prefix-job-init-update"],"run":2,"completions":3,"timeout":10,"ok_codes":[0]},{"service":"a-prefix-job-init-update","services":["a-prefix-job-init-update"],"run":3,"completions":3,"timeout":10,"ok_codes":[0]},{"service":"a-prefix-job-translation-php-translation","services":["a-prefix-job-translation-php-translation"],"run":1,"completions":1,"timeout":0,"ok_codes":[0,5]}]
-    paas_scheduled_jobs: [{"name":"east-paas:behat-test-a-prefix-foobarproject:a-prefix-job-backup-backup","service":"a-prefix-job-backup-backup","services":["a-prefix-job-backup-backup"],"disabled":false,"job":"PATH=\/usr\/local\/bin:\/usr\/bin:\/bin sh jobs\/east-paas-cron.sh 'a-prefix-job-backup-backup' '0 *\/3 * * *' >>'jobs\/a-prefix-job-backup-backup\/events.log' 2>&1"}]
+    paas_scheduled_jobs: [{"name":"east-paas:behat-test-a-prefix-foobarproject:a-prefix-job-backup-backup","service":"a-prefix-job-backup-backup","services":["a-prefix-job-backup-backup"],"timeout":0,"disabled":false,"job":"PATH=\/usr\/local\/bin:\/usr\/bin:\/bin sh jobs\/east-paas-cron.sh 'a-prefix-job-backup-backup' '0 *\/3 * * *' >>'jobs\/a-prefix-job-backup-backup\/events.log' 2>&1"}]
   tasks:
     #First: a host without cron fails before any change
     - name: Check the crontab command
@@ -32,6 +32,81 @@
       when:
         - (paas_scheduled_jobs | default([])) | length > 0
         - paas_crontab_command.rc != 0
+
+    #The tools of the runners of the jobs, also checked by the runners: a missing tool fails here before any change,
+    #not at each run
+    - name: Check the flock command
+      ansible.builtin.shell:
+        cmd: command -v flock
+      register: paas_flock_command
+      changed_when: false
+      failed_when: false
+      when: (paas_scheduled_jobs | default([])) | length > 0
+
+    - name: Fail without flock for the scheduled jobs
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has scheduled jobs, their runner requires the flock command, missing on the
+          Docker host: install util-linux.
+      when:
+        - (paas_scheduled_jobs | default([])) | length > 0
+        - paas_flock_command.rc != 0
+
+    - name: Check the date command
+      ansible.builtin.shell:
+        cmd: '[ "$(date -d @0 +%s 2>/dev/null)" = 0 ]'
+      register: paas_date_command
+      changed_when: false
+      failed_when: false
+      when: (paas_scheduled_jobs | default([])) | length > 0
+
+    - name: Fail without a date accepting -d @<seconds> for the scheduled jobs
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has scheduled jobs, their runner requires a date command accepting
+          -d @<seconds>, missing on the Docker host: install GNU coreutils or busybox.
+      when:
+        - (paas_scheduled_jobs | default([])) | length > 0
+        - paas_date_command.rc != 0
+
+    #The PATH of the crontab entries (Accumulator::CRON_COMMAND), not the one of the SSH session
+    - name: Check the docker command in the PATH of the crontab entries
+      ansible.builtin.shell:
+        cmd: PATH=/usr/local/bin:/usr/bin:/bin; command -v docker
+      register: paas_cron_docker_command
+      changed_when: false
+      failed_when: false
+      when: (paas_scheduled_jobs | default([])) | length > 0
+
+    - name: Fail without docker in the PATH of the crontab entries for the scheduled jobs
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has scheduled jobs, run by cron with the PATH /usr/local/bin:/usr/bin:/bin,
+          but the docker command is not in this PATH on the Docker host.
+      when:
+        - (paas_scheduled_jobs | default([])) | length > 0
+        - paas_cron_docker_command.rc != 0
+
+    - name: Check the timeout command
+      ansible.builtin.shell:
+        cmd: command -v timeout
+      register: paas_timeout_command
+      changed_when: false
+      failed_when: false
+      when: >-
+        ((paas_jobs | default([])) + (paas_scheduled_jobs | default([])))
+        | selectattr('timeout', 'gt', 0) | list | length > 0
+
+    - name: Fail without timeout for the jobs with a time limit
+      ansible.builtin.fail:
+        msg: >-
+          The project {{ paas_project }} has jobs with a time limit, their runner requires the timeout command,
+          missing on the Docker host: install coreutils.
+      when:
+        - >-
+          ((paas_jobs | default([])) + (paas_scheduled_jobs | default([])))
+          | selectattr('timeout', 'gt', 0) | list | length > 0
+        - paas_timeout_command.rc != 0
 
     - name: Ensure the project directory exists on the host
       ansible.builtin.file:

@@ -680,7 +680,8 @@ class DriverTest extends TestCase
             . 'volumes: ["cache"]' . "\n"
             . 'jobs: [{"service":"php","services":["php"],"run":1,"completions":1,"timeout":0,"ok_codes":[0]}]' . "\n"
             . 'scheduled: [{"name":"east-paas:default-prefix-my-project:backup","service":"backup",'
-            . '"services":["backup"],"disabled":false,"job":"PATH=\\/usr\\/local\\/bin:\\/usr\\/bin:\\/bin sh '
+            . '"services":["backup"],"timeout":0,"disabled":false,'
+            . '"job":"PATH=\\/usr\\/local\\/bin:\\/usr\\/bin:\\/bin sh '
             . 'jobs\\/east-paas-cron.sh \'backup\' \'@daily\' >>\'jobs\\/backup\\/events.log\' 2>&1"}]',
             $writes[$workingDir . '/deploy.yml'],
         );

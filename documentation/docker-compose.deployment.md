@@ -275,8 +275,12 @@ substituted before execution (project name, host paths, Traefik container, etc.)
 
 **`deploy.yml.template`:**
 
-Before any change, the playbook fails with an explicit message when the project has scheduled jobs and the host has
-no `crontab` command.
+Before any change, the playbook fails with an explicit message when a tool required by the jobs is missing on the
+host:
+
+* with scheduled jobs: the `crontab` command, `flock`, a `date` accepting `-d @<seconds>`, and `docker` in the `PATH`
+  of the crontab entries (`/usr/local/bin:/usr/bin:/bin`);
+* with a job (during-deployment or scheduled) with a time limit: `timeout`.
 
 1. ensure the per-project directory (and `secrets/`, `configs/` subdirs) exists on the host;
 2. push `compose.yaml`, secret / env files (mode `0600`, directories `0700`) and config files;

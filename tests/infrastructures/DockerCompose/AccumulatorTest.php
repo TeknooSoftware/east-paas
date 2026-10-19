@@ -607,6 +607,7 @@ class AccumulatorTest extends TestCase
                     'name' => 'east-paas:foo-bar:job-backup-dump',
                     'service' => 'job-backup-dump',
                     'services' => ['job-backup-dump'],
+                    'timeout' => 600,
                     'disabled' => true,
                     'job' => "PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh 'job-backup-dump' "
                         . "'17 3 * * *' >>'jobs/job-backup-dump/events.log' 2>&1",
@@ -615,6 +616,7 @@ class AccumulatorTest extends TestCase
                     'name' => 'east-paas:foo-bar:job-report-report',
                     'service' => 'job-report-report',
                     'services' => ['job-report-report'],
+                    'timeout' => 0,
                     'disabled' => false,
                     'job' => "PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh 'job-report-report' "
                         . "'0 */3 * * *' >>'jobs/job-report-report/events.log' 2>&1",

@@ -189,7 +189,7 @@ interface AccumulatorInterface
     /**
      * Crontab entries of the pods of the scheduled jobs (the `scheduled` profile), one per pod, named
      * `east-paas:<project>:<anchor>`, installed in the crontab of the SSH user and run every minute from the project
-     * directory; `services` lists the anchor first.
+     * directory; `services` lists the anchor first, `timeout` is the time limit of a completion (0 for none).
      *
      * @throws InvalidConfigurationException when an entry contains a `%` (a newline for cron, even between quotes) or a
      *     line break
@@ -198,6 +198,7 @@ interface AccumulatorInterface
      *     name: string,
      *     service: string,
      *     services: list<string>,
+     *     timeout: int,
      *     disabled: bool,
      *     job: string
      * }>

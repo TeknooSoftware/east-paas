@@ -222,6 +222,7 @@ class JobTranscriberTest extends TestCase
                     'name' => 'east-paas:default-prj:prj-init-migrate',
                     'service' => 'prj-init-migrate',
                     'services' => ['prj-init-migrate'],
+                    'timeout' => 120,
                     'disabled' => false,
                     'job' => "PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh 'prj-init-migrate' "
                         . "'0 */3 * * *' >>'jobs/prj-init-migrate/events.log' 2>&1",
