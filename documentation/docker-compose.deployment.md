@@ -157,6 +157,8 @@ For each run the driver writes, into a fresh per-run working directory under
 * `deploy.yml` / `expose.yml` — the rendered Ansible playbook for the stage.
 * `inventory.ini` — the single-host inventory built from `cluster.address`.
 * secret / config / env / TLS cert files referenced by the Compose and Traefik configs (see below).
+* `jobs/<anchor>.conf` — the configuration of each pod of a scheduled job (see
+  `documentation/docker-compose.scheduled-jobs.md`).
 
 The directory is deleted once the playbook has run (or has failed to start).
 
@@ -254,37 +256,16 @@ During-deployment jobs vs scheduled jobs
   Kubernetes Job. The `replicas` of a job pod are ignored.
 
 * **Scheduled** jobs (`Planning::Scheduled`) are emitted under the profile `scheduled` and run by the crontab of
-  the SSH user, like a Kubernetes `CronJob`. Each pod gets an entry `east-paas:<project>:<anchor>`, run every
-  minute, disabled when the job is suspended (listed by `AccumulatorInterface::getScheduledJobs()`, placeholder
-  `{% paasScheduledJobs %}`):
+  the SSH user, like a Kubernetes `CronJob`. Each pod gets a configuration `jobs/<anchor>.conf` and an entry
+  `east-paas:<project>:<anchor>` (listed by `AccumulatorInterface::getScheduledJobs()`, placeholder
+  `{% paasScheduledJobs %}`), run every minute and disabled when the job is suspended. At each tick, the runner
+  `jobs/east-paas-cron.sh` starts the most recent scheduled time not started yet, honouring the `schedule-options`
+  (time zone, concurrency, starting deadline, history), and runs each completion with `jobs/east-paas-pod.sh`.
+  A schedule `@every <duration>` is not deployed, with a warning in the deployment's result. Kubernetes is
+  unaffected and keeps using its native `CronJob`.
 
-  ```
-  * * * * * cd <project dir> && PATH=/usr/local/bin:/usr/bin:/bin sh jobs/east-paas-cron.sh '<anchor>' \
-      '<schedule>' >>'jobs/<anchor>/events.log' 2>&1
-  ```
-
-  Every minute and not on the schedule: the cron of Debian ignores `CRON_TZ`, and an entry on the schedule could
-  not catch up a missed time, keep a `forbid` time pending nor honour a starting deadline. At each tick, the runner
-  `jobs/east-paas-cron.sh` reads `jobs/<anchor>.conf` and the state in `jobs/<anchor>/`, and starts the most recent
-  scheduled time not started yet. The runs are logged in `jobs/<anchor>/<time>.succeeded.log` or `.failed.log`,
-  the events in `jobs/<anchor>/events.log`.
-
-  The `schedule-options` behave like on Kubernetes:
-  * `time-zone`: the schedule is matched in the local time of the zone;
-  * `concurrency`: `allow` by default, `forbid` keeps the time pending until the previous run ends, `replace`
-    stops the previous run, which is not kept in the history;
-  * `starting-deadline`: a time not started within these seconds is missed;
-  * `successful-history` and `failed-history`: the logs of the runs kept, `3` and `1` by default;
-  * `suspend`: the entry is disabled; once resumed, the most recent time missed is started, within the deadline.
-
-  Differences with Kubernetes: a pending `forbid` time starts up to 60 seconds after the end of the previous run;
-  the runs of a pod of several containers never overlap, even with `allow`; a schedule `@every <duration>` is not
-  deployed, with a warning in the deployment's result. Like for the during-deployment jobs, the time limit applies
-  to each completion, a failed completion is not retried, and the success exit codes replace `0`.
-
-  The playbook pulls the images of the scheduled jobs and removes the entries of the jobs no longer deployed, with
-  their state. The entries of a **deleted environment** stay in the crontab of the SSH user: remove them by hand.
-  Kubernetes is unaffected and keeps using its native `CronJob`.
+  The workflows (deployment, tick, completion) with their diagrams, the files on the host, the differences with
+  Kubernetes and the operating are described in `documentation/docker-compose.scheduled-jobs.md`.
 
 Ansible playbooks
 -----------------
@@ -305,7 +286,7 @@ no `crontab` command.
 5. run during-deployment jobs (`sh jobs/east-paas-pod.sh <project> jobs <time limit> <services>`, one run per
    completion, with the time limit and the accepted exit codes);
 6. scheduled jobs: push `jobs/east-paas-cron.sh`, pull their images, install their crontab entries and remove those
-   of the jobs no longer deployed, with their state;
+   of the jobs no longer deployed, with their state (see `documentation/docker-compose.scheduled-jobs.md`);
 7. `docker network connect <project>-private <traefik-container>` — idempotent.
 
 **`expose.yml.template`:**
@@ -381,4 +362,6 @@ See also
 
 * `documentation/traefik.ingress.md` — Traefik v3 static configuration, entrypoints, ACME, TLS, path
   mapping and the watched-directory contract.
+* `documentation/docker-compose.scheduled-jobs.md` — scheduled jobs (cron jobs): crontab entries, the runners
+  `east-paas-cron.sh` and `east-paas-pod.sh`, their workflows and their state on the host.
 * `documentation/README.md` — overview of all bundled infrastructures.

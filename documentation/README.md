@@ -85,7 +85,8 @@ Defaults implementations
   to deploy an application to a cluster
 * `Docker Compose` (thanks to `Ansible` over `SSH`, and `Traefik v3` as ingress) :
   to deploy an application to a plain `Docker` host as a `Compose Specification` stack. Registered under the
-  cluster type `docker-compose`. See `docker-compose.deployment.md` and `traefik.ingress.md`.
+  cluster type `docker-compose`. See `docker-compose.deployment.md`, `docker-compose.scheduled-jobs.md` and
+  `traefik.ingress.md`.
 * `PhpSecLib` : To implement `Security` contracts and encrypt or decrypt message through the bus.
 * `Composer/Npm/PIP/Make/Symfony Console` (thanks to `Symfony Process`) to provide some hooks to build projects
 
