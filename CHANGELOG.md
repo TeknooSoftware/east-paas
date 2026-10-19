@@ -1,5 +1,25 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.10.1] - 2026-10-19
+### Stable Release
+
+**Evolutions**
+- Docker Compose: before any change on the host, the deploy playbook checks the tools required by the jobs and fails
+  with an explicit message when one is missing: with scheduled jobs, `flock`, a `date` accepting `-d @<seconds>` and
+  `docker` in the `PATH` of the crontab entries (`/usr/local/bin:/usr/bin:/bin`, a `docker` in `/snap/bin` is not
+  found by cron), and `timeout` with a job (during-deployment or scheduled) with a time limit. Until now, only
+  `crontab` was checked: a during-deployment job failed after the update of the stack, and a scheduled job failed at
+  each run, the error being only written in its `events.log`.
+- Docker Compose: the entries of `AccumulatorInterface::getScheduledJobs()` gain the key `timeout`, the time limit of
+  a completion (`0` for none), to implement in a custom accumulator and to use in a custom deploy playbook template.
+
+**Documentation**
+- New `docker-compose.scheduled-jobs.md`: the scheduled jobs on a Docker Compose host, with the workflows and the
+  diagrams of the deployment, of a tick of `east-paas-cron.sh` and of a completion of `east-paas-pod.sh`, the files on
+  the host, the schedule options compared to Kubernetes and the operating.
+- `docker-compose.deployment.md`: the scheduled jobs are summarized, with a link to the new document, and the tools
+  checked by the deploy playbook are listed.
+
 ## [5.10.0] - 2026-10-17
 ### Stable Release
 
