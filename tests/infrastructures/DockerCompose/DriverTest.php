@@ -728,4 +728,75 @@ class DriverTest extends TestCase
             $writes['inventory.ini'],
         );
     }
+
+    public function testDeployPushesTheFilesWithTheConfiguredModes(): void
+    {
+        $deployment = $this->createStub(DeploymentInterface::class);
+        $deployment->method('transcribe')->willReturnCallback(
+            function (...$args) use ($deployment): DeploymentInterface {
+                $args[1]
+                    ->addFile('secrets/php.env', 'KEY="value"')
+                    ->addFile('jobs/backup.conf', "project='foo'");
+
+                return $deployment;
+            }
+        );
+
+        $transcribers = $this->createStub(TranscriberCollectionInterface::class);
+        $transcribers->method('getIterator')->willReturnCallback(
+            function () use ($deployment): Traversable {
+                yield from [$deployment];
+            }
+        );
+
+        $writes = [];
+        $workspaceFilesystem = $this->createStub(FilesystemOperator::class);
+        $workspaceFilesystem->method('write')->willReturnCallback(
+            function (string $path, string $content) use (&$writes): void {
+                $writes[$path] = $content;
+            }
+        );
+
+        $templatesFilesystem = $this->createStub(FilesystemOperator::class);
+        $templatesFilesystem->method('read')->willReturn('files: {% paasFiles %}');
+
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise->expects($this->once())->method('success');
+
+        $driver = new Driver(
+            runnerFactory: $this->buildCapturingRunnerFactory('PLAY RECAP ok', $writes),
+            transcribers: $transcribers,
+            workspaceFilesystem: $workspaceFilesystem,
+            templatesFilesystem: $templatesFilesystem,
+            workspaceRoot: self::WORKSPACE_ROOT,
+            tmpDirFactory: static fn (): string => 'run',
+            templates: ['deploy' => 'deploy.yml.template'],
+            fileModes: ['secrets/' => '0400'],
+            defaultFileMode: '0644',
+        );
+
+        $driver->configure(
+            'docker.example.com',
+            $this->createStub(ClusterCredentials::class),
+            $this->createStub(DefaultsBag::class),
+            'default',
+            false,
+        )->deploy($this->buildCompiledDeploymentStub(), $promise);
+
+        self::assertSame(
+            'files: ' . json_encode([
+                [
+                    'src' => self::WORKSPACE_ROOT . '/run/secrets/php.env',
+                    'dest' => 'secrets/php.env',
+                    'mode' => '0400',
+                ],
+                [
+                    'src' => self::WORKSPACE_ROOT . '/run/jobs/backup.conf',
+                    'dest' => 'jobs/backup.conf',
+                    'mode' => '0644',
+                ],
+            ]),
+            $writes['run/deploy.yml'],
+        );
+    }
 }

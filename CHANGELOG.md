@@ -1,5 +1,17 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.11.0] - 2026-10-20
+### Stable Release
+
+**Evolutions**
+- Docker Compose: the modes of the pushed files are set by prefix of their path, with the new DI parameters
+  `teknoo.east.paas.docker-compose.files.modes` (`secrets/` => `0600`, `configs/` => `0644` by default, the longest
+  prefix wins, a configured mapping replaces the default one) and `teknoo.east.paas.docker-compose.files.default_mode`.
+
+**Fixes**
+- Docker Compose: the files of the maps (`configs/`) are pushed in `0644`, no longer in `0640`, to be readable by a
+  container running as another user than the owner of the files.
+
 ## [5.10.1] - 2026-10-19
 ### Stable Release
 

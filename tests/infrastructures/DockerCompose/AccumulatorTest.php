@@ -410,11 +410,59 @@ class AccumulatorTest extends TestCase
 
         self::assertSame('configs/cfg', $entries[0]->src);
         self::assertSame('configs/cfg', $entries[0]->dest);
-        self::assertSame('0640', $entries[0]->mode);
+        self::assertSame('0644', $entries[0]->mode);
 
         self::assertSame('secrets/sec', $entries[1]->src);
         self::assertSame('secrets/sec', $entries[1]->dest);
         self::assertSame('0600', $entries[1]->mode);
+    }
+
+    public function testGetFilesToCopyGivesTheDefaultModeToAFileUnderNoPrefix(): void
+    {
+        $accumulator = $this->buildAccumulator();
+        $accumulator->addFile('jobs/backup.conf', "project='foo-bar'");
+
+        self::assertSame('0640', $accumulator->getFilesToCopy()[0]->mode);
+    }
+
+    public function testGetFilesToCopyWithConfiguredModes(): void
+    {
+        //The configured mapping replaces the default one: a file under secrets/ gets the default mode
+        $accumulator = new Accumulator(
+            projectName: 'foo-bar',
+            fileModes: ['configs/' => '0640', 'jobs/' => '0600'],
+            defaultFileMode: '0400',
+        );
+        $accumulator
+            ->addFile('configs/cfg', 'value')
+            ->addFile('jobs/backup.conf', "project='foo-bar'")
+            ->addFile('secrets/sec', 'topsecret');
+
+        $entries = $accumulator->getFilesToCopy();
+
+        self::assertSame('0640', $entries[0]->mode);
+        self::assertSame('0600', $entries[1]->mode);
+        self::assertSame('0400', $entries[2]->mode);
+    }
+
+    public static function provideOverlappingPrefixes(): iterable
+    {
+        yield 'shortest first' => [['configs/' => '0644', 'configs/private/' => '0600']];
+        yield 'longest first' => [['configs/private/' => '0600', 'configs/' => '0644']];
+    }
+
+    #[DataProvider('provideOverlappingPrefixes')]
+    public function testGetFilesToCopyTheLongestPrefixWins(array $fileModes): void
+    {
+        $accumulator = new Accumulator(projectName: 'foo-bar', fileModes: $fileModes);
+        $accumulator
+            ->addFile('configs/private/cfg', 'value')
+            ->addFile('configs/cfg', 'value');
+
+        $entries = $accumulator->getFilesToCopy();
+
+        self::assertSame('0600', $entries[0]->mode);
+        self::assertSame('0644', $entries[1]->mode);
     }
 
     public function testGetCertificatesToCopyReturnsFileToCopyWithoutMode(): void

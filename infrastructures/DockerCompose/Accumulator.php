@@ -125,6 +125,9 @@ final class Accumulator implements AccumulatorInterface
     /**
      * @param string $traefikCertsMountDir directory where the pushed TLS cert/key files are visible from the
      *        Traefik process (the path referenced by the dynamic configuration `tls.certificates`)
+     * @param array<string, string> $fileModes mode of the pushed files, by prefix of their relative path (the
+     *        longest matching prefix wins)
+     * @param string $defaultFileMode mode of a pushed file matching none of the prefixes of $fileModes
      */
     public function __construct(
         private readonly string $projectName,
@@ -132,6 +135,8 @@ final class Accumulator implements AccumulatorInterface
         private readonly string $networkDriver = 'bridge',
         private readonly bool $networkInternal = false,
         private readonly string $traefikCertsMountDir = '/etc/traefik/certs',
+        private readonly array $fileModes = ['secrets/' => '0600', 'configs/' => '0644'],
+        private readonly string $defaultFileMode = '0640',
     ) {
     }
 
@@ -424,10 +429,13 @@ final class Accumulator implements AccumulatorInterface
     {
         $entries = [];
         foreach ($this->files as $relativePath => $content) {
-            if (str_starts_with($relativePath, 'secrets/')) {
-                $mode = '0600';
-            } else {
-                $mode = '0640';
+            $mode = $this->defaultFileMode;
+            $matchedLength = 0;
+            foreach ($this->fileModes as $prefix => $prefixMode) {
+                if (strlen($prefix) > $matchedLength && str_starts_with($relativePath, $prefix)) {
+                    $mode = $prefixMode;
+                    $matchedLength = strlen($prefix);
+                }
             }
 
             $entries[] = new FileToCopy(

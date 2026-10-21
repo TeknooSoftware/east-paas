@@ -106,6 +106,9 @@ class Driver implements DriverInterface, AutomatedInterface
      *        from the containers, reachable only through Traefik)
      * @param string|null $traefikCertsMountDir directory where Traefik sees the pushed TLS cert/key files
      *        (defaults to $traefikCertsDir, when the host directory is bind-mounted at the same path)
+     * @param array<string, string> $fileModes mode of the pushed files, by prefix of their relative path (the
+     *        longest matching prefix wins)
+     * @param string $defaultFileMode mode of a pushed file matching none of the prefixes of $fileModes
      */
     public function __construct(
         private readonly RunnerFactoryInterface $runnerFactory,
@@ -122,6 +125,8 @@ class Driver implements DriverInterface, AutomatedInterface
         private readonly string $traefikCertsDir = '/etc/traefik/certs',
         private readonly bool $networkInternal = false,
         private readonly ?string $traefikCertsMountDir = null,
+        private readonly array $fileModes = ['secrets/' => '0600', 'configs/' => '0644'],
+        private readonly string $defaultFileMode = '0640',
     ) {
         $this->tmpDirFactory = $tmpDirFactory(...);
 
