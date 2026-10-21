@@ -5,7 +5,7 @@
                         xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
                                             http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
 
-    <document name="Teknoo\East\Paas\Object\Account" collection="accounts" inheritance-type="COLLECTION_PER_CLASS">
+    <document name="Teknoo\East\Paas\Object\Account" collection="accounts">
         <id type="string" strategy="CUSTOM">
             <generator-option name="class" value="Teknoo\East\Common\Doctrine\IdGenerator\UuidV7Generator"/>
         </id>

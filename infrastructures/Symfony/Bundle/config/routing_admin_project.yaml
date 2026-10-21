@@ -44,9 +44,10 @@ _teknoo_paas_admin_project_new:
 
 _teknoo_paas_admin_project_delete:
     path: '/project/delete/{id}'
-    methods:  ['GET']
+    methods:  ['GET', 'POST', 'DELETE']
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.delete'
+        csrfTokenId: 'teknoo_east_paas_admin_delete'
         deleter: '@teknoo.east.paas.deleting.project'
         errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         loader: '@Teknoo\East\Paas\Loader\ProjectLoader'

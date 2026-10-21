@@ -100,6 +100,27 @@ Without Symfony Recipe
         prefix: '/admin'
         schemes:    [https]
 
+The routes deleting an account, a project or a job (`_teknoo_paas_admin_account_delete`,
+`_teknoo_paas_admin_project_delete` and `_teknoo_paas_admin_job_delete`) check a CSRF token, with the step
+`CheckCsrfToken` of East Common: the Symfony CSRF protection must be enabled (`framework.csrf_protection` and
+`symfony/security-csrf`). The token id is `teknoo_east_paas_admin_delete`, the token is read from the field `_token` of
+the body, or else of the query string. An invalid or a missing token returns a 403 error. These routes accept `GET`,
+`POST` and `DELETE` requests, so links can be kept, with the token in the query string:
+
+    <a href="{{ path('_teknoo_paas_admin_job_delete', {
+        'id': job.id,
+        '_token': csrf_token('teknoo_east_paas_admin_delete')
+    }) }}">Delete</a>
+
+The check can be disabled when importing routes:
+
+    paas_admin_job:
+        resource: '@TeknooEastPaasBundle/config/routing_admin_job.yaml'
+        prefix: '/admin'
+        schemes:    [https]
+        defaults:
+            csrfTokenId: ~
+
 ### In PHP-DI
 
     return [

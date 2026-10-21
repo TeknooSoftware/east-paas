@@ -44,9 +44,10 @@ _teknoo_paas_admin_account_new:
 
 _teknoo_paas_admin_account_delete:
     path: '/account/delete/{id}'
-    methods:  ['GET']
+    methods:  ['GET', 'POST', 'DELETE']
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.delete'
+        csrfTokenId: 'teknoo_east_paas_admin_delete'
         deleter: '@teknoo.east.paas.deleting.account'
         errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         loader: '@Teknoo\East\Paas\Loader\AccountLoader'

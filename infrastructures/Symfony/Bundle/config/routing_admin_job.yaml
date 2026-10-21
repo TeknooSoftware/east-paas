@@ -13,9 +13,10 @@ _teknoo_paas_admin_job_list:
 
 _teknoo_paas_admin_job_delete:
     path: '/job/delete/{id}'
-    methods:  ['GET']
+    methods:  ['GET', 'POST', 'DELETE']
     defaults:
         _controller: 'teknoo.east.common.endpoint.crud.delete'
+        csrfTokenId: 'teknoo_east_paas_admin_delete'
         deleter: '@teknoo.east.paas.deleting.job'
         errorTemplate: '@@TeknooEastCommon/Error/404.html.twig'
         loader: '@Teknoo\East\Paas\Loader\JobLoader'

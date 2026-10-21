@@ -102,10 +102,12 @@ services:
         tags:
             - { name: 'kernel.event_subscriber' }
 
+    #Command, named in its tag to be lazy (name and description must stay in sync with the PHP-DI entries
+    #`teknoo.east.paas.symfony.command.run_job.name` and `teknoo.east.paas.symfony.command.run_job.description`)
     teknoo.east.paas.symfony.command.run_job:
         parent: 'Teknoo\East\Paas\Infrastructures\Symfony\Command\RunJobCommand'
         tags:
-            - {name: 'console.command' }
+            - { name: 'console.command', command: 'teknoo:paas:run_job', description: 'Run job manually from json file, without PaaS server' }
 
     Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob:
         class: 'Teknoo\East\Paas\Infrastructures\Symfony\Recipe\Step\Worker\DispatchJob'

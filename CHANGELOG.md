@@ -1,5 +1,27 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.11.2] - 2026-10-21
+
+**Security**
+- Admin: the routes deleting an account, a project or a job (`_teknoo_paas_admin_account_delete`,
+  `_teknoo_paas_admin_project_delete` and `_teknoo_paas_admin_job_delete`) check the CSRF token
+  `teknoo_east_paas_admin_delete`, with the step `CheckCsrfToken` of East Common 4.8, and accept also `POST` and
+  `DELETE` requests. The token is read from the field `_token` of the body, or else of the query string, an invalid or
+  a missing token returns a 403 error. Links must add the token
+  (`_token: csrf_token('teknoo_east_paas_admin_delete')`), applications redefining these routes must add the default
+  `csrfTokenId` themselves. The Symfony CSRF protection must be enabled (`framework.csrf_protection`), else these
+  routes return a 500 error. The check can be disabled when importing routes, with the default `csrfTokenId: ~`.
+
+**Fixes**
+- Doctrine ODM: remove the inheritance type `COLLECTION_PER_CLASS` of `Account`, `Cluster`, `Job` and `Project`,
+  deprecated by Doctrine ODM 2.17 without replacement (each class is already mapped to its own collection, no
+  migration needed).
+- `teknoo:paas:run_job` is named in its tag to be lazy.
+
+**Evolutions**
+- Requires `teknoo/east-foundation` 9.4, `teknoo/east-common` 4.8 and `teknoo/states` 7.1.12.
+- Requires `teknoo/bridge-phpdi-symfony` 7.2 in dev.
+
 ## [5.11.0] - 2026-10-20
 ### Stable Release
 
