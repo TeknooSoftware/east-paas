@@ -212,7 +212,7 @@ plain Docker host, a reference to any other provider fails the deployment.
 
 * A secret / map becomes one Compose `secrets:` / `configs:` entry **per key** (`<name>-secret-<key>`,
   `<name>-map-<key>`), backed by a file pushed under `secrets/<name>-secret/<key>` (mode `0600`) or
-  `configs/<name>-map/<key>`. A `base64:` prefixed secret value is decoded.
+  `configs/<name>-map/<key>` (mode `0644`). A `base64:` prefixed secret value is decoded.
 * A secret / map **volume** is mounted one file per key under its `mount-path` (`<mount-path>/<key>`),
   exactly like Kubernetes.
 * Variables read from secrets / maps (`from-secrets`, `import-secrets`, `from-maps`, `import-maps`) are
@@ -283,7 +283,8 @@ host:
 * with a job (during-deployment or scheduled) with a time limit: `timeout`.
 
 1. ensure the per-project directory (and `secrets/`, `configs/` subdirs) exists on the host;
-2. push `compose.yaml`, secret / env files (mode `0600`, directories `0700`) and config files;
+2. push `compose.yaml`, secret / env files (mode `0600`, directories `0700`), config files (mode `0644`) and the other
+   files (mode `0640`), modes set by `teknoo.east.paas.docker-compose.files.*` (`compose.yaml` stays in `0640`);
 3. when some volumes are flagged `resetOnDeployment`: `docker compose -p <project> down --remove-orphans`
    (a volume in use cannot be removed) then `docker volume rm <project>_<volume>` for each of them;
 4. `docker compose -p <project> up -d --remove-orphans`;
@@ -328,6 +329,14 @@ The driver reads the following container parameters (all optional, with the defa
 | `teknoo.east.paas.docker-compose.ingress.default_service.name`       | _(none)_               | default backend service name for ingresses without one                                  |
 | `teknoo.east.paas.docker-compose.ingress.default_service.port`       | _(none)_               | default backend service port                                                            |
 | `teknoo.east.paas.docker-compose.https_backend.insecure_skip_verify` | `false`                | skip TLS verification to HTTPS backends (a `serversTransport` is generated)             |
+| `teknoo.east.paas.docker-compose.files.modes`                        | _(see below)_          | modes of the pushed files, by prefix of their path in the project dir                   |
+| `teknoo.east.paas.docker-compose.files.default_mode`                 | `0640`                 | mode of a pushed file under none of these prefixes                                      |
+
+`files.modes` is an array (or an iterable) of prefix => mode, `secrets/` => `0600` and `configs/` => `0644` by default
+(a ConfigMap is mounted in `0644` by Kubernetes: a container running as another user than the owner of the files can
+read them). A mode is a quoted string of octal digits (`'0644'`). When several prefixes match a file, the longest wins.
+A configured mapping replaces the default one: keep `secrets/` in it. The directories keep their modes (`0700` for
+`secrets/`, `0750` for the others).
 
 See `documentation/traefik.ingress.md` for the Traefik static configuration that must be in place on the
 host.

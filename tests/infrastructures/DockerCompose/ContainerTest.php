@@ -176,8 +176,45 @@ class ContainerTest extends TestCase
         $container->set('teknoo.east.paas.docker-compose.traefik.dynamic_dir', '/srv/traefik/dynamic');
         $container->set('teknoo.east.paas.docker-compose.traefik.certs_dir', '/srv/traefik/certs');
         $container->set('teknoo.east.paas.docker-compose.traefik.certs_mount_dir', '/certs');
+        $container->set('teknoo.east.paas.docker-compose.files.modes', ['secrets/' => '0600', 'configs/' => '0640']);
+        $container->set('teknoo.east.paas.docker-compose.files.default_mode', '0600');
 
         $this->assertInstanceOf(Driver::class, $container->get(Driver::class));
+    }
+
+    public function testDriverWithIterableFileModes(): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
+        $container->set(
+            'teknoo.east.paas.docker-compose.files.modes',
+            new ArrayIterator(['secrets/' => '0600', 'configs/' => '0644']),
+        );
+
+        $this->assertInstanceOf(Driver::class, $container->get(Driver::class));
+    }
+
+    public static function invalidFileModesProvider(): iterable
+    {
+        yield 'not iterable' => ['teknoo.east.paas.docker-compose.files.modes', '0644'];
+        yield 'empty prefix' => ['teknoo.east.paas.docker-compose.files.modes', ['' => '0644']];
+        yield 'not a string prefix' => ['teknoo.east.paas.docker-compose.files.modes', ['0644']];
+        yield 'not a string mode' => ['teknoo.east.paas.docker-compose.files.modes', ['configs/' => 0644]];
+        yield 'not an octal mode' => ['teknoo.east.paas.docker-compose.files.modes', ['configs/' => '0648']];
+        yield 'not a string default mode' => ['teknoo.east.paas.docker-compose.files.default_mode', 0640];
+        yield 'not an octal default mode' => ['teknoo.east.paas.docker-compose.files.default_mode', 'rw-r-----'];
+        yield 'default mode with a line break' => ['teknoo.east.paas.docker-compose.files.default_mode', "0640\n"];
+    }
+
+    #[DataProvider('invalidFileModesProvider')]
+    public function testDriverRefusesInvalidFileModes(string $parameter, mixed $value): void
+    {
+        $container = $this->buildContainer();
+        $container->set('teknoo.east.paas.worker.tmp_dir', '/tmp');
+        $container->set($parameter, $value);
+
+        $this->expectException(DomainException::class);
+        $container->get(Driver::class);
     }
 
     public function testDirectory(): void

@@ -103,6 +103,8 @@ class Running implements StateInterface
                         networkDriver: $this->networkDriver,
                         networkInternal: $this->networkInternal,
                         traefikCertsMountDir: $this->traefikCertsMountDir ?? $this->traefikCertsDir,
+                        fileModes: $this->fileModes,
+                        defaultFileMode: $this->defaultFileMode,
                     );
                 }
             );

@@ -48,7 +48,9 @@ use function DI\get;
 use function is_a;
 use function is_array;
 use function is_iterable;
+use function is_string;
 use function iterator_to_array;
+use function preg_match;
 use function sys_get_temp_dir;
 use function uniqid;
 
@@ -272,6 +274,47 @@ return [
             $networkInternal = (bool) $container->get('teknoo.east.paas.docker-compose.network.internal');
         }
 
+        $fileModes = ['secrets/' => '0600', 'configs/' => '0644'];
+        if ($container->has('teknoo.east.paas.docker-compose.files.modes')) {
+            $configuredFileModes = $container->get('teknoo.east.paas.docker-compose.files.modes');
+
+            if (!is_iterable($configuredFileModes)) {
+                throw new DomainException(
+                    '`teknoo.east.paas.docker-compose.files.modes` must be an array or iterable',
+                );
+            }
+
+            $fileModes = [];
+            foreach ($configuredFileModes as $prefix => $mode) {
+                if (!is_string($prefix) || '' === $prefix) {
+                    throw new DomainException(
+                        'The prefixes of `teknoo.east.paas.docker-compose.files.modes` must be non-empty strings',
+                    );
+                }
+
+                if (!is_string($mode) || 1 !== preg_match('#^[0-7]{3,4}$#D', $mode)) {
+                    throw new DomainException(
+                        "The mode of `$prefix` in `teknoo.east.paas.docker-compose.files.modes` must be a string "
+                        . "of octal digits, like '0644'",
+                    );
+                }
+
+                $fileModes[$prefix] = $mode;
+            }
+        }
+
+        $defaultFileMode = '0640';
+        if ($container->has('teknoo.east.paas.docker-compose.files.default_mode')) {
+            $defaultFileMode = $container->get('teknoo.east.paas.docker-compose.files.default_mode');
+
+            if (!is_string($defaultFileMode) || 1 !== preg_match('#^[0-7]{3,4}$#D', $defaultFileMode)) {
+                throw new DomainException(
+                    "`teknoo.east.paas.docker-compose.files.default_mode` must be a string of octal digits, "
+                    . "like '0640'",
+                );
+            }
+        }
+
         return new DriverAlias(
             runnerFactory: $container->get(RunnerFactoryInterface::class),
             transcribers: $container->get(TranscriberCollectionInterface::class),
@@ -290,6 +333,8 @@ return [
             traefikCertsDir: $traefikCertsDir,
             networkInternal: $networkInternal,
             traefikCertsMountDir: $traefikCertsMountDir,
+            fileModes: $fileModes,
+            defaultFileMode: $defaultFileMode,
         );
     },
 
