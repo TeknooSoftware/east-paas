@@ -34,6 +34,7 @@ use Teknoo\East\Paas\Contracts\Hook\HookInterface;
 use Teknoo\East\Paas\Contracts\Hook\TimeoutAwareHookInterface;
 use Throwable;
 
+use function implode;
 use function is_string;
 use function ltrim;
 use function preg_match;
@@ -198,14 +199,14 @@ abstract class AbstractHook implements TimeoutAwareHookInterface
     {
         $path = $this->path . $this->localPath;
 
-        $command = str_replace(
+        $commandStr = str_replace(
             search: '${PWD}',
             replace: $path,
             subject: $this->command,
         );
 
         $command = ($this->factory)(
-            command: [...$command, ...$this->options],
+            command: [...$commandStr, ...$this->options],
             cwd: $path,
             timeout: $this->timeout,
         );
@@ -213,7 +214,10 @@ abstract class AbstractHook implements TimeoutAwareHookInterface
         $command->run();
 
         if ($command->isSuccessful()) {
-            $promise->success($command->getOutput() . $command->getErrorOutput());
+            $promise->success(
+                $command->getOutput() . $command->getErrorOutput(),
+                implode(' ', $commandStr)
+            );
         } else {
             $promise->fail(new RuntimeException($command->getErrorOutput()));
         }

@@ -81,7 +81,7 @@ class HookingDeploymentTest extends TestCase
         $hook1->expects($this->once())->method('setPath')->with('foo/bar');
         $hook1->expects($this->once())->method('run')->willReturnCallback(
             function (PromiseInterface $promise) use ($hook1): MockObject|Stub {
-                $promise->success('foo');
+                $promise->success('foo', '/usr/bin/composer');
 
                 return $hook1;
             }
@@ -135,10 +135,23 @@ class HookingDeploymentTest extends TestCase
         $project = 'foo';
         $env = 'bar';
 
+        $extras = [];
         $this->getDispatchHistoryMock()->expects($this->exactly(2))
             ->method('__invoke')
             ->with($project, $env, $jobUnit->getId(), HookingDeployment::class . ':Result')
-            ->willReturnSelf();
+            ->willReturnCallback(
+                function (
+                    string $projectId,
+                    string $envName,
+                    string $jobId,
+                    string $step,
+                    array $historyExtra = [],
+                ) use (&$extras): DispatchHistoryInterface {
+                    $extras[] = $historyExtra;
+
+                    return $this->getDispatchHistoryMock();
+                }
+            );
 
         $this->assertInstanceOf(HookingDeployment::class, ($this->buildStep())(
             $workspace,
@@ -149,6 +162,20 @@ class HookingDeploymentTest extends TestCase
             $client,
             $manager
         ));
+
+        $this->assertEquals(
+            [
+                [
+                    'hook_command' => '/usr/bin/composer',
+                    'hook_output' => 'foo',
+                ],
+                [
+                    'hook_command' => null,
+                    'hook_output' => 'foo',
+                ],
+            ],
+            $extras,
+        );
     }
 
     public function testInvokeOnError(): void

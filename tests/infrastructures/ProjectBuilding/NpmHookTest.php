@@ -246,7 +246,9 @@ class NpmHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../npm.phar');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(NpmHook::class, $this->buildHook(
@@ -268,7 +270,9 @@ class NpmHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../npm.phar --');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(NpmHook::class, $this->buildHook(
@@ -294,7 +298,9 @@ class NpmHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../npm.phar -- /foo');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(NpmHook::class, $this->buildHook(

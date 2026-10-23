@@ -64,16 +64,27 @@ class HookingDeployment
     ): self {
         /** @var Promise<string, mixed, mixed> $promise */
         $promise = new Promise(
-            onSuccess: function (string $buildSuccess) use ($projectId, $envName, $jobUnit): void {
+            onSuccess: function (
+                string $buildSuccess,
+                ?string $command = null,
+            ) use (
+                $projectId,
+                $envName,
+                $jobUnit,
+            ): void {
                 ($this->dispatchHistory)(
                     $projectId,
                     $envName,
                     $jobUnit->getId(),
                     self::class . ':Result',
-                    ['hook_output' => $buildSuccess]
+                    [
+                        'hook_command' => $command,
+                        'hook_output' => $buildSuccess,
+                    ],
                 );
             },
             onFail: static fn (#[SensitiveParameter] Throwable $error) => throw $error,
+            allowNext: false,
         );
 
         $promise->allowReuse();

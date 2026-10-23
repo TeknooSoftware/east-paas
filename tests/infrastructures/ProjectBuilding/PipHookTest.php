@@ -237,7 +237,9 @@ class PipHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../pip.phar');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(PipHook::class, $this->buildHook(
@@ -260,7 +262,9 @@ class PipHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../pip.phar --');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(PipHook::class, $this->buildHook(
@@ -287,7 +291,9 @@ class PipHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../pip.phar -- /foo');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(PipHook::class, $this->buildHook(

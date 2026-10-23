@@ -239,7 +239,9 @@ class ComposerHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../composer.phar');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(ComposerHook::class, $this->buildHook(
@@ -259,7 +261,9 @@ class ComposerHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../composer.phar --');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(ComposerHook::class, $this->buildHook(
@@ -283,7 +287,9 @@ class ComposerHookTest extends TestCase
         $promiseOpt->expects($this->never())->method('fail');
 
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../composer.phar -- /foo');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(ComposerHook::class, $this->buildHook(

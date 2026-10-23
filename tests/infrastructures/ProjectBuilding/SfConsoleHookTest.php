@@ -212,7 +212,9 @@ class SfConsoleHookTest extends TestCase
     public function testRunProcessSuccess(): void
     {
         $promise = $this->createMock(PromiseInterface::class);
-        $promise->expects($this->once())->method('success');
+        $promise->expects($this->once())
+            ->method('success')
+            ->with('', __DIR__ . '/../../../sfConsole.phar');
         $promise->expects($this->never())->method('fail');
 
         $this->assertInstanceOf(SfConsoleHook::class, $this->buildHook(true)->run($promise));

@@ -1,5 +1,13 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.11.3] - 2026-10-23
+
+**Evolutions**
+- Hooks: `AbstractHook` passes the called command, without its options, as second argument of the success of the
+  promise.
+- `HookingDeployment` logs the command called by the hook in the history, under the key `hook_command` (`null` if the
+  hook does not provide it), next to `hook_output`.
+
 ## [5.11.2] - 2026-10-21
 
 **Security**
