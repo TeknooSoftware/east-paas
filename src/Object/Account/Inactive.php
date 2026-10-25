@@ -60,7 +60,7 @@ class Inactive implements StateInterface
     }
 
     /**
-     * @param \Teknoo\Recipe\Promise\PromiseInterface<bool, bool> $promise
+     * @param \Teknoo\Recipe\Promise\PromiseInterface<void, -1|0|1> $promise
      */
     public function verifyAccessToUser(): Closure
     {

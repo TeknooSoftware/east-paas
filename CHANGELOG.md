@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.11.4] - 2026-10-25
+
+**Fixes**
+- Issue with PHPStan bcbreacj in patch version
+- Fix PHPdoc abour Account::verifyAccessToUse
+
 ## [5.11.3] - 2026-10-23
 
 **Evolutions**
