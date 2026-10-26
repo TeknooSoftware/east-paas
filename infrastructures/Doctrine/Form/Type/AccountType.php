@@ -74,6 +74,8 @@ class AccountType extends AbstractType
             TextType::class,
             [
                 'required' => false,
+                //The readonly attribute is only HTML: a disabled field also ignores a submitted value
+                'disabled' => !empty($options['namespaceIsReadonly']),
                 'attr' => [
                     'readonly' => !empty($options['namespaceIsReadonly']),
                 ],
@@ -85,6 +87,8 @@ class AccountType extends AbstractType
             TextType::class,
             [
                 'required' => false,
+                //The readonly attribute is only HTML: a disabled field also ignores a submitted value
+                'disabled' => !empty($options['namespaceIsReadonly']),
                 'attr' => [
                     'readonly' => !empty($options['namespaceIsReadonly']),
                 ],
