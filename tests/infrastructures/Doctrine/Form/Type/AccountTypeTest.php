@@ -99,6 +99,34 @@ class AccountTypeTest extends TestCase
         ];
     }
 
+    public function testTheNamespaceFieldsAreDisabledWhenTheyAreReadonly(): void
+    {
+        foreach ([true, false] as $readonly) {
+            $disabled = [];
+            $builder = $this->createStub(FormBuilderInterface::class);
+            $builder->method('add')
+                ->willReturnCallback(
+                    function (string|FormBuilderInterface $child, ?string $type = null, array $options = []) use (
+                        &$disabled,
+                        $builder,
+                    ): FormBuilderInterface {
+                        if (\in_array($child, ['namespace', 'prefix_namespace'], true)) {
+                            $disabled[$child] = $options['disabled'] ?? null;
+                        }
+
+                        return $builder;
+                    }
+                );
+
+            $this->buildForm()->buildForm(
+                $builder,
+                ['doctrine_type' => ChoiceType::class, 'namespaceIsReadonly' => $readonly],
+            );
+
+            $this->assertSame(['namespace' => $readonly, 'prefix_namespace' => $readonly], $disabled);
+        }
+    }
+
     public function testConfigureOptions(): void
     {
         $this->buildForm()->configureOptions(

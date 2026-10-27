@@ -1,5 +1,11 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.11.5] - 2026-10-26
+
+**Fixes**
+- `AccountType`: with `namespaceIsReadonly`, the fields `namespace` and `prefix_namespace` are disabled, not only
+  read-only in the page: a submitted namespace is ignored
+
 ## [5.11.4] - 2026-10-25
 
 **Fixes**
