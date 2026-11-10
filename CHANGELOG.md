@@ -1,6 +1,6 @@
 # Teknoo Software - PaaS - Change Log
 
-## [5.11.2] - 2026-11-10
+## [5.11.7] - 2026-11-10
 ### Stable Release
 #### Fix
 - Remove doctrine/common
