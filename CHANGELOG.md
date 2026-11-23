@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.11.8] - 2026-11-23
+### Stable Release
+#### Fix
+- Full Support Teknoo Kubernetes Client 2.2 and Guzzle 8
+
 ## [5.11.7] - 2026-11-10
 ### Stable Release
 #### Fix

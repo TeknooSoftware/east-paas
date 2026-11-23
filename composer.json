@@ -97,7 +97,7 @@
         "symfony/var-exporter": "^6.4.24||^7.4||^8.1",
         "symfony/yaml": "^6.4.24||^7.4||^8.1",
         "teknoo/bridge-phpdi-symfony": "^7.2",
-        "teknoo/kubernetes-client": "^2.1",
+        "teknoo/kubernetes-client": "^2.2",
         "league/flysystem-memory": "^3.31"
     },
     "suggest": {
