@@ -1,5 +1,10 @@
 # Teknoo Software - PaaS - Change Log
 
+## [5.11.9] - 2026-11-25
+### Stable Release
+#### Fix
+- Require Teknoo Recipe 7.3.4+
+
 ## [5.11.8] - 2026-11-23
 ### Stable Release
 #### Fix

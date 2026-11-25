@@ -35,7 +35,7 @@
         "psr/http-client": "^1.0.3",
         "teknoo/immutable": "^3.0.22",
         "teknoo/states": "^7.1.13",
-        "teknoo/recipe": "^7.3.2",
+        "teknoo/recipe": "^7.3.4",
         "teknoo/east-foundation": "^9.5.2",
         "teknoo/east-common": "^4.10.1"
     },
